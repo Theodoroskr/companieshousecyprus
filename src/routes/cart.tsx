@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-import { useCart, CART_VAT_RATE } from "@/lib/cart";
+import { useCart, CART_VAT_RATE, CART_SERVICE_FEE } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { items, subtotal, vat, total, removeItem, updateQuantity, clear } = useCart();
+  const { items, subtotal, serviceFee, vat, total, removeItem, updateQuantity, clear } = useCart();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
@@ -126,6 +126,12 @@ function CartPage() {
                 <dt className="text-muted-foreground">Subtotal</dt>
                 <dd>{formatPrice(subtotal)}</dd>
               </div>
+              {serviceFee > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Service fee ({formatPrice(CART_SERVICE_FEE)} per certificate)</dt>
+                  <dd>{formatPrice(serviceFee)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">VAT ({Math.round(CART_VAT_RATE * 100)}%)</dt>
                 <dd>{formatPrice(vat)}</dd>

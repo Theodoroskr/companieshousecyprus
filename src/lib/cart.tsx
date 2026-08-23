@@ -13,6 +13,7 @@ type CartContextValue = {
   items: CartItem[];
   count: number;
   subtotal: number;
+  serviceFee: number;
   vat: number;
   total: number;
   addItem: (item: Omit<CartItem, "quantity">) => void;
@@ -23,8 +24,12 @@ type CartContextValue = {
 
 const STORAGE_KEY = "chc.cart.v1";
 const VAT_RATE = 0.19;
+const CERTIFICATE_SERVICE_FEE = 50;
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+export const CART_VAT_RATE = VAT_RATE;
+export const CART_SERVICE_FEE = CERTIFICATE_SERVICE_FEE;
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -54,14 +59,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
       return sum + (product ? product.price * item.quantity : 0);
     }, 0);
-    const vat = Math.round(subtotal * VAT_RATE * 100) / 100;
+    const serviceFee = items.reduce((sum, item) => {
+      const product = PRODUCTS_BY_SLUG[item.productSlug];
+      return sum + (product && product.category === "certificate" ? CERTIFICATE_SERVICE_FEE * item.quantity : 0);
+    }, 0);
+    const vat = Math.round((subtotal + serviceFee) * VAT_RATE * 100) / 100;
 
     return {
       items,
       count: hydrated ? items.reduce((sum, item) => sum + item.quantity, 0) : 0,
       subtotal,
+      serviceFee,
       vat,
-      total: subtotal + vat,
+      total: subtotal + serviceFee + vat,
       addItem: (item) =>
         setItems((current) => {
           const index = current.findIndex(
@@ -92,5 +102,3 @@ export function useCart(): CartContextValue {
   if (!context) throw new Error("useCart must be used inside CartProvider");
   return context;
 }
-
-export const CART_VAT_RATE = VAT_RATE;
