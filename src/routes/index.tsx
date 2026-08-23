@@ -18,8 +18,8 @@ const homeQueryOptions = () =>
   queryOptions({
     queryKey: ["home"],
     queryFn: async () => {
-      const [count, districts] = await Promise.all([getCompanyCount(), getDistricts()]);
-      return { count, districts };
+      const count = await getCompanyCount();
+      return { count };
     },
   });
 
