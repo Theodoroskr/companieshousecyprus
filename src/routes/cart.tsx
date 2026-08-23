@@ -23,7 +23,7 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { items, subtotal, vat, total, removeItem, updateQuantity, clear } = useCart();
+  const { items, subtotal, serviceFee, vat, total, removeItem, updateQuantity, clear } = useCart();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
