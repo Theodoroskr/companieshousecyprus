@@ -38,6 +38,11 @@ function getServerClient() {
 export type Company = Database["public"]["Tables"]["companies"]["Row"];
 export type Official = Database["public"]["Tables"]["officials"]["Row"];
 
+export type CompanyListItem = Pick<
+  Company,
+  "slug" | "name" | "official_no" | "status_en" | "status_group" | "district_en" | "locality"
+>;
+
 export const getCompanyBySlug = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
@@ -54,9 +59,9 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     }
     const { data: officials } = await supabase
       .from("officials")
-      .select("name, role, appointment_date, cessation_date")
-      .eq("company_slug", data.slug)
-      .order("role", { ascending: true });
+      .select("person_name, position_en, position_el")
+      .eq("slug", data.slug)
+      .order("position_en", { ascending: true });
     return { company, officials: officials ?? [] };
   });
 
@@ -66,23 +71,27 @@ export const searchCompanies = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const q = data.q.trim().slice(0, 100);
     const page = Math.max(1, data.page);
+    let rows: CompanyListItem[] = [];
+    let count = 0;
     if (!q) {
-      const { data: rows, error } = await supabase
+      const res = await supabase
         .from("companies")
-        .select("slug, name, official_no, status_en, status_group, district_en, locality, total_count:companies.count", { count: "exact" })
+        .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
         .order("name", { ascending: true })
         .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-      if (error) throw error;
-      return { rows: rows ?? [], count: rows?.[0]?.total_count ?? 0 };
+      rows = (res.data ?? []) as CompanyListItem[];
+      count = res.count ?? 0;
+    } else {
+      const res = await supabase
+        .from("companies")
+        .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
+        .or(`name.ilike.%${q}%,official_no.ilike.%${q}%`)
+        .order("name", { ascending: true })
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+      rows = (res.data ?? []) as CompanyListItem[];
+      count = res.count ?? 0;
     }
-    const { data: rows, error } = await supabase
-      .from("companies")
-      .select("slug, name, official_no, status_en, status_group, district_en, locality, total_count:companies.count")
-      .or(`name.ilike.%${q}%,official_no.ilike.%${q}%`)
-      .order("name", { ascending: true })
-      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    if (error) throw error;
-    return { rows: rows ?? [], count: rows?.[0]?.total_count ?? 0 };
+    return { rows, count };
   });
 
 export const listCompaniesByLetter = createServerFn({ method: "GET" })
@@ -92,14 +101,13 @@ export const listCompaniesByLetter = createServerFn({ method: "GET" })
     const letter = data.letter.toUpperCase().replace(/[^A-Z]/g, "");
     if (!letter) throw new Error("Invalid letter");
     const page = Math.max(1, data.page);
-    const { data: rows, error } = await supabase
+    const res = await supabase
       .from("companies")
-      .select("slug, name, official_no, status_en, status_group, district_en, locality, total_count:companies.count")
+      .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
       .ilike("name", `${letter}%`)
       .order("name", { ascending: true })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    if (error) throw error;
-    return { rows: rows ?? [], count: rows?.[0]?.total_count ?? 0 };
+    return { rows: (res.data ?? []) as CompanyListItem[], count: res.count ?? 0 };
   });
 
 export const listCompaniesByDistrict = createServerFn({ method: "GET" })
@@ -109,30 +117,31 @@ export const listCompaniesByDistrict = createServerFn({ method: "GET" })
     const district = data.district.trim();
     if (!district) throw new Error("Invalid district");
     const page = Math.max(1, data.page);
-    const { data: rows, error } = await supabase
+    const res = await supabase
       .from("companies")
-      .select("slug, name, official_no, status_en, status_group, district_en, locality, total_count:companies.count")
+      .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
       .eq("district_en", district)
       .order("name", { ascending: true })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    if (error) throw error;
-    return { rows: rows ?? [], count: rows?.[0]?.total_count ?? 0 };
+    return { rows: (res.data ?? []) as CompanyListItem[], count: res.count ?? 0 };
   });
 
 export const getDistricts = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = getServerClient();
   const { data: rows, error } = await supabase
     .from("companies")
-    .select("district_en, count:companies.count")
+    .select("district_en")
     .not("district_en", "is", null)
     .order("district_en", { ascending: true });
   if (error) throw error;
   const map = new Map<string, number>();
   for (const r of rows ?? []) {
     if (!r.district_en) continue;
-    map.set(r.district_en, (map.get(r.district_en) ?? 0) + (r.count ?? 1));
+    map.set(r.district_en, (map.get(r.district_en) ?? 0) + 1);
   }
-  return Array.from(map.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 export const getCompanyCount = createServerFn({ method: "GET" }).handler(async () => {
