@@ -3,7 +3,7 @@ import { getSitemapChunk } from "@/lib/companies.functions";
 
 const BASE_URL = "https://companieshousecyprus.com";
 
-export const Route = createFileRoute("/sitemaps/companies-$n.xml")({
+export const Route = createFileRoute("/sitemaps/companies-$n/xml")({
   server: {
     handlers: {
       GET: async ({ params }) => {
