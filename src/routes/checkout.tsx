@@ -122,6 +122,7 @@ function CheckoutPage() {
               {items.map((item) => {
                 const product = PRODUCTS_BY_SLUG[item.productSlug];
                 if (!product) return null;
+                const breakdown = priceBreakdown(product, item.quantity);
                 return (
                   <li key={`${item.productSlug}-${item.companySlug ?? "none"}`} className="flex justify-between gap-4">
                     <span>
@@ -130,8 +131,23 @@ function CheckoutPage() {
                       <span className="block text-xs text-muted-foreground">
                         {item.companyName ?? "Company confirmed at checkout"}
                       </span>
+                      <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                        <Receipt className="size-3" />
+                        <span>{formatPrice(breakdown.documentPrice)}</span>
+                        {breakdown.serviceFee > 0 && (
+                          <>
+                            <span className="text-border">|</span>
+                            <span>{formatPrice(breakdown.serviceFee)} fee</span>
+                          </>
+                        )}
+                        <span className="text-border">|</span>
+                        <span>{formatPrice(breakdown.vat)} VAT</span>
+                      </span>
                     </span>
-                    <span className="shrink-0">{formatPrice(product.price * item.quantity)}</span>
+                    <span className="shrink-0 text-right">
+                      <span className="block font-medium">{formatPrice(breakdown.total)}</span>
+                      <span className="block text-xs text-muted-foreground">incl. VAT</span>
+                    </span>
                   </li>
                 );
               })}
@@ -143,12 +159,12 @@ function CheckoutPage() {
               </div>
               {serviceFee > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Service fee ({formatPrice(CART_SERVICE_FEE)} per certificate)</dt>
+                  <dt className="text-muted-foreground">Service fee ({formatPrice(CERTIFICATE_SERVICE_FEE)} per certificate)</dt>
                   <dd>{formatPrice(serviceFee)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">VAT ({Math.round(CART_VAT_RATE * 100)}%)</dt>
+                <dt className="text-muted-foreground">VAT ({Math.round(VAT_RATE * 100)}%)</dt>
                 <dd>{formatPrice(vat)}</dd>
               </div>
               <div className="flex justify-between border-t pt-2 text-base font-semibold">
