@@ -1,7 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowRight, Building2, Check, FileCheck2, Search, ShieldCheck, Timer } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Check,
+  Clock,
+  Database,
+  FileCheck2,
+  Globe,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Timer,
+} from "lucide-react";
 import { getCompanyCount, getDistricts } from "@/lib/companies.functions";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
@@ -49,6 +61,22 @@ const TICKER = [
   "Certificate of Incorporation · Limassol",
 ];
 
+const HERO_CARDS = [
+  { icon: Database, label: "Entities indexed", value: "count", suffix: "" },
+  { icon: MapPin, label: "Districts", value: "6", suffix: "" },
+  { icon: Clock, label: "Certificate delivery", value: "1–2", suffix: " days" },
+  { icon: Globe, label: "Registrar sourced", value: "100", suffix: "%" },
+];
+
+const FEATURED_PRODUCTS = [
+  "certificate-of-good-standing",
+  "cyprus-company-profile",
+  "kyb-due-diligence-pack",
+  "certificate-of-directors-and-secretary",
+  "cyprus-credit-report",
+  "tender-and-bid-pack",
+];
+
 function HomePage() {
   const { data } = useSuspenseQuery(homeQueryOptions());
   const navigate = useNavigate();
@@ -56,64 +84,96 @@ function HomePage() {
 
   return (
     <div>
+      {/* Hero — Navy Trust grid layout */}
       <section className="surface-deep grid-dots relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 py-20 md:py-28">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium">
-            <span className="size-1.5 rounded-full bg-copper" />
-            Official Registrar data · {data.count.toLocaleString()} entities
-          </span>
-          <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] md:text-6xl">
-            Every Cyprus company. <span className="text-gradient-copper">One search.</span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-primary-foreground/75">
-            Free access to the full register of the Department of Registrar of Companies — status, directors,
-            shareholders and registered office — plus certified certificates delivered digitally.
-          </p>
+        <div className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-primary-glow/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 left-1/4 size-72 rounded-full bg-white/5 blur-3xl" />
 
-          <form
-            className="mt-10 max-w-2xl"
-            onSubmit={(event) => {
-              event.preventDefault();
-              navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
-            }}
-          >
-            <div className="flex flex-col gap-2 rounded-xl border border-white/15 bg-white/10 p-2 backdrop-blur sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-primary-foreground/50" />
-                <input
-                  value={q}
-                  onChange={(event) => setQ(event.target.value)}
-                  type="search"
-                  aria-label="Search Cyprus companies"
-                  placeholder="Company name or HE number…"
-                  className="h-12 w-full rounded-lg bg-transparent pl-10 pr-3 text-base text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
-                />
-              </div>
-              <Button type="submit" size="lg" className="h-12 bg-copper px-7 text-copper-foreground hover:bg-copper/90">
-                Search register
-              </Button>
-            </div>
-            <p className="mt-3 text-sm text-primary-foreground/60">
-              Try “SOFTBOT”, “HE 252407” or browse by district below.
+        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
+          {/* Left: headline + search */}
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
+              <span className="size-1.5 rounded-full bg-accent" />
+              Official Registrar data · {data.count.toLocaleString()} entities
+            </span>
+
+            <h1 className="mt-7 max-w-3xl text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
+              Every Cyprus company. <span className="text-gradient-copper">One search.</span>
+            </h1>
+
+            <p className="mt-6 max-w-xl text-lg text-primary-foreground/80">
+              Free access to the full register of the Department of Registrar of Companies — status, directors,
+              shareholders and registered office — plus certified certificates delivered digitally.
             </p>
-          </form>
 
-          <dl className="mt-14 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-4">
-            {[
-              [data.count.toLocaleString(), "Companies indexed"],
-              ["6", "Districts"],
-              ["1–2 days", "Certificate delivery"],
-              ["100%", "Registrar sourced"],
-            ].map(([value, label]) => (
-              <div key={label}>
-                <dt className="font-display text-2xl font-bold text-copper">{value}</dt>
-                <dd className="mt-1 text-sm text-primary-foreground/70">{label}</dd>
+            <form
+              className="mt-8 max-w-xl"
+              onSubmit={(event) => {
+                event.preventDefault();
+                navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
+              }}
+            >
+              <div className="flex flex-col gap-2 rounded-xl border border-primary-foreground/15 bg-primary-foreground/10 p-2 backdrop-blur sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-primary-foreground/50" />
+                  <input
+                    value={q}
+                    onChange={(event) => setQ(event.target.value)}
+                    type="search"
+                    aria-label="Search Cyprus companies"
+                    placeholder="Company name or HE number…"
+                    className="h-12 w-full rounded-lg bg-transparent pl-10 pr-3 text-base text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
+                  />
+                </div>
+                <Button type="submit" size="lg" className="h-12 bg-accent px-7 text-accent-foreground hover:bg-accent/90">
+                  Search register
+                </Button>
               </div>
-            ))}
-          </dl>
+              <p className="mt-3 text-sm text-primary-foreground/60">
+                Try “SOFTBOT”, “HE 252407” or browse by district below.
+              </p>
+            </form>
+
+            <dl className="mt-10 grid gap-6 border-t border-primary-foreground/15 pt-8 sm:grid-cols-4">
+              {[
+                [data.count.toLocaleString(), "Companies indexed"],
+                ["6", "Districts"],
+                ["1–2 days", "Certificate delivery"],
+                ["100%", "Registrar sourced"],
+              ].map(([value, label]) => (
+                <div key={label}>
+                  <dt className="font-display text-2xl font-bold text-accent">{value}</dt>
+                  <dd className="mt-1 text-sm text-primary-foreground/70">{label}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {/* Right: hero grid cards */}
+          <div className="grid grid-cols-2 gap-4">
+            {HERO_CARDS.map((item) => {
+              const value = item.value === "count" ? data.count.toLocaleString() : item.value;
+              return (
+                <div
+                  key={item.label}
+                  className="group rounded-2xl border border-primary-foreground/15 bg-primary-foreground/5 p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:bg-primary-foreground/10 sm:p-6"
+                >
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-accent/20 text-accent">
+                    <item.icon className="size-5" />
+                  </div>
+                  <p className="mt-4 font-display text-2xl font-bold text-primary-foreground sm:text-3xl">
+                    {value}
+                    {item.suffix}
+                  </p>
+                  <p className="mt-1 text-sm text-primary-foreground/70">{item.label}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
+      {/* Ticker */}
       <div className="overflow-hidden border-y bg-sand py-3">
         <div className="flex w-max animate-marquee gap-8 whitespace-nowrap text-xs text-muted-foreground">
           {[...TICKER, ...TICKER].map((item, index) => (
@@ -125,11 +185,12 @@ function HomePage() {
         </div>
       </div>
 
+      {/* Documents grid */}
       <section className="mx-auto max-w-7xl px-4 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-copper">Documents</p>
-            <h2 className="mt-3 text-3xl font-bold">Order what the other side actually asks for</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Documents</p>
+            <h2 className="mt-3 text-3xl font-bold text-foreground">Order what the other side actually asks for</h2>
           </div>
           <Button asChild variant="outline">
             <Link to="/pricing">
@@ -138,29 +199,28 @@ function HomePage() {
           </Button>
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {PRODUCTS.filter((product) => ["certificate-of-good-standing", "cyprus-company-profile", "kyb-due-diligence-pack", "certificate-of-directors-and-secretary", "cyprus-credit-report", "tender-and-bid-pack"].includes(product.slug)).map(
-            (product) => (
-              <Link
-                key={product.slug}
-                to="/report/$type"
-                params={{ type: product.slug }}
-                className="group flex flex-col rounded-xl border bg-card p-6 shadow-panel transition-all hover:-translate-y-0.5 hover:shadow-lift"
-              >
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-copper">{product.eyebrow}</span>
-                <h3 className="mt-2 font-display text-lg font-semibold">{product.name}</h3>
-                <p className="mt-2 flex-1 text-sm text-muted-foreground">{product.tagline}</p>
-                <div className="mt-5 flex items-center justify-between border-t pt-4 text-sm">
-                  <span className="font-semibold">{formatPrice(product.price)}</span>
-                  <span className="inline-flex items-center gap-1 text-copper group-hover:underline">
-                    Details <ArrowRight className="size-3.5" />
-                  </span>
-                </div>
-              </Link>
-            ),
-          )}
+          {PRODUCTS.filter((product) => FEATURED_PRODUCTS.includes(product.slug)).map((product) => (
+            <Link
+              key={product.slug}
+              to="/report/$type"
+              params={{ type: product.slug }}
+              className="group flex flex-col rounded-xl border bg-card p-6 shadow-panel transition-all hover:-translate-y-0.5 hover:shadow-lift"
+            >
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-accent">{product.eyebrow}</span>
+              <h3 className="mt-2 font-display text-lg font-semibold text-card-foreground">{product.name}</h3>
+              <p className="mt-2 flex-1 text-sm text-muted-foreground">{product.tagline}</p>
+              <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-sm">
+                <span className="font-semibold text-foreground">{formatPrice(product.price)}</span>
+                <span className="inline-flex items-center gap-1 text-accent group-hover:underline">
+                  Details <ArrowRight className="size-3.5" />
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
+      {/* Trust features */}
       <section className="border-y bg-sand">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-3">
           {[
@@ -169,9 +229,9 @@ function HomePage() {
             { icon: Building2, title: "Whole-of-register coverage", body: "Companies, partnerships and overseas branches across all six districts." },
           ].map((item) => (
             <div key={item.title} className="flex gap-4">
-              <item.icon className="size-6 shrink-0 text-copper" />
+              <item.icon className="size-6 shrink-0 text-accent" />
               <div>
-                <h3 className="font-display font-semibold">{item.title}</h3>
+                <h3 className="font-display font-semibold text-foreground">{item.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
               </div>
             </div>
@@ -179,20 +239,21 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Browse by district + A-Z */}
       <section className="mx-auto max-w-7xl px-4 py-20">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr]">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-copper">Browse by district</p>
-            <h2 className="mt-3 text-3xl font-bold">Where the company is registered</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Browse by district</p>
+            <h2 className="mt-3 text-3xl font-bold text-foreground">Where the company is registered</h2>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {data.districts.map((district) => (
                 <Link
                   key={district.name}
                   to="/companies/city/$district"
                   params={{ district: district.name }}
-                  className="flex items-center justify-between rounded-lg border bg-card px-4 py-3.5 transition-colors hover:border-copper"
+                  className="flex items-center justify-between rounded-lg border bg-card px-4 py-3.5 transition-colors hover:border-accent"
                 >
-                  <span className="font-medium capitalize">{district.name}</span>
+                  <span className="font-medium capitalize text-card-foreground">{district.name}</span>
                   <span className="text-sm text-muted-foreground">{district.count.toLocaleString()}</span>
                 </Link>
               ))}
@@ -200,15 +261,15 @@ function HomePage() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-copper">Browse A–Z</p>
-            <h2 className="mt-3 text-3xl font-bold">Alphabetical index of the register</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Browse A–Z</p>
+            <h2 className="mt-3 text-3xl font-bold text-foreground">Alphabetical index of the register</h2>
             <div className="mt-8 grid grid-cols-6 gap-2 sm:grid-cols-9">
               {LETTERS.map((letter) => (
                 <Link
                   key={letter}
                   to="/companies/a-z/$letter"
                   params={{ letter: letter.toLowerCase() }}
-                  className="flex aspect-square items-center justify-center rounded-lg border bg-card text-sm font-medium transition-colors hover:border-copper hover:text-copper"
+                  className="flex aspect-square items-center justify-center rounded-lg border bg-card text-sm font-medium text-card-foreground transition-colors hover:border-accent hover:text-accent"
                 >
                   {letter}
                 </Link>
@@ -229,19 +290,22 @@ function HomePage() {
         </div>
       </section>
 
+      {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 pb-24">
         <div className="surface-deep grid-dots flex flex-col gap-6 rounded-2xl p-10 md:flex-row md:items-center md:justify-between md:p-14">
           <div>
-            <h2 className="text-3xl font-bold">Need a certificate today?</h2>
+            <h2 className="text-3xl font-bold text-primary-foreground">Need a certificate today?</h2>
             <p className="mt-3 max-w-xl text-primary-foreground/75">
               Find the company, add the document, and our registry team takes it from there.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg" className="bg-copper text-copper-foreground hover:bg-copper/90">
-              <Link to="/search" search={{ q: "", page: 1 }}>Search the register</Link>
+            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Link to="/search" search={{ q: "", page: 1 }}>
+                Search the register
+              </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/30 bg-transparent text-primary-foreground hover:bg-white/10">
+            <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
               <Link to="/contact">Talk to our team</Link>
             </Button>
           </div>
@@ -250,4 +314,3 @@ function HomePage() {
     </div>
   );
 }
-
