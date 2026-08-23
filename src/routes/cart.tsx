@@ -55,10 +55,11 @@ function CartPage() {
             {items.map((item, index) => {
               const product = PRODUCTS_BY_SLUG[item.productSlug];
               if (!product) return null;
+              const breakdown = priceBreakdown(product, item.quantity);
               return (
                 <li key={`${item.productSlug}-${item.companySlug ?? "none"}`} className="rounded-xl border bg-card p-5 shadow-panel">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
+                    <div className="flex-1">
                       <h2 className="font-display font-semibold">{product.name}</h2>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {item.companyName ? (
@@ -78,9 +79,22 @@ function CartPage() {
                         )}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">Delivery: {product.delivery}</p>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <Receipt className="size-3.5" />
+                        <span>{formatPrice(breakdown.documentPrice)} document</span>
+                        {breakdown.serviceFee > 0 && (
+                          <>
+                            <span className="text-border">|</span>
+                            <span>{formatPrice(breakdown.serviceFee)} service fee</span>
+                          </>
+                        )}
+                        <span className="text-border">|</span>
+                        <span>{formatPrice(breakdown.vat)} VAT</span>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{formatPrice(product.price * item.quantity)}</p>
+                      <p className="font-semibold">{formatPrice(breakdown.total)}</p>
+                      <p className="text-xs text-muted-foreground">incl. VAT</p>
                       <div className="mt-3 flex items-center justify-end gap-1">
                         <button
                           type="button"
