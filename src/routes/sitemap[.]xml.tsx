@@ -4,7 +4,7 @@ import { getCompanyCount } from "@/lib/companies.functions";
 const SITEMAP_CHUNK_SIZE = 50_000;
 const BASE_URL = "https://companieshousecyprus.com";
 
-export const Route = createFileRoute("/sitemap/xml")({
+export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
