@@ -65,7 +65,73 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     return { company, officials: officials ?? [] };
   });
 
+export const getRelatedCompanies = createServerFn({ method: "GET" })
+  .validator((data: { slug: string }) => data)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const select =
+      "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
+
+    const { data: base } = await supabase
+      .from("companies")
+      .select("slug, address_full")
+      .eq("slug", data.slug)
+      .single();
+
+    let byAddress: CompanyListItem[] = [];
+    let addressCount = 0;
+    if (base?.address_full) {
+      const res = await supabase
+        .from("companies")
+        .select(select, { count: "exact" })
+        .eq("address_full", base.address_full)
+        .neq("slug", data.slug)
+        .order("name", { ascending: true })
+        .limit(8);
+      byAddress = (res.data ?? []) as CompanyListItem[];
+      addressCount = res.count ?? byAddress.length;
+    }
+
+    const { data: own } = await supabase
+      .from("officials")
+      .select("person_name")
+      .eq("slug", data.slug)
+      .limit(20);
+    const names = Array.from(
+      new Set((own ?? []).map((o) => o.person_name).filter((n): n is string => Boolean(n && n.trim()))),
+    ).slice(0, 8);
+
+    let byOfficial: Array<CompanyListItem & { via: string }> = [];
+    if (names.length > 0) {
+      const { data: links } = await supabase
+        .from("officials")
+        .select("slug, person_name")
+        .in("person_name", names)
+        .neq("slug", data.slug)
+        .limit(60);
+      const viaBySlug = new Map<string, string>();
+      for (const l of links ?? []) {
+        if (l.slug && !viaBySlug.has(l.slug)) viaBySlug.set(l.slug, l.person_name ?? "");
+      }
+      const slugs = Array.from(viaBySlug.keys()).slice(0, 8);
+      if (slugs.length > 0) {
+        const { data: rows } = await supabase
+          .from("companies")
+          .select(select)
+          .in("slug", slugs)
+          .order("name", { ascending: true });
+        byOfficial = ((rows ?? []) as CompanyListItem[]).map((r) => ({
+          ...r,
+          via: viaBySlug.get(r.slug) ?? "",
+        }));
+      }
+    }
+
+    return { byAddress, addressCount, byOfficial, addressFull: base?.address_full ?? null };
+  });
+
 export const searchCompanies = createServerFn({ method: "GET" })
+
   .validator((data: { q: string; page: number }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
