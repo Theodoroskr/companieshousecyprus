@@ -50,7 +50,7 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     const { data: company, error } = await supabase
       .from("companies")
       .select(
-        "slug, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at",
+        "slug, type_code, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at",
       )
       .eq("slug", data.slug)
       .single();
