@@ -85,7 +85,9 @@ function CartPage() {
                         {breakdown.serviceFee > 0 && (
                           <>
                             <span className="text-border">|</span>
-                            <span>{formatPrice(breakdown.serviceFee)} service fee</span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-copper/10 px-2 py-0.5 text-copper font-medium">
+                              {formatPrice(breakdown.serviceFee)} service fee (€50 per certificate)
+                            </span>
                           </>
                         )}
                         <span className="text-border">|</span>
