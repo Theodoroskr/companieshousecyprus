@@ -93,16 +93,22 @@ function CompanyPage() {
     knowsAbout: company.type_en ?? undefined,
   };
 
+  const registrationDate = formatDate(company.registration_date);
+  const statusDate = formatDate(company.status_date);
+  const addressEl = company.address_full;
+  const addressEn = latinAddress(company.address_full);
+
   const facts: { label: string; value: string }[] = [
     { label: "Registration number", value: company.official_no ?? String(company.reg_number) },
     { label: "Company type", value: company.type_en ?? "—" },
     { label: "Sub-type", value: company.subtype_en ?? "—" },
     { label: "Status", value: company.status_en ?? "—" },
-    { label: "Status date", value: company.status_date ?? "—" },
-    { label: "Registration date", value: company.registration_date ?? "—" },
+    { label: "Status date", value: statusDate ?? "—" },
+    { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
     { label: "Officials on record", value: String(company.officials_count ?? officials.length) },
   ];
+
 
   return (
     <div>
