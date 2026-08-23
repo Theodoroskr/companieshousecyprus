@@ -100,3 +100,22 @@ export function displayOfficialNo(company: {
   }
   return no || digits || "—";
 }
+
+/** True for Business Name / Partnership (BN) registrations, which have owners rather than directors. */
+export function isBusinessName(company: { type_code?: string | null }): boolean {
+  return company.type_code === "B" || company.type_code === "N";
+}
+
+/** Mask a person or entity name, keeping initials and word shape: "Andreas Georgiou" -> "A•••••• G•••••••". */
+export function maskName(name: string | null | undefined): string {
+  if (!name) return "•••••• ••••••";
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((word) => {
+      const first = word.charAt(0);
+      const rest = Math.max(word.length - 1, 3);
+      return first + "•".repeat(Math.min(rest, 9));
+    })
+    .join(" ");
+}
