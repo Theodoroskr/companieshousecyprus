@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Receipt, ShoppingCart, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
-import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
+import { priceBreakdown, VAT_RATE } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Your cart — Companies House Cyprus";
@@ -85,7 +85,9 @@ function CartPage() {
                         {breakdown.serviceFee > 0 && (
                           <>
                             <span className="text-border">|</span>
-                            <span>{formatPrice(breakdown.serviceFee)} service fee</span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-copper/10 px-2 py-0.5 text-copper font-medium">
+                              {formatPrice(breakdown.serviceFee)} service fee (€50 per certificate)
+                            </span>
                           </>
                         )}
                         <span className="text-border">|</span>
@@ -143,8 +145,10 @@ function CartPage() {
               </div>
               {serviceFee > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Service fee ({formatPrice(CERTIFICATE_SERVICE_FEE)} per certificate)</dt>
-                  <dd>{formatPrice(serviceFee)}</dd>
+                  <dt className="inline-flex items-center gap-1.5 rounded-full bg-copper/10 px-2 py-0.5 text-copper text-xs font-medium">
+                    Service fee (€50 per certificate)
+                  </dt>
+                  <dd className="font-medium">{formatPrice(serviceFee)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
