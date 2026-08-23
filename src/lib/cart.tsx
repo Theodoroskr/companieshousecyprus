@@ -13,6 +13,7 @@ type CartContextValue = {
   items: CartItem[];
   count: number;
   subtotal: number;
+  serviceFee: number;
   vat: number;
   total: number;
   addItem: (item: Omit<CartItem, "quantity">) => void;
