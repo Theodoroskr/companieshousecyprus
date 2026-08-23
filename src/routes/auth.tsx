@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
+
     meta: [
       { title: "Staff sign in | Companies House Cyprus" },
       { name: "description", content: "Sign in to manage Cyprus registrar data imports and updates." },
