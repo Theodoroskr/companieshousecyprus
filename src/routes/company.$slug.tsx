@@ -20,6 +20,7 @@ const ORDERABLE = [
   "certificate-of-directors-and-secretary",
   "certificate-of-shareholders",
   "kyb-due-diligence-pack",
+  "due-diligence-report",
 ];
 
 export const Route = createFileRoute("/company/$slug")({
