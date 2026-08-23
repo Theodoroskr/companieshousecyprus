@@ -11,11 +11,19 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
@@ -30,9 +38,39 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -50,9 +88,19 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompanySlugRoute = CompanySlugRouteImport.update({
   id: '/company/$slug',
   path: '/company/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportTypeRoute = ReportTypeRouteImport.update({
+  id: '/report/$type',
+  path: '/report/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminImportRoute =
@@ -80,11 +128,19 @@ const SitemapsCompaniesNDotxmlRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/report/$type': typeof ReportTypeRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -92,11 +148,19 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/report/$type': typeof ReportTypeRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -106,11 +170,19 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/report/$type': typeof ReportTypeRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -120,11 +192,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/auth'
+    | '/cart'
+    | '/checkout'
+    | '/contact'
+    | '/pricing'
+    | '/privacy'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/company/$slug'
+    | '/report/$type'
     | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -132,11 +212,19 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
+    | '/cart'
+    | '/checkout'
+    | '/contact'
+    | '/pricing'
+    | '/privacy'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/company/$slug'
+    | '/report/$type'
     | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -145,11 +233,19 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/about'
     | '/auth'
+    | '/cart'
+    | '/checkout'
+    | '/contact'
+    | '/pricing'
+    | '/privacy'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/company/$slug'
+    | '/report/$type'
     | '/_authenticated/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -159,11 +255,19 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  CartRoute: typeof CartRoute
+  CheckoutRoute: typeof CheckoutRoute
+  ContactRoute: typeof ContactRoute
+  PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  ReportTypeRoute: typeof ReportTypeRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -185,11 +289,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -213,11 +359,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/company/$slug': {
       id: '/company/$slug'
       path: '/company/$slug'
       fullPath: '/company/$slug'
       preLoaderRoute: typeof CompanySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report/$type': {
+      id: '/report/$type'
+      path: '/report/$type'
+      fullPath: '/report/$type'
+      preLoaderRoute: typeof ReportTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/import': {
@@ -265,11 +425,19 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  CartRoute: CartRoute,
+  CheckoutRoute: CheckoutRoute,
+  ContactRoute: ContactRoute,
+  PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   CompanySlugRoute: CompanySlugRoute,
+  ReportTypeRoute: ReportTypeRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,

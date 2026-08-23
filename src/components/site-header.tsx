@@ -1,0 +1,143 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { Search, ShoppingCart, ChevronDown, Menu, X } from "lucide-react";
+import { useCart } from "@/lib/cart";
+import { PRODUCTS } from "@/lib/products";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+export function SiteHeader() {
+  const navigate = useNavigate();
+  const { count } = useCart();
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!q.trim()) return;
+    navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
+    setOpen(false);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
+        <Link to="/" className="flex shrink-0 items-center gap-3">
+          <span className="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
+            CY
+          </span>
+          <span className="leading-tight">
+            <span className="block font-display text-[15px] font-semibold tracking-tight">Companies House</span>
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-copper">Cyprus</span>
+          </span>
+        </Link>
+
+        <nav className="ml-4 hidden items-center gap-1 text-sm lg:flex">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+              Products <ChevronDown className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-72">
+              <DropdownMenuLabel>Certificates &amp; reports</DropdownMenuLabel>
+              {PRODUCTS.map((product) => (
+                <DropdownMenuItem key={product.slug} asChild>
+                  <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
+                    <span className="font-medium">{product.name}</span>
+                    <span className="text-xs text-muted-foreground">{product.delivery}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Link to="/pricing" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+            Pricing
+          </Link>
+          <Link to="/about" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+            About
+          </Link>
+          <Link to="/contact" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+            Contact
+          </Link>
+        </nav>
+
+        <form onSubmit={submit} className="relative ml-auto hidden max-w-xs flex-1 md:block">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            type="search"
+            aria-label="Search Cyprus companies"
+            placeholder="Search companies…"
+            className="h-9 w-full rounded-full border border-input bg-muted/60 pl-9 pr-3 text-sm outline-none transition-colors focus:border-ring focus:bg-background"
+          />
+        </form>
+
+        <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <Link
+            to="/cart"
+            className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Cart"
+          >
+            <ShoppingCart className="size-5" />
+            {count > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-copper text-[10px] font-bold text-copper-foreground">
+                {count}
+              </span>
+            )}
+          </Link>
+          <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+            Sign in
+          </Link>
+          <Button asChild size="sm" className="hidden sm:inline-flex">
+            <Link to="/search" search={{ q: "", page: 1 }}>
+              Order a certificate
+            </Link>
+          </Button>
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            className="rounded-md p-2 text-muted-foreground hover:bg-muted lg:hidden"
+            aria-label="Menu"
+          >
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="border-t bg-background px-4 py-4 lg:hidden">
+          <form onSubmit={submit} className="relative mb-4">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(event) => setQ(event.target.value)}
+              type="search"
+              placeholder="Search companies…"
+              className="h-10 w-full rounded-full border border-input bg-muted/60 pl-9 pr-3 text-sm outline-none focus:border-ring focus:bg-background"
+            />
+          </form>
+          <div className="grid gap-1 text-sm">
+            <Link to="/pricing" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              Pricing
+            </Link>
+            <Link to="/about" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              About
+            </Link>
+            <Link to="/contact" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              Contact
+            </Link>
+            <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              Sign in
+            </Link>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}

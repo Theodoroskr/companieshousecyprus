@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { searchCompanies } from "@/lib/companies.functions";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 
@@ -42,62 +41,93 @@ function SearchPage() {
   const totalPages = Math.ceil(data.count / 50);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-3xl font-bold tracking-tight">Search companies</h1>
-      <p className="mt-2 text-muted-foreground">Find Cyprus companies by name or registration number.</p>
-
-      <form
-        className="mt-6 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const value = String(new FormData(e.currentTarget).get("q") ?? "");
-          setSearch(value, 1);
-        }}
-      >
-        <Input
-          key={q}
-          name="q"
-          type="search"
-          placeholder="Company name or HE number..."
-          defaultValue={q}
-          className="flex-1"
-        />
-        <Button type="submit">Search</Button>
-      </form>
-
-      <p className="mt-4 text-sm text-muted-foreground">{data.count.toLocaleString()} results</p>
-
-      <ul className="mt-6 divide-y rounded-lg border bg-card">
-        {data.rows.length === 0 && (
-          <li className="p-6 text-center text-muted-foreground">No companies found.</li>
-        )}
-        {data.rows.map((company) => (
-          <li key={company.slug} className="p-4 hover:bg-muted/50">
-            <Link to="/company/$slug" params={{ slug: company.slug }} className="block">
-              <p className="font-medium text-foreground">{company.name}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {company.official_no}
-                {company.status_en && ` • ${company.status_en}`}
-                {company.district_en && ` • ${company.district_en}`}
-              </p>
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </span>
-          <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
-            Next
-          </Button>
+    <div>
+      <section className="surface-deep grid-dots">
+        <div className="mx-auto max-w-7xl px-4 py-12">
+          <h1 className="text-3xl font-bold md:text-4xl">Search the Cyprus register</h1>
+          <p className="mt-3 max-w-2xl text-primary-foreground/75">
+            Free search across the full register — by company name or HE / registration number.
+          </p>
+          <form
+            className="mt-8 flex max-w-2xl flex-col gap-2 rounded-xl border border-white/15 bg-white/10 p-2 backdrop-blur sm:flex-row"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const value = String(new FormData(e.currentTarget).get("q") ?? "");
+              setSearch(value, 1);
+            }}
+          >
+            <input
+              key={q}
+              name="q"
+              type="search"
+              placeholder="Company name or HE number…"
+              defaultValue={q}
+              className="h-11 flex-1 rounded-lg bg-transparent px-3 text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
+            />
+            <Button type="submit" className="h-11 bg-copper px-6 text-copper-foreground hover:bg-copper/90">
+              Search
+            </Button>
+          </form>
         </div>
-      )}
+      </section>
+
+      <div className="mx-auto max-w-7xl px-4 py-10">
+        <p className="text-sm text-muted-foreground">
+          {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
+          {q ? ` for “${q}”` : ""}
+        </p>
+
+        <ul className="mt-5 divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
+          {data.rows.length === 0 && (
+            <li className="p-10 text-center text-muted-foreground">
+              No companies matched. Try a shorter name or the HE number.
+            </li>
+          )}
+          {data.rows.map((company) => (
+            <li key={company.slug} className="transition-colors hover:bg-muted/50">
+              <Link
+                to="/company/$slug"
+                params={{ slug: company.slug }}
+                className="flex flex-wrap items-center justify-between gap-3 p-4"
+              >
+                <span>
+                  <span className="block font-medium">{company.name}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    {company.official_no}
+                    {company.district_en && ` · ${company.district_en}`}
+                  </span>
+                </span>
+                {company.status_en && (
+                  <span
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                      company.status_group === "active"
+                        ? "border-olive/30 bg-olive/10 text-olive"
+                        : "border-border bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {company.status_en}
+                  </span>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-between">
+            <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
+              Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {page} of {totalPages.toLocaleString()}
+            </span>
+            <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
+              Next
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
