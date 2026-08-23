@@ -92,6 +92,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap",
+      },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "canonical", href: "/" },
     ],
@@ -121,44 +127,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      <CartProvider>
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <SiteFooter />
+        </div>
+      </CartProvider>
       <Toaster />
     </QueryClientProvider>
   );
 }
 
-function Header() {
-  return (
-    <header className="border-b bg-background">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link to="/" className="text-lg font-bold tracking-tight">
-          Companies House Cyprus
-        </Link>
-        <nav className="flex items-center gap-4 text-sm">
-          <Link to="/" className="text-muted-foreground hover:text-foreground">
-            Home
-          </Link>
-          <a href="/search" className="text-muted-foreground hover:text-foreground">
-            Search
-          </a>
-        </nav>
-      </div>
-    </header>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t bg-background py-6">
-      <div className="mx-auto max-w-5xl px-4 text-sm text-muted-foreground">
-        <p>Companies House Cyprus — unofficial directory of Cyprus registered companies.</p>
-      </div>
-    </footer>
-  );
-}
