@@ -126,6 +126,12 @@ function CartPage() {
                 <dt className="text-muted-foreground">Subtotal</dt>
                 <dd>{formatPrice(subtotal)}</dd>
               </div>
+              {serviceFee > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Service fee ({formatPrice(CART_SERVICE_FEE)} per certificate)</dt>
+                  <dd>{formatPrice(serviceFee)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">VAT ({Math.round(CART_VAT_RATE * 100)}%)</dt>
                 <dd>{formatPrice(vat)}</dd>
