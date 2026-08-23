@@ -205,54 +205,34 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Browse by district + A-Z */}
+      {/* Browse A–Z */}
       <section className="mx-auto max-w-7xl px-4 py-20">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr]">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Browse by district</p>
-            <h2 className="mt-3 text-3xl font-bold text-foreground">Where the company is registered</h2>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {data.districts.map((district) => (
-                <Link
-                  key={district.name}
-                  to="/companies/city/$district"
-                  params={{ district: district.name }}
-                  className="flex items-center justify-between rounded-lg border bg-card px-4 py-3.5 transition-colors hover:border-accent"
-                >
-                  <span className="font-medium capitalize text-card-foreground">{district.name}</span>
-                  <span className="text-sm text-muted-foreground">{district.count.toLocaleString()}</span>
-                </Link>
-              ))}
-            </div>
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Browse A–Z</p>
+          <h2 className="mt-3 text-3xl font-bold text-foreground">Alphabetical index of the register</h2>
+          <div className="mt-8 grid grid-cols-6 gap-2 sm:grid-cols-9">
+            {LETTERS.map((letter) => (
+              <Link
+                key={letter}
+                to="/companies/a-z/$letter"
+                params={{ letter: letter.toLowerCase() }}
+                className="flex aspect-square items-center justify-center rounded-lg border bg-card text-sm font-medium text-card-foreground transition-colors hover:border-accent hover:text-accent"
+              >
+                {letter}
+              </Link>
+            ))}
           </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Browse A–Z</p>
-            <h2 className="mt-3 text-3xl font-bold text-foreground">Alphabetical index of the register</h2>
-            <div className="mt-8 grid grid-cols-6 gap-2 sm:grid-cols-9">
-              {LETTERS.map((letter) => (
-                <Link
-                  key={letter}
-                  to="/companies/a-z/$letter"
-                  params={{ letter: letter.toLowerCase() }}
-                  className="flex aspect-square items-center justify-center rounded-lg border bg-card text-sm font-medium text-card-foreground transition-colors hover:border-accent hover:text-accent"
-                >
-                  {letter}
-                </Link>
-              ))}
-            </div>
-            <ul className="mt-8 space-y-2 text-sm text-muted-foreground">
-              {[
-                "Free to search, no account required",
-                "Officials and registered office on every profile",
-                "Certificates orderable directly from a company page",
-              ].map((item) => (
-                <li key={item} className="flex gap-2">
-                  <Check className="mt-0.5 size-4 shrink-0 text-olive" /> {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul className="mt-8 space-y-2 text-sm text-muted-foreground">
+            {[
+              "Free to search, no account required",
+              "Officials and registered office on every profile",
+              "Certificates orderable directly from a company page",
+            ].map((item) => (
+              <li key={item} className="flex gap-2">
+                <Check className="mt-0.5 size-4 shrink-0 text-olive" /> {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
