@@ -212,7 +212,36 @@ export const PRODUCTS: Product[] = [
     ],
     typicalUse: "Government tenders, RFP responses, banking facility applications.",
   },
+  {
+    slug: "due-diligence-report",
+    name: "Due Diligence Report",
+    eyebrow: "Bespoke investigation",
+    headline: "A researcher-led investigation for complex cases",
+    tagline: "Independently assessed, tailored investigations beyond standard registry reports.",
+    price: 750,
+    delivery: "Scoped after assessment (typically 5–10 business days)",
+    category: "report",
+    description: [
+      "Due Diligence Reports are assessed independently and are recommended for complex cases that require specialised investigations, procedures or data that is not included in other reports.",
+      "Prior to a report, our team assesses your information requirements in order to establish what actions are required as part of your due diligence investigation. A member of our research team will be assigned to perform your Due Diligence investigation and will oversee all required activities and then compile the results into one comprehensive report. The same researcher will then review all investigation results to provide you with a concise analysis of the company and our findings.",
+    ],
+    includes: [
+      {
+        title: "Relationship check",
+        detail:
+          "Screens a Cypriot company for both local and international relationships with other entities. Shareholders and directors can also be screened to retrieve other company interests in Cyprus and abroad.",
+      },
+      { title: "Historical checks", detail: "Recorded changes, prior names, officers and filings over time." },
+      { title: "Global KYC screenings", detail: "Sanctions, PEP and watchlist screening across global sources." },
+      { title: "Negative & local language media checks", detail: "Adverse media review including Greek-language sources." },
+      { title: "Site check", detail: "Physical verification of the operating or registered premises." },
+      { title: "Reputation check", detail: "Market, counterparty and public standing enquiries." },
+      { title: "Analyst review", detail: "A concise written analysis of the company and our findings by the assigned researcher." },
+    ],
+    typicalUse: "High-risk onboarding, litigation support, M&A, complex AML escalations.",
+  },
 ];
+
 
 export const PRODUCTS_BY_SLUG: Record<string, Product> = Object.fromEntries(
   PRODUCTS.map((product) => [product.slug, product]),
