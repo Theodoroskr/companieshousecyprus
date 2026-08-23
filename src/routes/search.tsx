@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { searchCompanies } from "@/lib/companies.functions";
-import { Button } from "@/components/ui/button";
+import { displayOfficialNo } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 
 const searchQueryOptions = (q: string, page: number) =>
@@ -93,7 +93,7 @@ function SearchPage() {
                 <span>
                   <span className="block font-medium">{company.name}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">
-                    {company.official_no}
+                    {displayOfficialNo(company)}
                     {company.district_en && ` · ${company.district_en}`}
                   </span>
                 </span>
