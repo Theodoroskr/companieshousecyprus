@@ -10,10 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -21,6 +24,15 @@ import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -43,6 +55,12 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminImportRoute =
+  AuthenticatedAdminImportRouteImport.update({
+    id: '/admin/import',
+    path: '/admin/import',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
   id: '/companies/a-z/$letter',
   path: '/companies/a-z/$letter',
@@ -62,20 +80,24 @@ const SitemapsCompaniesNDotxmlRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -83,10 +105,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -95,30 +120,37 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
     | '/company/$slug'
+    | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
     | '/company/$slug'
+    | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
     | '/company/$slug'
+    | '/_authenticated/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -126,6 +158,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -142,6 +176,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -172,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/import': {
+      id: '/_authenticated/admin/import'
+      path: '/admin/import'
+      fullPath: '/admin/import'
+      preLoaderRoute: typeof AuthenticatedAdminImportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/companies/a-z/$letter': {
       id: '/companies/a-z/$letter'
       path: '/companies/a-z/$letter'
@@ -196,8 +251,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
