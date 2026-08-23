@@ -59,14 +59,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
       return sum + (product ? product.price * item.quantity : 0);
     }, 0);
-    const vat = Math.round(subtotal * VAT_RATE * 100) / 100;
+    const serviceFee = items.reduce((sum, item) => {
+      const product = PRODUCTS_BY_SLUG[item.productSlug];
+      return sum + (product && product.category === "certificate" ? CERTIFICATE_SERVICE_FEE * item.quantity : 0);
+    }, 0);
+    const vat = Math.round((subtotal + serviceFee) * VAT_RATE * 100) / 100;
 
     return {
       items,
       count: hydrated ? items.reduce((sum, item) => sum + item.quantity, 0) : 0,
       subtotal,
+      serviceFee,
       vat,
-      total: subtotal + vat,
+      total: subtotal + serviceFee + vat,
       addItem: (item) =>
         setItems((current) => {
           const index = current.findIndex(
@@ -97,5 +102,3 @@ export function useCart(): CartContextValue {
   if (!context) throw new Error("useCart must be used inside CartProvider");
   return context;
 }
-
-export const CART_VAT_RATE = VAT_RATE;
