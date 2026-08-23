@@ -19,6 +19,10 @@ const ORDERABLE = [
   "cyprus-company-profile",
   "certificate-of-directors-and-secretary",
   "certificate-of-shareholders",
+  "certificate-of-members",
+  "certificate-of-capital",
+  "certificate-of-no-charges",
+  "certificate-of-strike-off",
   "kyb-due-diligence-pack",
   "due-diligence-report",
 ];
