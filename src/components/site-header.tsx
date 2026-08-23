@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -44,9 +45,19 @@ export function SiteHeader() {
             <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
               Products <ChevronDown className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-72">
-              <DropdownMenuLabel>Certificates &amp; reports</DropdownMenuLabel>
-              {PRODUCTS.map((product) => (
+            <DropdownMenuContent align="start" className="w-80">
+              <DropdownMenuLabel>Certificates</DropdownMenuLabel>
+              {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
+                <DropdownMenuItem key={product.slug} asChild>
+                  <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
+                    <span className="font-medium">{product.name}</span>
+                    <span className="text-xs text-muted-foreground">{product.delivery}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Reports &amp; packs</DropdownMenuLabel>
+              {PRODUCTS.filter((p) => p.category === "report" || p.category === "pack").map((product) => (
                 <DropdownMenuItem key={product.slug} asChild>
                   <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
                     <span className="font-medium">{product.name}</span>
@@ -124,6 +135,31 @@ export function SiteHeader() {
             />
           </form>
           <div className="grid gap-1 text-sm">
+            <p className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Products</p>
+            {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
+              <Link
+                key={product.slug}
+                to="/report/$type"
+                params={{ type: product.slug }}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2 pl-6 hover:bg-muted"
+              >
+                {product.name}
+              </Link>
+            ))}
+            <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reports &amp; packs</p>
+            {PRODUCTS.filter((p) => p.category === "report" || p.category === "pack").map((product) => (
+              <Link
+                key={product.slug}
+                to="/report/$type"
+                params={{ type: product.slug }}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2 pl-6 hover:bg-muted"
+              >
+                {product.name}
+              </Link>
+            ))}
+            <div className="my-1 border-t" />
             <Link to="/pricing" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
               Pricing
             </Link>
