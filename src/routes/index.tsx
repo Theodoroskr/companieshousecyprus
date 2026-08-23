@@ -225,7 +225,7 @@ function HomePage() {
           <ul className="mt-8 space-y-2 text-sm text-muted-foreground">
             {[
               "Free to search, no account required",
-              "Officials and registered office on every profile",
+              "Officials & owners and registered office on every profile",
               "Certificates orderable directly from a company page",
             ].map((item) => (
               <li key={item} className="flex gap-2">
