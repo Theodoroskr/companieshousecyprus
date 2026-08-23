@@ -82,3 +82,21 @@ export function companyAge(value?: string | null): { years: number; months: numb
       : `${years} year${years === 1 ? "" : "s"}${rem ? ` ${rem} mo` : ""}`;
   return { years, months: rem, label };
 }
+
+/** Return the user-facing registration number, normalising partnership prefix to P. */
+export function displayOfficialNo(company: {
+  type_code?: string | null;
+  type_en?: string | null;
+  official_no?: string | null;
+  reg_number?: number | null;
+}): string {
+  const no = company.official_no?.trim() ?? "";
+  const digits = String(company.reg_number ?? "").replace(/\D/g, "");
+  const isPartnership = company.type_code === "P" || company.type_en?.toLowerCase() === "partnership";
+  if (isPartnership && digits) {
+    return no.toUpperCase().startsWith("S") || no.toUpperCase().startsWith("P")
+      ? `P${digits}`
+      : no || `P${digits}`;
+  }
+  return no || digits || "—";
+}
