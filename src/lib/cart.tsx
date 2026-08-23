@@ -26,6 +26,8 @@ const STORAGE_KEY = "chc.cart.v1";
 const VAT_RATE = 0.19;
 const CERTIFICATE_SERVICE_FEE = 50;
 
+const CartContext = createContext<CartContextValue | null>(null);
+
 export const CART_VAT_RATE = VAT_RATE;
 export const CART_SERVICE_FEE = CERTIFICATE_SERVICE_FEE;
 
