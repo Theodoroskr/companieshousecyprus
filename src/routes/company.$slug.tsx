@@ -219,8 +219,6 @@ function CompanyPage() {
             </div>
           </div>
         </div>
-
-        </div>
       </section>
 
 
