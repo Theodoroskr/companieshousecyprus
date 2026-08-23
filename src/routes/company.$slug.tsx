@@ -481,7 +481,36 @@ function CompanyPage() {
                           </div>
                           <p className="mt-0.5 text-xs text-muted-foreground">{product.delivery}</p>
                         </div>
-                        <span className="shrink-0 text-sm font-semibold">{formatPrice(product.price)}</span>
+                        <div className="shrink-0 text-right">
+                          {(() => {
+                            const breakdown = priceBreakdown(product);
+                            return (
+                              <>
+                                <span className="block text-sm font-semibold">{formatPrice(breakdown.total)}</span>
+                                <span className="block text-[10px] text-muted-foreground">incl. VAT</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                        <Receipt className="size-3" />
+                        {(() => {
+                          const breakdown = priceBreakdown(product);
+                          return (
+                            <>
+                              <span>{formatPrice(breakdown.documentPrice)} doc</span>
+                              {breakdown.serviceFee > 0 && (
+                                <>
+                                  <span className="text-border">|</span>
+                                  <span>{formatPrice(breakdown.serviceFee)} fee</span>
+                                </>
+                              )}
+                              <span className="text-border">|</span>
+                              <span>{formatPrice(breakdown.vat)} VAT</span>
+                            </>
+                          );
+                        })()}
                       </div>
                       <AddToCartButton
                         productSlug={product.slug}
