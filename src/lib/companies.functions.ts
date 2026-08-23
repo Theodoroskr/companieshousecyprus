@@ -40,7 +40,7 @@ export type Official = Database["public"]["Tables"]["officials"]["Row"];
 
 export type CompanyListItem = Pick<
   Company,
-  "slug" | "name" | "official_no" | "status_en" | "status_group" | "district_en" | "locality"
+  "slug" | "type_code" | "name" | "official_no" | "reg_number" | "status_en" | "status_group" | "district_en" | "locality"
 >;
 
 export const getCompanyBySlug = createServerFn({ method: "GET" })
