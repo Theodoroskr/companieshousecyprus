@@ -1,12 +1,76 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, ShieldCheck, Users } from "lucide-react";
-import { getCompanyBySlug } from "@/lib/companies.functions";
+import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, ShieldCheck, Users } from "lucide-react";
+import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+function RelatedCompanies({ slug }: { slug: string }) {
+  const { data } = useQuery({
+    queryKey: ["related", slug],
+    queryFn: () => getRelatedCompanies({ data: { slug } }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const byAddress = data?.byAddress ?? [];
+  const byOfficial = data?.byOfficial ?? [];
+  if (byAddress.length === 0 && byOfficial.length === 0) return null;
+
+  return (
+    <section className="rounded-xl border bg-card p-6 shadow-panel">
+      <div className="flex items-center gap-2">
+        <Network className="size-5 text-copper" />
+        <h2 className="font-display text-lg font-semibold">Related companies</h2>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Entities connected to this company through a shared registered office address or shared officials.
+      </p>
+
+      {byAddress.length > 0 && (
+        <div className="mt-5">
+          <h3 className="text-sm font-semibold">At the same registered address</h3>
+          <ul className="mt-2 divide-y">
+            {byAddress.map((row) => (
+              <li key={row.slug} className="flex items-center justify-between gap-4 py-2.5">
+                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
+                  {row.name}
+                </Link>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {displayOfficialNo(row)} · {row.status_en ?? "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {data && data.addressCount > byAddress.length && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {data.addressCount} entities in total share this address.
+            </p>
+          )}
+        </div>
+      )}
+
+      {byOfficial.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold">Sharing an official or owner</h3>
+          <ul className="mt-2 divide-y">
+            {byOfficial.map((row) => (
+              <li key={row.slug} className="flex items-center justify-between gap-4 py-2.5">
+                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
+                  {row.name}
+                </Link>
+                <span className="shrink-0 text-xs text-muted-foreground">via {row.via}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
 
 
 
@@ -365,6 +429,8 @@ function CompanyPage() {
               </div>
             )}
           </section>
+
+          <RelatedCompanies slug={company.slug} />
 
 
           <p className="text-xs text-muted-foreground">
