@@ -4,6 +4,7 @@ import { Search, ShoppingCart, ChevronDown, Menu, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+import logoAsset from "@/assets/logo.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
