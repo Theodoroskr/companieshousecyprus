@@ -44,7 +44,7 @@ export type CompanyListItem = Pick<
 >;
 
 export const getCompanyBySlug = createServerFn({ method: "GET" })
-  .inputValidator((data: { slug: string }) => data)
+  .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const { data: company, error } = await supabase
@@ -66,7 +66,7 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
   });
 
 export const searchCompanies = createServerFn({ method: "GET" })
-  .inputValidator((data: { q: string; page: number }) => data)
+  .validator((data: { q: string; page: number }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const q = data.q.trim().slice(0, 100);
@@ -95,7 +95,7 @@ export const searchCompanies = createServerFn({ method: "GET" })
   });
 
 export const listCompaniesByLetter = createServerFn({ method: "GET" })
-  .inputValidator((data: { letter: string; page: number }) => data)
+  .validator((data: { letter: string; page: number }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const letter = data.letter.toUpperCase().replace(/[^A-Z]/g, "");
@@ -111,7 +111,7 @@ export const listCompaniesByLetter = createServerFn({ method: "GET" })
   });
 
 export const listCompaniesByDistrict = createServerFn({ method: "GET" })
-  .inputValidator((data: { district: string; page: number }) => data)
+  .validator((data: { district: string; page: number }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const district = data.district.trim();
@@ -152,7 +152,7 @@ export const getCompanyCount = createServerFn({ method: "GET" }).handler(async (
 });
 
 export const getSitemapChunk = createServerFn({ method: "GET" })
-  .inputValidator((data: { n: number }) => data)
+  .validator((data: { n: number }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const n = Math.max(0, data.n);
