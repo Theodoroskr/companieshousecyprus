@@ -112,7 +112,7 @@ function AlphabetNav() {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
   const { letter } = Route.useParams();
   return (
-    <div className="mt-4 flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       {letters.map((l) => (
         <Link
           key={l}
