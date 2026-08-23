@@ -10,33 +10,129 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
+import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
+import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanySlugRoute = CompanySlugRouteImport.update({
+  id: '/company/$slug',
+  path: '/company/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
+  id: '/companies/a-z/$letter',
+  path: '/companies/a-z/$letter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompaniesCityDistrictRoute = CompaniesCityDistrictRouteImport.update({
+  id: '/companies/city/$district',
+  path: '/companies/city/$district',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapsCompaniesNDotxmlRoute =
+  SitemapsCompaniesNDotxmlRouteImport.update({
+    id: '/sitemaps/companies/$n.xml',
+    path: '/sitemaps/companies/$n.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/company/$slug': typeof CompanySlugRoute
+  '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
+  '/companies/city/$district': typeof CompaniesCityDistrictRoute
+  '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/company/$slug': typeof CompanySlugRoute
+  '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
+  '/companies/city/$district': typeof CompaniesCityDistrictRoute
+  '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/company/$slug': typeof CompanySlugRoute
+  '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
+  '/companies/city/$district': typeof CompaniesCityDistrictRoute
+  '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/robots.txt'
+    | '/search'
+    | '/sitemap.xml'
+    | '/company/$slug'
+    | '/companies/a-z/$letter'
+    | '/companies/city/$district'
+    | '/sitemaps/companies/$n.xml'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/robots.txt'
+    | '/search'
+    | '/sitemap.xml'
+    | '/company/$slug'
+    | '/companies/a-z/$letter'
+    | '/companies/city/$district'
+    | '/sitemaps/companies/$n.xml'
+  id:
+    | '__root__'
+    | '/'
+    | '/robots.txt'
+    | '/search'
+    | '/sitemap.xml'
+    | '/company/$slug'
+    | '/companies/a-z/$letter'
+    | '/companies/city/$district'
+    | '/sitemaps/companies/$n.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SearchRoute: typeof SearchRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  CompanySlugRoute: typeof CompanySlugRoute
+  CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
+  CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
+  SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +144,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/company/$slug': {
+      id: '/company/$slug'
+      path: '/company/$slug'
+      fullPath: '/company/$slug'
+      preLoaderRoute: typeof CompanySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies/a-z/$letter': {
+      id: '/companies/a-z/$letter'
+      path: '/companies/a-z/$letter'
+      fullPath: '/companies/a-z/$letter'
+      preLoaderRoute: typeof CompaniesAZLetterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies/city/$district': {
+      id: '/companies/city/$district'
+      path: '/companies/city/$district'
+      fullPath: '/companies/city/$district'
+      preLoaderRoute: typeof CompaniesCityDistrictRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemaps/companies/$n.xml': {
+      id: '/sitemaps/companies/$n.xml'
+      path: '/sitemaps/companies/$n.xml'
+      fullPath: '/sitemaps/companies/$n.xml'
+      preLoaderRoute: typeof SitemapsCompaniesNDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SearchRoute: SearchRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  CompanySlugRoute: CompanySlugRoute,
+  CompaniesAZLetterRoute: CompaniesAZLetterRoute,
+  CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
+  SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

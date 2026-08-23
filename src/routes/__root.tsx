@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -77,14 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Companies House Cyprus | Cyprus Registrar Directory" },
+      { name: "description", content: "Search and browse Cyprus companies from the official Registrar of Companies. Company profiles, officials, addresses, and statuses." },
+      { name: "author", content: "Companies House Cyprus" },
+      { property: "og:title", content: "Companies House Cyprus | Cyprus Registrar Directory" },
+      { property: "og:description", content: "Search and browse Cyprus companies from the official Registrar of Companies." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@companieshousecy" },
     ],
     links: [
       {
@@ -92,6 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "canonical", href: "/" },
     ],
   }),
   shellComponent: RootShell,
@@ -119,8 +121,44 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+      <Toaster />
     </QueryClientProvider>
+  );
+}
+
+function Header() {
+  return (
+    <header className="border-b bg-background">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+        <Link to="/" className="text-lg font-bold tracking-tight">
+          Companies House Cyprus
+        </Link>
+        <nav className="flex items-center gap-4 text-sm">
+          <Link to="/" className="text-muted-foreground hover:text-foreground">
+            Home
+          </Link>
+          <a href="/search" className="text-muted-foreground hover:text-foreground">
+            Search
+          </a>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t bg-background py-6">
+      <div className="mx-auto max-w-5xl px-4 text-sm text-muted-foreground">
+        <p>Companies House Cyprus — unofficial directory of Cyprus registered companies.</p>
+      </div>
+    </footer>
   );
 }
