@@ -5,6 +5,8 @@ import { getCompanyBySlug } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { formatDate, latinAddress } from "@/lib/format";
+
 
 const companyQueryOptions = (slug: string) =>
   queryOptions({
