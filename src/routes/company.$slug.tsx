@@ -176,7 +176,7 @@ function CompanyPage() {
   const addressEl = company.address_full;
   const addressEn = latinAddress(company.address_full);
 
-  const facts: { label: string; value: string }[] = [
+  const facts: { label: string; value: string; description?: string }[] = [
     { label: "Registration number", value: displayOfficialNo(company) },
     { label: "Company type", value: company.type_en ?? "—" },
     { label: "Sub-type", value: company.subtype_en ?? "—" },
@@ -184,8 +184,14 @@ function CompanyPage() {
     { label: "Status date", value: statusDate ?? "—" },
     { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
-    { label: "Officials & owners on record", value: String(company.officials_count ?? officials.length) },
+    {
+      label: "Officials & owners on record",
+      value: String(company.officials_count ?? officials.length),
+      description:
+        "Total number of directors, secretaries and owners currently recorded for this entity in the Registrar data.",
+    },
   ];
+
 
 
 
@@ -304,14 +310,36 @@ function CompanyPage() {
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
               <Building2 className="size-5 text-copper" /> Registry record
             </h2>
-            <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-              {facts.map((fact) => (
-                <div key={fact.label} className="border-b pb-3">
-                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">{fact.label}</dt>
-                  <dd className="mt-1 font-medium">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
+            <TooltipProvider delayDuration={200}>
+              <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                {facts.map((fact) => (
+                  <div key={fact.label} className="border-b pb-3">
+                    <dt className="flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground">
+                      <span>{fact.label}</span>
+                      {fact.description && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label={`${fact.label} help`}
+                              className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground transition-colors hover:text-copper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+                            >
+                              <Info className="size-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[16rem]">
+                            {fact.description}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </dt>
+                    <dd className="mt-1 font-medium" aria-label={`${fact.label}: ${fact.value}`}>
+                      {fact.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </TooltipProvider>
           </section>
 
           <section className="rounded-xl border bg-card p-6 shadow-panel">
