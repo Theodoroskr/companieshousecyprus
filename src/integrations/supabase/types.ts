@@ -14,13 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          a4a_code: string | null
+          address_full: string | null
+          building: string | null
+          district_el: string | null
+          district_en: string | null
+          is_foreign_address: boolean | null
+          locality: string | null
+          name: string
+          official_no: string | null
+          officials_count: number | null
+          postcode: string | null
+          reg_number: number
+          registration_date: string | null
+          report_years: number[] | null
+          slug: string
+          status_date: string | null
+          status_el: string | null
+          status_en: string | null
+          status_group: string
+          street: string | null
+          subtype_el: string | null
+          subtype_en: string | null
+          type_code: string
+          type_el: string | null
+          type_en: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          a4a_code?: string | null
+          address_full?: string | null
+          building?: string | null
+          district_el?: string | null
+          district_en?: string | null
+          is_foreign_address?: boolean | null
+          locality?: string | null
+          name: string
+          official_no?: string | null
+          officials_count?: number | null
+          postcode?: string | null
+          reg_number: number
+          registration_date?: string | null
+          report_years?: number[] | null
+          slug: string
+          status_date?: string | null
+          status_el?: string | null
+          status_en?: string | null
+          status_group: string
+          street?: string | null
+          subtype_el?: string | null
+          subtype_en?: string | null
+          type_code: string
+          type_el?: string | null
+          type_en?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          a4a_code?: string | null
+          address_full?: string | null
+          building?: string | null
+          district_el?: string | null
+          district_en?: string | null
+          is_foreign_address?: boolean | null
+          locality?: string | null
+          name?: string
+          official_no?: string | null
+          officials_count?: number | null
+          postcode?: string | null
+          reg_number?: number
+          registration_date?: string | null
+          report_years?: number[] | null
+          slug?: string
+          status_date?: string | null
+          status_el?: string | null
+          status_en?: string | null
+          status_group?: string
+          street?: string | null
+          subtype_el?: string | null
+          subtype_en?: string | null
+          type_code?: string
+          type_el?: string | null
+          type_en?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      officials: {
+        Row: {
+          id: number
+          person_name: string
+          position_el: string | null
+          position_en: string | null
+          slug: string
+        }
+        Insert: {
+          id?: number
+          person_name: string
+          position_el?: string | null
+          position_en?: string | null
+          slug: string
+        }
+        Update: {
+          id?: number
+          person_name?: string
+          position_el?: string | null
+          position_en?: string | null
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officials_slug_fkey"
+            columns: ["slug"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never
