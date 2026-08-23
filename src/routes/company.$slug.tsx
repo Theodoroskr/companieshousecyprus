@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, MapPin, Users } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, MapPin, ShieldCheck, Users } from "lucide-react";
 import { getCompanyBySlug } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
