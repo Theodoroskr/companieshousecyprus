@@ -366,6 +366,8 @@ function CompanyPage() {
             )}
           </section>
 
+          <RelatedCompanies slug={company.slug} />
+
 
           <p className="text-xs text-muted-foreground">
             Last updated: {company.updated_at ? new Date(company.updated_at).toLocaleDateString("en-GB") : "—"} · Source:
