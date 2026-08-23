@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, MapPin, ShieldCheck, Users } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, Lock, MapPin, ShieldCheck, Users } from "lucide-react";
 import { getCompanyBySlug } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
-import { companyAge, displayOfficialNo, formatDate, latinAddress } from "@/lib/format";
+import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 
 
 const companyQueryOptions = (slug: string) =>
@@ -95,6 +95,8 @@ function CompanyPage() {
     knowsAbout: company.type_en ?? undefined,
   };
 
+  const businessName = isBusinessName(company);
+  const profileProduct = PRODUCTS.find((item) => item.slug === "cyprus-company-profile");
   const registrationDate = formatDate(company.registration_date);
   const statusDate = formatDate(company.status_date);
   const age = companyAge(company.registration_date);
@@ -273,9 +275,62 @@ function CompanyPage() {
 
           <section className="rounded-xl border bg-card p-6 shadow-panel">
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-              <Users className="size-5 text-copper" /> Directors &amp; secretary
+              {businessName ? <Lock className="size-5 text-copper" /> : <Users className="size-5 text-copper" />}
+              {businessName ? "Owner" : "Directors & secretary"}
             </h2>
-            {officials.length > 0 ? (
+
+            {businessName ? (
+              <>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Business names are registered to an owner (individual or company). Ownership details are released
+                  through the Cyprus Company Profile (structure) report.
+                </p>
+                <ul className="mt-4 divide-y">
+                  {(officials.length > 0 ? officials : [{ person_name: null, position_en: "Owner", position_el: null }]).map(
+                    (official, index) => (
+                      <li key={index} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
+                        <span className="select-none font-medium tracking-wide text-muted-foreground/80 blur-[0.6px]">
+                          {maskName(official.person_name)}
+                        </span>
+                        <span className="text-xs font-semibold uppercase tracking-widest text-copper">
+                          {official.position_en ?? official.position_el ?? "Owner"}
+                        </span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+
+                <div className="mt-5 rounded-lg border border-copper/30 bg-copper/5 p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-display font-semibold">Unlock the owner</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {profileProduct?.name ?? "Cyprus Company Profile"} (structure) reveals the registered owner,
+                        ownership structure and filing history for {company.name}. Pay online and download the report
+                        from your order once payment is confirmed.
+                      </p>
+                    </div>
+                    {profileProduct && (
+                      <span className="shrink-0 font-display text-xl font-bold text-copper">
+                        {formatPrice(profileProduct.price)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <AddToCartButton
+                      productSlug="cyprus-company-profile"
+                      companySlug={company.slug}
+                      companyName={company.name}
+                      companyNumber={displayOfficialNo(company)}
+                      label="Add structure report to basket"
+                    />
+                    <Button asChild variant="outline">
+                      <Link to="/cart">Go to basket &amp; pay</Link>
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : officials.length > 0 ? (
               <ul className="mt-4 divide-y">
                 {officials.map((official, index) => (
                   <li key={index} className="flex items-center justify-between gap-4 py-3">
@@ -302,6 +357,7 @@ function CompanyPage() {
               </div>
             )}
           </section>
+
 
           <p className="text-xs text-muted-foreground">
             Last updated: {company.updated_at ? new Date(company.updated_at).toLocaleDateString("en-GB") : "—"} · Source:
