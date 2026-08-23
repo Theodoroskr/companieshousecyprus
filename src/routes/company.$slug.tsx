@@ -119,8 +119,9 @@ function CompanyPage() {
     { label: "Status date", value: statusDate ?? "—" },
     { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
-    { label: "Officials on record", value: String(company.officials_count ?? officials.length) },
+    { label: "Officials & owners on record", value: String(company.officials_count ?? officials.length) },
   ];
+
 
 
   return (
