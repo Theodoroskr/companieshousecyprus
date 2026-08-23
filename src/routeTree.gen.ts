@@ -17,6 +17,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
@@ -61,6 +62,11 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportTypeRoute = ReportTypeRouteImport.update({
+  id: '/report/$type',
+  path: '/report/$type',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminImportRoute =
   AuthenticatedAdminImportRouteImport.update({
     id: '/admin/import',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/report/$type': typeof ReportTypeRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/report/$type': typeof ReportTypeRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/report/$type': typeof ReportTypeRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/company/$slug'
+    | '/report/$type'
     | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/company/$slug'
+    | '/report/$type'
     | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/company/$slug'
+    | '/report/$type'
     | '/_authenticated/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -177,6 +189,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  ReportTypeRoute: typeof ReportTypeRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/report/$type': {
+      id: '/report/$type'
+      path: '/report/$type'
+      fullPath: '/report/$type'
+      preLoaderRoute: typeof ReportTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/import': {
       id: '/_authenticated/admin/import'
       path: '/admin/import'
@@ -291,6 +311,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CompanySlugRoute: CompanySlugRoute,
+  ReportTypeRoute: ReportTypeRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,
