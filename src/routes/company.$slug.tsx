@@ -185,10 +185,9 @@ function CompanyPage() {
     { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
     {
-      label: "Officials & owners on record",
+      label: OFFICIALS_ON_RECORD_LABEL,
       value: String(company.officials_count ?? officials.length),
-      description:
-        "Total number of directors, secretaries and owners currently recorded for this entity in the Registrar data.",
+      description: OFFICIALS_ON_RECORD_DESCRIPTION,
     },
   ];
 
