@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Receipt, ShoppingCart, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
-import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
+import { priceBreakdown, VAT_RATE } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Your cart — Companies House Cyprus";
