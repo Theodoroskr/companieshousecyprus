@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { searchCompanies } from "@/lib/companies.functions";
 import { displayOfficialNo } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 
 const searchQueryOptions = (q: string, page: number) =>
