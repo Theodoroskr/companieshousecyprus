@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS } from "@/lib/products";
+import logoAsset from "@/assets/logo.png.asset.json";
+
 
 const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
 const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
@@ -9,11 +11,14 @@ export function SiteFooter() {
     <footer className="mt-24 border-t bg-sand">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
-              CY
-            </span>
-            <span className="font-display text-sm font-semibold">Companies House Cyprus</span>
+          <div className="flex items-center">
+            <img
+              src={logoAsset.url}
+              alt="Cyprus Companies House"
+              className="h-8 w-auto"
+              width={96}
+              height={32}
+            />
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             Open access to the Cyprus register of companies, with certified certificates and company intelligence
