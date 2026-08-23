@@ -1,7 +1,8 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, Check, Clock, FileText, Search, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Clock, FileText, Receipt, Search, ShieldCheck } from "lucide-react";
 import { PRODUCTS, PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
+import { priceBreakdown, CERTIFICATE_SERVICE_FEE, VAT_RATE } from "@/lib/pricing";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 
