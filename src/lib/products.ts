@@ -18,7 +18,7 @@ export type Product = {
 export const CURRENCY = "EUR";
 
 export function formatPrice(amount: number): string {
-  return new Intl.NumberFormat("en-CY", { style: "currency", currency: CURRENCY, minimumFractionDigits: 0 }).format(
+  return new Intl.NumberFormat("en-CY", { style: "currency", currency: CURRENCY, minimumFractionDigits: 2 }).format(
     amount,
   );
 }
