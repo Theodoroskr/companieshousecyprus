@@ -69,7 +69,7 @@ function CompanyPage() {
       <div className="mb-6 text-sm text-muted-foreground">
         <Link to="/" className="hover:text-foreground">Home</Link>
         {" / "}
-        <Link to="/search" className="hover:text-foreground">Search</Link>
+        <a href="/search" className="hover:text-foreground">Search</a>
         {" / "}
         <span className="text-foreground">{company.name}</span>
       </div>
@@ -88,10 +88,10 @@ function CompanyPage() {
               <dt className="text-muted-foreground">Status date</dt>
               <dd className="font-medium">{company.status_date ?? "—"}</dd>
             </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Type</dt>
-              <dd className="font-medium">{company.type_en ?? company.type_code}</dd>
-            </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Type</dt>
+                <dd className="font-medium">{company.type_en ?? "—"}</dd>
+              </div>
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Subtype</dt>
               <dd className="font-medium">{company.subtype_en ?? "—"}</dd>
