@@ -5,6 +5,8 @@ import { getCompanyBySlug } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { formatDate, latinAddress } from "@/lib/format";
+
 
 const companyQueryOptions = (slug: string) =>
   queryOptions({
@@ -93,16 +95,22 @@ function CompanyPage() {
     knowsAbout: company.type_en ?? undefined,
   };
 
+  const registrationDate = formatDate(company.registration_date);
+  const statusDate = formatDate(company.status_date);
+  const addressEl = company.address_full;
+  const addressEn = latinAddress(company.address_full);
+
   const facts: { label: string; value: string }[] = [
     { label: "Registration number", value: company.official_no ?? String(company.reg_number) },
     { label: "Company type", value: company.type_en ?? "—" },
     { label: "Sub-type", value: company.subtype_en ?? "—" },
     { label: "Status", value: company.status_en ?? "—" },
-    { label: "Status date", value: company.status_date ?? "—" },
-    { label: "Registration date", value: company.registration_date ?? "—" },
+    { label: "Status date", value: statusDate ?? "—" },
+    { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
     { label: "Officials on record", value: String(company.officials_count ?? officials.length) },
   ];
+
 
   return (
     <div>
@@ -138,9 +146,10 @@ function CompanyPage() {
                   {company.status_en ?? "Unknown status"}
                 </span>
                 <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 text-copper" />{company.official_no}</span>
-                {company.registration_date && (
-                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {company.registration_date}</span>
+                {registrationDate && (
+                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {registrationDate}</span>
                 )}
+
                 {company.district_en && (
                   <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-copper" />{company.district_en}</span>
                 )}
@@ -173,15 +182,32 @@ function CompanyPage() {
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
               <MapPin className="size-5 text-copper" /> Registered office
             </h2>
-            <address className="mt-4 not-italic leading-relaxed text-muted-foreground">
-              {company.address_full ?? "No registered office address on record."}
-              {company.district_en && (
-                <span className="mt-2 block">
-                  {company.district_en}
-                  {company.postcode ? `, ${company.postcode}` : ""}
-                </span>
-              )}
-            </address>
+            {addressEl ? (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Greek (official)</p>
+                  <address lang="el" className="mt-1 not-italic leading-relaxed">
+                    {addressEl}
+                  </address>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">English (transliterated)</p>
+                  <address lang="en" className="mt-1 not-italic leading-relaxed">
+                    {addressEn}
+                  </address>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-4 text-muted-foreground">No registered office address on record.</p>
+            )}
+            {(company.district_en || company.postcode) && (
+              <p className="mt-4 border-t pt-3 text-sm text-muted-foreground">
+                District: {company.district_en ?? "—"}
+                {company.district_el ? ` (${company.district_el})` : ""}
+                {company.postcode ? ` · Postcode ${company.postcode}` : ""}
+              </p>
+            )}
+
           </section>
 
           <section className="rounded-xl border bg-card p-6 shadow-panel">
