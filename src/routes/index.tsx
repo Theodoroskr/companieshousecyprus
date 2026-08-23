@@ -57,12 +57,6 @@ const TICKER = [
   "Certificate of Incorporation · Limassol",
 ];
 
-const HERO_CARDS = [
-  { icon: Database, label: "Entities indexed", value: "count", suffix: "" },
-  { icon: MapPin, label: "Districts", value: "6", suffix: "" },
-  { icon: Clock, label: "Certificate delivery", value: "1–2", suffix: " days" },
-  { icon: Globe, label: "Registrar sourced", value: "100", suffix: "%" },
-];
 
 const FEATURED_PRODUCTS = [
   "certificate-of-good-standing",
