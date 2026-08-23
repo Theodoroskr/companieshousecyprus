@@ -65,3 +65,20 @@ export function latinAddress(address?: string | null): string | null {
   if (!latin) return null;
   return latin.replace(/Kypros/i, "Cyprus");
 }
+
+export function companyAge(value?: string | null): { years: number; months: number; label: string } | null {
+  if (!value) return null;
+  const start = new Date(value);
+  if (Number.isNaN(start.getTime())) return null;
+  const now = new Date();
+  let months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+  if (now.getDate() < start.getDate()) months -= 1;
+  if (months < 0) return null;
+  const years = Math.floor(months / 12);
+  const rem = months % 12;
+  const label =
+    years === 0
+      ? `${rem} month${rem === 1 ? "" : "s"}`
+      : `${years} year${years === 1 ? "" : "s"}${rem ? ` ${rem} mo` : ""}`;
+  return { years, months: rem, label };
+}
