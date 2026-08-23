@@ -25,7 +25,7 @@ const ORDERABLE = [
 export const Route = createFileRoute("/company/$slug")({
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
-    return { name: data.company.name, officialNo: data.company.official_no, status: data.company.status_en };
+    return { name: data.company.name, officialNo: displayOfficialNo(data.company), status: data.company.status_en };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) {
@@ -81,7 +81,7 @@ function CompanyPage() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: company.name,
-    identifier: company.official_no,
+    identifier: displayOfficialNo(company),
     address: company.address_full
       ? {
           "@type": "PostalAddress",
@@ -103,7 +103,7 @@ function CompanyPage() {
   const addressEn = latinAddress(company.address_full);
 
   const facts: { label: string; value: string }[] = [
-    { label: "Registration number", value: company.official_no ?? String(company.reg_number) },
+    { label: "Registration number", value: displayOfficialNo(company) },
     { label: "Company type", value: company.type_en ?? "—" },
     { label: "Sub-type", value: company.subtype_en ?? "—" },
     { label: "Status", value: company.status_en ?? "—" },
@@ -158,7 +158,7 @@ function CompanyPage() {
               </div>
               <h1 className="max-w-3xl font-display text-3xl font-bold tracking-tight md:text-5xl">{company.name}</h1>
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-primary-foreground/70">
-                <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 text-copper" />{company.official_no}</span>
+                <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 text-copper" />{displayOfficialNo(company)}</span>
                 {registrationDate && (
                   <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {registrationDate}</span>
                 )}
@@ -293,7 +293,7 @@ function CompanyPage() {
                     productSlug="certificate-of-directors-and-secretary"
                     companySlug={company.slug}
                     companyName={company.name}
-                    companyNumber={company.official_no}
+                    companyNumber={displayOfficialNo(company)}
                     size="sm"
                     variant="outline"
                     label="Order officials certificate"
@@ -338,7 +338,7 @@ function CompanyPage() {
                       productSlug={product.slug}
                       companySlug={company.slug}
                       companyName={company.name}
-                      companyNumber={company.official_no}
+                      companyNumber={displayOfficialNo(company)}
                       size="sm"
                       variant="outline"
                       className="mt-3 w-full"
