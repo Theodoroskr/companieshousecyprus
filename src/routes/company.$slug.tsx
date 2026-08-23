@@ -176,7 +176,7 @@ function CompanyPage() {
   const addressEl = company.address_full;
   const addressEn = latinAddress(company.address_full);
 
-  const facts: { label: string; value: string }[] = [
+  const facts: { label: string; value: string; description?: string }[] = [
     { label: "Registration number", value: displayOfficialNo(company) },
     { label: "Company type", value: company.type_en ?? "—" },
     { label: "Sub-type", value: company.subtype_en ?? "—" },
@@ -184,8 +184,14 @@ function CompanyPage() {
     { label: "Status date", value: statusDate ?? "—" },
     { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
-    { label: "Officials & owners on record", value: String(company.officials_count ?? officials.length) },
+    {
+      label: "Officials & owners on record",
+      value: String(company.officials_count ?? officials.length),
+      description:
+        "Total number of directors, secretaries and owners currently recorded for this entity in the Registrar data.",
+    },
   ];
+
 
 
 
