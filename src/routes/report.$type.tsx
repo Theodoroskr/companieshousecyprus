@@ -75,8 +75,31 @@ function ReportPage() {
           </div>
 
           <aside className="rounded-xl border border-white/15 bg-white/8 p-6 backdrop-blur">
-            <p className="font-display text-4xl font-bold">{formatPrice(product.price)}</p>
-            <p className="mt-1 text-sm text-primary-foreground/70">per company · excl. VAT</p>
+            {(() => {
+              const breakdown = priceBreakdown(product);
+              return (
+                <>
+                  <p className="font-display text-4xl font-bold">{formatPrice(breakdown.total)}</p>
+                  <p className="mt-1 text-sm text-primary-foreground/70">per company · incl. VAT</p>
+                  <div className="mt-4 space-y-1 rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-primary-foreground/80">
+                    <div className="flex justify-between">
+                      <span>Document</span>
+                      <span>{formatPrice(breakdown.documentPrice)}</span>
+                    </div>
+                    {product.category === "certificate" && (
+                      <div className="flex justify-between">
+                        <span>Service fee</span>
+                        <span>{formatPrice(breakdown.serviceFee)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>VAT ({Math.round(VAT_RATE * 100)}%)</span>
+                      <span>{formatPrice(breakdown.vat)}</span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
             <form
               className="mt-6"
               onSubmit={(event) => {
