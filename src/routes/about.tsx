@@ -24,7 +24,7 @@ const PILLARS = [
   {
     icon: Database,
     title: "The complete register",
-    body: "Every company, partnership and overseas branch on the Cyprus register — 571,218 entities with status, officials, address and filing history.",
+    body: "Every company, partnership and overseas branch on the Cyprus register — 571,218 entities with status, officials & owners, address and filing history.",
   },
   {
     icon: ShieldCheck,

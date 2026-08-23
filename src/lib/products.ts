@@ -81,7 +81,7 @@ export const PRODUCTS: Product[] = [
     includes: [
       { title: "Current directors", detail: "Full names of all natural and corporate directors on record." },
       { title: "Company secretary", detail: "Name of the appointed secretary." },
-      { title: "Appointment context", detail: "Positions exactly as recorded in the Registrar's officials file." },
+      { title: "Appointment context", detail: "Positions exactly as recorded in the Registrar's officials & owners file." },
       { title: "Digital delivery", detail: "Signed PDF delivered by email." },
     ],
     typicalUse: "Signatory verification, KYB files, power-of-attorney checks.",
@@ -211,7 +211,7 @@ export const PRODUCTS: Product[] = [
     name: "Cyprus Company Profile",
     eyebrow: "Intelligence report",
     headline: "The full registry picture in one document",
-    tagline: "Consolidated profile: status, officials, ownership, address history and filings.",
+    tagline: "Consolidated profile: status, officials & owners, address history and filings.",
     price: 65,
     delivery: "Same business day",
     category: "report",
@@ -222,7 +222,7 @@ export const PRODUCTS: Product[] = [
     ],
     includes: [
       { title: "Legal identity & status", detail: "Name, HE number, type, sub-type, status and status date." },
-      { title: "Directors & secretary", detail: "Current officials with positions in English and Greek." },
+      { title: "Directors & secretary", detail: "Current officials & owners with positions in English and Greek." },
       { title: "Shareholders", detail: "Registered members and shareholdings where filed." },
       { title: "Registered office", detail: "Current address plus recorded changes." },
       { title: "Filing history", detail: "Annual return years on record." },
@@ -243,7 +243,7 @@ export const PRODUCTS: Product[] = [
       "Combines the registry profile with the company's filed financial statements, sector benchmarks and a structured risk assessment for credit and trade-terms decisions.",
     ],
     includes: [
-      { title: "Everything in the Company Profile", detail: "Identity, officials, ownership, address and filings." },
+      { title: "Everything in the Company Profile", detail: "Identity, officials & owners, address and filings." },
       { title: "Financial indicators", detail: "Key figures from the most recent filed financial statements." },
       { title: "Sector context", detail: "Comparison against Cyprus sector norms." },
       { title: "Risk assessment", detail: "Structured scoring with the drivers behind it." },
