@@ -29,14 +29,14 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
-        <Link to="/" className="flex shrink-0 items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
-            CY
-          </span>
-          <span className="leading-tight">
-            <span className="block font-display text-[15px] font-semibold tracking-tight">Companies House</span>
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-copper">Cyprus</span>
-          </span>
+        <Link to="/" className="flex shrink-0 items-center">
+          <img
+            src={logoAsset.url}
+            alt="Cyprus Companies House"
+            className="h-8 w-auto sm:h-9"
+            width={108}
+            height={36}
+          />
         </Link>
 
         <nav className="ml-4 hidden items-center gap-1 text-sm lg:flex">
