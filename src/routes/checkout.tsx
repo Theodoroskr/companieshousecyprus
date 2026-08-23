@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, Lock } from "lucide-react";
-import { useCart, CART_VAT_RATE } from "@/lib/cart";
+import { useCart, CART_VAT_RATE, CART_SERVICE_FEE } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
