@@ -182,15 +182,32 @@ function CompanyPage() {
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
               <MapPin className="size-5 text-copper" /> Registered office
             </h2>
-            <address className="mt-4 not-italic leading-relaxed text-muted-foreground">
-              {company.address_full ?? "No registered office address on record."}
-              {company.district_en && (
-                <span className="mt-2 block">
-                  {company.district_en}
-                  {company.postcode ? `, ${company.postcode}` : ""}
-                </span>
-              )}
-            </address>
+            {addressEl ? (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Greek (official)</p>
+                  <address lang="el" className="mt-1 not-italic leading-relaxed">
+                    {addressEl}
+                  </address>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">English (transliterated)</p>
+                  <address lang="en" className="mt-1 not-italic leading-relaxed">
+                    {addressEn}
+                  </address>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-4 text-muted-foreground">No registered office address on record.</p>
+            )}
+            {(company.district_en || company.postcode) && (
+              <p className="mt-4 border-t pt-3 text-sm text-muted-foreground">
+                District: {company.district_en ?? "—"}
+                {company.district_el ? ` (${company.district_el})` : ""}
+                {company.postcode ? ` · Postcode ${company.postcode}` : ""}
+              </p>
+            )}
+
           </section>
 
           <section className="rounded-xl border bg-card p-6 shadow-panel">
