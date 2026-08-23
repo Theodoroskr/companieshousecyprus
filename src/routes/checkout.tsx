@@ -32,7 +32,7 @@ const FIELDS = [
 ] as const;
 
 function CheckoutPage() {
-  const { items, subtotal, vat, total, clear } = useCart();
+  const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const [placed, setPlaced] = useState<string | null>(null);
 
   if (placed) {
