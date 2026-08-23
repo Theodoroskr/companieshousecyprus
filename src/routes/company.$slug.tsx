@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, ShieldCheck, Users } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, Receipt, ShieldCheck, Users } from "lucide-react";
 import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { priceBreakdown } from "@/lib/pricing";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -480,7 +481,36 @@ function CompanyPage() {
                           </div>
                           <p className="mt-0.5 text-xs text-muted-foreground">{product.delivery}</p>
                         </div>
-                        <span className="shrink-0 text-sm font-semibold">{formatPrice(product.price)}</span>
+                        <div className="shrink-0 text-right">
+                          {(() => {
+                            const breakdown = priceBreakdown(product);
+                            return (
+                              <>
+                                <span className="block text-sm font-semibold">{formatPrice(breakdown.total)}</span>
+                                <span className="block text-[10px] text-muted-foreground">incl. VAT</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                        <Receipt className="size-3" />
+                        {(() => {
+                          const breakdown = priceBreakdown(product);
+                          return (
+                            <>
+                              <span>{formatPrice(breakdown.documentPrice)} doc</span>
+                              {breakdown.serviceFee > 0 && (
+                                <>
+                                  <span className="text-border">|</span>
+                                  <span>{formatPrice(breakdown.serviceFee)} fee</span>
+                                </>
+                              )}
+                              <span className="text-border">|</span>
+                              <span>{formatPrice(breakdown.vat)} VAT</span>
+                            </>
+                          );
+                        })()}
                       </div>
                       <AddToCartButton
                         productSlug={product.slug}
