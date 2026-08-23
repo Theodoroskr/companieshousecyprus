@@ -20,6 +20,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
@@ -81,6 +82,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompanySlugRoute = CompanySlugRouteImport.update({
   id: '/company/$slug',
   path: '/company/$slug',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
   '/report/$type': typeof ReportTypeRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
   '/report/$type': typeof ReportTypeRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
   '/report/$type': typeof ReportTypeRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/company/$slug'
     | '/report/$type'
     | '/admin/import'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/company/$slug'
     | '/report/$type'
     | '/admin/import'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/company/$slug'
     | '/report/$type'
     | '/_authenticated/admin/import'
@@ -240,6 +252,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   CompanySlugRoute: typeof CompanySlugRoute
   ReportTypeRoute: typeof ReportTypeRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
@@ -326,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/company/$slug': {
       id: '/company/$slug'
       path: '/company/$slug'
@@ -394,6 +414,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   CompanySlugRoute: CompanySlugRoute,
   ReportTypeRoute: ReportTypeRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
