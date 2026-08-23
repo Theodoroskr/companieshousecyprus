@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { PRODUCTS_BY_SLUG } from "./products";
+import { CERTIFICATE_SERVICE_FEE, VAT_RATE } from "./pricing";
 
 export type CartItem = {
   productSlug: string;
@@ -23,8 +24,6 @@ type CartContextValue = {
 };
 
 const STORAGE_KEY = "chc.cart.v1";
-const VAT_RATE = 0.19;
-const CERTIFICATE_SERVICE_FEE = 50;
 
 const CartContext = createContext<CartContextValue | null>(null);
 
