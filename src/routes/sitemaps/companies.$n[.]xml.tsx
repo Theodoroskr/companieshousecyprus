@@ -7,7 +7,8 @@ export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
   server: {
     handlers: {
       GET: async ({ params }) => {
-        const n = parseInt(params.n, 10);
+        const raw = params["n.xml"] ?? "0";
+        const n = parseInt(raw, 10);
         if (Number.isNaN(n) || n < 0) {
           return new Response("Invalid sitemap chunk", { status: 400 });
         }
