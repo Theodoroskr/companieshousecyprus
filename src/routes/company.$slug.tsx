@@ -146,9 +146,10 @@ function CompanyPage() {
                   {company.status_en ?? "Unknown status"}
                 </span>
                 <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 text-copper" />{company.official_no}</span>
-                {company.registration_date && (
-                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {company.registration_date}</span>
+                {registrationDate && (
+                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {registrationDate}</span>
                 )}
+
                 {company.district_en && (
                   <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-copper" />{company.district_en}</span>
                 )}
