@@ -49,41 +49,56 @@ function PricingPage() {
               <p className="text-sm text-muted-foreground">Digital PDF · apostille available</p>
             </div>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {PRODUCTS.filter((product) => product.category === category).map((product) => (
-                <article
-                  key={product.slug}
-                  className="relative flex flex-col rounded-xl border bg-card p-6 shadow-panel transition-shadow hover:shadow-lift"
-                >
-                  {product.popular && (
-                    <span className="absolute -top-3 left-6 rounded-full bg-copper px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-copper-foreground">
-                      Most ordered
-                    </span>
-                  )}
-                  <h3 className="font-display text-lg font-semibold">{product.name}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{product.tagline}</p>
-                  <p className="mt-5 font-display text-3xl font-bold">
-                    {formatPrice(product.price)}
-                    <span className="ml-1 text-sm font-normal text-muted-foreground">/ company</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">Delivery: {product.delivery}</p>
-                  <ul className="mt-5 space-y-2 text-sm">
-                    {product.includes.slice(0, 4).map((item) => (
-                      <li key={item.title} className="flex gap-2">
-                        <Check className="mt-0.5 size-4 shrink-0 text-olive" />
-                        <span>{item.title}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-6 flex flex-col gap-2 pt-2">
-                    <AddToCartButton productSlug={product.slug} />
-                    <Button asChild variant="ghost" size="sm">
-                      <Link to="/report/$type" params={{ type: product.slug }}>
-                        What's included <ArrowRight className="size-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </article>
-              ))}
+              {PRODUCTS.filter((product) => product.category === category).map((product) => {
+                const breakdown = priceBreakdown(product);
+                return (
+                  <article
+                    key={product.slug}
+                    className="relative flex flex-col rounded-xl border bg-card p-6 shadow-panel transition-shadow hover:shadow-lift"
+                  >
+                    {product.popular && (
+                      <span className="absolute -top-3 left-6 rounded-full bg-copper px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-copper-foreground">
+                        Most ordered
+                      </span>
+                    )}
+                    <h3 className="font-display text-lg font-semibold">{product.name}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">{product.tagline}</p>
+                    <p className="mt-5 font-display text-3xl font-bold">
+                      {formatPrice(breakdown.total)}
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">/ company incl. VAT</span>
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <Receipt className="size-3.5" />
+                      <span>{formatPrice(breakdown.documentPrice)} document</span>
+                      {breakdown.serviceFee > 0 && (
+                        <>
+                          <span className="text-border">|</span>
+                          <span>{formatPrice(breakdown.serviceFee)} service fee</span>
+                        </>
+                      )}
+                      <span className="text-border">|</span>
+                      <span>{formatPrice(breakdown.vat)} VAT ({Math.round(VAT_RATE * 100)}%)</span>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">Delivery: {product.delivery}</p>
+                    <ul className="mt-5 space-y-2 text-sm">
+                      {product.includes.slice(0, 4).map((item) => (
+                        <li key={item.title} className="flex gap-2">
+                          <Check className="mt-0.5 size-4 shrink-0 text-olive" />
+                          <span>{item.title}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-6 flex flex-col gap-2 pt-2">
+                      <AddToCartButton productSlug={product.slug} />
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/report/$type" params={{ type: product.slug }}>
+                          What's included <ArrowRight className="size-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         ))}
