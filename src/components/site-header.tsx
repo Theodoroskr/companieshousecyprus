@@ -45,9 +45,19 @@ export function SiteHeader() {
             <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
               Products <ChevronDown className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-72">
-              <DropdownMenuLabel>Certificates &amp; reports</DropdownMenuLabel>
-              {PRODUCTS.map((product) => (
+            <DropdownMenuContent align="start" className="w-80">
+              <DropdownMenuLabel>Certificates</DropdownMenuLabel>
+              {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
+                <DropdownMenuItem key={product.slug} asChild>
+                  <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
+                    <span className="font-medium">{product.name}</span>
+                    <span className="text-xs text-muted-foreground">{product.delivery}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Reports &amp; packs</DropdownMenuLabel>
+              {PRODUCTS.filter((p) => p.category === "report" || p.category === "pack").map((product) => (
                 <DropdownMenuItem key={product.slug} asChild>
                   <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
                     <span className="font-medium">{product.name}</span>
