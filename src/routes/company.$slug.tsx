@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, MapPin, ShieldCheck, Users } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, Lock, MapPin, ShieldCheck, Users } from "lucide-react";
 import { getCompanyBySlug } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
-import { companyAge, displayOfficialNo, formatDate, latinAddress } from "@/lib/format";
+import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 
 
 const companyQueryOptions = (slug: string) =>
@@ -95,6 +95,8 @@ function CompanyPage() {
     knowsAbout: company.type_en ?? undefined,
   };
 
+  const businessName = isBusinessName(company);
+  const profileProduct = PRODUCTS.find((item) => item.slug === "cyprus-company-profile");
   const registrationDate = formatDate(company.registration_date);
   const statusDate = formatDate(company.status_date);
   const age = companyAge(company.registration_date);
