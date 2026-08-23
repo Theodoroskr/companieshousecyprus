@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2, Lock } from "lucide-react";
-import { useCart, CART_VAT_RATE, CART_SERVICE_FEE } from "@/lib/cart";
+import { CheckCircle2, Lock, Receipt } from "lucide-react";
+import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
+import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Checkout — Companies House Cyprus";
