@@ -123,8 +123,8 @@ function CompanyPage() {
         <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-copper/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 left-1/4 size-80 rounded-full bg-primary-glow/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-7xl px-4 py-12 md:py-16">
-          <nav className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary-foreground/50">
+        <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
+          <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium uppercase tracking-widest text-primary-foreground/50 sm:text-[11px]">
             <Link to="/" className="transition-colors hover:text-primary-foreground">Home</Link>
             <span>/</span>
             <Link to="/search" search={{ q: "", page: 1 }} className="transition-colors hover:text-primary-foreground">Register</Link>
@@ -134,7 +134,7 @@ function CompanyPage() {
                 <Link
                   to="/companies/city/$district"
                   params={{ district: company.district_en.toLowerCase() }}
-                  className="transition-colors hover:text-primary-foreground"
+                  className="max-w-[8rem] truncate transition-colors hover:text-primary-foreground"
                 >
                   {company.district_en}
                 </Link>
@@ -144,9 +144,9 @@ function CompanyPage() {
             <span className="text-copper">Company profile</span>
           </nav>
 
-          <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="flex-1">
-              <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="mt-6 flex flex-col gap-6 sm:mt-8 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+            <div className="min-w-0 flex-1">
+              <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${statusTone(company.status_group)}`}>
                   {company.status_en ?? "Unknown status"}
                 </span>
@@ -156,14 +156,14 @@ function CompanyPage() {
                   </span>
                 )}
               </div>
-              <h1 className="max-w-3xl font-display text-3xl font-bold tracking-tight md:text-5xl">{company.name}</h1>
-              <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-primary-foreground/70">
-                <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 text-copper" />{displayOfficialNo(company)}</span>
+              <h1 className="max-w-3xl font-display text-2xl font-bold tracking-tight break-words sm:text-3xl md:text-4xl lg:text-5xl">{company.name}</h1>
+              <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-primary-foreground/70 sm:text-sm">
+                <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 shrink-0 text-copper" />{displayOfficialNo(company)}</span>
                 {registrationDate && (
-                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {registrationDate}</span>
+                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0 text-copper" />Registered {registrationDate}</span>
                 )}
                 {company.district_en && (
-                  <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-copper" />{company.district_en}, Cyprus</span>
+                  <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="size-4 shrink-0 text-copper" /><span className="truncate">{company.district_en}, Cyprus</span></span>
                 )}
               </p>
             </div>
@@ -171,51 +171,51 @@ function CompanyPage() {
             <Button
               asChild
               size="lg"
-              className="h-14 shrink-0 rounded-xl bg-copper px-8 font-display text-base font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30"
+              className="h-12 w-full shrink-0 rounded-xl bg-copper px-6 font-display text-sm font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30 sm:h-14 sm:w-auto sm:px-8 sm:text-base"
             >
               <a href="#order" className="gap-2">
                 Order certificates
-                <ShieldCheck className="size-5" />
+                <ShieldCheck className="size-5 shrink-0" />
               </a>
             </Button>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm transition-colors hover:border-copper/50">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Registry Status</p>
-              <div className="flex items-center gap-3">
-                <span className={`size-2 rounded-full ${company.status_group === "active" ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)]" : "bg-copper shadow-[0_0_10px_rgba(205,127,50,0.5)]"}`} />
-                <span className="font-display text-xl font-semibold text-primary-foreground">{company.status_en ?? "Unknown"}</span>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5 md:mt-12 lg:grid-cols-3">
+            <div className="group min-w-0 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4 backdrop-blur-sm transition-colors hover:border-copper/50 sm:p-6">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/50 sm:text-xs">Registry Status</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <span className={`size-2 shrink-0 rounded-full ${company.status_group === "active" ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)]" : "bg-copper shadow-[0_0_10px_rgba(205,127,50,0.5)]"}`} />
+                <span className="truncate font-display text-lg font-semibold text-primary-foreground sm:text-xl">{company.status_en ?? "Unknown"}</span>
               </div>
               <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-primary-foreground/10">
                 <div className={`h-full ${company.status_group === "active" ? "w-full bg-emerald-500/50" : "w-1/3 bg-copper/50"}`} />
               </div>
             </div>
 
-            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm transition-colors hover:border-copper/50">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Company Age</p>
-              <div className="flex items-baseline gap-2">
-                <span className="font-display text-3xl font-bold text-primary-foreground">{age ? age.years : "—"}</span>
-                <span className="text-lg font-medium text-primary-foreground/70">
+            <div className="group min-w-0 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4 backdrop-blur-sm transition-colors hover:border-copper/50 sm:p-6">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/50 sm:text-xs">Company Age</p>
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="font-display text-2xl font-bold text-primary-foreground sm:text-3xl">{age ? age.years : "—"}</span>
+                <span className="text-base font-medium text-primary-foreground/70 sm:text-lg">
                   {age ? `Years${age.months ? ` ${age.months} mo` : ""}` : "Unknown"}
                 </span>
               </div>
-              <p className="mt-4 text-xs font-medium text-primary-foreground/40">
+              <p className="mt-4 text-[11px] font-medium text-primary-foreground/40 sm:text-xs">
                 {registrationDate ? `Incorporated ${registrationDate}` : "Registration date unavailable"}
               </p>
             </div>
 
-            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm transition-colors hover:border-copper/50">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Country Risk</p>
-              <div className="flex items-center justify-between">
-                <span className="font-display text-xl font-semibold text-primary-foreground">🇨🇾 Low</span>
-                <span className="flex gap-1">
-                  <span className="h-1.5 w-8 rounded-full bg-primary-glow" />
-                  <span className="h-1.5 w-8 rounded-full bg-primary-glow/25" />
-                  <span className="h-1.5 w-8 rounded-full bg-primary-glow/25" />
+            <div className="group min-w-0 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4 backdrop-blur-sm transition-colors hover:border-copper/50 sm:col-span-2 sm:p-6 lg:col-span-1">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/50 sm:text-xs">Country Risk</p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="font-display text-lg font-semibold text-primary-foreground sm:text-xl">🇨🇾 Low</span>
+                <span className="flex flex-1 justify-end gap-1 sm:flex-none">
+                  <span className="h-1.5 w-6 rounded-full bg-primary-glow sm:w-8" />
+                  <span className="h-1.5 w-6 rounded-full bg-primary-glow/25 sm:w-8" />
+                  <span className="h-1.5 w-6 rounded-full bg-primary-glow/25 sm:w-8" />
                 </span>
               </div>
-              <p className="mt-4 text-xs font-medium text-emerald-400/80">Cyprus · EU member state</p>
+              <p className="mt-4 text-[11px] font-medium text-emerald-400/80 sm:text-xs">Cyprus · EU member state</p>
             </div>
           </div>
         </div>
