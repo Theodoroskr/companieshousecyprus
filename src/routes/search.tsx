@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { searchCompanies } from "@/lib/companies.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,13 @@ const searchQueryOptions = (q: string, page: number) =>
   });
 
 export const Route = createFileRoute("/search")({
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(searchQueryOptions("", 1));
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search["q"] === "string" ? (search["q"] as string) : "",
+    page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
+  }),
+  loaderDeps: ({ search }) => ({ q: search.q, page: search.page }),
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(searchQueryOptions(deps.q, deps.page));
   },
   head: () => ({
     meta: [
@@ -30,8 +34,10 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const [q, setQ] = useState("");
-  const [page, setPage] = useState(1);
+  const { q, page } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const setSearch = (nextQ: string, nextPage: number) =>
+    navigate({ search: { q: nextQ, page: nextPage } });
   const { data } = useSuspenseQuery(searchQueryOptions(q, page));
   const totalPages = Math.ceil(data.count / 50);
 
@@ -44,14 +50,16 @@ function SearchPage() {
         className="mt-6 flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          setPage(1);
+          const value = String(new FormData(e.currentTarget).get("q") ?? "");
+          setSearch(value, 1);
         }}
       >
         <Input
+          key={q}
+          name="q"
           type="search"
           placeholder="Company name or HE number..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          defaultValue={q}
           className="flex-1"
         />
         <Button type="submit">Search</Button>
@@ -79,13 +87,13 @@ function SearchPage() {
 
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between">
-          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
             Previous
           </Button>
           <span className="text-sm text-muted-foreground">
             Page {page} of {totalPages}
           </span>
-          <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+          <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
             Next
           </Button>
         </div>
