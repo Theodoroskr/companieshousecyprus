@@ -118,80 +118,109 @@ function CompanyPage() {
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <section className="surface-deep grid-dots">
-        <div className="mx-auto max-w-7xl px-4 py-12 md:py-16">
-          <nav className="flex flex-wrap items-center gap-2 text-xs text-primary-foreground/60">
-            <Link to="/" className="hover:text-primary-foreground">Home</Link>
+      <section className="surface-deep relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-primary-glow/20 to-transparent" />
+        <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-copper/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 left-1/4 size-80 rounded-full bg-primary-glow/10 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-12 md:py-16">
+          <nav className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary-foreground/50">
+            <Link to="/" className="transition-colors hover:text-primary-foreground">Home</Link>
             <span>/</span>
-            <Link to="/search" search={{ q: "", page: 1 }} className="hover:text-primary-foreground">Register</Link>
+            <Link to="/search" search={{ q: "", page: 1 }} className="transition-colors hover:text-primary-foreground">Register</Link>
             {company.district_en && (
               <>
                 <span>/</span>
                 <Link
                   to="/companies/city/$district"
                   params={{ district: company.district_en.toLowerCase() }}
-                  className="hover:text-primary-foreground"
+                  className="transition-colors hover:text-primary-foreground"
                 >
                   {company.district_en}
                 </Link>
               </>
             )}
             <span>/</span>
-            <span className="text-primary-foreground/90">{company.name}</span>
+            <span className="text-copper">Company profile</span>
           </nav>
 
-          <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <h1 className="max-w-3xl text-3xl font-bold md:text-4xl">{company.name}</h1>
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-primary-foreground/75">
-                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusTone(company.status_group)}`}>
+          <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex-1">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${statusTone(company.status_group)}`}>
                   {company.status_en ?? "Unknown status"}
                 </span>
+                {company.type_en && (
+                  <span className="rounded-full border border-primary-foreground/15 bg-primary-foreground/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70">
+                    {company.type_en}
+                  </span>
+                )}
+              </div>
+              <h1 className="max-w-3xl font-display text-3xl font-bold tracking-tight md:text-5xl">{company.name}</h1>
+              <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-primary-foreground/70">
                 <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 text-copper" />{company.official_no}</span>
                 {registrationDate && (
                   <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-copper" />Registered {registrationDate}</span>
                 )}
-
                 {company.district_en && (
-                  <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-copper" />{company.district_en}</span>
+                  <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-copper" />{company.district_en}, Cyprus</span>
                 )}
-              </div>
+              </p>
             </div>
-            <Button asChild size="lg" className="bg-copper text-copper-foreground hover:bg-copper/90">
-              <a href="#order">Order certificates</a>
+
+            <Button
+              asChild
+              size="lg"
+              className="h-14 shrink-0 rounded-xl bg-copper px-8 font-display text-base font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30"
+            >
+              <a href="#order" className="gap-2">
+                Order certificates
+                <ShieldCheck className="size-5" />
+              </a>
             </Button>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                label: "Registry Status",
-                value: company.status_en ?? "Unknown",
-                sub: statusDate ? `since ${statusDate}` : "—",
-              },
-              {
-                label: "Company Age",
-                value: age ? age.label : "—",
-                sub: registrationDate ? `incorporated ${registrationDate}` : "—",
-              },
-              {
-                label: "Country Risk",
-                value: "🇨🇾 Low",
-                sub: "Cyprus · EU member state",
-              },
-            ].map((kpi) => (
-              <div
-                key={kpi.label}
-                className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-4 backdrop-blur-sm"
-              >
-                <p className="text-[11px] uppercase tracking-wider text-primary-foreground/60">{kpi.label}</p>
-                <p className="mt-1.5 text-xl font-semibold text-primary-foreground">{kpi.value}</p>
-                <p className="mt-1 text-xs text-primary-foreground/55">{kpi.sub}</p>
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm transition-colors hover:border-copper/50">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Registry Status</p>
+              <div className="flex items-center gap-3">
+                <span className={`size-2 rounded-full ${company.status_group === "active" ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)]" : "bg-copper shadow-[0_0_10px_rgba(205,127,50,0.5)]"}`} />
+                <span className="font-display text-xl font-semibold text-primary-foreground">{company.status_en ?? "Unknown"}</span>
               </div>
-            ))}
+              <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-primary-foreground/10">
+                <div className={`h-full ${company.status_group === "active" ? "w-full bg-emerald-500/50" : "w-1/3 bg-copper/50"}`} />
+              </div>
+            </div>
+
+            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm transition-colors hover:border-copper/50">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Company Age</p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-primary-foreground">{age ? age.years : "—"}</span>
+                <span className="text-lg font-medium text-primary-foreground/70">
+                  {age ? `Years${age.months ? ` ${age.months} mo` : ""}` : "Unknown"}
+                </span>
+              </div>
+              <p className="mt-4 text-xs font-medium text-primary-foreground/40">
+                {registrationDate ? `Incorporated ${registrationDate}` : "Registration date unavailable"}
+              </p>
+            </div>
+
+            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm transition-colors hover:border-copper/50">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-foreground/50">Country Risk</p>
+              <div className="flex items-center justify-between">
+                <span className="font-display text-xl font-semibold text-primary-foreground">🇨🇾 Low</span>
+                <span className="flex gap-1">
+                  <span className="h-1.5 w-8 rounded-full bg-primary-glow" />
+                  <span className="h-1.5 w-8 rounded-full bg-primary-glow/25" />
+                  <span className="h-1.5 w-8 rounded-full bg-primary-glow/25" />
+                </span>
+              </div>
+              <p className="mt-4 text-xs font-medium text-emerald-400/80">Cyprus · EU member state</p>
+            </div>
           </div>
         </div>
       </section>
+
 
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 lg:grid-cols-[1.5fr_1fr]">
 
