@@ -1,0 +1,1 @@
+revoke execute on function public.grant_admin_for_known_email() from authenticated;
