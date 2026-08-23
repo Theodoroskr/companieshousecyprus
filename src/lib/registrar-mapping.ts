@@ -13,7 +13,7 @@ export const TYPE_EN: Record<string, string> = {
 
 export const OFFICIAL_PREFIX: Record<string, string> = {
   C: "HE",
-  P: "S",
+  P: "P",
   B: "EE",
   O: "AE",
   N: "BN",
