@@ -1,5 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { listCompaniesByLetter } from "@/lib/companies.functions";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";

@@ -10,11 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
+import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompanySlugRoute = CompanySlugRouteImport.update({
@@ -22,31 +30,69 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
+  id: '/companies/a-z/$letter',
+  path: '/companies/a-z/$letter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompaniesCityDistrictRoute = CompaniesCityDistrictRouteImport.update({
+  id: '/companies/city/$district',
+  path: '/companies/city/$district',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/search': typeof SearchRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
+  '/companies/city/$district': typeof CompaniesCityDistrictRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/search': typeof SearchRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
+  '/companies/city/$district': typeof CompaniesCityDistrictRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/search': typeof SearchRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
+  '/companies/city/$district': typeof CompaniesCityDistrictRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/company/$slug'
+  fullPaths:
+    | '/'
+    | '/search'
+    | '/company/$slug'
+    | '/companies/a-z/$letter'
+    | '/companies/city/$district'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/company/$slug'
-  id: '__root__' | '/' | '/company/$slug'
+  to:
+    | '/'
+    | '/search'
+    | '/company/$slug'
+    | '/companies/a-z/$letter'
+    | '/companies/city/$district'
+  id:
+    | '__root__'
+    | '/'
+    | '/search'
+    | '/company/$slug'
+    | '/companies/a-z/$letter'
+    | '/companies/city/$district'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SearchRoute: typeof SearchRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
+  CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/company/$slug': {
       id: '/company/$slug'
       path: '/company/$slug'
@@ -65,12 +118,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/companies/a-z/$letter': {
+      id: '/companies/a-z/$letter'
+      path: '/companies/a-z/$letter'
+      fullPath: '/companies/a-z/$letter'
+      preLoaderRoute: typeof CompaniesAZLetterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies/city/$district': {
+      id: '/companies/city/$district'
+      path: '/companies/city/$district'
+      fullPath: '/companies/city/$district'
+      preLoaderRoute: typeof CompaniesCityDistrictRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SearchRoute: SearchRoute,
   CompanySlugRoute: CompanySlugRoute,
+  CompaniesAZLetterRoute: CompaniesAZLetterRoute,
+  CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
