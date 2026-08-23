@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, Receipt } from "lucide-react";
 import { PRODUCTS, CATEGORY_LABEL, formatPrice, type ProductCategory } from "@/lib/products";
+import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 
