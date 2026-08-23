@@ -159,10 +159,40 @@ function CompanyPage() {
               <a href="#order">Order certificates</a>
             </Button>
           </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                label: "Registry Status",
+                value: company.status_en ?? "Unknown",
+                sub: statusDate ? `since ${statusDate}` : "—",
+              },
+              {
+                label: "Company Age",
+                value: age ? age.label : "—",
+                sub: registrationDate ? `incorporated ${registrationDate}` : "—",
+              },
+              {
+                label: "Country Risk",
+                value: "🇨🇾 Low",
+                sub: "Cyprus · EU member state",
+              },
+            ].map((kpi) => (
+              <div
+                key={kpi.label}
+                className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-4 backdrop-blur-sm"
+              >
+                <p className="text-[11px] uppercase tracking-wider text-primary-foreground/60">{kpi.label}</p>
+                <p className="mt-1.5 text-xl font-semibold text-primary-foreground">{kpi.value}</p>
+                <p className="mt-1 text-xs text-primary-foreground/55">{kpi.sub}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 lg:grid-cols-[1.5fr_1fr]">
+
         <div className="space-y-8">
           <section className="rounded-xl border bg-card p-6 shadow-panel">
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
