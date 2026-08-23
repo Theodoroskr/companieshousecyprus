@@ -121,8 +121,44 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+      <Toaster />
     </QueryClientProvider>
+  );
+}
+
+function Header() {
+  return (
+    <header className="border-b bg-background">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+        <Link to="/" className="text-lg font-bold tracking-tight">
+          Companies House Cyprus
+        </Link>
+        <nav className="flex items-center gap-4 text-sm">
+          <Link to="/" className="text-muted-foreground hover:text-foreground">
+            Home
+          </Link>
+          <a href="/search" className="text-muted-foreground hover:text-foreground">
+            Search
+          </a>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t bg-background py-6">
+      <div className="mx-auto max-w-5xl px-4 text-sm text-muted-foreground">
+        <p>Companies House Cyprus — unofficial directory of Cyprus registered companies.</p>
+      </div>
+    </footer>
   );
 }
