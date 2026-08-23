@@ -14,7 +14,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
-import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps.companies-$n[.]xml'
+import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies-$n[.]xml'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 
