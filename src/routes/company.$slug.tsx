@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, Lock, MapPin, ShieldCheck, Users } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, ShieldCheck, Users } from "lucide-react";
 import { getCompanyBySlug } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 
 const companyQueryOptions = (slug: string) =>
@@ -371,44 +373,63 @@ function CompanyPage() {
         </div>
 
         <aside id="order" className="h-fit space-y-4 lg:sticky lg:top-24">
-          <div className="rounded-xl border bg-card p-6 shadow-panel">
-            <h2 className="font-display text-lg font-semibold">Order for this company</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Certified documents for {company.name}, delivered digitally.
-            </p>
-            <ul className="mt-5 space-y-3">
-              {ORDERABLE.map((productSlug) => {
-                const product = PRODUCTS.find((item) => item.slug === productSlug);
-                if (!product) return null;
-                return (
-                  <li key={product.slug} className="rounded-lg border p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <Link
-                          to="/report/$type"
-                          params={{ type: product.slug }}
-                          className="text-sm font-semibold hover:text-copper"
-                        >
-                          {product.name}
-                        </Link>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{product.delivery}</p>
+          <TooltipProvider delayDuration={200}>
+            <div className="rounded-xl border bg-card p-6 shadow-panel">
+              <h2 className="font-display text-lg font-semibold">Order for this company</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Certified documents for {company.name}, delivered digitally.
+              </p>
+              <ul className="mt-5 space-y-3">
+                {ORDERABLE.map((productSlug) => {
+                  const product = PRODUCTS.find((item) => item.slug === productSlug);
+                  if (!product) return null;
+                  return (
+                    <li key={product.slug} className="rounded-lg border p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              to="/report/$type"
+                              params={{ type: product.slug }}
+                              className="text-sm font-semibold hover:text-copper"
+                            >
+                              {product.name}
+                            </Link>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  aria-label={`What is ${product.name}?`}
+                                  className="inline-flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-copper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper"
+                                >
+                                  <Info className="size-4" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-[16rem]">
+                                <p className="font-medium">{product.tagline}</p>
+                              </TooltipContent>
+
+                            </Tooltip>
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground">{product.delivery}</p>
+                        </div>
+                        <span className="shrink-0 text-sm font-semibold">{formatPrice(product.price)}</span>
                       </div>
-                      <span className="shrink-0 text-sm font-semibold">{formatPrice(product.price)}</span>
-                    </div>
-                    <AddToCartButton
-                      productSlug={product.slug}
-                      companySlug={company.slug}
-                      companyName={company.name}
-                      companyNumber={displayOfficialNo(company)}
-                      size="sm"
-                      variant="outline"
-                      className="mt-3 w-full"
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                      <AddToCartButton
+                        productSlug={product.slug}
+                        companySlug={company.slug}
+                        companyName={company.name}
+                        companyNumber={displayOfficialNo(company)}
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 w-full"
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </TooltipProvider>
 
           <div className="rounded-xl border bg-sand p-6 text-sm text-muted-foreground">
             <p className="font-medium text-foreground">Need something else?</p>
@@ -418,6 +439,7 @@ function CompanyPage() {
             </Button>
           </div>
         </aside>
+
       </div>
     </div>
   );
