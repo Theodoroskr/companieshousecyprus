@@ -145,8 +145,10 @@ function CartPage() {
               </div>
               {serviceFee > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Service fee ({formatPrice(CERTIFICATE_SERVICE_FEE)} per certificate)</dt>
-                  <dd>{formatPrice(serviceFee)}</dd>
+                  <dt className="inline-flex items-center gap-1.5 rounded-full bg-copper/10 px-2 py-0.5 text-copper text-xs font-medium">
+                    Service fee (€50 per certificate)
+                  </dt>
+                  <dd className="font-medium">{formatPrice(serviceFee)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
