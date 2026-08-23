@@ -97,6 +97,8 @@ function CompanyPage() {
 
   const registrationDate = formatDate(company.registration_date);
   const statusDate = formatDate(company.status_date);
+  const age = companyAge(company.registration_date);
+
   const addressEl = company.address_full;
   const addressEn = latinAddress(company.address_full);
 
