@@ -5,11 +5,7 @@ import {
   ArrowRight,
   Building2,
   Check,
-  Clock,
-  Database,
   FileCheck2,
-  Globe,
-  MapPin,
   Search,
   ShieldCheck,
   Timer,
@@ -61,12 +57,6 @@ const TICKER = [
   "Certificate of Incorporation · Limassol",
 ];
 
-const HERO_CARDS = [
-  { icon: Database, label: "Entities indexed", value: "count", suffix: "" },
-  { icon: MapPin, label: "Districts", value: "6", suffix: "" },
-  { icon: Clock, label: "Certificate delivery", value: "1–2", suffix: " days" },
-  { icon: Globe, label: "Registrar sourced", value: "100", suffix: "%" },
-];
 
 const FEATURED_PRODUCTS = [
   "certificate-of-good-standing",
@@ -84,92 +74,68 @@ function HomePage() {
 
   return (
     <div>
-      {/* Hero — Navy Trust grid layout */}
-      <section className="surface-deep grid-dots relative overflow-hidden">
-        <div className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-primary-glow/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-1/4 size-72 rounded-full bg-white/5 blur-3xl" />
+      {/* Hero — solid navy */}
+      <section className="surface-deep relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary via-[oklch(0.28_0.06_255)] to-[oklch(0.38_0.07_245)]" />
+        <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-accent/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 size-80 rounded-full bg-white/5 blur-3xl" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
-          {/* Left: headline + search */}
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
-              <span className="size-1.5 rounded-full bg-accent" />
-              Official Registrar data · {data.count.toLocaleString()} entities
-            </span>
+        <div className="relative mx-auto max-w-4xl px-4 py-20 text-center lg:py-28">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
+            <span className="size-1.5 rounded-full bg-accent" />
+            Official Registrar data · {data.count.toLocaleString()} entities
+          </span>
 
-            <h1 className="mt-7 max-w-3xl text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-              Every Cyprus company. <span className="text-gradient-copper">One search.</span>
-            </h1>
+          <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
+            Every Cyprus company. <span className="text-gradient-copper">One search.</span>
+          </h1>
 
-            <p className="mt-6 max-w-xl text-lg text-primary-foreground/80">
-              Free access to the full register of the Department of Registrar of Companies — status, directors,
-              shareholders and registered office — plus certified certificates delivered digitally.
-            </p>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
+            Free access to the full register of the Department of Registrar of Companies — status, directors,
+            shareholders and registered office — plus certified certificates delivered digitally.
+          </p>
 
-            <form
-              className="mt-8 max-w-xl"
-              onSubmit={(event) => {
-                event.preventDefault();
-                navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
-              }}
-            >
-              <div className="flex flex-col gap-2 rounded-xl border border-primary-foreground/15 bg-primary-foreground/10 p-2 backdrop-blur sm:flex-row">
-                <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-primary-foreground/50" />
-                  <input
-                    value={q}
-                    onChange={(event) => setQ(event.target.value)}
-                    type="search"
-                    aria-label="Search Cyprus companies"
-                    placeholder="Company name or HE number…"
-                    className="h-12 w-full rounded-lg bg-transparent pl-10 pr-3 text-base text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
-                  />
-                </div>
-                <Button type="submit" size="lg" className="h-12 bg-accent px-7 text-accent-foreground hover:bg-accent/90">
-                  Search register
-                </Button>
+          <form
+            className="mx-auto mt-8 max-w-2xl"
+            onSubmit={(event) => {
+              event.preventDefault();
+              navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
+            }}
+          >
+            <div className="flex flex-col gap-2 rounded-xl border border-primary-foreground/15 bg-white/10 p-2 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-primary-foreground/50" />
+                <input
+                  value={q}
+                  onChange={(event) => setQ(event.target.value)}
+                  type="search"
+                  aria-label="Search Cyprus companies"
+                  placeholder="Company name or HE number…"
+                  className="h-12 w-full rounded-lg bg-transparent pl-10 pr-3 text-base text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
+                />
               </div>
-              <p className="mt-3 text-sm text-primary-foreground/60">
-                Try “SOFTBOT”, “HE 252407” or browse by district below.
-              </p>
-            </form>
+              <Button type="submit" size="lg" className="h-12 bg-accent px-7 text-accent-foreground hover:bg-accent/90">
+                Search register
+              </Button>
+            </div>
+            <p className="mt-3 text-sm text-primary-foreground/60">
+              Try “SOFTBOT”, “HE 252407” or browse by district below.
+            </p>
+          </form>
 
-            <dl className="mt-10 grid gap-6 border-t border-primary-foreground/15 pt-8 sm:grid-cols-4">
-              {[
-                [data.count.toLocaleString(), "Companies indexed"],
-                ["6", "Districts"],
-                ["1–2 days", "Certificate delivery"],
-                ["100%", "Registrar sourced"],
-              ].map(([value, label]) => (
-                <div key={label}>
-                  <dt className="font-display text-2xl font-bold text-accent">{value}</dt>
-                  <dd className="mt-1 text-sm text-primary-foreground/70">{label}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {/* Right: hero grid cards */}
-          <div className="grid grid-cols-2 gap-4">
-            {HERO_CARDS.map((item) => {
-              const value = item.value === "count" ? data.count.toLocaleString() : item.value;
-              return (
-                <div
-                  key={item.label}
-                  className="group rounded-2xl border border-primary-foreground/15 bg-primary-foreground/5 p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:bg-primary-foreground/10 sm:p-6"
-                >
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-accent/20 text-accent">
-                    <item.icon className="size-5" />
-                  </div>
-                  <p className="mt-4 font-display text-2xl font-bold text-primary-foreground sm:text-3xl">
-                    {value}
-                    {item.suffix}
-                  </p>
-                  <p className="mt-1 text-sm text-primary-foreground/70">{item.label}</p>
-                </div>
-              );
-            })}
-          </div>
+          <dl className="mx-auto mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4 border-t border-primary-foreground/15 pt-8">
+            {[
+              [data.count.toLocaleString(), "Companies indexed"],
+              ["6", "Districts"],
+              ["1–2 days", "Certificate delivery"],
+              ["100%", "Registrar sourced"],
+            ].map(([value, label]) => (
+              <div key={label} className="text-center">
+                <dt className="font-display text-2xl font-bold text-accent">{value}</dt>
+                <dd className="mt-1 text-sm text-primary-foreground/70">{label}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
