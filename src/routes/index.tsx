@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Timer,
 } from "lucide-react";
-import { getCompanyCount, getDistricts } from "@/lib/companies.functions";
+import { getCompanyCount } from "@/lib/companies.functions";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 
