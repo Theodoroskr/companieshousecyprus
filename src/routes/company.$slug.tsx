@@ -6,6 +6,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { priceBreakdown } from "@/lib/pricing";
+import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -185,10 +186,9 @@ function CompanyPage() {
     { label: "Registration date", value: registrationDate ?? "—" },
     { label: "District", value: company.district_en ?? "—" },
     {
-      label: "Officials & owners on record",
+      label: OFFICIALS_ON_RECORD_LABEL,
       value: String(company.officials_count ?? officials.length),
-      description:
-        "Total number of directors, secretaries and owners currently recorded for this entity in the Registrar data.",
+      description: OFFICIALS_ON_RECORD_DESCRIPTION,
     },
   ];
 
