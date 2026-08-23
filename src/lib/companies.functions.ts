@@ -82,15 +82,32 @@ export const searchCompanies = createServerFn({ method: "GET" })
       rows = (res.data ?? []) as CompanyListItem[];
       count = res.count ?? 0;
     } else {
-      const res = await supabase
-        .from("companies")
-        .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
-        .or(`name.ilike.%${q}%,official_no.ilike.%${q}%`)
-        .order("name", { ascending: true })
-        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-      rows = (res.data ?? []) as CompanyListItem[];
-      count = res.count ?? 0;
+      const idMatch = q.replace(/\s+/g, "").toUpperCase();
+      const isIdLike = /^(HE|EE|AE|BN|S|C|B|P|O|N)?\d+$/.test(idMatch);
+      const select =
+        "slug, name, official_no, status_en, status_group, district_en, locality" as const;
+      if (isIdLike) {
+        const digits = idMatch.replace(/^\D+/, "");
+        const res = await supabase
+          .from("companies")
+          .select(select, { count: "exact" })
+          .or(`official_no.eq.${idMatch},slug.eq.${idMatch},reg_number.eq.${digits}`)
+          .order("name", { ascending: true })
+          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+        rows = (res.data ?? []) as CompanyListItem[];
+        count = res.count ?? 0;
+      } else {
+        const res = await supabase
+          .from("companies")
+          .select(select, { count: "exact" })
+          .ilike("name", `%${q}%`)
+          .order("name", { ascending: true })
+          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+        rows = (res.data ?? []) as CompanyListItem[];
+        count = res.count ?? 0;
+      }
     }
+
     return { rows, count };
   });
 
