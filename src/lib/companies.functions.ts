@@ -40,7 +40,7 @@ export type Official = Database["public"]["Tables"]["officials"]["Row"];
 
 export type CompanyListItem = Pick<
   Company,
-  "slug" | "name" | "official_no" | "status_en" | "status_group" | "district_en" | "locality"
+  "slug" | "type_code" | "name" | "official_no" | "reg_number" | "status_en" | "status_group" | "district_en" | "locality"
 >;
 
 export const getCompanyBySlug = createServerFn({ method: "GET" })
@@ -50,7 +50,7 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     const { data: company, error } = await supabase
       .from("companies")
       .select(
-        "slug, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at",
+        "slug, type_code, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at",
       )
       .eq("slug", data.slug)
       .single();
@@ -76,7 +76,7 @@ export const searchCompanies = createServerFn({ method: "GET" })
     if (!q) {
       const res = await supabase
         .from("companies")
-        .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
+        .select("slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality", { count: "exact" })
         .order("name", { ascending: true })
         .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
       rows = (res.data ?? []) as CompanyListItem[];
@@ -85,7 +85,7 @@ export const searchCompanies = createServerFn({ method: "GET" })
       const idMatch = q.replace(/\s+/g, "").toUpperCase();
       const isIdLike = /^(HE|EE|AE|BN|S|C|B|P|O|N)?\d+$/.test(idMatch);
       const select =
-        "slug, name, official_no, status_en, status_group, district_en, locality" as const;
+        "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
       if (isIdLike) {
         const digits = idMatch.replace(/^\D+/, "");
         const res = await supabase
@@ -120,7 +120,7 @@ export const listCompaniesByLetter = createServerFn({ method: "GET" })
     const page = Math.max(1, data.page);
     const res = await supabase
       .from("companies")
-      .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
+      .select("slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality", { count: "exact" })
       .ilike("name", `${letter}%`)
       .order("name", { ascending: true })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
@@ -136,7 +136,7 @@ export const listCompaniesByDistrict = createServerFn({ method: "GET" })
     const page = Math.max(1, data.page);
     const res = await supabase
       .from("companies")
-      .select("slug, name, official_no, status_en, status_group, district_en, locality", { count: "exact" })
+      .select("slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality", { count: "exact" })
       .eq("district_en", district)
       .order("name", { ascending: true })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
