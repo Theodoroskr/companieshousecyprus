@@ -135,6 +135,31 @@ export function SiteHeader() {
             />
           </form>
           <div className="grid gap-1 text-sm">
+            <p className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Products</p>
+            {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
+              <Link
+                key={product.slug}
+                to="/report/$type"
+                params={{ type: product.slug }}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2 pl-6 hover:bg-muted"
+              >
+                {product.name}
+              </Link>
+            ))}
+            <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reports &amp; packs</p>
+            {PRODUCTS.filter((p) => p.category === "report" || p.category === "pack").map((product) => (
+              <Link
+                key={product.slug}
+                to="/report/$type"
+                params={{ type: product.slug }}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2 pl-6 hover:bg-muted"
+              >
+                {product.name}
+              </Link>
+            ))}
+            <div className="my-1 border-t" />
             <Link to="/pricing" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
               Pricing
             </Link>
