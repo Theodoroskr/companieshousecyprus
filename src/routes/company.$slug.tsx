@@ -405,9 +405,10 @@ function CompanyPage() {
                                   <Info className="size-4" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-[16rem] bg-deep text-primary-foreground">
+                              <TooltipContent side="top" className="max-w-[16rem]">
                                 <p className="font-medium">{product.tagline}</p>
                               </TooltipContent>
+
                             </Tooltip>
                           </div>
                           <p className="mt-0.5 text-xs text-muted-foreground">{product.delivery}</p>
