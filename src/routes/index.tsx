@@ -23,9 +23,9 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Companies House Cyprus — Cyprus company register search & certificates";
+const TITLE = "Companies House Cyprus — Search & order certificates online";
 const DESCRIPTION =
-  "Search the Cyprus Companies House register free: 571,000+ Cyprus companies, statuses, directors, shareholders, registered offices and certified documents delivered digitally.";
+  "Search the Cyprus Companies House register free and order official certificates online. Faster search, digital delivery, and company reports — without visiting the Registrar.";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
