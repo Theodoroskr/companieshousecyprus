@@ -132,6 +132,12 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <img
+              src={iso9001Asset.url}
+              alt="EUROCERT certified management system — ISO 9001:2015"
+              className="h-16 w-auto rounded-md bg-background p-1"
+              loading="lazy"
+            />
+            <img
               src={iso27001Asset.url}
               alt="EUROCERT certified management system — ISO/IEC 27001:2023"
               className="h-16 w-auto rounded-md bg-background p-1"
@@ -144,6 +150,7 @@ export function SiteFooter() {
               loading="lazy"
             />
           </div>
+
         </div>
       </div>
 
