@@ -27,6 +27,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
+import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
@@ -121,6 +122,12 @@ const ReportTypeRoute = ReportTypeRouteImport.update({
   path: '/report/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminApi4allRoute =
+  AuthenticatedAdminApi4allRouteImport.update({
+    id: '/admin/api4all',
+    path: '/admin/api4all',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminImportRoute =
   AuthenticatedAdminImportRouteImport.update({
     id: '/admin/import',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
   '/report/$type': typeof ReportTypeRoute
+  '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -185,6 +193,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
   '/report/$type': typeof ReportTypeRoute
+  '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -210,6 +219,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
   '/report/$type': typeof ReportTypeRoute
+  '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/company/$slug'
     | '/report/$type'
+    | '/admin/api4all'
     | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/company/$slug'
     | '/report/$type'
+    | '/admin/api4all'
     | '/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -282,6 +294,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/company/$slug'
     | '/report/$type'
+    | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/import'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -440,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/api4all': {
+      id: '/_authenticated/admin/api4all'
+      path: '/admin/api4all'
+      fullPath: '/admin/api4all'
+      preLoaderRoute: typeof AuthenticatedAdminApi4allRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/import': {
       id: '/_authenticated/admin/import'
       path: '/admin/import'
@@ -472,10 +492,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminApi4allRoute: typeof AuthenticatedAdminApi4allRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminApi4allRoute: AuthenticatedAdminApi4allRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
 }
 
