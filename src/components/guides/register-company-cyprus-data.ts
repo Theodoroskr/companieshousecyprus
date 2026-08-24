@@ -213,7 +213,7 @@ export const BANK_CHECKLIST = [
 ] as const;
 
 export const POST_INCORPORATION_DOCS = [
-  { label: "Certificate of incorporation", to: "/report/structure" },
+  { label: "Certificate of incorporation", to: "/pricing" },
   { label: "Certificate of registered office", to: "/pricing" },
   { label: "Certificate of directors and secretary", to: "/pricing" },
   { label: "Certificate of shareholders", to: "/pricing" },
