@@ -62,6 +62,27 @@ const Email = ({
           {deliveredAt ? <Text style={meta}>Delivered on: {deliveredAt}</Text> : null}
         </Section>
 
+        {documents && documents.length > 0 ? (
+          <Section style={card}>
+            <Text style={{ ...meta, fontWeight: 600, color: '#12203a' }}>
+              {documents.length === 1 ? 'Your document' : `Your documents (${documents.length})`}
+            </Text>
+            {documents.map((doc) => (
+              <Text key={doc.name} style={meta}>
+                {doc.url ? (
+                  <Link href={doc.url} style={link}>
+                    {doc.name}
+                  </Link>
+                ) : (
+                  doc.name
+                )}
+              </Text>
+            ))}
+            <Text style={meta}>These secure download links stay valid for 7 days.</Text>
+          </Section>
+        ) : null}
+
+
         {portalUrl ? (
           <Section style={{ margin: '20px 0' }}>
             <Button href={portalUrl} style={button}>
