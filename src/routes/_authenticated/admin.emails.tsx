@@ -183,7 +183,7 @@ function AdminEmailsPage() {
         <table className="w-full text-sm">
           <thead className="border-b bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 font-semibold">When</th>
+              <th className="px-4 py-3 font-semibold">Sent at (Cyprus time)</th>
               <th className="px-4 py-3 font-semibold">Recipient</th>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Outcome</th>
