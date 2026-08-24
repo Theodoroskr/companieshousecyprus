@@ -7,7 +7,6 @@ Allow: /
 Allow: /company/
 Allow: /companies/
 Allow: /sitemap.xml
-Allow: /sitemap_index.xml
 Disallow: /cart
 Disallow: /checkout
 Disallow: /account
@@ -116,6 +115,5 @@ Disallow: /admin
 Disallow: /order/
 
 Sitemap: https://companieshousecyprus.com/sitemap.xml
-Sitemap: https://companieshousecyprus.com/sitemap_index.xml
 AI-sitemap: https://companieshousecyprus.com/llms.txt
 AI-policy: https://companieshousecyprus.com/ai.txt
