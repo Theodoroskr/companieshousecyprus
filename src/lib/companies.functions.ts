@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { normalizeCompanySlug } from "@/lib/slug";
 
 const PAGE_SIZE = 50;
 const SITEMAP_CHUNK_SIZE = 50_000;
@@ -47,12 +48,13 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
+    const slug = normalizeCompanySlug(data.slug);
     const { data: company, error } = await supabase
       .from("companies")
       .select(
         "slug, type_code, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at",
       )
-      .eq("slug", data.slug)
+      .eq("slug", slug)
       .single();
     if (error || !company) {
       throw new Error(`Company not found: ${data.slug}`);
@@ -60,7 +62,7 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     const { data: officials } = await supabase
       .from("officials")
       .select("person_name, position_en, position_el")
-      .eq("slug", data.slug)
+      .eq("slug", slug)
       .order("position_en", { ascending: true });
     return { company, officials: officials ?? [] };
   });
@@ -69,13 +71,14 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
+    const slug = normalizeCompanySlug(data.slug);
     const select =
       "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
 
     const { data: base } = await supabase
       .from("companies")
       .select("slug, address_full")
-      .eq("slug", data.slug)
+      .eq("slug", slug)
       .single();
 
     let byAddress: CompanyListItem[] = [];
@@ -85,7 +88,7 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
         .from("companies")
         .select(select, { count: "exact" })
         .eq("address_full", base.address_full)
-        .neq("slug", data.slug)
+        .neq("slug", slug)
         .order("name", { ascending: true })
         .limit(8);
       byAddress = (res.data ?? []) as CompanyListItem[];
@@ -95,7 +98,7 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     const { data: own } = await supabase
       .from("officials")
       .select("person_name")
-      .eq("slug", data.slug)
+      .eq("slug", slug)
       .limit(20);
     const names = Array.from(
       new Set((own ?? []).map((o) => o.person_name).filter((n): n is string => Boolean(n && n.trim()))),
@@ -107,7 +110,7 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
         .from("officials")
         .select("slug, person_name")
         .in("person_name", names)
-        .neq("slug", data.slug)
+        .neq("slug", slug)
         .limit(60);
       const viaBySlug = new Map<string, string>();
       for (const l of links ?? []) {
