@@ -64,20 +64,24 @@ function PricingPage() {
                     <h3 className="font-display text-lg font-semibold">{product.name}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">{product.tagline}</p>
                     <p className="mt-5 font-display text-3xl font-bold">
-                      {formatPrice(breakdown.total)}
-                      <span className="ml-1 text-sm font-normal text-muted-foreground">/ company incl. VAT</span>
+                      {formatPrice(breakdown.documentPrice)}
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">
+                        / company {product.category === "certificate" ? "certificate only" : "incl. VAT"}
+                      </span>
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <Receipt className="size-3.5" />
-                      <span>{formatPrice(breakdown.documentPrice)} document</span>
-                      {breakdown.serviceFee > 0 && (
+                      {product.category === "certificate" ? (
+                        <span>€50 handling fee per certificate applies at checkout</span>
+                      ) : (
                         <>
+                          <span>{formatPrice(breakdown.documentPrice)} document</span>
                           <span className="text-border">|</span>
-                          <span>{formatPrice(breakdown.serviceFee)} service fee</span>
+                          <span>{formatPrice(breakdown.vat)} VAT ({Math.round(VAT_RATE * 100)}%)</span>
+                          <span className="text-border">|</span>
+                          <span>{formatPrice(breakdown.total)} total</span>
                         </>
                       )}
-                      <span className="text-border">|</span>
-                      <span>{formatPrice(breakdown.vat)} VAT ({Math.round(VAT_RATE * 100)}%)</span>
                     </div>
                     <p className="mt-3 text-xs text-muted-foreground">Delivery: {product.delivery}</p>
                     <ul className="mt-5 space-y-2 text-sm">
