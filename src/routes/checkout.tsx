@@ -37,7 +37,11 @@ const FIELDS = [
 
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
-  const [placed, setPlaced] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const placeOrder = useServerFn(submitOrder);
+  const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (placed) {
     return (
@@ -45,12 +49,14 @@ function CheckoutPage() {
         <CheckCircle2 className="mx-auto size-12 text-olive" />
         <h1 className="mt-6 text-3xl font-bold">Order request received</h1>
         <p className="mt-3 text-muted-foreground">
-          Reference <span className="font-mono font-semibold text-foreground">{placed}</span>. Our team will confirm
-          availability and send a payment link before the documents are issued.
+          Reference <span className="font-mono font-semibold text-foreground">{placed.reference}</span>. Our team will
+          confirm availability and send a payment link before the documents are issued.
         </p>
-        <div className="mt-8 flex justify-center gap-3">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild>
-            <Link to="/">Back to home</Link>
+            <Link to="/order/$reference" params={{ reference: placed.reference }} search={{ token: placed.token }}>
+              Track this order
+            </Link>
           </Button>
           <Button asChild variant="outline">
             <Link to="/search" search={{ q: "", page: 1 }}>Search another company</Link>
@@ -78,13 +84,45 @@ function CheckoutPage() {
         <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
           <form
             className="rounded-xl border bg-card p-6 shadow-panel"
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
-              const reference = `CHC-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-              clear();
-              setPlaced(reference);
+              if (submitting) return;
+              const form = new FormData(event.currentTarget);
+              setSubmitting(true);
+              setError(null);
+              try {
+                const result = await placeOrder({
+                  data: {
+                    fullName: String(form.get("fullName") ?? ""),
+                    email: String(form.get("email") ?? ""),
+                    firm: String(form.get("company") ?? ""),
+                    vatNumber: String(form.get("vat") ?? ""),
+                    phone: String(form.get("phone") ?? ""),
+                    notes: String(form.get("notes") ?? ""),
+                    items: items.map((item) => ({
+                      productSlug: item.productSlug,
+                      companySlug: item.companySlug,
+                      companyName: item.companyName,
+                      companyNumber: item.companyNumber,
+                      quantity: item.quantity,
+                    })),
+                  },
+                });
+                clear();
+                setPlaced(result);
+                void navigate({
+                  to: "/order/$reference",
+                  params: { reference: result.reference },
+                  search: { token: result.token },
+                });
+              } catch (submitError) {
+                setError(submitError instanceof Error ? submitError.message : "Could not submit your order");
+              } finally {
+                setSubmitting(false);
+              }
             }}
           >
+
             <h2 className="font-display text-lg font-semibold">Your details</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {FIELDS.map((field) => (
