@@ -41,7 +41,7 @@ const FIELDS = [
   { name: 'email', label: 'Email for delivery', type: 'email', placeholder: 'you@firm.com.cy', required: true },
   { name: 'company', label: 'Your company / firm', type: 'text', placeholder: 'Georgiou & Partners LLC', required: false },
   { name: 'vat', label: 'VAT number (optional)', type: 'text', placeholder: 'CY10123456X', required: false },
-  { name: 'phone', label: 'Phone', type: 'tel', placeholder: '+357 22 000 000', required: false },
+  { name: 'phone', label: 'Phone', type: 'tel', placeholder: '+357 22 398241', required: false },
 ] as const;
 
 function friendlyAuthError(error: unknown, context: 'signup' | 'checkout' = 'checkout') {
