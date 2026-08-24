@@ -116,6 +116,9 @@ export const Route = createFileRoute("/company/$slug")({
       name: data.company.name,
       officialNo: displayOfficialNo(data.company),
       status: data.company.status_en,
+      statusGroup: data.company.status_group ?? null,
+      typeEn: data.company.type_en ?? null,
+      registrationDate: formatDate(data.company.registration_date),
       district_en: data.company.district_en ?? null,
     };
   },
@@ -125,9 +128,21 @@ export const Route = createFileRoute("/company/$slug")({
         meta: [{ title: "Company unavailable | Companies House Cyprus" }, { name: "robots", content: "noindex" }],
       };
     }
-    const label = loaderData.officialNo ?? params.slug.toUpperCase();
-    const title = `${loaderData.name} (${label}) — Cyprus company profile`;
-    const description = `${loaderData.name}, ${label}: ${loaderData.status ?? "registered"} Cyprus company. Registered office, directors, secretary and Registrar certificates.`;
+    const canonicalSlug = normalizeCompanySlug(params.slug);
+    const title = companyTitle({
+      name: loaderData.name,
+      officialNo: loaderData.officialNo ?? canonicalSlug,
+    });
+    const description = companyDescription({
+      name: loaderData.name,
+      officialNo: loaderData.officialNo ?? canonicalSlug,
+      status: loaderData.status,
+      statusGroup: loaderData.statusGroup,
+      typeEn: loaderData.typeEn,
+      districtEn: loaderData.district_en,
+      registrationDate: loaderData.registrationDate,
+    });
+
 
     const breadcrumbItems: Array<{ "@type": "ListItem"; position: number; name: string; item: string }> = [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://companieshousecyprus.com/" },
