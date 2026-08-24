@@ -15,7 +15,10 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AiDottxtRouteImport } from './routes/ai[.]txt'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
+import { Route as CategorySitemapDotxmlRouteImport } from './routes/category-sitemap[.]xml'
 import { Route as CertificationsRouteImport } from './routes/certifications'
+import { Route as CompaniesSitemapDotxmlRouteImport } from './routes/companies-sitemap[.]xml'
+import { Route as CompanySitemapDotxmlRouteImport } from './routes/company-sitemap[.]xml'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -32,13 +35,23 @@ import { Route as New_company_sitemap_6DotxmlRouteImport } from './routes/new_co
 import { Route as New_company_sitemap_7DotxmlRouteImport } from './routes/new_company_sitemap_7[.]xml'
 import { Route as New_company_sitemap_8DotxmlRouteImport } from './routes/new_company_sitemap_8[.]xml'
 import { Route as New_company_sitemap_9DotxmlRouteImport } from './routes/new_company_sitemap_9[.]xml'
+import { Route as PageSitemapDotxmlRouteImport } from './routes/page-sitemap[.]xml'
+import { Route as PostSitemapDotxmlRouteImport } from './routes/post-sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SitemapIndexDotxmlRouteImport } from './routes/sitemap-index[.]xml'
+import { Route as SitemapDottxtRouteImport } from './routes/sitemap[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SitemapDotxmlDotgzRouteImport } from './routes/sitemap[.]xml[.]gz'
+import { Route as Sitemap1DotxmlRouteImport } from './routes/sitemap1[.]xml'
+import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[.]xml'
+import { Route as Sitemap_indexDotxmlDotgzRouteImport } from './routes/sitemap_index[.]xml[.]gz'
+import { Route as SitemapsDotxmlRouteImport } from './routes/sitemaps[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as WpSitemapDotxmlRouteImport } from './routes/wp-sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -101,9 +114,24 @@ const CartRoute = CartRouteImport.update({
   path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategorySitemapDotxmlRoute = CategorySitemapDotxmlRouteImport.update({
+  id: '/category-sitemap.xml',
+  path: '/category-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CertificationsRoute = CertificationsRouteImport.update({
   id: '/certifications',
   path: '/certifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompaniesSitemapDotxmlRoute = CompaniesSitemapDotxmlRouteImport.update({
+  id: '/companies-sitemap.xml',
+  path: '/companies-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanySitemapDotxmlRoute = CompanySitemapDotxmlRouteImport.update({
+  id: '/company-sitemap.xml',
+  path: '/company-sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -198,6 +226,16 @@ const New_company_sitemap_9DotxmlRoute =
     path: '/new_company_sitemap_9.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
+const PageSitemapDotxmlRoute = PageSitemapDotxmlRouteImport.update({
+  id: '/page-sitemap.xml',
+  path: '/page-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostSitemapDotxmlRoute = PostSitemapDotxmlRouteImport.update({
+  id: '/post-sitemap.xml',
+  path: '/post-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -223,14 +261,55 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapIndexDotxmlRoute = SitemapIndexDotxmlRouteImport.update({
+  id: '/sitemap-index.xml',
+  path: '/sitemap-index.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDottxtRoute = SitemapDottxtRouteImport.update({
+  id: '/sitemap.txt',
+  path: '/sitemap.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlDotgzRoute = SitemapDotxmlDotgzRouteImport.update({
+  id: '/sitemap.xml.gz',
+  path: '/sitemap.xml.gz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Sitemap1DotxmlRoute = Sitemap1DotxmlRouteImport.update({
+  id: '/sitemap1.xml',
+  path: '/sitemap1.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Sitemap_indexDotxmlRoute = Sitemap_indexDotxmlRouteImport.update({
+  id: '/sitemap_index.xml',
+  path: '/sitemap_index.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Sitemap_indexDotxmlDotgzRoute =
+  Sitemap_indexDotxmlDotgzRouteImport.update({
+    id: '/sitemap_index.xml.gz',
+    path: '/sitemap_index.xml.gz',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SitemapsDotxmlRoute = SitemapsDotxmlRouteImport.update({
+  id: '/sitemaps.xml',
+  path: '/sitemaps.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WpSitemapDotxmlRoute = WpSitemapDotxmlRouteImport.update({
+  id: '/wp-sitemap.xml',
+  path: '/wp-sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93ListToolsRoute =
@@ -413,7 +492,10 @@ export interface FileRoutesByFullPath {
   '/ai.txt': typeof AiDottxtRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/certifications': typeof CertificationsRoute
+  '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
+  '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -430,13 +512,23 @@ export interface FileRoutesByFullPath {
   '/new_company_sitemap_7.xml': typeof New_company_sitemap_7DotxmlRoute
   '/new_company_sitemap_8.xml': typeof New_company_sitemap_8DotxmlRoute
   '/new_company_sitemap_9.xml': typeof New_company_sitemap_9DotxmlRoute
+  '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
+  '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
+  '/sitemap-index.xml': typeof SitemapIndexDotxmlRoute
+  '/sitemap.txt': typeof SitemapDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sitemap.xml.gz': typeof SitemapDotxmlDotgzRoute
+  '/sitemap1.xml': typeof Sitemap1DotxmlRoute
+  '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
+  '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
+  '/sitemaps.xml': typeof SitemapsDotxmlRoute
   '/terms': typeof TermsRoute
+  '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -476,7 +568,10 @@ export interface FileRoutesByTo {
   '/ai.txt': typeof AiDottxtRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/certifications': typeof CertificationsRoute
+  '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
+  '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -493,13 +588,23 @@ export interface FileRoutesByTo {
   '/new_company_sitemap_7.xml': typeof New_company_sitemap_7DotxmlRoute
   '/new_company_sitemap_8.xml': typeof New_company_sitemap_8DotxmlRoute
   '/new_company_sitemap_9.xml': typeof New_company_sitemap_9DotxmlRoute
+  '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
+  '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
+  '/sitemap-index.xml': typeof SitemapIndexDotxmlRoute
+  '/sitemap.txt': typeof SitemapDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sitemap.xml.gz': typeof SitemapDotxmlDotgzRoute
+  '/sitemap1.xml': typeof Sitemap1DotxmlRoute
+  '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
+  '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
+  '/sitemaps.xml': typeof SitemapsDotxmlRoute
   '/terms': typeof TermsRoute
+  '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -540,7 +645,10 @@ export interface FileRoutesById {
   '/ai.txt': typeof AiDottxtRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/certifications': typeof CertificationsRoute
+  '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
+  '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -557,13 +665,23 @@ export interface FileRoutesById {
   '/new_company_sitemap_7.xml': typeof New_company_sitemap_7DotxmlRoute
   '/new_company_sitemap_8.xml': typeof New_company_sitemap_8DotxmlRoute
   '/new_company_sitemap_9.xml': typeof New_company_sitemap_9DotxmlRoute
+  '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
+  '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
+  '/sitemap-index.xml': typeof SitemapIndexDotxmlRoute
+  '/sitemap.txt': typeof SitemapDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sitemap.xml.gz': typeof SitemapDotxmlDotgzRoute
+  '/sitemap1.xml': typeof Sitemap1DotxmlRoute
+  '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
+  '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
+  '/sitemaps.xml': typeof SitemapsDotxmlRoute
   '/terms': typeof TermsRoute
+  '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -605,7 +723,10 @@ export interface FileRouteTypes {
     | '/ai.txt'
     | '/auth'
     | '/cart'
+    | '/category-sitemap.xml'
     | '/certifications'
+    | '/companies-sitemap.xml'
+    | '/company-sitemap.xml'
     | '/contact'
     | '/faq'
     | '/llms.txt'
@@ -622,13 +743,23 @@ export interface FileRouteTypes {
     | '/new_company_sitemap_7.xml'
     | '/new_company_sitemap_8.xml'
     | '/new_company_sitemap_9.xml'
+    | '/page-sitemap.xml'
+    | '/post-sitemap.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
     | '/robots.txt'
     | '/search'
+    | '/sitemap-index.xml'
+    | '/sitemap.txt'
     | '/sitemap.xml'
+    | '/sitemap.xml.gz'
+    | '/sitemap1.xml'
+    | '/sitemap_index.xml'
+    | '/sitemap_index.xml.gz'
+    | '/sitemaps.xml'
     | '/terms'
+    | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
@@ -668,7 +799,10 @@ export interface FileRouteTypes {
     | '/ai.txt'
     | '/auth'
     | '/cart'
+    | '/category-sitemap.xml'
     | '/certifications'
+    | '/companies-sitemap.xml'
+    | '/company-sitemap.xml'
     | '/contact'
     | '/faq'
     | '/llms.txt'
@@ -685,13 +819,23 @@ export interface FileRouteTypes {
     | '/new_company_sitemap_7.xml'
     | '/new_company_sitemap_8.xml'
     | '/new_company_sitemap_9.xml'
+    | '/page-sitemap.xml'
+    | '/post-sitemap.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
     | '/robots.txt'
     | '/search'
+    | '/sitemap-index.xml'
+    | '/sitemap.txt'
     | '/sitemap.xml'
+    | '/sitemap.xml.gz'
+    | '/sitemap1.xml'
+    | '/sitemap_index.xml'
+    | '/sitemap_index.xml.gz'
+    | '/sitemaps.xml'
     | '/terms'
+    | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/checkout/return'
@@ -731,7 +875,10 @@ export interface FileRouteTypes {
     | '/ai.txt'
     | '/auth'
     | '/cart'
+    | '/category-sitemap.xml'
     | '/certifications'
+    | '/companies-sitemap.xml'
+    | '/company-sitemap.xml'
     | '/contact'
     | '/faq'
     | '/llms.txt'
@@ -748,13 +895,23 @@ export interface FileRouteTypes {
     | '/new_company_sitemap_7.xml'
     | '/new_company_sitemap_8.xml'
     | '/new_company_sitemap_9.xml'
+    | '/page-sitemap.xml'
+    | '/post-sitemap.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
     | '/robots.txt'
     | '/search'
+    | '/sitemap-index.xml'
+    | '/sitemap.txt'
     | '/sitemap.xml'
+    | '/sitemap.xml.gz'
+    | '/sitemap1.xml'
+    | '/sitemap_index.xml'
+    | '/sitemap_index.xml.gz'
+    | '/sitemaps.xml'
     | '/terms'
+    | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
@@ -796,7 +953,10 @@ export interface RootRouteChildren {
   AiDottxtRoute: typeof AiDottxtRoute
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
+  CategorySitemapDotxmlRoute: typeof CategorySitemapDotxmlRoute
   CertificationsRoute: typeof CertificationsRoute
+  CompaniesSitemapDotxmlRoute: typeof CompaniesSitemapDotxmlRoute
+  CompanySitemapDotxmlRoute: typeof CompanySitemapDotxmlRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
@@ -813,13 +973,23 @@ export interface RootRouteChildren {
   New_company_sitemap_7DotxmlRoute: typeof New_company_sitemap_7DotxmlRoute
   New_company_sitemap_8DotxmlRoute: typeof New_company_sitemap_8DotxmlRoute
   New_company_sitemap_9DotxmlRoute: typeof New_company_sitemap_9DotxmlRoute
+  PageSitemapDotxmlRoute: typeof PageSitemapDotxmlRoute
+  PostSitemapDotxmlRoute: typeof PostSitemapDotxmlRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResourcesRoute: typeof ResourcesRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
+  SitemapIndexDotxmlRoute: typeof SitemapIndexDotxmlRoute
+  SitemapDottxtRoute: typeof SitemapDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SitemapDotxmlDotgzRoute: typeof SitemapDotxmlDotgzRoute
+  Sitemap1DotxmlRoute: typeof Sitemap1DotxmlRoute
+  Sitemap_indexDotxmlRoute: typeof Sitemap_indexDotxmlRoute
+  Sitemap_indexDotxmlDotgzRoute: typeof Sitemap_indexDotxmlDotgzRoute
+  SitemapsDotxmlRoute: typeof SitemapsDotxmlRoute
   TermsRoute: typeof TermsRoute
+  WpSitemapDotxmlRoute: typeof WpSitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -887,11 +1057,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/category-sitemap.xml': {
+      id: '/category-sitemap.xml'
+      path: '/category-sitemap.xml'
+      fullPath: '/category-sitemap.xml'
+      preLoaderRoute: typeof CategorySitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/certifications': {
       id: '/certifications'
       path: '/certifications'
       fullPath: '/certifications'
       preLoaderRoute: typeof CertificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies-sitemap.xml': {
+      id: '/companies-sitemap.xml'
+      path: '/companies-sitemap.xml'
+      fullPath: '/companies-sitemap.xml'
+      preLoaderRoute: typeof CompaniesSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/company-sitemap.xml': {
+      id: '/company-sitemap.xml'
+      path: '/company-sitemap.xml'
+      fullPath: '/company-sitemap.xml'
+      preLoaderRoute: typeof CompanySitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1006,6 +1197,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof New_company_sitemap_9DotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/page-sitemap.xml': {
+      id: '/page-sitemap.xml'
+      path: '/page-sitemap.xml'
+      fullPath: '/page-sitemap.xml'
+      preLoaderRoute: typeof PageSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post-sitemap.xml': {
+      id: '/post-sitemap.xml'
+      path: '/post-sitemap.xml'
+      fullPath: '/post-sitemap.xml'
+      preLoaderRoute: typeof PostSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -1041,6 +1246,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap-index.xml': {
+      id: '/sitemap-index.xml'
+      path: '/sitemap-index.xml'
+      fullPath: '/sitemap-index.xml'
+      preLoaderRoute: typeof SitemapIndexDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.txt': {
+      id: '/sitemap.txt'
+      path: '/sitemap.txt'
+      fullPath: '/sitemap.txt'
+      preLoaderRoute: typeof SitemapDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -1048,11 +1267,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml.gz': {
+      id: '/sitemap.xml.gz'
+      path: '/sitemap.xml.gz'
+      fullPath: '/sitemap.xml.gz'
+      preLoaderRoute: typeof SitemapDotxmlDotgzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap1.xml': {
+      id: '/sitemap1.xml'
+      path: '/sitemap1.xml'
+      fullPath: '/sitemap1.xml'
+      preLoaderRoute: typeof Sitemap1DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap_index.xml': {
+      id: '/sitemap_index.xml'
+      path: '/sitemap_index.xml'
+      fullPath: '/sitemap_index.xml'
+      preLoaderRoute: typeof Sitemap_indexDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap_index.xml.gz': {
+      id: '/sitemap_index.xml.gz'
+      path: '/sitemap_index.xml.gz'
+      fullPath: '/sitemap_index.xml.gz'
+      preLoaderRoute: typeof Sitemap_indexDotxmlDotgzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemaps.xml': {
+      id: '/sitemaps.xml'
+      path: '/sitemaps.xml'
+      fullPath: '/sitemaps.xml'
+      preLoaderRoute: typeof SitemapsDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wp-sitemap.xml': {
+      id: '/wp-sitemap.xml'
+      path: '/wp-sitemap.xml'
+      fullPath: '/wp-sitemap.xml'
+      preLoaderRoute: typeof WpSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -1330,7 +1591,10 @@ const rootRouteChildren: RootRouteChildren = {
   AiDottxtRoute: AiDottxtRoute,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
+  CategorySitemapDotxmlRoute: CategorySitemapDotxmlRoute,
   CertificationsRoute: CertificationsRoute,
+  CompaniesSitemapDotxmlRoute: CompaniesSitemapDotxmlRoute,
+  CompanySitemapDotxmlRoute: CompanySitemapDotxmlRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
@@ -1347,13 +1611,23 @@ const rootRouteChildren: RootRouteChildren = {
   New_company_sitemap_7DotxmlRoute: New_company_sitemap_7DotxmlRoute,
   New_company_sitemap_8DotxmlRoute: New_company_sitemap_8DotxmlRoute,
   New_company_sitemap_9DotxmlRoute: New_company_sitemap_9DotxmlRoute,
+  PageSitemapDotxmlRoute: PageSitemapDotxmlRoute,
+  PostSitemapDotxmlRoute: PostSitemapDotxmlRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResourcesRoute: ResourcesRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
+  SitemapIndexDotxmlRoute: SitemapIndexDotxmlRoute,
+  SitemapDottxtRoute: SitemapDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SitemapDotxmlDotgzRoute: SitemapDotxmlDotgzRoute,
+  Sitemap1DotxmlRoute: Sitemap1DotxmlRoute,
+  Sitemap_indexDotxmlRoute: Sitemap_indexDotxmlRoute,
+  Sitemap_indexDotxmlDotgzRoute: Sitemap_indexDotxmlDotgzRoute,
+  SitemapsDotxmlRoute: SitemapsDotxmlRoute,
   TermsRoute: TermsRoute,
+  WpSitemapDotxmlRoute: WpSitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
