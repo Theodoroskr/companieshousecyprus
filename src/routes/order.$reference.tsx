@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
-import { fetchOrder, startOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
+import { fetchOrder, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
