@@ -152,7 +152,7 @@ function CartPage() {
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">VAT ({Math.round(VAT_RATE * 100)}%)</dt>
+                <dt className="text-muted-foreground">VAT ({Math.round(VAT_RATE * 100)}%) — reports &amp; service fee</dt>
                 <dd>{formatPrice(vat)}</dd>
               </div>
               <div className="flex justify-between border-t pt-3 text-base font-semibold">
