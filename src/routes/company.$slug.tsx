@@ -625,7 +625,9 @@ function CompanyPage() {
                             return (
                               <>
                                 <span className="block text-sm font-semibold">{formatPrice(breakdown.documentPrice)}</span>
-                                <span className="block text-[10px] text-muted-foreground">certificate only</span>
+                                <span className="block text-[10px] text-muted-foreground">
+                                  {product.category === "certificate" ? "certificate only" : "report only"}
+                                </span>
                               </>
                             );
                           })()}
