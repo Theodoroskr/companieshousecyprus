@@ -348,6 +348,40 @@ function CheckoutPage() {
                       {fieldErrors.password && (
                         <span className='mt-1 block text-xs text-destructive'>{fieldErrors.password}</span>
                       )}
+                      {password && (
+                        <div className='mt-2'>
+                          <div className='flex items-center gap-2'>
+                            <div className='flex h-1.5 flex-1 gap-1'>
+                              {[1, 2, 3, 4].map((i) => (
+                                <span
+                                  key={i}
+                                  className={cn(
+                                    'h-full flex-1 rounded-full',
+                                    i <= passwordStrength(password).score ? passwordStrength(password).tone : 'bg-muted',
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <span className='text-xs font-medium text-muted-foreground'>
+                              {passwordStrength(password).label}
+                            </span>
+                          </div>
+                          <ul className='mt-2 space-y-1'>
+                            {PASSWORD_RULES.map((rule) => {
+                              const ok = rule.test(password);
+                              return (
+                                <li
+                                  key={rule.label}
+                                  className={cn('flex items-center gap-1.5 text-xs', ok ? 'text-emerald-600' : 'text-muted-foreground')}
+                                >
+                                  <span aria-hidden>{ok ? '✓' : '•'}</span>
+                                  {rule.label}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      )}
                     </label>
                     <label>
                       <span className='text-sm font-medium'>Confirm password</span>
@@ -363,16 +397,22 @@ function CheckoutPage() {
                         placeholder='Re-enter password'
                         minLength={8}
                         required={createAccount}
-                        aria-invalid={!!fieldErrors.confirmPassword}
+                        aria-invalid={!!fieldErrors.confirmPassword || (!!confirmPassword && confirmPassword !== password)}
                         className={cn(
                           'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
-                          fieldErrors.confirmPassword && 'border-destructive focus:border-destructive',
+                          (fieldErrors.confirmPassword || (!!confirmPassword && confirmPassword !== password)) &&
+                            'border-destructive focus:border-destructive',
                         )}
                       />
-                      {fieldErrors.confirmPassword && (
+                      {fieldErrors.confirmPassword ? (
                         <span className='mt-1 block text-xs text-destructive'>{fieldErrors.confirmPassword}</span>
-                      )}
+                      ) : confirmPassword && confirmPassword !== password ? (
+                        <span className='mt-1 block text-xs text-destructive'>Passwords do not match.</span>
+                      ) : confirmPassword && confirmPassword === password ? (
+                        <span className='mt-1 block text-xs text-emerald-600'>Passwords match.</span>
+                      ) : null}
                     </label>
+
                   </div>
                 )}
 
