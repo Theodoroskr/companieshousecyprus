@@ -187,7 +187,7 @@ function CompanyPage() {
     { label: "District", value: company.district_en ?? "—" },
     {
       label: OFFICIALS_ON_RECORD_LABEL,
-      value: String(company.officials_count ?? officials.length),
+      value: "Yes",
       description: OFFICIALS_ON_RECORD_DESCRIPTION,
     },
   ];
