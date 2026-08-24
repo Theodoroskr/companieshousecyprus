@@ -6,6 +6,8 @@ export type AuthContextValue = {
   email: string | null;
   signedIn: boolean;
   isAdmin: boolean;
+  roles: string[];
+  accountType: 'admin' | 'client' | 'guest';
   signOut: () => Promise<void>;
 };
 
@@ -17,27 +19,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: null,
     signedIn: false,
     isAdmin: false,
+    roles: [],
+    accountType: 'guest',
   });
 
   const resolve = useCallback(async (userId: string | null, email: string | null) => {
     if (!userId) {
-      setState({ ready: true, email: null, signedIn: false, isAdmin: false });
+      setState({ ready: true, email: null, signedIn: false, isAdmin: false, roles: [], accountType: 'guest' });
       return;
     }
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .maybeSingle();
-    setState({ ready: true, email, signedIn: true, isAdmin: Boolean(data) });
+    const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId);
+    const roles = (data ?? []).map((r) => String(r.role));
+    const isAdmin = roles.includes('admin');
+    setState({
+      ready: true,
+      email,
+      signedIn: true,
+      isAdmin,
+      roles,
+      accountType: isAdmin ? 'admin' : 'client',
+    });
   }, []);
 
   const signOut = useCallback(async () => {
     // Optimistically clear auth state immediately so the header (and any other
     // consumer) re-renders in the logged-out state before the async sign-out
     // and navigation complete.
-    setState((prev) => ({ ...prev, signedIn: false, isAdmin: false, email: null }));
+    setState((prev) => ({ ...prev, signedIn: false, isAdmin: false, email: null, roles: [], accountType: 'guest' }));
     await supabase.auth.signOut();
   }, []);
 
