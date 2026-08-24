@@ -4,6 +4,7 @@ import { searchCompanies } from "@/lib/companies.functions";
 import { displayOfficialNo } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
+import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 
 const searchQueryOptions = (q: string, page: number) =>
   queryOptions({
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/search")({
   validateSearch: (search: Record<string, unknown>) => ({
     q: typeof search["q"] === "string" ? (search["q"] as string) : "",
     page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
+    product: typeof search["product"] === "string" ? (search["product"] as string) : undefined,
   }),
   loaderDeps: ({ search }) => ({ q: search.q, page: search.page }),
   loader: async ({ context, deps }) => {
@@ -34,10 +36,11 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const { q, page } = Route.useSearch();
+  const { q, page, product: productSlug } = Route.useSearch();
   const navigate = Route.useNavigate();
   const setSearch = (nextQ: string, nextPage: number) =>
-    navigate({ search: { q: nextQ, page: nextPage } });
+    navigate({ search: { q: nextQ, page: nextPage, product: productSlug } });
+  const pendingProduct = productSlug ? PRODUCTS_BY_SLUG[productSlug] : undefined;
   const { data } = useSuspenseQuery(searchQueryOptions(q, page));
   const totalPages = Math.ceil(data.count / 50);
 
@@ -69,6 +72,11 @@ function SearchPage() {
               Search
             </Button>
           </form>
+          {pendingProduct && (
+            <p className="mt-4 max-w-2xl rounded-lg border border-copper/40 bg-copper/10 px-4 py-3 text-sm text-primary-foreground/90">
+              Ordering <strong className="text-copper">{pendingProduct.name}</strong> ({formatPrice(pendingProduct.price)}) — pick the company below and we'll add it to your cart.
+            </p>
+          )}
         </div>
       </section>
 
@@ -89,6 +97,7 @@ function SearchPage() {
               <Link
                 to="/company/$slug"
                 params={{ slug: company.slug }}
+                search={pendingProduct ? { product: pendingProduct.slug } : undefined}
                 className="flex flex-wrap items-center justify-between gap-3 p-4"
               >
                 <span>
