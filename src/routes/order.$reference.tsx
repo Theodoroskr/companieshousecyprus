@@ -249,19 +249,29 @@ function OrderPage() {
                   </span>
                 </div>
               )}
-              {item.document_name && (
+              {(item.order_documents?.length ?? 0) > 0 && (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      const { url } = await getDocumentUrl({
-                        data: { itemId: item.id, reference: order.reference, token: token ?? "" },
-                      });
-                      window.open(url, "_blank", "noopener");
-                    }}
-                  >
-                    <Download className="size-4" /> Download {item.document_name}
-                  </Button>
+                  {[...(item.order_documents ?? [])]
+                    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+                    .map((doc) => (
+                      <Button
+                        key={doc.id}
+                        size="sm"
+                        onClick={async () => {
+                          const { url } = await getDocumentUrl({
+                            data: {
+                              itemId: item.id,
+                              reference: order.reference,
+                              token: token ?? "",
+                              documentId: doc.id,
+                            },
+                          });
+                          window.open(url, "_blank", "noopener");
+                        }}
+                      >
+                        <Download className="size-4" /> {doc.name}
+                      </Button>
+                    ))}
                   <span className="text-xs text-muted-foreground">
                     Delivered {item.delivered_at ? new Date(item.delivered_at).toLocaleString("en-GB") : ""}
                   </span>

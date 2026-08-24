@@ -27,6 +27,14 @@ export type OrderListItem = {
     document_name?: string | null;
     document_path?: string | null;
     download_url?: string | null;
+    order_documents?: {
+      id: string;
+      name: string;
+      size_bytes: number;
+      content_type?: string | null;
+      created_at: string;
+      path: string;
+    }[];
   }[];
 };
 
@@ -184,26 +192,50 @@ export const adminSetItemDueDate = createServerFn({ method: "POST" })
     return setOrderItemDueDate(data.itemId.trim(), data.dueDate ?? null);
   });
 
-/** Admin: upload a completed certificate/report and optionally email the client. */
+/** Admin: upload one or more completed certificates/reports and optionally email the client. */
 export const adminUploadItemDocument = createServerFn({ method: "POST" })
-  .inputValidator((data: { itemId: string; fileName: string; contentType: string; base64: string; notify?: boolean }) => {
-    if (!data.itemId?.trim()) throw new Error("Missing order item");
-    if (!data.base64) throw new Error("Missing file contents");
-    if (data.base64.length > 36_000_000) throw new Error("Files must be 25 MB or smaller");
+  .inputValidator(
+    (data: {
+      itemId: string;
+      files: { fileName: string; contentType: string; base64: string }[];
+      notify?: boolean;
+    }) => {
+      if (!data.itemId?.trim()) throw new Error("Missing order item");
+      if (!Array.isArray(data.files) || data.files.length === 0) throw new Error("Missing file contents");
+      if (data.files.length > 10) throw new Error("Upload up to 10 files at a time");
+      const total = data.files.reduce((sum, file) => sum + (file.base64?.length ?? 0), 0);
+      if (total > 36_000_000) throw new Error("Files must total 25 MB or less per upload");
+      return data;
+    },
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { uploadOrderItemDocuments } = await import("@/lib/orders.server");
+    return uploadOrderItemDocuments({
+      itemId: data.itemId.trim(),
+      files: data.files.map((file) => ({
+        fileName: file.fileName || "document.pdf",
+        contentType: file.contentType || "application/octet-stream",
+        base64: file.base64,
+      })),
+      notify: data.notify !== false,
+    });
+  });
+
+/** Admin: delete one uploaded document. */
+export const adminDeleteItemDocument = createServerFn({ method: "POST" })
+  .inputValidator((data: { documentId: string }) => {
+    if (!data.documentId?.trim()) throw new Error("Missing document");
     return data;
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
     await assertAdmin(context.userId);
-    const { uploadOrderItemDocument } = await import("@/lib/orders.server");
-    return uploadOrderItemDocument({
-      itemId: data.itemId.trim(),
-      fileName: data.fileName || "document.pdf",
-      contentType: data.contentType || "application/octet-stream",
-      base64: data.base64,
-      notify: data.notify !== false,
-    });
+    const { deleteOrderDocument } = await import("@/lib/orders.server");
+    return deleteOrderDocument(data.documentId.trim());
   });
 
 /** Admin: short-lived download link for any uploaded document. */
@@ -223,19 +255,21 @@ export const adminDocumentUrl = createServerFn({ method: "POST" })
 /** Client portal: short-lived download link for one of my documents. */
 export const myDocumentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { itemId: string }) => {
+  .inputValidator((data: { itemId: string; documentId?: string }) => {
     if (!data.itemId?.trim()) throw new Error("Missing order item");
     return data;
   })
   .handler(async ({ data, context }) => {
     const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
     const { documentUrlForUser } = await import("@/lib/orders.server");
-    return { url: await documentUrlForUser(data.itemId.trim(), context.userId, email) };
+    return {
+      url: await documentUrlForUser(data.itemId.trim(), context.userId, email, data.documentId?.trim() || undefined),
+    };
   });
 
 /** Guest order page: download link via order reference + access token. */
 export const orderDocumentUrl = createServerFn({ method: "POST" })
-  .inputValidator((data: { itemId: string; reference: string; token: string }) => {
+  .inputValidator((data: { itemId: string; reference: string; token: string; documentId?: string }) => {
     if (!data.itemId?.trim() || !data.reference?.trim() || !data.token?.trim()) {
       throw new Error("Missing order details");
     }
@@ -243,5 +277,7 @@ export const orderDocumentUrl = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { documentUrlForToken } = await import("@/lib/orders.server");
-    return { url: await documentUrlForToken(data.itemId.trim(), data.reference, data.token) };
+    return {
+      url: await documentUrlForToken(data.itemId.trim(), data.reference, data.token, data.documentId?.trim() || undefined),
+    };
   });
