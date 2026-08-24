@@ -166,7 +166,7 @@ export function SiteHeader() {
               )}
             </>
           ) : (
-            <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+            <Link to="/auth" search={{ redirect: signInRedirect }} className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
               Sign in
             </Link>
           )}
