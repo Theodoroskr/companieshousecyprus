@@ -56,6 +56,14 @@ export function SiteFooter() {
               </li>
             ))}
             <li>
+              <Link
+                to="/solutions/kyb-for-banks"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                KYB for banks
+              </Link>
+            </li>
+            <li>
               <Link to="/pricing" className="font-medium text-copper hover:underline">
                 All pricing
               </Link>
