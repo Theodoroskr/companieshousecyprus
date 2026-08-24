@@ -439,3 +439,12 @@ function QuickLink({ to, title, body }: { to: string; title: string; body: strin
     </Link>
   );
 }
+
+function Stat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-lg border bg-background/60 p-3">
+      <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="mt-1 font-display text-lg font-semibold tracking-tight">{value}</dd>
+    </div>
+  );
+}
