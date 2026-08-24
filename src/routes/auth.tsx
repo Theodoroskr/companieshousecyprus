@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { accountDestination } from "@/lib/account-destination";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -30,10 +31,20 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const navigateForUser = async (userId: string) => {
+    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    if (error) throw error;
+    await navigate({ to: accountDestination((data ?? []).map((row) => String(row.role))), replace: true });
+  };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/admin/import" });
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (active && data.user) void navigateForUser(data.user.id);
     });
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   const submit = async (e: React.FormEvent) => {
@@ -44,15 +55,15 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/admin/import` },
+          options: { emailRedirectTo: `${window.location.origin}/auth` },
         });
         if (error) throw error;
         toast.success("Account created. Check your email if confirmation is required, then sign in.");
         setMode("signin");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/admin/import" });
+        await navigateForUser(data.user.id);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");
