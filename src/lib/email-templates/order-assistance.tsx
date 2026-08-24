@@ -90,7 +90,7 @@ const Email = ({
 export const template = {
   component: Email,
   subject: (data: Record<string, any>) =>
-    `Need help completing your order ${data?.reference ?? ''}`.trim(),
+    `Need help completing your order ${data?.['reference'] ?? ''}`.trim(),
   displayName: 'Order assistance (unpaid basket)',
   previewData: {
     fullName: 'Nicos Ioannou',
