@@ -5,6 +5,7 @@ import { useCart } from "@/lib/cart";
 import { useAccount } from "@/hooks/useAccount";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+import { SignOutButton } from "@/components/sign-out-button";
 import logoAsset from "@/assets/logo.png.asset.json";
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 
 export function SiteHeader() {
@@ -151,6 +153,7 @@ export function SiteHeader() {
               <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
                 My orders
               </Link>
+              <SignOutButton className='hidden sm:inline-flex' />
               {account.isAdmin && (
                 <Link
                   to="/admin/orders"
@@ -236,6 +239,7 @@ export function SiteHeader() {
                 <Link to="/account/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
                   My orders
                 </Link>
+                <SignOutButton className='justify-start px-3 py-2 h-auto w-full text-foreground hover:bg-muted' />
                 {account.isAdmin && (
                   <Link to="/admin/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold text-copper hover:bg-muted">
                     Admin dashboard

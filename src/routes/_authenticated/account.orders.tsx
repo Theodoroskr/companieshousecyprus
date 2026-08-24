@@ -6,7 +6,9 @@ import { listMyOrders, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { SignOutButton } from "@/components/sign-out-button";
 import { useAccount } from "@/hooks/useAccount";
+
 
 const TITLE = "My orders — Companies House Cyprus";
 const DESCRIPTION = "Sign in to review your Cyprus Registrar certificate and report orders, payment status and deliveries.";
@@ -64,15 +66,19 @@ function MyOrdersPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
-      <header className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-copper">Client portal</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">My orders</h1>
-        <p className="mt-3 max-w-2xl text-muted-foreground">
-          Every certificate and report ordered with{" "}
-          <span className="font-medium text-foreground">{query.data?.email || "your account email"}</span>, with live
-          payment and delivery progress.
-        </p>
+      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-copper">Client portal</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">My orders</h1>
+          <p className="mt-3 max-w-2xl text-muted-foreground">
+            Every certificate and report ordered with{" "}
+            <span className="font-medium text-foreground">{query.data?.email || "your account email"}</span>, with live
+            payment and delivery progress.
+          </p>
+        </div>
+        <SignOutButton />
       </header>
+
 
       {account.isAdmin && (
         <div className="mb-8 flex flex-wrap items-center gap-3 rounded-xl border border-copper/40 bg-copper/5 p-4">
