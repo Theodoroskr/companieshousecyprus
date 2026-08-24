@@ -69,6 +69,8 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
+  const shouldCopyOffice = options.sendOfficeCopy === true
+
   try {
     await sendLovableEmail(
       {
@@ -87,13 +89,17 @@ export async function sendTemplateEmail(
     )
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
-      await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+      if (shouldCopyOffice) {
+        await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+      }
       return { sent: false, reason: 'recipient_suppressed' }
     }
     throw error
   }
 
-  await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+  if (shouldCopyOffice) {
+    await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+  }
 
   return { sent: true }
 }
