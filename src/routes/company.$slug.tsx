@@ -290,11 +290,22 @@ function CompanyPage() {
               </p>
             </div>
 
-            <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <Button
                 asChild
                 size="lg"
                 className="h-12 w-full rounded-xl bg-copper px-6 font-display text-sm font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30 sm:h-14 sm:w-auto sm:px-8 sm:text-base"
+              >
+                <a href="#reports" className="gap-2">
+                  Order Company Profile
+                  <Star className="size-5 shrink-0 fill-copper-foreground" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 w-full rounded-xl border-primary-foreground/25 bg-primary-foreground/5 px-6 font-display text-sm font-bold text-primary-foreground backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-primary-foreground/10 hover:text-primary-foreground sm:h-14 sm:w-auto sm:px-8 sm:text-base"
               >
                 <a href="#order" className="gap-2">
                   Order certificates
