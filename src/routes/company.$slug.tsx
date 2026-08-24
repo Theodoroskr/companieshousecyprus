@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, Receipt, ShieldCheck, Star, Users } from "lucide-react";
 import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions";
@@ -115,8 +115,27 @@ export const Route = createFileRoute("/company/$slug")({
   validateSearch: (search: Record<string, unknown>): { product?: string } =>
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
-    const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
+    let data: Awaited<ReturnType<typeof getCompanyBySlug>>;
+    try {
+      data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
+    } catch {
+      if (import.meta.env.SSR) {
+        const { setNoStoreHeaders } = await import("@/lib/http-cache.server");
+        setNoStoreHeaders();
+      }
+      // Unknown company: a real 404 (not a 500) so crawlers drop it cleanly.
+      throw notFound();
+    }
+
     const c = data.company;
+    if (import.meta.env.SSR) {
+      const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
+      setCompanyPageCacheHeaders({
+        slug: normalizeCompanySlug(params.slug),
+        updatedAt: c.updated_at ?? null,
+      });
+    }
+
     return {
       name: c.name,
       officialNo: displayOfficialNo(c),
