@@ -112,7 +112,12 @@ export const Route = createFileRoute("/company/$slug")({
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
-    return { name: data.company.name, officialNo: displayOfficialNo(data.company), status: data.company.status_en };
+    return {
+      name: data.company.name,
+      officialNo: displayOfficialNo(data.company),
+      status: data.company.status_en,
+      district_en: data.company.district_en ?? null,
+    };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) {
@@ -123,6 +128,26 @@ export const Route = createFileRoute("/company/$slug")({
     const label = loaderData.officialNo ?? params.slug.toUpperCase();
     const title = `${loaderData.name} (${label}) — Cyprus company profile`;
     const description = `${loaderData.name}, ${label}: ${loaderData.status ?? "registered"} Cyprus company. Registered office, directors, secretary and Registrar certificates.`;
+
+    const breadcrumbItems: Array<{ "@type": "ListItem"; position: number; name: string; item: string }> = [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://companieshousecyprus.com/" },
+      { "@type": "ListItem", position: 2, name: "Register", item: "https://companieshousecyprus.com/search" },
+    ];
+    if (loaderData.district_en) {
+      breadcrumbItems.push({
+        "@type": "ListItem",
+        position: 3,
+        name: loaderData.district_en,
+        item: `https://companieshousecyprus.com/companies/city/${loaderData.district_en.toLowerCase()}`,
+      });
+    }
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: breadcrumbItems.length + 1,
+      name: loaderData.name,
+      item: `https://companieshousecyprus.com/company/${params.slug}`,
+    });
+
     return {
       meta: [
         { title },
@@ -134,6 +159,16 @@ export const Route = createFileRoute("/company/$slug")({
         { property: "og:url", content: `/company/${params.slug}` },
       ],
       links: [{ rel: "canonical", href: `/company/${params.slug}` }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: breadcrumbItems,
+          }),
+        },
+      ],
     };
   },
   component: CompanyPage,

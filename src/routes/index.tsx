@@ -42,6 +42,26 @@ export const Route = createFileRoute("/")({
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Companies House Cyprus",
+          url: "https://companieshousecyprus.com/",
+          inLanguage: "en",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: "https://companieshousecyprus.com/search?q={search_term_string}&page=1",
+            },
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
   }),
   component: HomePage,
 });
