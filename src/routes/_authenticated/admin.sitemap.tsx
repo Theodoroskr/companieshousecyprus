@@ -90,6 +90,33 @@ type CanonicalHealth = {
   checks?: CanonicalCheck[];
 };
 
+type ChangeFeedRun = {
+  id: string;
+  windowStart: string;
+  windowEnd: string;
+  changedCount: number;
+  enqueuedCount: number;
+  chunksRefreshed: number | null;
+  indexNowSubmitted: number;
+  indexNowStatus: string | null;
+  status: string;
+  message: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+};
+
+type ChangeFeed = {
+  generatedAt: string;
+  windowStart: string;
+  windowEnd: string;
+  count: number;
+  truncated: boolean;
+  ids: string[];
+  runs: ChangeFeedRun[];
+};
+
+
+
 
 function SitemapHealthPage() {
   const query = useQuery<Health>({
