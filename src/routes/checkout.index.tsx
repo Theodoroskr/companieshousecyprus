@@ -332,6 +332,86 @@ function CheckoutPage() {
           >
 
 
+            {itemsNeedingCompany.length > 0 && (
+              <div className='mb-8 space-y-4'>
+                <h2 className='font-display text-lg font-semibold'>Company details</h2>
+                <p className='text-sm text-muted-foreground'>
+                  These items are company-specific. Please tell us which Cyprus company each certificate or report is for.
+                </p>
+                <div className='space-y-4'>
+                  {itemsNeedingCompany.map(({ item, index, product }) => (
+                    <div key={`${item.productSlug}-${index}`} className='rounded-lg border bg-muted/30 p-4'>
+                      <h3 className='text-sm font-medium'>{product?.name ?? 'Product'}</h3>
+                      <div className='mt-3 grid gap-4 sm:grid-cols-2'>
+                        <label>
+                          <span className='text-sm font-medium'>
+                            Company name <span className='text-destructive'>*</span>
+                          </span>
+                          <input
+                            type='text'
+                            value={companyInputs[index]?.companyName ?? ''}
+                            onChange={(e) => {
+                              setCompanyInputs((prev) => ({
+                                ...prev,
+                                [index]: { ...prev[index], companyName: e.target.value },
+                              }));
+                              setCompanyInputErrors((prev) => ({
+                                ...prev,
+                                [index]: { ...prev[index], companyName: undefined },
+                              }));
+                            }}
+                            placeholder='e.g. ABC Holdings Ltd'
+                            required
+                            aria-invalid={!!companyInputErrors[index]?.companyName}
+                            className={cn(
+                              'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                              companyInputErrors[index]?.companyName && 'border-destructive focus:border-destructive',
+                            )}
+                          />
+                          {companyInputErrors[index]?.companyName && (
+                            <span className='mt-1 block text-xs text-destructive'>
+                              {companyInputErrors[index]?.companyName}
+                            </span>
+                          )}
+                        </label>
+                        <label>
+                          <span className='text-sm font-medium'>
+                            Registration number <span className='text-destructive'>*</span>
+                          </span>
+                          <input
+                            type='text'
+                            value={companyInputs[index]?.companyNumber ?? ''}
+                            onChange={(e) => {
+                              setCompanyInputs((prev) => ({
+                                ...prev,
+                                [index]: { ...prev[index], companyNumber: e.target.value },
+                              }));
+                              setCompanyInputErrors((prev) => ({
+                                ...prev,
+                                [index]: { ...prev[index], companyNumber: undefined },
+                              }));
+                            }}
+                            placeholder='e.g. HE12345'
+                            required
+                            aria-invalid={!!companyInputErrors[index]?.companyNumber}
+                            className={cn(
+                              'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                              companyInputErrors[index]?.companyNumber && 'border-destructive focus:border-destructive',
+                            )}
+                          />
+                          {companyInputErrors[index]?.companyNumber && (
+                            <span className='mt-1 block text-xs text-destructive'>
+                              {companyInputErrors[index]?.companyNumber}
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <h2 className='font-display text-lg font-semibold'>Your details</h2>
             <div className='mt-6 grid gap-4 sm:grid-cols-2'>
               {FIELDS.map((field) => {
