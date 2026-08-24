@@ -262,6 +262,64 @@ function AdminDashboardPage() {
             />
           </section>
 
+          <section className="mt-8 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-xl border bg-card p-4">
+              <h2 className="font-display text-base font-semibold">Request stats</h2>
+              <p className="text-xs text-muted-foreground">
+                {from || "beginning"} → {to || "today"}
+              </p>
+              <dl className="mt-4 grid grid-cols-2 gap-3">
+                <Stat label="Requested items" value={stats.requests} />
+                <Stat label="Orders" value={orders.length} />
+                <Stat
+                  label="Avg turnaround"
+                  value={stats.avgTurnaround === null ? "—" : `${stats.avgTurnaround.toFixed(1)} d`}
+                />
+                <Stat label="Avg order value" value={euros(stats.avgOrderValue)} />
+                <Stat label="Completion rate" value={`${stats.completionRate}%`} />
+                <Stat label="Collected" value={euros(paidValue)} />
+              </dl>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {Object.entries(stats.statusCounts).map(([status, count]) => (
+                  <span key={status} className="flex items-center gap-1.5 text-xs">
+                    <StatusBadge status={status} />
+                    <span className="font-semibold">{count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-card p-4">
+              <h2 className="font-display text-base font-semibold">Top requested products</h2>
+              <p className="text-xs text-muted-foreground">{stats.items} line items in this period</p>
+              {stats.topProducts.length === 0 ? (
+                <p className="mt-4 text-sm text-muted-foreground">No requests in this period.</p>
+              ) : (
+                <ul className="mt-4 space-y-2.5">
+                  {stats.topProducts.map((p) => {
+                    const max = stats.topProducts[0]?.count || 1;
+                    return (
+                      <li key={p.name}>
+                        <div className="flex items-baseline justify-between gap-3 text-sm">
+                          <span className="truncate">{p.name}</span>
+                          <span className="whitespace-nowrap font-semibold">
+                            {p.count} · {euros(p.value)}
+                          </span>
+                        </div>
+                        <div className="mt-1 h-1.5 rounded-full bg-muted">
+                          <div
+                            className="h-1.5 rounded-full bg-copper"
+                            style={{ width: `${Math.max(6, (p.count / max) * 100)}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </section>
+
 
           <section className="mt-8 rounded-xl border bg-card">
             <header className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
