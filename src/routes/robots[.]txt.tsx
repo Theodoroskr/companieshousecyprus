@@ -4,7 +4,7 @@ export const Route = createFileRoute("/robots.txt")({
   server: {
     handlers: {
       GET: () => {
-        const body = `User-agent: *\nAllow: /\nSitemap: https://companieshousecyprus.com/sitemap.xml\n`;
+        const body = `User-agent: *\nAllow: /\nSitemap: https://smart-analyse-tool.lovable.app/sitemap.xml\n`;
         return new Response(body, {
           headers: { "content-type": "text/plain; charset=utf-8" },
         });

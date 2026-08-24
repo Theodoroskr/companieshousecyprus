@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getCompanyCount } from "@/lib/companies.functions";
 
 const SITEMAP_CHUNK_SIZE = 50_000;
-const BASE_URL = "https://companieshousecyprus.com";
+const BASE_URL = "https://smart-analyse-tool.lovable.app";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
