@@ -335,6 +335,17 @@ export async function fulfilOrderItem(itemId: string) {
   }
 
 
+  // Always place a fresh-investigation order with API4ALL, then pull the report.
+  const reference = `${parentOrder?.reference ?? "CHC"}-${item.id.slice(0, 8)}`;
+  let placement: unknown = null;
+  try {
+    placement = await createOrder({ kind, code, reference });
+  } catch (orderError) {
+    return fail(
+      orderError instanceof Error ? orderError.message : "API4ALL order placement failed",
+    );
+  }
+
   try {
     const report = await fetchReport(kind, code);
     await supabase
@@ -342,7 +353,7 @@ export async function fulfilOrderItem(itemId: string) {
       .update({
         a4a_kind: kind,
         a4a_code: code,
-        report_json: report as never,
+        report_json: { placement, report } as never,
         fulfilment_status: "delivered",
         fulfilment_message: null,
         delivered_at: new Date().toISOString(),
@@ -350,8 +361,22 @@ export async function fulfilOrderItem(itemId: string) {
       .eq("id", item.id);
     return { ok: true as const, code };
   } catch (reportError) {
-    return fail(reportError instanceof Error ? reportError.message : "API4ALL report fetch failed");
+    // The order is placed; the report just isn't ready yet.
+    await supabase
+      .from("order_items")
+      .update({
+        a4a_kind: kind,
+        a4a_code: code,
+        report_json: { placement } as never,
+        fulfilment_status: "processing",
+        fulfilment_message: `Order placed with API4ALL (${reference}); report pending: ${
+          reportError instanceof Error ? reportError.message : "fetch failed"
+        }`.slice(0, 900),
+      })
+      .eq("id", item.id);
+    return { ok: true as const, code, pending: true as const };
   }
+
 }
 
 /* ------------------------------------------------------------------ */
