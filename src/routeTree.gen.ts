@@ -31,6 +31,7 @@ import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.ses
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
+import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -159,6 +160,11 @@ const OrderReferenceRoute = OrderReferenceRouteImport.update({
 const ReportTypeRoute = ReportTypeRouteImport.update({
   id: '/report/$type',
   path: '/report/$type',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapsPagesDotxmlRoute = SitemapsPagesDotxmlRouteImport.update({
+  id: '/sitemaps/pages.xml',
+  path: '/sitemaps/pages.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SolutionsKybForBanksRoute = SolutionsKybForBanksRouteImport.update({
@@ -293,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
@@ -335,6 +342,7 @@ export interface FileRoutesByTo {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout': typeof CheckoutIndexRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
@@ -380,6 +388,7 @@ export interface FileRoutesById {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
@@ -425,6 +434,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
     | '/account/orders'
@@ -467,6 +477,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout'
     | '/account/orders'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
     | '/_authenticated/account/orders'
@@ -555,6 +567,7 @@ export interface RootRouteChildren {
   CompanySlugRoute: typeof CompanySlugRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
+  SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
@@ -722,6 +735,13 @@ declare module '@tanstack/react-router' {
       path: '/report/$type'
       fullPath: '/report/$type'
       preLoaderRoute: typeof ReportTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemaps/pages.xml': {
+      id: '/sitemaps/pages.xml'
+      path: '/sitemaps/pages.xml'
+      fullPath: '/sitemaps/pages.xml'
+      preLoaderRoute: typeof SitemapsPagesDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/solutions/kyb-for-banks': {
@@ -929,6 +949,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompanySlugRoute: CompanySlugRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
+  SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
