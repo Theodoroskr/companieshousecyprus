@@ -5,6 +5,7 @@ import {
   Head,
   Heading,
   Hr,
+  Img,
   Html,
   Link,
   Preview,
@@ -46,6 +47,12 @@ const Email = ({
     <Preview>{`We received your order ${reference}`}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Img
+          src="https://companieshousecyprus.lovable.app/__l5e/assets-v1/5267d511-734b-4e2a-994b-e45c2724c9f4/cyprus-companies-house-logo.png"
+          width="180"
+          alt="Companies House Cyprus"
+          style={{ display: 'block', marginBottom: '18px' }}
+        />
         <Text style={brand}>Companies House Cyprus</Text>
         <Heading style={h1}>Order received</Heading>
         <Text style={text}>
@@ -84,7 +91,13 @@ const Email = ({
           issued by the Registrar.
         </Text>
         <Hr style={hr} />
-        <Text style={footer}>Companies House Cyprus · Nicosia, Cyprus</Text>
+        <Text style={footer}>
+          Companies House Cyprus · Nicosia, Cyprus
+          <br />
+          <Link href="mailto:info@companieshousecyprus.com" style={footerLink}>
+            info@companieshousecyprus.com
+          </Link>
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -139,3 +152,4 @@ const grandTotal = { fontSize: '16px', color: '#12203a', margin: '8px 0 0', font
 const hr = { borderColor: '#dde5f0', margin: '16px 0' }
 const link = { color: '#3b6ea8' }
 const footer = { fontSize: '12px', color: '#8794a8' }
+const footerLink = { fontSize: '12px', color: '#b8763e', textDecoration: 'none' }
