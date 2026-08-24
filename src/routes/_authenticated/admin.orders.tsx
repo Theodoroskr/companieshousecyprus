@@ -193,34 +193,122 @@ function AdminOrdersPage() {
 
             {order.notes && <p className="mt-3 rounded-md bg-muted/40 p-3 text-sm">{order.notes}</p>}
 
+            <div className="mt-4 grid gap-3 rounded-lg border bg-muted/20 p-3 sm:grid-cols-3">
+              <label className="block text-xs">
+                <span className="block uppercase tracking-wide text-muted-foreground">Order date</span>
+                <span className="mt-1 block text-sm font-medium">{showDate(order.created_at)}</span>
+              </label>
+              <label className="block text-xs">
+                <span className="block uppercase tracking-wide text-muted-foreground">Due date</span>
+                <input
+                  type="date"
+                  defaultValue={dateInput(order.due_date)}
+                  onChange={(event) =>
+                    datesMutation.mutate({
+                      reference: order.reference,
+                      dueDate: event.target.value || null,
+                      deliveredAt: dateInput(order.delivered_at) || null,
+                    })
+                  }
+                  className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                />
+              </label>
+              <label className="block text-xs">
+                <span className="block uppercase tracking-wide text-muted-foreground">Delivery date</span>
+                <input
+                  type="date"
+                  defaultValue={dateInput(order.delivered_at)}
+                  onChange={(event) =>
+                    datesMutation.mutate({
+                      reference: order.reference,
+                      dueDate: dateInput(order.due_date) || null,
+                      deliveredAt: event.target.value || null,
+                    })
+                  }
+                  className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                />
+              </label>
+            </div>
+
             <ul className="mt-4 space-y-2">
               {(order.order_items ?? []).map((item) => (
-                <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm">
-                  <div>
-                    <p className="font-medium">
-                      {item.product_name}
-                      {item.quantity > 1 ? ` × ${item.quantity}` : ""}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.company_name ?? "—"}
-                      {item.company_number ? ` · ${item.company_number}` : ""} · {item.fulfilment_status}
-                      {item.fulfilment_message ? ` · ${item.fulfilment_message}` : ""}
-                    </p>
+                <li key={item.id} className="rounded-lg border p-3 text-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">
+                        {item.product_name}
+                        {item.quantity > 1 ? ` × ${item.quantity}` : ""}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.company_name ?? "—"}
+                        {item.company_number ? ` · ${item.company_number}` : ""} · {item.fulfilment_status}
+                        {item.fulfilment_message ? ` · ${item.fulfilment_message}` : ""}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Due {showDate(item.due_date)} · Delivered {showDate(item.delivered_at)}
+                      </p>
+                    </div>
+                    {item.a4a_kind && item.fulfilment_status !== "delivered" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={fulfilMutation.isPending}
+                        onClick={() => fulfilMutation.mutate(item.id)}
+                      >
+                        {fulfilMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                        Fetch {item.a4a_kind} report
+                      </Button>
+                    )}
                   </div>
-                  {item.a4a_kind && item.fulfilment_status !== "delivered" && (
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <input
+                      type="date"
+                      defaultValue={dateInput(item.due_date)}
+                      onChange={(event) =>
+                        itemDueMutation.mutate({ itemId: item.id, dueDate: event.target.value || null })
+                      }
+                      className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+                      aria-label="Line due date"
+                    />
+                    <input
+                      ref={(element) => {
+                        fileInputs.current[item.id] = element;
+                      }}
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.zip"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        setUploadingId(item.id);
+                        uploadMutation.mutate({ itemId: item.id, file });
+                      }}
+                    />
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={fulfilMutation.isPending}
-                      onClick={() => fulfilMutation.mutate(item.id)}
+                      disabled={uploadingId === item.id}
+                      onClick={() => fileInputs.current[item.id]?.click()}
                     >
-                      {fulfilMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                      Fetch {item.a4a_kind} report
+                      {uploadingId === item.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Upload className="size-4" />
+                      )}
+                      {item.document_name ? "Replace certificate" : "Upload certificate"}
                     </Button>
-                  )}
+                    {item.document_path && (
+                      <Button size="sm" variant="ghost" onClick={() => void openDocument(item.document_path!)}>
+                        <Download className="size-4" /> {item.document_name}
+                      </Button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
+
           </div>
         ))}
         {query.data && query.data.orders.length === 0 && (
