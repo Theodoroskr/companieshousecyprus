@@ -63,6 +63,9 @@ function AdminOrdersPage() {
           <Button asChild variant="outline">
             <Link to="/admin/users">Users</Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/admin/usage">Usage</Link>
+          </Button>
           <Button variant="outline" onClick={() => void invalidate()}>
             <RefreshCw className="size-4" /> Refresh
           </Button>
