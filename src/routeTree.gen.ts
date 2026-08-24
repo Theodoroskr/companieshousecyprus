@@ -39,6 +39,8 @@ import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as ApiPublicA4aCallbackRouteImport } from './routes/api/public/a4a-callback'
+import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-poll'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
@@ -200,6 +202,16 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const ApiPublicA4aCallbackRoute = ApiPublicA4aCallbackRouteImport.update({
+  id: '/api/public/a4a-callback',
+  path: '/api/public/a4a-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicA4aPollRoute = ApiPublicA4aPollRouteImport.update({
+  id: '/api/public/a4a-poll',
+  path: '/api/public/a4a-poll',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
   id: '/api/public/revolut-webhook',
   path: '/api/public/revolut-webhook',
@@ -263,6 +275,8 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
+  '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -299,6 +313,8 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
+  '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -338,6 +354,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
+  '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
@@ -377,6 +395,8 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/usage'
     | '/admin/users'
+    | '/api/public/a4a-callback'
+    | '/api/public/a4a-poll'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -413,6 +433,8 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/usage'
     | '/admin/users'
+    | '/api/public/a4a-callback'
+    | '/api/public/a4a-poll'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -451,6 +473,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/usage'
     | '/_authenticated/admin/users'
+    | '/api/public/a4a-callback'
+    | '/api/public/a4a-poll'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
@@ -482,6 +506,8 @@ export interface RootRouteChildren {
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
+  ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
@@ -702,6 +728,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/a4a-callback': {
+      id: '/api/public/a4a-callback'
+      path: '/api/public/a4a-callback'
+      fullPath: '/api/public/a4a-callback'
+      preLoaderRoute: typeof ApiPublicA4aCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/a4a-poll': {
+      id: '/api/public/a4a-poll'
+      path: '/api/public/a4a-poll'
+      fullPath: '/api/public/a4a-poll'
+      preLoaderRoute: typeof ApiPublicA4aPollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/revolut-webhook': {
       id: '/api/public/revolut-webhook'
       path: '/api/public/revolut-webhook'
@@ -805,6 +845,8 @@ const rootRouteChildren: RootRouteChildren = {
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
+  ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,

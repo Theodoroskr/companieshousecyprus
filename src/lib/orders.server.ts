@@ -353,6 +353,9 @@ export async function fulfilOrderItem(itemId: string) {
       .update({
         a4a_kind: kind,
         a4a_code: code,
+        a4a_reference: reference,
+        a4a_attempts: 1,
+        a4a_next_attempt_at: null,
         report_json: { placement, report } as never,
         fulfilment_status: "delivered",
         fulfilment_message: null,
@@ -361,15 +364,19 @@ export async function fulfilOrderItem(itemId: string) {
       .eq("id", item.id);
     return { ok: true as const, code };
   } catch (reportError) {
-    // The order is placed; the report just isn't ready yet.
+    // The order is placed; the report just isn't ready yet — the scheduled poller
+    // (or an API4ALL push to /api/public/a4a-callback) completes it automatically.
     await supabase
       .from("order_items")
       .update({
         a4a_kind: kind,
         a4a_code: code,
+        a4a_reference: reference,
+        a4a_attempts: 1,
+        a4a_next_attempt_at: new Date(Date.now() + 5 * 60_000).toISOString(),
         report_json: { placement } as never,
         fulfilment_status: "processing",
-        fulfilment_message: `Order placed with API4ALL (${reference}); report pending: ${
+        fulfilment_message: `Order placed with API4ALL (${reference}); awaiting report — retrying automatically. ${
           reportError instanceof Error ? reportError.message : "fetch failed"
         }`.slice(0, 900),
       })

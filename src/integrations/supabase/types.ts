@@ -146,6 +146,36 @@ export type Database = {
         }
         Relationships: []
       }
+      job_state: {
+        Row: {
+          key: string
+          last_error: string | null
+          last_run_at: string | null
+          locked_until: string | null
+          paused: boolean
+          secret: string | null
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          last_error?: string | null
+          last_run_at?: string | null
+          locked_until?: string | null
+          paused?: boolean
+          secret?: string | null
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          locked_until?: string | null
+          paused?: boolean
+          secret?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       officials: {
         Row: {
           id: number
@@ -228,8 +258,11 @@ export type Database = {
       }
       order_items: {
         Row: {
+          a4a_attempts: number
           a4a_code: string | null
           a4a_kind: string | null
+          a4a_next_attempt_at: string | null
+          a4a_reference: string | null
           company_name: string | null
           company_number: string | null
           company_slug: string | null
@@ -253,8 +286,11 @@ export type Database = {
           vat_cents: number
         }
         Insert: {
+          a4a_attempts?: number
           a4a_code?: string | null
           a4a_kind?: string | null
+          a4a_next_attempt_at?: string | null
+          a4a_reference?: string | null
           company_name?: string | null
           company_number?: string | null
           company_slug?: string | null
@@ -278,8 +314,11 @@ export type Database = {
           vat_cents?: number
         }
         Update: {
+          a4a_attempts?: number
           a4a_code?: string | null
           a4a_kind?: string | null
+          a4a_next_attempt_at?: string | null
+          a4a_reference?: string | null
           company_name?: string | null
           company_number?: string | null
           company_slug?: string | null
