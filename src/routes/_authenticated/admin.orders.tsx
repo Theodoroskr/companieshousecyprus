@@ -17,7 +17,30 @@ import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
 
+const VIEWS = ["all", "new", "processing", "overdue", "due_today", "delivered", "open"] as const;
+type OrderView = (typeof VIEWS)[number];
+
+const VIEW_LABEL: Record<OrderView, string> = {
+  all: "All",
+  new: "New requests",
+  processing: "In progress",
+  overdue: "Overdue",
+  due_today: "Due today",
+  delivered: "Delivered",
+  open: "Open",
+};
+
 export const Route = createFileRoute("/_authenticated/admin/orders")({
+  validateSearch: (search: Record<string, unknown>): { view?: OrderView | undefined; ref?: string | undefined } => {
+    const rawView = search["view"];
+    const rawRef = search["ref"];
+    return {
+      view: VIEWS.includes(rawView as OrderView) ? (rawView as OrderView) : undefined,
+      ref: typeof rawRef === "string" && rawRef ? rawRef : undefined,
+    };
+  },
+
+
   head: () => ({
     meta: [
       { title: "Orders — Admin" },
@@ -39,6 +62,9 @@ const dateInput = (value?: string | null) => (value ? value.slice(0, 10) : "");
 const showDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }) : "—";
 
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+
 function fileToBase64(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -52,7 +78,9 @@ function fileToBase64(file: File) {
 }
 
 function AdminOrdersPage() {
+  const { view = "all", ref: refFilter } = Route.useSearch();
   const list = useServerFn(adminListOrders);
+
   const setStatus = useServerFn(adminSetOrderStatus);
   const fulfil = useServerFn(adminFulfilItem);
   const setOrderDates = useServerFn(adminSetOrderDates);
@@ -139,6 +167,30 @@ function AdminOrdersPage() {
     onError: (error) => setMessage(error instanceof Error ? error.message : "Fulfilment failed"),
   });
 
+  const today = todayISO();
+  const allOrders = query.data?.orders ?? [];
+  const visibleOrders = allOrders.filter((order) => {
+    if (refFilter && order.reference !== refFilter) return false;
+    const open = order.status !== "delivered" && order.status !== "cancelled";
+    switch (view) {
+      case "new":
+        return order.status === "paid" || order.status === "awaiting_payment";
+      case "processing":
+        return order.status === "processing";
+      case "overdue":
+        return open && Boolean(order.due_date) && String(order.due_date) < today;
+      case "due_today":
+        return open && dateInput(order.due_date) === today;
+      case "delivered":
+        return order.status === "delivered";
+      case "open":
+        return open;
+      default:
+        return true;
+    }
+  });
+
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -167,7 +219,32 @@ function AdminOrdersPage() {
 
       </div>
 
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        {VIEWS.map((option) => (
+          <Link
+            key={option}
+            to="/admin/orders"
+            search={option === "all" ? {} : { view: option }}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              view === option ? "border-copper bg-copper/10 text-copper" : "hover:bg-muted/60"
+            }`}
+          >
+            {VIEW_LABEL[option]}
+          </Link>
+        ))}
+        {refFilter && (
+          <Link
+            to="/admin/orders"
+            search={{}}
+            className="rounded-full border border-copper bg-copper/10 px-3 py-1 text-xs font-medium text-copper"
+          >
+            {refFilter} ✕
+          </Link>
+        )}
+      </div>
+
       {message && <p className="mt-4 rounded-md border bg-card p-3 text-sm">{message}</p>}
+
 
       {query.isLoading && (
         <p className="mt-10 flex items-center gap-2 text-muted-foreground">
@@ -176,7 +253,7 @@ function AdminOrdersPage() {
       )}
 
       <div className="mt-8 space-y-6">
-        {(query.data?.orders ?? []).map((order) => (
+        {visibleOrders.map((order) => (
           <div key={order.id} className="rounded-xl border bg-card p-5 shadow-panel">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -343,9 +420,12 @@ function AdminOrdersPage() {
 
           </div>
         ))}
-        {query.data && query.data.orders.length === 0 && (
-          <p className="text-sm text-muted-foreground">No orders yet.</p>
+        {query.data && visibleOrders.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            {allOrders.length === 0 ? "No orders yet." : "No orders match this filter."}
+          </p>
         )}
+
       </div>
     </div>
   );

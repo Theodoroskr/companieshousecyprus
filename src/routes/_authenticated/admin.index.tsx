@@ -93,6 +93,7 @@ function AdminDashboardPage() {
               value={newOrders.length}
               hint={`${newOrders.filter((o) => o.status === "paid").length} paid and ready to work`}
               tone="default"
+              view="new"
             />
             <Kpi
               icon={<Timer className="h-4 w-4" />}
@@ -100,6 +101,7 @@ function AdminDashboardPage() {
               value={processing.length}
               hint={`${open.length} open orders in total`}
               tone="default"
+              view="processing"
             />
             <Kpi
               icon={<AlertTriangle className="h-4 w-4" />}
@@ -107,6 +109,7 @@ function AdminDashboardPage() {
               value={overdue.length}
               hint={overdue.length ? "Past their due date" : "Nothing past due"}
               tone={overdue.length ? "danger" : "default"}
+              view="overdue"
             />
             <Kpi
               icon={<Clock className="h-4 w-4" />}
@@ -114,6 +117,7 @@ function AdminDashboardPage() {
               value={dueToday.length}
               hint={missingDue.length ? `${missingDue.length} open orders have no due date` : "All open orders dated"}
               tone={dueToday.length ? "warning" : "default"}
+              view="due_today"
             />
             <Kpi
               icon={<CheckCircle2 className="h-4 w-4" />}
@@ -121,6 +125,7 @@ function AdminDashboardPage() {
               value={delivered.length}
               hint="Completed in this window"
               tone="success"
+              view="delivered"
             />
             <Kpi
               icon={<Inbox className="h-4 w-4" />}
@@ -128,8 +133,10 @@ function AdminDashboardPage() {
               value={euros(openValue)}
               hint={`${euros(paidValue)} collected`}
               tone="default"
+              view="open"
             />
           </section>
+
 
           <section className="mt-8 rounded-xl border bg-card">
             <header className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
@@ -149,33 +156,40 @@ function AdminDashboardPage() {
                   const late = Boolean(order.due_date && order.due_date < today);
                   const due = order.due_date === today;
                   return (
-                    <li key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">
-                          {order.reference} · {order.full_name ?? order.email ?? "—"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {order.order_items?.map((i) => i.product_name).join(", ") || "No items"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
-                          {STATUS_LABEL[order.status] ?? order.status}
-                        </span>
-                        <span
-                          className={
-                            late
-                              ? "rounded-full bg-destructive/10 px-2 py-0.5 font-semibold text-destructive"
-                              : due
-                                ? "rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-700 dark:text-amber-400"
-                                : "text-muted-foreground"
-                          }
-                        >
-                          Due {showDate(order.due_date)}
-                        </span>
-                        <span className="font-semibold">{euros(order.total_cents ?? 0)}</span>
-                      </div>
+                    <li key={order.id}>
+                      <Link
+                        to="/admin/orders"
+                        search={{ ref: order.reference }}
+                        className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {order.reference} · {order.full_name ?? order.email ?? "—"}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {order.order_items?.map((i) => i.product_name).join(", ") || "No items"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
+                            {STATUS_LABEL[order.status] ?? order.status}
+                          </span>
+                          <span
+                            className={
+                              late
+                                ? "rounded-full bg-destructive/10 px-2 py-0.5 font-semibold text-destructive"
+                                : due
+                                  ? "rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-700 dark:text-amber-400"
+                                  : "text-muted-foreground"
+                            }
+                          >
+                            Due {showDate(order.due_date)}
+                          </span>
+                          <span className="font-semibold">{euros(order.total_cents ?? 0)}</span>
+                        </div>
+                      </Link>
                     </li>
+
                   );
                 })}
               </ul>
@@ -199,12 +213,14 @@ function Kpi({
   value,
   hint,
   tone,
+  view,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | string;
   hint: string;
   tone: "default" | "danger" | "warning" | "success";
+  view: "new" | "processing" | "overdue" | "due_today" | "delivered" | "open";
 }) {
   const toneClass =
     tone === "danger"
@@ -215,16 +231,21 @@ function Kpi({
           ? "text-emerald-600 dark:text-emerald-400"
           : "text-copper";
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <Link
+      to="/admin/orders"
+      search={{ view }}
+      className="rounded-xl border bg-card p-4 transition-colors hover:border-copper/60 hover:bg-muted/40"
+    >
       <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wide ${toneClass}`}>
         {icon}
         {label}
       </div>
       <p className="mt-2 font-display text-2xl font-semibold tracking-tight">{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-    </div>
+    </Link>
   );
 }
+
 
 function QuickLink({ to, title, body }: { to: string; title: string; body: string }) {
   return (
