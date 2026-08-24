@@ -178,3 +178,72 @@ export async function readRuns() {
   if (error) throw new Error(error.message);
   return data ?? [];
 }
+
+type AppRole = Database["public"]["Enums"]["app_role"];
+
+export async function listUserAccounts() {
+  const supabase = adminClient();
+  const { data: authData, error: authError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+  if (authError) throw new Error(authError.message);
+
+  const { data: roleRows, error: roleError } = await supabase.from("user_roles").select("user_id, role");
+  if (roleError) throw new Error(roleError.message);
+
+  const rolesByUser = new Map<string, string[]>();
+  for (const row of roleRows ?? []) {
+    const list = rolesByUser.get(row.user_id) ?? [];
+    list.push(String(row.role));
+    rolesByUser.set(row.user_id, list);
+  }
+
+  const emails = (authData.users ?? []).map((u) => (u.email ?? "").toLowerCase()).filter(Boolean);
+  const orderCounts = new Map<string, number>();
+  if (emails.length > 0) {
+    const { data: orders } = await supabase.from("orders").select("user_id, email");
+    for (const order of orders ?? []) {
+      const key = (order.email ?? "").toLowerCase();
+      if (key) orderCounts.set(key, (orderCounts.get(key) ?? 0) + 1);
+    }
+  }
+
+  return (authData.users ?? []).map((user) => ({
+    id: user.id,
+    email: user.email ?? "",
+    createdAt: user.created_at,
+    lastSignInAt: user.last_sign_in_at ?? null,
+    confirmed: Boolean(user.email_confirmed_at),
+    roles: (rolesByUser.get(user.id) ?? []).sort(),
+    orders: orderCounts.get((user.email ?? "").toLowerCase()) ?? 0,
+  }));
+}
+
+export async function setUserRole(input: {
+  actorId: string;
+  userId: string;
+  role: AppRole;
+  grant: boolean;
+}) {
+  const supabase = adminClient();
+
+  if (!input.grant && input.role === "admin") {
+    if (input.actorId === input.userId) throw new Error("You cannot revoke your own admin access.");
+    const { adminCount } = await readAdminContext(input.actorId);
+    if (adminCount <= 1) throw new Error("At least one administrator must remain.");
+  }
+
+  if (input.grant) {
+    const { error } = await supabase
+      .from("user_roles")
+      .upsert({ user_id: input.userId, role: input.role }, { onConflict: "user_id,role" });
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", input.userId)
+      .eq("role", input.role);
+    if (error) throw new Error(error.message);
+  }
+
+  return { ok: true as const };
+}

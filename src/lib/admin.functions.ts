@@ -87,3 +87,20 @@ export const listImportRuns = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     return readRuns();
   });
+
+export const listUsers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { assertAdmin, listUserAccounts } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return listUserAccounts();
+  });
+
+export const updateUserRole = createServerFn({ method: "POST" })
+  .inputValidator((data: { userId: string; role: "admin" | "client"; grant: boolean }) => data)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, setUserRole } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return setUserRole({ ...data, actorId: context.userId });
+  });
