@@ -26,9 +26,13 @@ function createServerFetch(key: string): typeof fetch {
   };
 }
 
+// Registry data is no longer exposed through the public Data API: the
+// `companies` and `officials` tables have no anon/authenticated SELECT
+// policies. All public reads go through these server functions, which run
+// server-side only and project explicit safe columns.
 function getServerClient() {
   const url = process.env["SUPABASE_URL"];
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
   if (!url || !key) throw new Error("Missing Supabase server env vars");
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
