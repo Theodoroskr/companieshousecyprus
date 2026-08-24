@@ -5,7 +5,7 @@ import { CheckCircle2, Loader2, Lock, Receipt } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
-import { submitOrder } from "@/lib/orders.functions";
+import { submitOrder, startOrderPayment } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 
 
@@ -39,6 +39,7 @@ function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const navigate = useNavigate();
   const placeOrder = useServerFn(submitOrder);
+  const beginPayment = useServerFn(startOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,11 +111,23 @@ function CheckoutPage() {
                 });
                 clear();
                 setPlaced(result);
+                try {
+                  const payment = await beginPayment({
+                    data: { reference: result.reference, token: result.token, origin: window.location.origin },
+                  });
+                  if (payment.checkoutUrl) {
+                    window.location.href = payment.checkoutUrl;
+                    return;
+                  }
+                } catch {
+                  /* fall back to the order page, where the customer can retry payment */
+                }
                 void navigate({
                   to: "/order/$reference",
                   params: { reference: result.reference },
                   search: { token: result.token },
                 });
+
               } catch (submitError) {
                 setError(submitError instanceof Error ? submitError.message : "Could not submit your order");
               } finally {

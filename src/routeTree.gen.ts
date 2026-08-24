@@ -31,6 +31,7 @@ import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -147,6 +148,11 @@ const AuthenticatedAdminOrdersRoute =
     path: '/admin/orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
+  id: '/api/public/revolut-webhook',
+  path: '/api/public/revolut-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
   id: '/companies/a-z/$letter',
   path: '/companies/a-z/$letter',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/admin/api4all'
     | '/admin/import'
     | '/admin/orders'
+    | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/admin/api4all'
     | '/admin/import'
     | '/admin/orders'
+    | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/orders'
+    | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -346,6 +358,7 @@ export interface RootRouteChildren {
   CompanySlugRoute: typeof CompanySlugRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
+  ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -507,6 +520,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/revolut-webhook': {
+      id: '/api/public/revolut-webhook'
+      path: '/api/public/revolut-webhook'
+      fullPath: '/api/public/revolut-webhook'
+      preLoaderRoute: typeof ApiPublicRevolutWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/companies/a-z/$letter': {
       id: '/companies/a-z/$letter'
       path: '/companies/a-z/$letter'
@@ -566,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompanySlugRoute: CompanySlugRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
+  ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,

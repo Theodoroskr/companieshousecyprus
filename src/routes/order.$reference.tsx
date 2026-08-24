@@ -2,10 +2,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
-import { fetchOrder } from "@/lib/orders.functions";
+import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
+import { fetchOrder, startOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+
 
 const TITLE = "Order status — Companies House Cyprus";
 
@@ -41,7 +42,11 @@ function OrderPage() {
   const { token } = Route.useSearch();
   const navigate = useNavigate();
   const [tokenInput, setTokenInput] = useState(token);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const load = useServerFn(fetchOrder);
+  const startPayment = useServerFn(startOrderPayment);
+  const syncPayment = useServerFn(syncOrderPayment);
 
   useEffect(() => setTokenInput(token), [token]);
 
@@ -51,6 +56,32 @@ function OrderPage() {
     enabled: token.length > 0,
     refetchInterval: 60_000,
   });
+
+  const refetch = query.refetch;
+  // Reconcile with Revolut when the customer returns from the hosted checkout.
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    let attempts = 0;
+    const tick = async () => {
+      attempts += 1;
+      try {
+        const result = await syncPayment({ data: { reference, token } });
+        if (!cancelled && result.paid) {
+          void refetch();
+          return;
+        }
+      } catch {
+        /* ignore transient sync errors */
+      }
+      if (!cancelled && attempts < 5) setTimeout(() => void tick(), 4000);
+    };
+    void tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [reference, token, syncPayment, refetch]);
+
 
   if (!token) {
     return (
@@ -124,6 +155,51 @@ function OrderPage() {
             {STATUS_COPY[order.status] ?? order.status}
           </span>
         </div>
+
+        {order.status === "awaiting_payment" ? (
+          <div className="mt-6 rounded-lg border border-copper/40 bg-copper/5 p-5">
+            <p className="flex items-center gap-2 font-semibold">
+              <CreditCard className="size-4 text-copper" /> Pay securely to start production
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You'll be taken to Revolut's secure checkout for {euros(order.total_cents)}. Documents are retrieved
+              automatically once the payment clears.
+            </p>
+            {payError && <p className="mt-3 text-sm text-destructive">{payError}</p>}
+            <Button
+              className="mt-4"
+              disabled={paying}
+              onClick={async () => {
+                setPaying(true);
+                setPayError(null);
+                try {
+                  const result = await startPayment({
+                    data: { reference, token, origin: window.location.origin },
+                  });
+                  if (result.alreadyPaid) {
+                    void query.refetch();
+                  } else if (result.checkoutUrl) {
+                    window.location.href = result.checkoutUrl;
+                    return;
+                  }
+                } catch (error) {
+                  setPayError(error instanceof Error ? error.message : "Could not start the payment");
+                } finally {
+                  setPaying(false);
+                }
+              }}
+            >
+              {paying ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
+              {paying ? "Opening checkout…" : `Pay ${euros(order.total_cents)}`}
+            </Button>
+          </div>
+        ) : (
+          <p className="mt-6 flex items-center gap-2 rounded-lg border border-olive/40 bg-olive/5 p-4 text-sm">
+            <CheckCircle2 className="size-4 text-olive" /> Payment received. We're preparing your documents.
+          </p>
+        )}
+
+
 
         <ul className="mt-8 space-y-4">
           {items.map((item) => (
