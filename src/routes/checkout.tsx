@@ -239,8 +239,17 @@ function CheckoutPage() {
                 clear();
                 setPlaced(result);
                 // Open Stripe embedded checkout immediately.
-                await startStripe({ data: { reference: result.reference, token: result.token } });
-                openCheckout(result);
+                try {
+                  await startStripe({ data: { reference: result.reference, token: result.token } });
+                  openCheckout(result);
+                } catch (paymentError) {
+                  setError({
+                    message:
+                      paymentError instanceof Error
+                        ? `Your order ${result.reference} was saved, but we could not open the payment form: ${paymentError.message}`
+                        : `Your order ${result.reference} was saved, but we could not open the payment form.`,
+                  });
+                }
               } catch (submitError) {
                 if (submitError instanceof Error && submitError.message === 'validation') return;
                 if (submitError instanceof Error && submitError.message === 'signup') return;
