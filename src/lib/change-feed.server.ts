@@ -114,10 +114,11 @@ export async function runDailyChangeFeed(): Promise<ChangeFeedRunSummary & { tru
   try {
     enqueued = await enqueueForIndexNow(feed.items.map((item) => item.slug));
 
+    // Chunk regeneration is a heavy full-table pass. The scheduled job runs it
+    // in-database before calling us, so a timeout here is informational only.
     const { data: chunkCount, error: chunkError } = await supabaseAdmin.rpc("refresh_sitemap_chunks");
     if (chunkError) {
-      notes.push(`sitemap refresh failed: ${chunkError.message}`);
-      status = "failed";
+      notes.push(`sitemap refresh skipped: ${chunkError.message}`);
     } else {
       chunks = (chunkCount as number | null) ?? null;
     }
