@@ -22,6 +22,7 @@ export type OrderListItem = {
     company_name: string | null;
     company_number: string | null;
     fulfilment_status: string;
+    a4a_kind?: string | null;
     delivered_at?: string | null;
     due_date?: string | null;
     document_name?: string | null;
@@ -280,4 +281,49 @@ export const orderDocumentUrl = createServerFn({ method: "POST" })
     return {
       url: await documentUrlForToken(data.itemId.trim(), data.reference, data.token, data.documentId?.trim() || undefined),
     };
+  });
+
+/* ------------------------------------------------------------------ */
+/* API4ALL reports: admin review + client viewing                      */
+/* ------------------------------------------------------------------ */
+
+/** Admin: parsed report for review before release. */
+export const adminReviewReport = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { reportForReview } = await import("@/lib/orders.server");
+    return reportForReview(data.itemId.trim());
+  });
+
+/** Admin: release a reviewed report to the client. */
+export const adminReleaseReport = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string; notify?: boolean }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { releaseOrderItemReport } = await import("@/lib/orders.server");
+    return releaseOrderItemReport(data.itemId.trim(), data.notify !== false);
+  });
+
+/** Client portal: parsed report for one of my delivered order lines. */
+export const myReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { itemId: string }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
+    const { reportForOwner } = await import("@/lib/orders.server");
+    return reportForOwner(data.itemId.trim(), context.userId, email);
   });

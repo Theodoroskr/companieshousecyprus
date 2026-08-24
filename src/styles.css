@@ -212,3 +212,25 @@
   animation: marquee 42s linear infinite;
 }
 
+
+/* Printing a delivered report: keep the document, drop the chrome. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .report-root {
+    gap: 0;
+  }
+
+  .report-section {
+    border-color: #dde5f0 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}

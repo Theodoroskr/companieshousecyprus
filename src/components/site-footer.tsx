@@ -7,7 +7,7 @@ import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t bg-sand">
+    <footer className="no-print mt-24 border-t bg-sand">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <div className="flex items-center">

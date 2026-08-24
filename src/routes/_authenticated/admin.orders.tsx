@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Loader2, RefreshCw, Upload } from "lucide-react";
+import { Download, FileSearch, Loader2, RefreshCw, Upload } from "lucide-react";
 import {
   adminDocumentUrl,
   adminFulfilItem,
@@ -18,13 +18,14 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 
 
-const VIEWS = ["all", "new", "processing", "overdue", "due_today", "delivered", "open"] as const;
+const VIEWS = ["all", "new", "processing", "review", "overdue", "due_today", "delivered", "open"] as const;
 type OrderView = (typeof VIEWS)[number];
 
 const VIEW_LABEL: Record<OrderView, string> = {
   all: "All",
   new: "New requests",
   processing: "In progress",
+  review: "Awaiting review",
   overdue: "Overdue",
   due_today: "Due today",
   delivered: "Delivered",
@@ -178,6 +179,8 @@ function AdminOrdersPage() {
         return order.status === "paid" || order.status === "awaiting_payment";
       case "processing":
         return order.status === "processing";
+      case "review":
+        return (order.order_items ?? []).some((item) => item.fulfilment_status === "awaiting_review");
       case "overdue":
         return open && Boolean(order.due_date) && String(order.due_date) < today;
       case "due_today":
@@ -342,17 +345,35 @@ function AdminOrdersPage() {
                         Due {showDate(item.due_date)} · Delivered {showDate(item.delivered_at)}
                       </p>
                     </div>
-                    {item.a4a_kind && item.fulfilment_status !== "delivered" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={fulfilMutation.isPending}
-                        onClick={() => fulfilMutation.mutate(item.id)}
-                      >
-                        {fulfilMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                        Fetch {item.a4a_kind} report
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {item.a4a_kind && item.fulfilment_status === "awaiting_review" && (
+                        <Button asChild size="sm">
+                          <Link to="/admin/reports/$itemId" params={{ itemId: item.id }}>
+                            <FileSearch className="size-4" /> Review report
+                          </Link>
+                        </Button>
+                      )}
+                      {item.a4a_kind && item.fulfilment_status === "delivered" && (
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/admin/reports/$itemId" params={{ itemId: item.id }}>
+                            <FileSearch className="size-4" /> View report
+                          </Link>
+                        </Button>
+                      )}
+                      {item.a4a_kind &&
+                        item.fulfilment_status !== "delivered" &&
+                        item.fulfilment_status !== "awaiting_review" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={fulfilMutation.isPending}
+                            onClick={() => fulfilMutation.mutate(item.id)}
+                          >
+                            {fulfilMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                            Fetch {item.a4a_kind} report
+                          </Button>
+                        )}
+                    </div>
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
