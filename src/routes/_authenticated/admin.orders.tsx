@@ -18,13 +18,14 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 
 
-const VIEWS = ["all", "new", "processing", "overdue", "due_today", "delivered", "open"] as const;
+const VIEWS = ["all", "new", "processing", "review", "overdue", "due_today", "delivered", "open"] as const;
 type OrderView = (typeof VIEWS)[number];
 
 const VIEW_LABEL: Record<OrderView, string> = {
   all: "All",
   new: "New requests",
   processing: "In progress",
+  review: "Awaiting review",
   overdue: "Overdue",
   due_today: "Due today",
   delivered: "Delivered",
@@ -178,6 +179,8 @@ function AdminOrdersPage() {
         return order.status === "paid" || order.status === "awaiting_payment";
       case "processing":
         return order.status === "processing";
+      case "review":
+        return (order.order_items ?? []).some((item) => item.fulfilment_status === "awaiting_review");
       case "overdue":
         return open && Boolean(order.due_date) && String(order.due_date) < today;
       case "due_today":
