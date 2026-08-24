@@ -152,7 +152,7 @@ function MyOrdersPage() {
             <StatCard
               label="Last order"
               value={orders[0] ? formatDate(orders[0].created_at) : "—"}
-              hint={orders[0]?.reference}
+              hint={orders[0]?.reference ?? undefined}
             />
           </div>
         </section>
