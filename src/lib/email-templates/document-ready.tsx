@@ -36,6 +36,7 @@ const Email = ({
   companyName,
   companyNumber,
   deliveredAt,
+  sentAt,
   portalUrl,
   documents,
 }: DocumentReadyProps) => (
