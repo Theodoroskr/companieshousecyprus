@@ -156,6 +156,13 @@ function CheckoutPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [accountCreated, setAccountCreated] = useState(false);
 
+  const [companyInputs, setCompanyInputs] = useState<Record<number, { companyName: string; companyNumber: string }>>({});
+  const [companyInputErrors, setCompanyInputErrors] = useState<Record<number, { companyName?: string | undefined; companyNumber?: string | undefined }>>({});
+
+  const itemsNeedingCompany = items
+    .map((item, index) => ({ item, index, product: PRODUCTS_BY_SLUG[item.productSlug] }))
+    .filter(({ item }) => !item.companyName || !item.companyNumber);
+
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   if (placed && !isOpen) {
@@ -225,6 +232,27 @@ function CheckoutPage() {
                   setFieldErrors((prev) => ({ ...prev, email: 'Please enter a valid email address.' }));
                   throw new Error('validation');
                 }
+
+                const nextCompanyErrors: Record<number, { companyName?: string; companyNumber?: string }> = {};
+                let hasCompanyErrors = false;
+                for (const { index } of itemsNeedingCompany) {
+                  const input = companyInputs[index] ?? { companyName: '', companyNumber: '' };
+                  const errors: { companyName?: string; companyNumber?: string } = {};
+                  if (!input.companyName.trim()) {
+                    errors.companyName = 'Company name is required.';
+                    hasCompanyErrors = true;
+                  }
+                  if (!input.companyNumber.trim()) {
+                    errors.companyNumber = 'Registration number is required.';
+                    hasCompanyErrors = true;
+                  }
+                  nextCompanyErrors[index] = errors;
+                }
+                if (hasCompanyErrors) {
+                  setCompanyInputErrors(nextCompanyErrors);
+                  throw new Error('validation');
+                }
+
                 if (createAccount) {
                   const passwordError = validatePassword(password, confirmPassword);
                   if (passwordError) {
@@ -258,13 +286,16 @@ function CheckoutPage() {
                   vatNumber: String(form.get('vat') ?? ''),
                   phone: String(form.get('phone') ?? ''),
                   notes: String(form.get('notes') ?? ''),
-                  items: items.map((item) => ({
-                    productSlug: item.productSlug,
-                    companySlug: item.companySlug,
-                    companyName: item.companyName,
-                    companyNumber: item.companyNumber,
-                    quantity: item.quantity,
-                  })),
+                  items: items.map((item, index) => {
+                    const input = companyInputs[index];
+                    return {
+                      productSlug: item.productSlug,
+                      companySlug: item.companySlug,
+                      companyName: input?.companyName.trim() || item.companyName,
+                      companyNumber: input?.companyNumber.trim() || item.companyNumber,
+                      quantity: item.quantity,
+                    };
+                  }),
                 };
                 const result = useAuthenticated
                   ? await placeOrderAsUser({ data: orderPayload })
@@ -300,6 +331,86 @@ function CheckoutPage() {
             }}
           >
 
+
+            {itemsNeedingCompany.length > 0 && (
+              <div className='mb-8 space-y-4'>
+                <h2 className='font-display text-lg font-semibold'>Company details</h2>
+                <p className='text-sm text-muted-foreground'>
+                  These items are company-specific. Please tell us which Cyprus company each certificate or report is for.
+                </p>
+                <div className='space-y-4'>
+                  {itemsNeedingCompany.map(({ item, index, product }) => (
+                    <div key={`${item.productSlug}-${index}`} className='rounded-lg border bg-muted/30 p-4'>
+                      <h3 className='text-sm font-medium'>{product?.name ?? 'Product'}</h3>
+                      <div className='mt-3 grid gap-4 sm:grid-cols-2'>
+                        <label>
+                          <span className='text-sm font-medium'>
+                            Company name <span className='text-destructive'>*</span>
+                          </span>
+                          <input
+                            type='text'
+                            value={companyInputs[index]?.companyName ?? ''}
+                            onChange={(e) => {
+                              setCompanyInputs((prev) => {
+                                const existing = prev[index] ?? { companyName: '', companyNumber: '' };
+                                return { ...prev, [index]: { ...existing, companyName: e.target.value } };
+                              });
+                              setCompanyInputErrors((prev) => {
+                                const existing = prev[index] ?? {};
+                                return { ...prev, [index]: { ...existing, companyName: undefined } };
+                              });
+                            }}
+                            placeholder='e.g. ABC Holdings Ltd'
+                            required
+                            aria-invalid={!!companyInputErrors[index]?.companyName}
+                            className={cn(
+                              'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                              companyInputErrors[index]?.companyName && 'border-destructive focus:border-destructive',
+                            )}
+                          />
+                          {companyInputErrors[index]?.companyName && (
+                            <span className='mt-1 block text-xs text-destructive'>
+                              {companyInputErrors[index]?.companyName}
+                            </span>
+                          )}
+                        </label>
+                        <label>
+                          <span className='text-sm font-medium'>
+                            Registration number <span className='text-destructive'>*</span>
+                          </span>
+                          <input
+                            type='text'
+                            value={companyInputs[index]?.companyNumber ?? ''}
+                            onChange={(e) => {
+                              setCompanyInputs((prev) => {
+                                const existing = prev[index] ?? { companyName: '', companyNumber: '' };
+                                return { ...prev, [index]: { ...existing, companyNumber: e.target.value } };
+                              });
+                              setCompanyInputErrors((prev) => {
+                                const existing = prev[index] ?? {};
+                                return { ...prev, [index]: { ...existing, companyNumber: undefined } };
+                              });
+                            }}
+                            placeholder='e.g. HE12345'
+                            required
+                            aria-invalid={!!companyInputErrors[index]?.companyNumber}
+                            className={cn(
+                              'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                              companyInputErrors[index]?.companyNumber && 'border-destructive focus:border-destructive',
+                            )}
+                          />
+                          {companyInputErrors[index]?.companyNumber && (
+                            <span className='mt-1 block text-xs text-destructive'>
+                              {companyInputErrors[index]?.companyNumber}
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <h2 className='font-display text-lg font-semibold'>Your details</h2>
             <div className='mt-6 grid gap-4 sm:grid-cols-2'>
@@ -529,17 +640,22 @@ function CheckoutPage() {
           <aside className='h-fit rounded-xl border bg-card p-6 shadow-panel'>
             <h2 className='font-display text-lg font-semibold'>Order summary</h2>
             <ul className='mt-5 space-y-3 text-sm'>
-              {items.map((item) => {
+              {items.map((item, index) => {
                 const product = PRODUCTS_BY_SLUG[item.productSlug];
                 if (!product) return null;
                 const breakdown = priceBreakdown(product, item.quantity);
+                const effectiveName = item.companyName ?? companyInputs[index]?.companyName;
+                const effectiveNumber = item.companyNumber ?? companyInputs[index]?.companyNumber;
                 return (
-                  <li key={`${item.productSlug}-${item.companySlug ?? 'none'}`} className='flex justify-between gap-4'>
+                  <li key={`${item.productSlug}-${index}`} className='flex justify-between gap-4'>
                     <span>
                       {product.name}
                       {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                       <span className='block text-xs text-muted-foreground'>
-                        {item.companyName ?? 'Company confirmed at checkout'}
+                        {effectiveName ?? 'Company confirmed at checkout'}
+                        {effectiveNumber && (
+                          <span className='ml-1 text-muted-foreground/70'>· {effectiveNumber}</span>
+                        )}
                       </span>
                       <span className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground'>
                         <Receipt className='size-3' />
