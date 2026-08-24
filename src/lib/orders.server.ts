@@ -161,7 +161,7 @@ export async function placeOrder(input: PlaceOrderInput) {
 const ORDER_COLUMNS =
   "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, created_at, updated_at, due_date, delivered_at";
 const ITEM_COLUMNS =
-  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size";
+  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size, order_documents(id, name, size_bytes, content_type, created_at, path)";
 
 export async function readOrder(reference: string, token: string) {
   const supabase = ordersClient();
@@ -471,12 +471,10 @@ export async function setOrderItemDueDate(itemId: string, dueDate?: string | nul
   return { ok: true as const };
 }
 
-/** Admin: upload a completed document for one order line and notify the client. */
-export async function uploadOrderItemDocument(input: {
+/** Admin: upload one or more completed documents for an order line and notify the client. */
+export async function uploadOrderItemDocuments(input: {
   itemId: string;
-  fileName: string;
-  contentType: string;
-  base64: string;
+  files: { fileName: string; contentType: string; base64: string }[];
   notify: boolean;
 }) {
   const supabase = ordersClient();
@@ -486,26 +484,44 @@ export async function uploadOrderItemDocument(input: {
     .eq("id", input.itemId)
     .single();
   if (error || !item) throw new Error(error?.message ?? "Order item not found");
+  if (!input.files.length) throw new Error("No files to upload");
 
-  const binary = Uint8Array.from(atob(input.base64), (char) => char.charCodeAt(0));
-  if (binary.byteLength === 0) throw new Error("The uploaded file is empty");
-  if (binary.byteLength > 25 * 1024 * 1024) throw new Error("Files must be 25 MB or smaller");
+  const uploaded: { path: string; name: string; size: number }[] = [];
 
-  const safeName = input.fileName.replace(/[^A-Za-z0-9._-]+/g, "-").slice(-120) || "document.pdf";
-  const path = `${item.order_id}/${item.id}/${Date.now()}-${safeName}`;
+  for (const file of input.files) {
+    const binary = Uint8Array.from(atob(file.base64), (char) => char.charCodeAt(0));
+    if (binary.byteLength === 0) throw new Error(`${file.fileName || "File"} is empty`);
+    if (binary.byteLength > 25 * 1024 * 1024) throw new Error("Files must be 25 MB or smaller");
 
-  const { error: uploadError } = await supabase.storage
-    .from(DOCUMENTS_BUCKET)
-    .upload(path, binary, { contentType: input.contentType || "application/octet-stream", upsert: true });
-  if (uploadError) throw new Error(uploadError.message);
+    const safeName = file.fileName.replace(/[^A-Za-z0-9._-]+/g, "-").slice(-120) || "document.pdf";
+    const path = `${item.order_id}/${item.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
 
+    const { error: uploadError } = await supabase.storage
+      .from(DOCUMENTS_BUCKET)
+      .upload(path, binary, { contentType: file.contentType || "application/octet-stream", upsert: true });
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { error: insertError } = await supabase.from("order_documents").insert({
+      order_id: item.order_id,
+      order_item_id: item.id,
+      path,
+      name: safeName,
+      size_bytes: binary.byteLength,
+      content_type: file.contentType || null,
+    });
+    if (insertError) throw new Error(insertError.message);
+
+    uploaded.push({ path, name: safeName, size: binary.byteLength });
+  }
+
+  const latest = uploaded[uploaded.length - 1]!;
   const deliveredAt = new Date().toISOString();
   const { error: updateError } = await supabase
     .from("order_items")
     .update({
-      document_path: path,
-      document_name: safeName,
-      document_size: binary.byteLength,
+      document_path: latest.path,
+      document_name: latest.name,
+      document_size: latest.size,
       fulfilment_status: "delivered",
       fulfilment_message: null,
       delivered_at: deliveredAt,
@@ -540,12 +556,46 @@ export async function uploadOrderItemDocument(input: {
         product_name: item.product_name,
         company_name: item.company_name,
         company_number: item.company_number,
-        document_name: safeName,
+        document_name: uploaded.map((doc) => doc.name).join(", "),
       },
     );
   }
 
-  return { ok: true as const, documentName: safeName, notified: input.notify };
+  return { ok: true as const, documentNames: uploaded.map((doc) => doc.name), notified: input.notify };
+}
+
+/** Admin: remove one uploaded document. */
+export async function deleteOrderDocument(documentId: string) {
+  const supabase = ordersClient();
+  const { data: doc } = await supabase
+    .from("order_documents")
+    .select("id, path, order_item_id")
+    .eq("id", documentId)
+    .maybeSingle();
+  if (!doc) throw new Error("Document not found");
+
+  await supabase.storage.from(DOCUMENTS_BUCKET).remove([doc.path]);
+  const { error } = await supabase.from("order_documents").delete().eq("id", doc.id);
+  if (error) throw new Error(error.message);
+
+  // Keep the order line's "latest document" pointer in sync.
+  const { data: remaining } = await supabase
+    .from("order_documents")
+    .select("path, name, size_bytes")
+    .eq("order_item_id", doc.order_item_id)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const latest = remaining?.[0];
+  await supabase
+    .from("order_items")
+    .update({
+      document_path: latest?.path ?? null,
+      document_name: latest?.name ?? null,
+      document_size: latest?.size_bytes ?? null,
+    })
+    .eq("id", doc.order_item_id);
+
+  return { ok: true as const };
 }
 
 /** Time-limited download link for an uploaded document. */
@@ -557,7 +607,7 @@ export async function signOrderDocument(path: string, expiresIn = 300) {
 }
 
 /** Resolve a download link for one item, checking the caller owns the order. */
-export async function documentUrlForUser(itemId: string, userId: string, email: string) {
+export async function documentUrlForUser(itemId: string, userId: string, email: string, documentId?: string) {
   const supabase = ordersClient();
   const { data: item } = await supabase
     .from("order_items")
@@ -565,16 +615,30 @@ export async function documentUrlForUser(itemId: string, userId: string, email: 
     .eq("id", itemId)
     .maybeSingle();
   const owner = (item as { orders?: { user_id: string | null; email: string | null } } | null)?.orders;
-  if (!item?.document_path || !owner) throw new Error("Document not found");
+  if (!item || !owner) throw new Error("Document not found");
   const mine =
     (owner.user_id && owner.user_id === userId) ||
     (owner.email ?? "").toLowerCase() === email.trim().toLowerCase();
   if (!mine) throw new Error("Document not found");
-  return signOrderDocument(item.document_path);
+  const path = documentId ? await documentPath(documentId, itemId) : item.document_path;
+  if (!path) throw new Error("Document not found");
+  return signOrderDocument(path);
+}
+
+/** Look up one stored document, scoped to its order line. */
+async function documentPath(documentId: string, itemId: string) {
+  const supabase = ordersClient();
+  const { data } = await supabase
+    .from("order_documents")
+    .select("path")
+    .eq("id", documentId)
+    .eq("order_item_id", itemId)
+    .maybeSingle();
+  return data?.path ?? null;
 }
 
 /** Resolve a download link for one item using the order reference + access token. */
-export async function documentUrlForToken(itemId: string, reference: string, token: string) {
+export async function documentUrlForToken(itemId: string, reference: string, token: string, documentId?: string) {
   const supabase = ordersClient();
   const { data: order } = await supabase
     .from("orders")
@@ -589,6 +653,8 @@ export async function documentUrlForToken(itemId: string, reference: string, tok
     .eq("id", itemId)
     .eq("order_id", order.id)
     .maybeSingle();
-  if (!item?.document_path) throw new Error("Document not found");
-  return signOrderDocument(item.document_path);
+  if (!item) throw new Error("Document not found");
+  const path = documentId ? await documentPath(documentId, itemId) : item.document_path;
+  if (!path) throw new Error("Document not found");
+  return signOrderDocument(path);
 }
