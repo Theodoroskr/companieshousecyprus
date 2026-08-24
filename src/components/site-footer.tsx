@@ -7,7 +7,6 @@ import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
 
 
 
-const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
 
 
 export function SiteFooter() {
@@ -58,23 +57,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Browse register</h3>
-          <ul className="mt-4 space-y-2 text-sm">
-            {DISTRICTS.map((district) => (
-              <li key={district}>
-                <Link
-                  to="/companies/city/$district"
-                  params={{ district: district.toLowerCase() }}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Companies in {district}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Company</h3>
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Company</h3>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
