@@ -78,9 +78,12 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
         }
       }
 
-      const safeOrigin = /^https?:\/\//.test(process.env['BASE_URL'] ?? '')
-        ? (process.env['BASE_URL'] ?? '').replace(/\/+$/, '')
+      const clientOrigin = /^https?:\/\//.test(data.origin ?? '')
+        ? (data.origin ?? '').replace(/\/+$/, '')
         : '';
+      const safeOrigin = clientOrigin || (/^https?:\/\//.test(process.env['BASE_URL'] ?? '')
+        ? (process.env['BASE_URL'] ?? '').replace(/\/+$/, '')
+        : '');
       const returnUrl = safeOrigin
         ? `${safeOrigin}/checkout/return?order_reference=${encodeURIComponent(order.reference)}&order_token=${encodeURIComponent(data.token)}&session_id={CHECKOUT_SESSION_ID}`
         : `https://smart-analyse-tool.lovable.app/checkout/return?order_reference=${encodeURIComponent(order.reference)}&order_token=${encodeURIComponent(data.token)}&session_id={CHECKOUT_SESSION_ID}`;
