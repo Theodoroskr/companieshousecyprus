@@ -141,12 +141,13 @@ function HomePage() {
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-            Every Cyprus company. <span className="text-gradient-copper">One search.</span>
+            Companies House Cyprus. <span className="text-gradient-copper">Every company record.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Free access to the full register of the Department of Registrar of Companies — status, directors,
-            shareholders and registered office — plus certified certificates delivered digitally.
+            Free access to the Cyprus Companies House register from the Department of Registrar of Companies —
+            company status, directors, shareholders and registered office — plus certified certificates delivered
+            digitally.
           </p>
 
           <form
