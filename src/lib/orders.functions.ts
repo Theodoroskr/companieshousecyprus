@@ -77,6 +77,21 @@ export const startOrderPayment = createServerFn({ method: "POST" })
     return startPayment(data.reference, data.token, data.origin);
   });
 
+export const startStripeOrderPayment = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; token: string }) => {
+    if (!data.reference?.trim() || !data.token?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { readOrder } = await import("@/lib/orders.server");
+    const order = await readOrder(data.reference, data.token);
+    if (!order) throw new Error("Order not found");
+    if (order.order.status === "paid" || order.order.status === "delivered") {
+      throw new Error("Order is already paid");
+    }
+    return { ok: true as const, reference: order.order.reference, token: data.token };
+  });
+
 export const syncOrderPayment = createServerFn({ method: "POST" })
   .inputValidator((data: { reference: string; token: string }) => {
     if (!data.reference?.trim() || !data.token?.trim()) throw new Error("Missing order reference");

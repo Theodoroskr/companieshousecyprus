@@ -25,6 +25,8 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
+import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
@@ -35,6 +37,7 @@ import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -115,6 +118,16 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => CheckoutRoute,
+} as any)
+const CheckoutSessionStatusRoute = CheckoutSessionStatusRouteImport.update({
+  id: '/session-status',
+  path: '/session-status',
+  getParentRoute: () => CheckoutRoute,
+} as any)
 const CompanySlugRoute = CompanySlugRouteImport.update({
   id: '/company/$slug',
   path: '/company/$slug',
@@ -169,6 +182,12 @@ const SitemapsCompaniesNDotxmlRoute =
     path: '/sitemaps/companies/$n.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,7 +195,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/pricing': typeof PricingRoute
@@ -186,6 +205,8 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/checkout/return': typeof CheckoutReturnRoute
+  '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -196,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -203,7 +225,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/pricing': typeof PricingRoute
@@ -213,6 +235,8 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/checkout/return': typeof CheckoutReturnRoute
+  '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -223,6 +247,7 @@ export interface FileRoutesByTo {
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -232,7 +257,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/pricing': typeof PricingRoute
@@ -242,6 +267,8 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/checkout/return': typeof CheckoutReturnRoute
+  '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -252,6 +279,7 @@ export interface FileRoutesById {
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,6 +299,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/checkout/return'
+    | '/checkout/session-status'
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
@@ -281,6 +311,7 @@ export interface FileRouteTypes {
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -298,6 +329,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/checkout/return'
+    | '/checkout/session-status'
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
@@ -308,6 +341,7 @@ export interface FileRouteTypes {
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -326,6 +360,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/checkout/return'
+    | '/checkout/session-status'
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
@@ -336,6 +372,7 @@ export interface FileRouteTypes {
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -345,7 +382,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CertificationsRoute: typeof CertificationsRoute
-  CheckoutRoute: typeof CheckoutRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   PricingRoute: typeof PricingRoute
@@ -362,6 +399,7 @@ export interface RootRouteChildren {
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -478,6 +516,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
+    '/checkout/session-status': {
+      id: '/checkout/session-status'
+      path: '/session-status'
+      fullPath: '/checkout/session-status'
+      preLoaderRoute: typeof CheckoutSessionStatusRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
     '/company/$slug': {
       id: '/company/$slug'
       path: '/company/$slug'
@@ -548,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapsCompaniesNDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -566,6 +625,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CheckoutRouteChildren {
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
+  CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutReturnRoute: CheckoutReturnRoute,
+  CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -573,7 +646,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CertificationsRoute: CertificationsRoute,
-  CheckoutRoute: CheckoutRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   PricingRoute: PricingRoute,
@@ -590,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
