@@ -104,7 +104,7 @@ function ReportPage() {
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span>VAT ({Math.round(VAT_RATE * 100)}%)</span>
+                      <span>VAT ({Math.round(VAT_RATE * 100)}%) — reports &amp; fee</span>
                       <span>{formatPrice(breakdown.vat)}</span>
                     </div>
                     <div className="flex justify-between border-t border-white/10 pt-1 font-medium">
