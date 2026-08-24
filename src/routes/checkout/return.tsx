@@ -18,18 +18,19 @@ export const Route = createFileRoute('/checkout/return')({
       { name: 'robots', content: 'noindex' },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { session_id?: string; order_reference?: string; order_token?: string } => ({
-    session_id: typeof search.session_id === 'string' ? search.session_id : undefined,
-    order_reference: typeof search.order_reference === 'string' ? search.order_reference : undefined,
-    order_token: typeof search.order_token === 'string' ? search.order_token : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { session_id?: string; order_reference?: string; order_token?: string } => {
+    const sessionId = typeof search['session_id'] === 'string' ? search['session_id'] : undefined;
+    const reference = typeof search['order_reference'] === 'string' ? search['order_reference'] : undefined;
+    const token = typeof search['order_token'] === 'string' ? search['order_token'] : undefined;
+    return { session_id: sessionId, order_reference: reference, order_token: token };
+  },
   component: CheckoutReturnPage,
 });
 
 function CheckoutReturnPage() {
   const { session_id: sessionId, order_reference: reference, order_token: token } = Route.useSearch();
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<'paid' | 'open' | 'unpaid' | 'error' | null>(null);
+  const [status, setStatus] = useState<'paid' | 'open' | 'unpaid' | 'no_payment_required' | 'error' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ function CheckoutReturnPage() {
       try {
         const res = await fetch(`/checkout/session-status?session_id=${encodeURIComponent(sessionId)}`);
         if (!res.ok) throw new Error('Could not verify payment status');
-        const data = await res.json() as { status?: 'paid' | 'open' | 'unpaid' | null };
+        const data = await res.json() as { status?: 'paid' | 'open' | 'unpaid' | 'no_payment_required' | null };
         if (!cancelled) {
           setStatus(data.status ?? 'paid');
         }
