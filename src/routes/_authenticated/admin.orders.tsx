@@ -229,7 +229,7 @@ function AdminOrdersPage() {
       )}
 
       <div className="mt-8 space-y-6">
-        {(query.data?.orders ?? []).map((order) => (
+        {visibleOrders.map((order) => (
           <div key={order.id} className="rounded-xl border bg-card p-5 shadow-panel">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
