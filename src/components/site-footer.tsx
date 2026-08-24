@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
+import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
 import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
 import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
+
 
 
 const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
@@ -81,6 +83,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link to="/certifications" className="text-muted-foreground hover:text-foreground">
+                Certifications
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" className="text-muted-foreground hover:text-foreground">
                 Contact
               </Link>
@@ -112,6 +119,7 @@ export function SiteFooter() {
             </li>
           </ul>
         </div>
+
       </div>
 
       <div className="border-t">
