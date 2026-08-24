@@ -18,7 +18,7 @@ export const Route = createFileRoute('/checkout/return')({
       { name: 'robots', content: 'noindex' },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { session_id?: string; order_reference?: string; order_token?: string } => {
+  validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined; order_reference?: string | undefined; order_token?: string | undefined } => {
     const sessionId = typeof search['session_id'] === 'string' ? search['session_id'] : undefined;
     const reference = typeof search['order_reference'] === 'string' ? search['order_reference'] : undefined;
     const token = typeof search['order_token'] === 'string' ? search['order_token'] : undefined;
