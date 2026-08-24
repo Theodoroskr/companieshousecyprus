@@ -707,7 +707,16 @@ function RegisterCompanyGuide() {
                   Look up any registered entity and order certified Registrar documents online.
                 </p>
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                  <Link to="/search" search={{}} onClick={() => trackEvent("cta_click", { cta: "register_search", location: "post_incorporation" })}>
+                  <Link
+                    to="/search"
+                    search={{ q: "", page: 1 }}
+                    onClick={() =>
+                      trackEvent("cta_click", {
+                        cta: "register_search",
+                        location: "post_incorporation",
+                      })
+                    }
+                  >
                     <Button size="lg" variant="secondary" className="w-full sm:w-auto">
                       <Search className="mr-2 h-4 w-4" aria-hidden="true" />
                       Search the Cyprus Company Register
