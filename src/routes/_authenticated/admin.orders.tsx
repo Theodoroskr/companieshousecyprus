@@ -420,9 +420,12 @@ function AdminOrdersPage() {
 
           </div>
         ))}
-        {query.data && query.data.orders.length === 0 && (
-          <p className="text-sm text-muted-foreground">No orders yet.</p>
+        {query.data && visibleOrders.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            {allOrders.length === 0 ? "No orders yet." : "No orders match this filter."}
+          </p>
         )}
+
       </div>
     </div>
   );
