@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { CheckCircle2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { submitContactInquiry } from "@/lib/contact.functions";
+
 
 const TITLE = "Contact Companies House Cyprus — certificates & account pricing";
 const DESCRIPTION =
