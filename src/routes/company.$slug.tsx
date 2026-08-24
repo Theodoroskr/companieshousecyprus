@@ -160,7 +160,7 @@ export const Route = createFileRoute("/company/$slug")({
       "@type": "ListItem",
       position: breadcrumbItems.length + 1,
       name: loaderData.name,
-      item: `https://companieshousecyprus.com/company/${params.slug}`,
+      item: `https://companieshousecyprus.com/company/${canonicalSlug}`,
     });
 
     return {
@@ -171,9 +171,12 @@ export const Route = createFileRoute("/company/$slug")({
         { property: "og:description", content: description },
         { property: "og:type", content: "profile" },
         { name: "twitter:card", content: "summary" },
-        { property: "og:url", content: `/company/${params.slug}` },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { property: "og:url", content: `https://companieshousecyprus.com/company/${canonicalSlug}` },
       ],
-      links: [{ rel: "canonical", href: `/company/${params.slug}` }],
+      links: [{ rel: "canonical", href: `https://companieshousecyprus.com/company/${canonicalSlug}` }],
+
       scripts: [
         {
           type: "application/ld+json",
