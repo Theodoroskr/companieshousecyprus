@@ -113,15 +113,14 @@ function CheckoutReturnPage() {
       )}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        {reference && token ? (
-          <Button asChild>
-            <Link to="/order/$reference" params={{ reference }} search={{ token }}>
-              Track your order
-            </Link>
-          </Button>
-        ) : (
+        <Button asChild>
+          <Link to="/account/orders">View my orders</Link>
+        </Button>
+        {reference && token && (
           <Button asChild variant="outline">
-            <Link to="/search" search={{ q: '', page: 1 }}>Search another company</Link>
+            <Link to="/order/$reference" params={{ reference }} search={{ token }}>
+              Track this order
+            </Link>
           </Button>
         )}
       </div>
