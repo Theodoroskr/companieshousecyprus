@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, Receipt, ShieldCheck, Users } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, Receipt, ShieldCheck, Star, Users } from "lucide-react";
 import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
@@ -290,11 +290,22 @@ function CompanyPage() {
               </p>
             </div>
 
-            <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <Button
                 asChild
                 size="lg"
                 className="h-12 w-full rounded-xl bg-copper px-6 font-display text-sm font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30 sm:h-14 sm:w-auto sm:px-8 sm:text-base"
+              >
+                <a href="#reports" className="gap-2">
+                  Order Company Profile
+                  <Star className="size-5 shrink-0 fill-copper-foreground" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 w-full rounded-xl border-primary-foreground/25 bg-primary-foreground/5 px-6 font-display text-sm font-bold text-primary-foreground backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-primary-foreground/10 hover:text-primary-foreground sm:h-14 sm:w-auto sm:px-8 sm:text-base"
               >
                 <a href="#order" className="gap-2">
                   Order certificates
@@ -587,8 +598,9 @@ function CompanyPage() {
                       }
                     >
                       {product.slug === "cyprus-company-profile" && (
-                        <span className="absolute -top-2 right-3 rounded-full bg-copper px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-copper-foreground">
-                          Most popular
+                        <span className="absolute -top-3 left-4 inline-flex items-center gap-1 rounded-full bg-copper px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-copper-foreground shadow-lg shadow-copper/30">
+                          <Star className="size-3 fill-copper-foreground" />
+                          Best seller
                         </span>
                       )}
                       <div className="flex items-start justify-between gap-3">

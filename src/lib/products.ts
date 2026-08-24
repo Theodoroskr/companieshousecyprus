@@ -213,7 +213,7 @@ export const PRODUCTS: Product[] = [
     headline: "The full registry picture in one document",
     tagline: "Consolidated profile: status, officials & owners, address history and filings.",
     price: 65,
-    delivery: "Same business day",
+    delivery: "1–2 business days",
     category: "report",
     popular: true,
     description: [
