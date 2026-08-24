@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      change_feed_runs: {
+        Row: {
+          changed_count: number
+          chunks_refreshed: number | null
+          enqueued_count: number
+          finished_at: string | null
+          id: string
+          indexnow_status: string | null
+          indexnow_submitted: number
+          message: string | null
+          started_at: string
+          status: string
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          changed_count?: number
+          chunks_refreshed?: number | null
+          enqueued_count?: number
+          finished_at?: string | null
+          id?: string
+          indexnow_status?: string | null
+          indexnow_submitted?: number
+          message?: string | null
+          started_at?: string
+          status?: string
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          changed_count?: number
+          chunks_refreshed?: number | null
+          enqueued_count?: number
+          finished_at?: string | null
+          id?: string
+          indexnow_status?: string | null
+          indexnow_submitted?: number
+          message?: string | null
+          started_at?: string
+          status?: string
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           a4a_code: string | null
