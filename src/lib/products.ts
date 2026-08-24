@@ -248,6 +248,8 @@ export const PRODUCTS: Product[] = [
     delivery: "1–2 business days",
     category: "pack",
     certificateCount: 4,
+    // Certificates only — no report component, so VAT applies to the service fee alone.
+    vatablePrice: 0,
     description: [
       "The documentation set most frequently requested in Cyprus public procurement and banking facility applications, issued together so nothing is missing at submission.",
     ],
