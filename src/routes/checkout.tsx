@@ -328,6 +328,18 @@ function CheckoutPage() {
                     </p>
                   </div>
                 </label>
+                <p className='mt-3 border-t border-copper/20 pt-3 text-xs text-muted-foreground'>
+                  Already have an account?{' '}
+                  <Link
+                    to='/auth'
+                    search={{ redirect: '/checkout' }}
+                    className='font-semibold text-copper underline underline-offset-2'
+                  >
+                    Sign in
+                  </Link>{' '}
+                  to link this order to your client portal.
+                </p>
+
                 {createAccount && (
                   <div className='mt-4 grid gap-4 sm:grid-cols-2'>
                     <label>
