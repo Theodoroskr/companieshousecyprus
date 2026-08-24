@@ -27,7 +27,9 @@ export const Route = createFileRoute("/companies/a-z/$letter")({
       { property: "og:description", content: `Browse Cyprus companies starting with ${params.letter.toUpperCase()}.` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: `/companies/a-z/${params.letter.toLowerCase()}` },
     ],
+    links: [{ rel: "canonical", href: `/companies/a-z/${params.letter.toLowerCase()}` }],
   }),
   component: LetterPage,
   notFoundComponent: () => (

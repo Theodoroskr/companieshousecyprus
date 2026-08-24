@@ -131,7 +131,9 @@ export const Route = createFileRoute("/company/$slug")({
         { property: "og:description", content: description },
         { property: "og:type", content: "profile" },
         { name: "twitter:card", content: "summary" },
+        { property: "og:url", content: `/company/${params.slug}` },
       ],
+      links: [{ rel: "canonical", href: `/company/${params.slug}` }],
     };
   },
   component: CompanyPage,

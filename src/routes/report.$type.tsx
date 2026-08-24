@@ -26,7 +26,9 @@ export const Route = createFileRoute("/report/$type")({
         { property: "og:description", content: product.tagline },
         { property: "og:type", content: "product" },
         { name: "twitter:card", content: "summary_large_image" },
+        { property: "og:url", content: `/report/${product.slug}` },
       ],
+      links: [{ rel: "canonical", href: `/report/${product.slug}` }],
     };
   },
   notFoundComponent: ProductNotFound,

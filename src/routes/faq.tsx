@@ -16,6 +16,24 @@ export const Route = createFileRoute("/faq")({
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "/faq" },
+    ],
+    links: [{ rel: "canonical", href: "/faq" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.flatMap((section) =>
+            section.items.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          ),
+        }),
+      },
     ],
   }),
   component: FaqPage,
