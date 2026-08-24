@@ -1,18 +1,17 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, ShoppingCart, ChevronDown, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, ChevronDown, Menu, X, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
-import { PRODUCTS } from "@/lib/products";
+import { PRODUCTS, formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import logoAsset from "@/assets/logo.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 export function SiteHeader() {
   const navigate = useNavigate();
