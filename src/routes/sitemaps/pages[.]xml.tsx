@@ -5,6 +5,8 @@ const BASE_URL = "https://companieshousecyprus.com";
 const PATHS = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/search", priority: "0.8", changefreq: "weekly" },
+  { path: "/cyprus-companies-registry", priority: "0.9", changefreq: "monthly" },
+
   { path: "/pricing", priority: "0.8", changefreq: "monthly" },
   { path: "/solutions/kyb-for-banks", priority: "0.8", changefreq: "monthly" },
   { path: "/report/structure", priority: "0.7", changefreq: "monthly" },
