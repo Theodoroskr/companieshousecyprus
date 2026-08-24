@@ -20,6 +20,7 @@ import { Route as CertificationsRouteImport } from './routes/certifications'
 import { Route as CompaniesSitemapDotxmlRouteImport } from './routes/companies-sitemap[.]xml'
 import { Route as CompanySitemapDotxmlRouteImport } from './routes/company-sitemap[.]xml'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CyprusCompaniesRegistryRouteImport } from './routes/cyprus-companies-registry'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -142,6 +143,11 @@ const CompanySitemapDotxmlRoute = CompanySitemapDotxmlRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CyprusCompaniesRegistryRoute = CyprusCompaniesRegistryRouteImport.update({
+  id: '/cyprus-companies-registry',
+  path: '/cyprus-companies-registry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -529,6 +535,7 @@ export interface FileRoutesByFullPath {
   '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
+  '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
@@ -610,6 +617,7 @@ export interface FileRoutesByTo {
   '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
+  '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
@@ -692,6 +700,7 @@ export interface FileRoutesById {
   '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
+  '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
@@ -775,6 +784,7 @@ export interface FileRouteTypes {
     | '/companies-sitemap.xml'
     | '/company-sitemap.xml'
     | '/contact'
+    | '/cyprus-companies-registry'
     | '/faq'
     | '/llms.txt'
     | '/mcp'
@@ -856,6 +866,7 @@ export interface FileRouteTypes {
     | '/companies-sitemap.xml'
     | '/company-sitemap.xml'
     | '/contact'
+    | '/cyprus-companies-registry'
     | '/faq'
     | '/llms.txt'
     | '/mcp'
@@ -937,6 +948,7 @@ export interface FileRouteTypes {
     | '/companies-sitemap.xml'
     | '/company-sitemap.xml'
     | '/contact'
+    | '/cyprus-companies-registry'
     | '/faq'
     | '/llms.txt'
     | '/mcp'
@@ -1020,6 +1032,7 @@ export interface RootRouteChildren {
   CompaniesSitemapDotxmlRoute: typeof CompaniesSitemapDotxmlRoute
   CompanySitemapDotxmlRoute: typeof CompanySitemapDotxmlRoute
   ContactRoute: typeof ContactRoute
+  CyprusCompaniesRegistryRoute: typeof CyprusCompaniesRegistryRoute
   FaqRoute: typeof FaqRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
@@ -1156,6 +1169,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cyprus-companies-registry': {
+      id: '/cyprus-companies-registry'
+      path: '/cyprus-companies-registry'
+      fullPath: '/cyprus-companies-registry'
+      preLoaderRoute: typeof CyprusCompaniesRegistryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -1699,6 +1719,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesSitemapDotxmlRoute: CompaniesSitemapDotxmlRoute,
   CompanySitemapDotxmlRoute: CompanySitemapDotxmlRoute,
   ContactRoute: ContactRoute,
+  CyprusCompaniesRegistryRoute: CyprusCompaniesRegistryRoute,
   FaqRoute: FaqRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
