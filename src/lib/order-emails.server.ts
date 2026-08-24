@@ -93,6 +93,7 @@ export async function sendDocumentReadyEmail(
   try {
     await sendTemplateEmail("document-ready", order.email, {
       idempotencyKey: `document-ready-${order.reference}-${item.document_name ?? item.product_name}`,
+      sendOfficeCopy: true,
       templateData: {
         fullName: order.full_name ?? undefined,
         reference: order.reference,
