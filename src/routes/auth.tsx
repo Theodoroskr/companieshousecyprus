@@ -9,8 +9,10 @@ import { accountDestination } from "@/lib/account-destination";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
   head: () => ({
-
     meta: [
       { title: "Sign in | Companies House Cyprus" },
       { name: "description", content: "Sign in to your Companies House Cyprus account to track orders and download reports." },
@@ -23,6 +25,13 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+function safeRedirect(path: string | undefined): string | null {
+  if (typeof path !== "string") return null;
+  if (!path.startsWith("/") || path.startsWith("//")) return null;
+  if (path.startsWith("/auth")) return null;
+  return path;
+}
 
 function AuthPage() {
   const navigate = useNavigate();
