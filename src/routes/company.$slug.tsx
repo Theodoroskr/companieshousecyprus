@@ -238,23 +238,6 @@ function CompanyPage() {
   const { data } = useSuspenseQuery(companyQueryOptions(slug));
   const { company, officials } = data;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: company.name,
-    identifier: displayOfficialNo(company),
-    address: company.address_full
-      ? {
-          "@type": "PostalAddress",
-          streetAddress: [company.building, company.street].filter(Boolean).join(", "),
-          addressLocality: company.locality ?? undefined,
-          addressRegion: company.district_en ?? undefined,
-          postalCode: company.postcode ?? undefined,
-          addressCountry: company.is_foreign_address ? undefined : "CY",
-        }
-      : undefined,
-    knowsAbout: company.type_en ?? undefined,
-  };
 
   const pendingProduct = pendingProductSlug ? PRODUCTS.find((item) => item.slug === pendingProductSlug) : undefined;
   const businessName = isBusinessName(company);
