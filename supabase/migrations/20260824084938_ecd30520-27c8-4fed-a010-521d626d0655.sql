@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.grant_client_role_on_signup() FROM PUBLIC, anon, authenticated;
