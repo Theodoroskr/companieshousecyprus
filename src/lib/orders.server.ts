@@ -557,7 +557,7 @@ export async function markOrderPaid(orderId: string) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, reference, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, paid_at",
+      "id, status, reference, access_token, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, paid_at",
     )
     .eq("id", orderId)
     .maybeSingle();
@@ -569,7 +569,15 @@ export async function markOrderPaid(orderId: string) {
       .update({ status: "paid", payment_state: "completed", paid_at: paidAt })
       .eq("id", orderId);
 
-    const { sendPaymentReceiptEmail } = await import("@/lib/order-emails.server");
+    const { data: emailItems } = await supabase
+      .from("order_items")
+      .select("product_name, company_name, company_number, quantity, total_cents")
+      .eq("order_id", orderId);
+
+    const { sendOrderConfirmationEmail, sendPaymentReceiptEmail } = await import(
+      "@/lib/order-emails.server"
+    );
+    await sendOrderConfirmationEmail(order, emailItems ?? []);
     await sendPaymentReceiptEmail({ ...order, paid_at: paidAt });
   }
 
