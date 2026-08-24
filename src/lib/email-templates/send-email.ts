@@ -83,10 +83,42 @@ export async function sendTemplateEmail(
     )
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
+      await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
       return { sent: false, reason: 'recipient_suppressed' }
     }
     throw error
   }
 
+  await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+
   return { sent: true }
+}
+
+/** Office copy of every outgoing email. Never throws — a failed copy must not break the send. */
+async function sendOfficeCopy(args: {
+  apiKey: string
+  subject: string
+  html: string
+  text: string
+  templateName: string
+  idempotencyKey?: string
+}) {
+  try {
+    await sendLovableEmail(
+      {
+        to: OFFICE_COPY,
+        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+        sender_domain: SENDER_DOMAIN,
+        subject: `[copy] ${args.subject}`,
+        html: args.html,
+        text: args.text,
+        purpose: 'transactional',
+        label: `${args.templateName}-copy`,
+        idempotency_key: args.idempotencyKey ? `${args.idempotencyKey}-copy` : crypto.randomUUID(),
+      },
+      { apiKey: args.apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
+    )
+  } catch (error) {
+    console.error('Office copy email failed', args.templateName, error)
+  }
 }
