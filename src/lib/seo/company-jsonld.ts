@@ -73,7 +73,7 @@ export function companyOrganizationJsonLd(company: CompanyJsonLdInput, canonical
         }
       : {}),
     ...(address ? { address } : {}),
-    ...(company.status_en_extra ? {} : {}),
+    
     ...(company.status
       ? {
           additionalProperty: [
