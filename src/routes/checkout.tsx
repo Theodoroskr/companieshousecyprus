@@ -5,7 +5,7 @@ import { CheckCircle2, Loader2, Lock, Receipt } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
-import { submitOrder } from "@/lib/orders.functions";
+import { submitOrder, startOrderPayment } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 
 
@@ -39,6 +39,7 @@ function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const navigate = useNavigate();
   const placeOrder = useServerFn(submitOrder);
+  const beginPayment = useServerFn(startOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
