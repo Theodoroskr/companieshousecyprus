@@ -241,3 +241,125 @@ export async function fulfilOrderItem(itemId: string) {
     return fail(reportError instanceof Error ? reportError.message : "API4ALL report fetch failed");
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Payments (Revolut Merchant)                                         */
+/* ------------------------------------------------------------------ */
+
+/** Create (or reuse) a Revolut checkout for an order and return the hosted checkout URL. */
+export async function startPayment(reference: string, token: string, origin: string) {
+  const supabase = ordersClient();
+  const { data: order, error } = await supabase
+    .from("orders")
+    .select("id, reference, status, email, full_name, total_cents, payment_order_id, checkout_url, payment_state")
+    .eq("reference", reference.trim().toUpperCase())
+    .eq("access_token", token.trim())
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!order) throw new Error("Order not found");
+  if (order.status === "paid" || order.payment_state === "completed") {
+    return { alreadyPaid: true as const, checkoutUrl: null };
+  }
+  if (order.checkout_url && order.payment_state === "pending") {
+    return { alreadyPaid: false as const, checkoutUrl: order.checkout_url };
+  }
+
+  const { createRevolutOrder } = await import("@/lib/revolut.server");
+  const safeOrigin = /^https?:\/\//.test(origin) ? origin.replace(/\/+$/, "") : "";
+  const redirectUrl = `${safeOrigin}/order/${order.reference}?token=${encodeURIComponent(token.trim())}`;
+
+  const payment = await createRevolutOrder({
+    amountCents: order.total_cents,
+    reference: order.reference,
+    description: `Companies House Cyprus order ${order.reference}`,
+    email: order.email,
+    fullName: order.full_name,
+    redirectUrl,
+  });
+
+  await supabase
+    .from("orders")
+    .update({
+      payment_provider: "revolut",
+      payment_order_id: payment.id,
+      payment_state: payment.state ?? "pending",
+      checkout_url: payment.checkout_url ?? null,
+    })
+    .eq("id", order.id);
+
+  if (!payment.checkout_url) throw new Error("Revolut did not return a checkout link");
+  return { alreadyPaid: false as const, checkoutUrl: payment.checkout_url };
+}
+
+const PAID_STATES = new Set(["completed", "authorised", "authorized"]);
+
+/** Mark an order paid and auto-fulfil every API4ALL item on it. */
+export async function markOrderPaid(orderId: string) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase.from("orders").select("id, status").eq("id", orderId).maybeSingle();
+  if (!order) return { ok: false as const };
+  if (order.status !== "paid" && order.status !== "delivered") {
+    await supabase
+      .from("orders")
+      .update({ status: "paid", payment_state: "completed", paid_at: new Date().toISOString() })
+      .eq("id", orderId);
+  }
+
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("id, a4a_kind, product_slug, fulfilment_status")
+    .eq("order_id", orderId);
+
+  for (const item of items ?? []) {
+    const kind = item.a4a_kind ?? A4A_PRODUCT_KIND[item.product_slug];
+    if (!kind || item.fulfilment_status === "delivered") continue;
+    try {
+      await fulfilOrderItem(item.id);
+    } catch {
+      /* fulfilment failures are recorded on the item itself */
+    }
+  }
+  return { ok: true as const };
+}
+
+/** Look up the payment status at Revolut and reconcile the order (used on return from checkout). */
+export async function syncPayment(reference: string, token: string) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, status, payment_order_id")
+    .eq("reference", reference.trim().toUpperCase())
+    .eq("access_token", token.trim())
+    .maybeSingle();
+  if (!order?.payment_order_id) return { status: order?.status ?? null, paid: false };
+  if (order.status === "paid" || order.status === "delivered") return { status: order.status, paid: true };
+
+  const { retrieveRevolutOrder } = await import("@/lib/revolut.server");
+  const payment = await retrieveRevolutOrder(order.payment_order_id);
+  const paid = PAID_STATES.has((payment.state ?? "").toLowerCase());
+  if (paid) {
+    await markOrderPaid(order.id);
+    return { status: "paid", paid: true };
+  }
+  await supabase.from("orders").update({ payment_state: payment.state ?? null }).eq("id", order.id);
+  return { status: order.status, paid: false };
+}
+
+/** Webhook path: reconcile by the Revolut order id. */
+export async function markPaidByPaymentId(paymentOrderId: string) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("payment_order_id", paymentOrderId)
+    .maybeSingle();
+  if (!order) return { ok: false as const };
+  return markOrderPaid(order.id);
+}
+
+/** Webhook path: record a failed/cancelled payment. */
+export async function markPaymentState(paymentOrderId: string, state: string) {
+  const supabase = ordersClient();
+  await supabase.from("orders").update({ payment_state: state }).eq("payment_order_id", paymentOrderId);
+  return { ok: true as const };
+}
