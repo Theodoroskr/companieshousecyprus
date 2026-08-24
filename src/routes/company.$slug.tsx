@@ -101,6 +101,7 @@ const ORDERABLE = [
   "certificate-of-shareholders",
   "certificate-of-capital",
   "certificate-of-strike-off",
+  "memorandum-and-articles-of-association",
   "cyprus-credit-report",
   "kyb-due-diligence-pack",
   "due-diligence-report",
