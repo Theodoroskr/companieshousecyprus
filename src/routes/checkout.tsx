@@ -1,10 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2, Lock, Receipt } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { CheckCircle2, Loader2, Lock, Receipt } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
+import { submitOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
+
 
 const TITLE = "Checkout — Companies House Cyprus";
 const DESCRIPTION = "Confirm your order details for Cyprus Registrar certificates and company reports.";

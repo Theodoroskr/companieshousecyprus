@@ -26,6 +26,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
@@ -117,6 +118,11 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderReferenceRoute = OrderReferenceRouteImport.update({
+  id: '/order/$reference',
+  path: '/order/$reference',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportTypeRoute = ReportTypeRouteImport.update({
   id: '/report/$type',
   path: '/report/$type',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/company/$slug'
+    | '/order/$reference'
     | '/report/$type'
     | '/admin/api4all'
     | '/admin/import'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/company/$slug'
+    | '/order/$reference'
     | '/report/$type'
     | '/admin/api4all'
     | '/admin/import'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/company/$slug'
+    | '/order/$reference'
     | '/report/$type'
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/import'
@@ -319,6 +331,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
@@ -446,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order/$reference': {
+      id: '/order/$reference'
+      path: '/order/$reference'
+      fullPath: '/order/$reference'
+      preLoaderRoute: typeof OrderReferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report/$type': {
       id: '/report/$type'
       path: '/report/$type'
@@ -522,6 +542,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CompanySlugRoute: CompanySlugRoute,
+  OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
