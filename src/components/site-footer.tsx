@@ -65,6 +65,14 @@ export function SiteFooter() {
             </li>
             <li>
               <Link
+                to="/guides/register-company-cyprus"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Register a company in Cyprus
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/solutions/kyb-for-banks"
                 className="text-muted-foreground hover:text-foreground"
               >
