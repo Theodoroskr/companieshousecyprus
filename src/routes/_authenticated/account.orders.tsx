@@ -6,7 +6,9 @@ import { listMyOrders, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { SignOutButton } from "@/components/sign-out-button";
 import { useAccount } from "@/hooks/useAccount";
+
 
 const TITLE = "My orders — Companies House Cyprus";
 const DESCRIPTION = "Sign in to review your Cyprus Registrar certificate and report orders, payment status and deliveries.";
