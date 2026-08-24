@@ -13,7 +13,7 @@ const SENDER_DOMAIN = "notify.companieshousecyprus.com"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // Can be the root domain when display_from_root is enabled — this is cosmetic only.
 const FROM_DOMAIN = "notify.companieshousecyprus.com"
-// Every outgoing email is copied to the office inbox.
+// Office copy is sent only for document-ready emails.
 const OFFICE_COPY = "info@companieshousecyprus.com"
 
 export type SendTemplateEmailResult =
@@ -25,6 +25,8 @@ export interface SendTemplateEmailOptions {
   /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
   idempotencyKey?: string
   replyTo?: string
+  /** Send an office copy to info@companieshousecyprus.com. Used for document-ready emails only. */
+  sendOfficeCopy?: boolean
 }
 
 /**
@@ -67,6 +69,8 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
+  const shouldCopyOffice = options.sendOfficeCopy === true
+
   try {
     await sendLovableEmail(
       {
@@ -85,13 +89,17 @@ export async function sendTemplateEmail(
     )
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
-      await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+      if (shouldCopyOffice) {
+        await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+      }
       return { sent: false, reason: 'recipient_suppressed' }
     }
     throw error
   }
 
-  await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+  if (shouldCopyOffice) {
+    await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+  }
 
   return { sent: true }
 }
