@@ -85,10 +85,10 @@ function MyOrdersPage() {
   const getDocumentUrl = useServerFn(myDocumentUrl);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const download = async (itemId: string) => {
-    setDownloadingId(itemId);
+  const download = async (itemId: string, documentId?: string) => {
+    setDownloadingId(documentId ?? itemId);
     try {
-      const { url } = await getDocumentUrl({ data: { itemId } });
+      const { url } = await getDocumentUrl({ data: { itemId, ...(documentId ? { documentId } : {}) } });
       window.open(url, "_blank", "noopener");
     } finally {
       setDownloadingId(null);
@@ -255,22 +255,43 @@ function MyOrdersPage() {
                               </span>
                             ) : null}
                           </span>
-                          <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                            {item.document_name ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={downloadingId === item.id}
-                                onClick={() => void download(item.id)}
-                              >
-                                {downloadingId === item.id ? (
-                                  <Loader2 className="mr-1.5 size-4 animate-spin" />
-                                ) : (
-                                  <Download className="mr-1.5 size-4" />
-                                )}
-                                Download
-                              </Button>
-                            ) : null}
+                          <span className="flex shrink-0 flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">
+                            {(item.order_documents?.length ?? 0) > 0
+                              ? [...(item.order_documents ?? [])]
+                                  .sort((a, b) => a.created_at.localeCompare(b.created_at))
+                                  .map((doc) => (
+                                    <Button
+                                      key={doc.id}
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={downloadingId === doc.id}
+                                      onClick={() => void download(item.id, doc.id)}
+                                    >
+                                      {downloadingId === doc.id ? (
+                                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                                      ) : (
+                                        <Download className="mr-1.5 size-4" />
+                                      )}
+                                      {doc.name}
+                                    </Button>
+                                  ))
+                              : item.document_name
+                                ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={downloadingId === item.id}
+                                      onClick={() => void download(item.id)}
+                                    >
+                                      {downloadingId === item.id ? (
+                                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                                      ) : (
+                                        <Download className="mr-1.5 size-4" />
+                                      )}
+                                      Download
+                                    </Button>
+                                  )
+                                : null}
                             <span className="flex items-center gap-1.5">
                               <Icon className={`size-4 ${item.fulfilment_status === "processing" ? "animate-spin" : ""}`} />
                               {meta.label}
