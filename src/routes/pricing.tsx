@@ -66,7 +66,11 @@ function PricingPage() {
                     <p className="mt-5 font-display text-3xl font-bold">
                       {formatPrice(breakdown.documentPrice)}
                       <span className="ml-1 text-sm font-normal text-muted-foreground">
-                        / company {product.category === "certificate" ? "certificate only" : "report only"}
+                        / company {product.category === "certificate"
+                          ? "certificate only"
+                          : product.category === "pack"
+                            ? "report & certificates"
+                            : "report only"}
                       </span>
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
