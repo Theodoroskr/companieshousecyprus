@@ -156,6 +156,13 @@ function CheckoutPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [accountCreated, setAccountCreated] = useState(false);
 
+  const [companyInputs, setCompanyInputs] = useState<Record<number, { companyName: string; companyNumber: string }>>({});
+  const [companyInputErrors, setCompanyInputErrors] = useState<Record<number, { companyName?: string; companyNumber?: string }>>({});
+
+  const itemsNeedingCompany = items
+    .map((item, index) => ({ item, index, product: PRODUCTS_BY_SLUG[item.productSlug] }))
+    .filter(({ item }) => !item.companyName || !item.companyNumber);
+
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   if (placed && !isOpen) {
