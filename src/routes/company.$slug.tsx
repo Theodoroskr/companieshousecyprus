@@ -58,11 +58,9 @@ function RelatedCompanies({ slug }: { slug: string }) {
             {byOfficial.map((row) => (
               <li key={row.slug} className="flex items-center justify-between gap-4 py-2.5">
                 <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
-                  {row.name}
+                  {displayOfficialNo(row)}
                 </Link>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {displayOfficialNo(row)} via {maskName(row.via)}
-                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">via {maskName(row.via)}</span>
               </li>
             ))}
           </ul>
