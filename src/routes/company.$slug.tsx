@@ -103,6 +103,7 @@ const ORDERABLE = [
   "certificate-of-capital",
   "certificate-of-no-charges",
   "certificate-of-strike-off",
+  "cyprus-credit-report",
   "kyb-due-diligence-pack",
   "due-diligence-report",
 ];
