@@ -194,7 +194,7 @@ export async function fulfilOrderItem(itemId: string) {
   const supabase = ordersClient();
   const { data: item, error } = await supabase
     .from("order_items")
-    .select("id, order_id, product_slug, company_number, a4a_kind, a4a_code")
+    .select("id, order_id, product_slug, company_slug, company_number, a4a_kind, a4a_code")
     .eq("id", itemId)
     .single();
   if (error || !item) throw new Error(error?.message ?? "Order item not found");
@@ -212,18 +212,39 @@ export async function fulfilOrderItem(itemId: string) {
     return { ok: false as const, message };
   };
 
+  // Resolve the API4ALL company code (e.g. CY00001234406861) for this registration
+  // number (e.g. C4404): stored on the item → cached on the company → live lookup.
   let code = item.a4a_code;
+  const regNo = item.company_number?.trim() ?? "";
+
+  if (!code && item.company_slug) {
+    const { data: company } = await supabase
+      .from("companies")
+      .select("a4a_code")
+      .eq("slug", item.company_slug)
+      .maybeSingle();
+    code = company?.a4a_code ?? null;
+  }
+
   if (!code) {
-    const regNo = item.company_number?.trim();
     if (!regNo) return fail("No registration number stored for this item");
     try {
       const hits = await searchByRegistration(regNo);
-      code = hits.find((hit) => hit.code)?.code ?? null;
+      const digits = regNo.replace(/\D/g, "");
+      // Prefer the hit whose registration number matches ours, else the first coded hit.
+      code =
+        hits.find((hit) => hit.code && hit.regNo && hit.regNo.replace(/\D/g, "") === digits)?.code ??
+        hits.find((hit) => hit.code)?.code ??
+        null;
     } catch (searchError) {
       return fail(searchError instanceof Error ? searchError.message : "API4ALL search failed");
     }
     if (!code) return fail(`API4ALL has no company code for ${regNo}`);
+    if (item.company_slug) {
+      await supabase.from("companies").update({ a4a_code: code }).eq("slug", item.company_slug);
+    }
   }
+
 
   try {
     const report = await fetchReport(kind, code);

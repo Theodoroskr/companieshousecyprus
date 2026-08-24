@@ -147,11 +147,15 @@ export async function fetchReport(kind: A4AReportKind, code: string): Promise<un
   return apiGet<unknown>(`/report/${kind}/code/${encodeURIComponent(code)}`);
 }
 
-/** Product codes used when placing an order for a report that is not yet available. */
+/**
+ * API4ALL product codes.
+ * Structure (Cyprus Company Profile) = 2200, Credit report = 2300.
+ */
 export const REPORT_PRODUCTS: Record<A4AReportKind, string> = {
-  structure: "2100",
-  credit: "2200",
+  structure: "2200",
+  credit: "2300",
 };
+
 
 export async function createOrder(input: {
   kind: A4AReportKind;
