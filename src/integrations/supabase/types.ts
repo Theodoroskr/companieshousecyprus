@@ -273,6 +273,7 @@ export type Database = {
           subtotal_cents: number
           total_cents: number
           updated_at: string
+          user_id: string | null
           vat_cents: number
           vat_number: string | null
         }
@@ -296,6 +297,7 @@ export type Database = {
           subtotal_cents?: number
           total_cents?: number
           updated_at?: string
+          user_id?: string | null
           vat_cents?: number
           vat_number?: string | null
         }
@@ -319,6 +321,7 @@ export type Database = {
           subtotal_cents?: number
           total_cents?: number
           updated_at?: string
+          user_id?: string | null
           vat_cents?: number
           vat_number?: string | null
         }

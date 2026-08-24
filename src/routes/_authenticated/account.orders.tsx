@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, CreditCard, FileText, Loader2, PackageSearch, ShieldCheck } from "lucide-react";
-import { listMyOrders } from "@/lib/orders.functions";
+import { listMyOrders, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -108,7 +108,7 @@ function MyOrdersPage() {
         </div>
       ) : (
         <ul className="grid gap-5">
-          {orders.map((order) => {
+          {orders.map((order: OrderListItem) => {
             const items = order.order_items ?? [];
             const status = ORDER_STATUS[order.status] ?? { label: order.status, tone: "bg-muted text-muted-foreground" };
             const progress = progressFor(order.status, items);
@@ -131,7 +131,7 @@ function MyOrdersPage() {
                   </div>
 
                   <ul className="mt-4 grid gap-2">
-                    {items.map((item) => {
+                    {items.map((item: OrderListItem["order_items"][number]) => {
                       const meta = ITEM_STATUS[item.fulfilment_status] ?? ITEM_STATUS["pending"]!;
                       const Icon = meta.icon;
                       return (

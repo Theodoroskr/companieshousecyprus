@@ -1,13 +1,16 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { CheckCircle2, Loader2, Lock, Receipt } from 'lucide-react';
+import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { PRODUCTS_BY_SLUG, formatPrice } from '@/lib/products';
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from '@/lib/pricing';
-import { submitOrder, startStripeOrderPayment } from '@/lib/orders.functions';
+import { submitOrder, submitOrderAsUser, startStripeOrderPayment } from '@/lib/orders.functions';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
+import { useAccount } from '@/hooks/useAccount';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 const TITLE = 'Checkout — Companies House Cyprus';
@@ -38,12 +41,16 @@ const FIELDS = [
 
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
-  const navigate = useNavigate();
+  const account = useAccount();
   const placeOrder = useServerFn(submitOrder);
+  const placeOrderAsUser = useServerFn(submitOrderAsUser);
   const startStripe = useServerFn(startStripeOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   if (placed && !isOpen) {
@@ -102,26 +109,41 @@ function CheckoutPage() {
               event.preventDefault();
               if (submitting) return;
               const form = new FormData(event.currentTarget);
+              const fullName = String(form.get('fullName') ?? '');
+              const email = String(form.get('email') ?? '');
               setSubmitting(true);
               setError(null);
+              let useAuthenticated = account.signedIn;
               try {
-                const result = await placeOrder({
-                  data: {
-                    fullName: String(form.get('fullName') ?? ''),
-                    email: String(form.get('email') ?? ''),
-                    firm: String(form.get('company') ?? ''),
-                    vatNumber: String(form.get('vat') ?? ''),
-                    phone: String(form.get('phone') ?? ''),
-                    notes: String(form.get('notes') ?? ''),
-                    items: items.map((item) => ({
-                      productSlug: item.productSlug,
-                      companySlug: item.companySlug,
-                      companyName: item.companyName,
-                      companyNumber: item.companyNumber,
-                      quantity: item.quantity,
-                    })),
-                  },
-                });
+                if (createAccount) {
+                  if (!password || password.length < 8) throw new Error('Choose a password of at least 8 characters');
+                  if (password !== confirmPassword) throw new Error('Passwords do not match');
+                  const { error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: fullName } },
+                  });
+                  if (signUpError) throw new Error(signUpError.message);
+                  useAuthenticated = true;
+                }
+                const orderPayload = {
+                  fullName,
+                  email,
+                  firm: String(form.get('company') ?? ''),
+                  vatNumber: String(form.get('vat') ?? ''),
+                  phone: String(form.get('phone') ?? ''),
+                  notes: String(form.get('notes') ?? ''),
+                  items: items.map((item) => ({
+                    productSlug: item.productSlug,
+                    companySlug: item.companySlug,
+                    companyName: item.companyName,
+                    companyNumber: item.companyNumber,
+                    quantity: item.quantity,
+                  })),
+                };
+                const result = useAuthenticated
+                  ? await placeOrderAsUser({ data: orderPayload })
+                  : await placeOrder({ data: orderPayload });
                 clear();
                 setPlaced(result);
                 // Open Stripe embedded checkout immediately.
@@ -159,6 +181,64 @@ function CheckoutPage() {
                 />
               </label>
             </div>
+
+            {!account.signedIn && (
+              <div className='mt-6 rounded-xl border border-copper/20 bg-copper/5 p-4'>
+                <label className='flex cursor-pointer items-start gap-3'>
+                  <Checkbox
+                    checked={createAccount}
+                    onCheckedChange={(checked) => setCreateAccount(checked === true)}
+                    className='mt-0.5'
+                  />
+                  <div>
+                    <span className='flex items-center gap-2 text-sm font-semibold text-foreground'>
+                      <UserPlus className='size-4 text-copper' />
+                      Create an account to track this order
+                    </span>
+                    <p className='mt-1 text-xs text-muted-foreground'>
+                      Optional. Save your orders and download completed documents from the client portal.
+                    </p>
+                  </div>
+                </label>
+                {createAccount && (
+                  <div className='mt-4 grid gap-4 sm:grid-cols-2'>
+                    <label>
+                      <span className='text-sm font-medium'>Password</span>
+                      <input
+                        type='password'
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder='Create a secure password'
+                        minLength={8}
+                        required={createAccount}
+                        className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
+                      />
+                    </label>
+                    <label>
+                      <span className='text-sm font-medium'>Confirm password</span>
+                      <input
+                        type='password'
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder='Re-enter password'
+                        minLength={8}
+                        required={createAccount}
+                        className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {account.signedIn && account.ready && (
+              <div className='mt-6 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm'>
+                <Mail className='size-4 text-primary' />
+                <span>
+                  Signed in as <span className='font-semibold text-foreground'>{account.email}</span>. This order will be linked to your account.
+                </span>
+              </div>
+            )}
             {error && (
               <p className='mt-4 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive'>
                 {error}

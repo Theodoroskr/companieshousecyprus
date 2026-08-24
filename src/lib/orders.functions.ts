@@ -1,6 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type OrderListItem = {
+  id: string;
+  reference: string;
+  access_token: string;
+  status: string;
+  created_at: string;
+  total_cents: number;
+  order_items: {
+    id: string;
+    product_name: string;
+    company_name: string | null;
+    company_number: string | null;
+    fulfilment_status: string;
+    download_url?: string | null;
+  }[];
+};
+
 export type PlaceOrderPayload = {
   fullName: string;
   email: string;
@@ -102,12 +119,27 @@ export const syncOrderPayment = createServerFn({ method: "POST" })
     return syncPayment(data.reference, data.token);
   });
 
-/** Orders belonging to the signed-in customer (matched on their account email). */
+/** Orders belonging to the signed-in customer (matched by user id or account email). */
 export const listMyOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<{ email: string; orders: OrderListItem[] }> => {
     const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
-    if (!email) return { email: "", orders: [] };
-    const { listOrdersForEmail } = await import("@/lib/orders.server");
-    return { email, orders: await listOrdersForEmail(email) };
+    if (!context.userId || !email) return { email: email || "", orders: [] };
+    const { listOrdersForUser } = await import("@/lib/orders.server");
+    return { email, orders: (await listOrdersForUser(context.userId, email)) as unknown as OrderListItem[] };
+  });
+
+/** Place an order while signed in. The user id is taken from the verified session. */
+export const submitOrderAsUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: PlaceOrderPayload) => {
+    if (!data.fullName?.trim()) throw new Error("Full name is required");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email?.trim() ?? "")) throw new Error("A valid email is required");
+    if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Your basket is empty");
+    if (data.items.length > 30) throw new Error("Too many items in one order");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    const { placeOrder } = await import("@/lib/orders.server");
+    return placeOrder({ ...data, userId: context.userId });
   });
