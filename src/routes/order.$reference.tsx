@@ -156,6 +156,51 @@ function OrderPage() {
           </span>
         </div>
 
+        {order.status === "awaiting_payment" ? (
+          <div className="mt-6 rounded-lg border border-copper/40 bg-copper/5 p-5">
+            <p className="flex items-center gap-2 font-semibold">
+              <CreditCard className="size-4 text-copper" /> Pay securely to start production
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You'll be taken to Revolut's secure checkout for {euros(order.total_cents)}. Documents are retrieved
+              automatically once the payment clears.
+            </p>
+            {payError && <p className="mt-3 text-sm text-destructive">{payError}</p>}
+            <Button
+              className="mt-4"
+              disabled={paying}
+              onClick={async () => {
+                setPaying(true);
+                setPayError(null);
+                try {
+                  const result = await startPayment({
+                    data: { reference, token, origin: window.location.origin },
+                  });
+                  if (result.alreadyPaid) {
+                    void query.refetch();
+                  } else if (result.checkoutUrl) {
+                    window.location.href = result.checkoutUrl;
+                    return;
+                  }
+                } catch (error) {
+                  setPayError(error instanceof Error ? error.message : "Could not start the payment");
+                } finally {
+                  setPaying(false);
+                }
+              }}
+            >
+              {paying ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
+              {paying ? "Opening checkout…" : `Pay ${euros(order.total_cents)}`}
+            </Button>
+          </div>
+        ) : (
+          <p className="mt-6 flex items-center gap-2 rounded-lg border border-olive/40 bg-olive/5 p-4 text-sm">
+            <CheckCircle2 className="size-4 text-olive" /> Payment received. We're preparing your documents.
+          </p>
+        )}
+
+
+
         <ul className="mt-8 space-y-4">
           {items.map((item) => (
             <li key={item.id} className="rounded-lg border bg-background p-4">
