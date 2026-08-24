@@ -1,53 +1,121 @@
+# robots.txt for companieshousecyprus.com
+# Canonical company profiles: /company/<ID> and /company/<slug> (no query strings)
+# Parameterized variants (?utm_, ?page=, ?sort=, session ids) are excluded to avoid duplicates.
+
+User-agent: *
+Allow: /
+Allow: /company/
+Allow: /companies/
+Allow: /sitemap.xml
+Allow: /sitemap_index.xml
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /admin
+Disallow: /auth
+Disallow: /order/
+Disallow: /api/
+Disallow: /lovable/
+# Block parameterized / faceted variants of any path
+Disallow: /*?
+Allow: /$
+
 User-agent: Googlebot
 Allow: /
+Allow: /company/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /admin
+Disallow: /auth
+Disallow: /order/
+Disallow: /api/
+Disallow: /*?
+Allow: /$
 
 User-agent: Bingbot
 Allow: /
+Allow: /company/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /admin
+Disallow: /auth
+Disallow: /order/
+Disallow: /api/
+Disallow: /*?
+Allow: /$
 
+# Social preview fetchers (need unrestricted page access)
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+# AI crawlers: allow public content, block private and parameterized URLs
+User-agent: GPTBot
 Allow: /
 Disallow: /cart
 Disallow: /checkout
 Disallow: /account
 Disallow: /admin
-
-# OpenAI / ChatGPT crawlers
-User-agent: GPTBot
-Allow: /
+Disallow: /auth
+Disallow: /order/
+Disallow: /*?
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
 
-# Anthropic crawlers
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
+Disallow: /*?
+
 User-agent: ClaudeBot
 Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
+Disallow: /*?
 
 User-agent: Claude-Web
 Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
 
-# Google AI crawlers
 User-agent: Google-Extended
 Allow: /
 
 User-agent: GoogleOther
 Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
 
-# Common AI crawlers
 User-agent: PerplexityBot
 Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
+Disallow: /*?
 
 User-agent: BingPreview
 Allow: /
 
 User-agent: cohere-ai
 Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /order/
 
 Sitemap: https://companieshousecyprus.com/sitemap.xml
+Sitemap: https://companieshousecyprus.com/sitemap_index.xml
 AI-sitemap: https://companieshousecyprus.com/llms.txt
 AI-policy: https://companieshousecyprus.com/ai.txt
