@@ -115,8 +115,25 @@ export const Route = createFileRoute("/company/$slug")({
   validateSearch: (search: Record<string, unknown>): { product?: string } =>
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
-    const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
+    let data: Awaited<ReturnType<typeof getCompanyBySlug>>;
+    try {
+      data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
+    } catch (err) {
+      if (import.meta.env.SSR) {
+        const { setNoStoreHeaders } = await import("@/lib/http-cache.server");
+        setNoStoreHeaders(404);
+      }
+      throw err;
+    }
     const c = data.company;
+    if (import.meta.env.SSR) {
+      const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
+      setCompanyPageCacheHeaders({
+        slug: normalizeCompanySlug(params.slug),
+        updatedAt: c.updated_at ?? null,
+      });
+    }
+
     return {
       name: c.name,
       officialNo: displayOfficialNo(c),
