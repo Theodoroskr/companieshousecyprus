@@ -19,6 +19,7 @@ import { Route as CertificationsRouteImport } from './routes/certifications'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -26,6 +27,8 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
@@ -35,6 +38,7 @@ import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
@@ -105,6 +109,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -140,6 +149,18 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -185,6 +206,12 @@ const SolutionsKybForBanksRoute = SolutionsKybForBanksRouteImport.update({
   path: '/solutions/kyb-for-banks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAccountOrdersRoute =
   AuthenticatedAccountOrdersRouteImport.update({
     id: '/account/orders',
@@ -306,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -313,6 +341,8 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
@@ -322,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -353,6 +384,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -360,6 +392,8 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
@@ -368,6 +402,7 @@ export interface FileRoutesByTo {
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -401,6 +436,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -408,6 +444,8 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
@@ -417,6 +455,7 @@ export interface FileRoutesById {
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -450,6 +489,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/llms.txt'
+    | '/mcp'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -457,6 +497,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/checkout/return'
     | '/checkout/session-status'
@@ -466,6 +508,7 @@ export interface FileRouteTypes {
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
+    | '/.mcp/invoke-tool/$tool'
     | '/account/orders'
     | '/admin/api4all'
     | '/admin/emails'
@@ -497,6 +540,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/llms.txt'
+    | '/mcp'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -504,6 +548,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
@@ -512,6 +558,7 @@ export interface FileRouteTypes {
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout'
+    | '/.mcp/invoke-tool/$tool'
     | '/account/orders'
     | '/admin/api4all'
     | '/admin/emails'
@@ -544,6 +591,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/llms.txt'
+    | '/mcp'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -551,6 +599,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/checkout/return'
     | '/checkout/session-status'
@@ -560,6 +610,7 @@ export interface FileRouteTypes {
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/account/orders'
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/emails'
@@ -593,6 +644,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
+  McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -600,6 +652,8 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
   CompanySlugRoute: typeof CompanySlugRoute
@@ -608,6 +662,7 @@ export interface RootRouteChildren {
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
   ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
@@ -692,6 +747,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -739,6 +801,20 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -802,6 +878,13 @@ declare module '@tanstack/react-router' {
       path: '/solutions/kyb-for-banks'
       fullPath: '/solutions/kyb-for-banks'
       preLoaderRoute: typeof SolutionsKybForBanksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account/orders': {
@@ -999,6 +1082,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
+  McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResourcesRoute: ResourcesRoute,
@@ -1006,6 +1090,9 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
   CompanySlugRoute: CompanySlugRoute,
@@ -1014,6 +1101,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
   ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
