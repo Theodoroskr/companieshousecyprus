@@ -147,9 +147,16 @@ function CheckoutPage() {
                 />
               </label>
             </div>
-            <Button type="submit" size="lg" className="mt-6 w-full">
-              <Lock className="size-4" /> Submit order request
+            {error && (
+              <p className="mt-4 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                {error}
+              </p>
+            )}
+            <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>
+              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
+              {submitting ? "Submitting…" : "Submit order request"}
             </Button>
+
             <p className="mt-3 text-xs text-muted-foreground">
               By submitting you agree to our{" "}
               <Link to="/terms" className="underline">terms of service</Link> and{" "}
