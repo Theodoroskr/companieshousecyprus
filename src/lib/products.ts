@@ -237,7 +237,7 @@ export const PRODUCTS: Product[] = [
     headline: "Assess the risk before you extend terms",
     tagline: "Registry profile plus financial indicators, payment behaviour context and a risk view.",
     price: 130,
-    delivery: "1 business day",
+    delivery: "4 days",
     category: "report",
     description: [
       "Combines the registry profile with the company's filed financial statements, sector benchmarks and a structured risk assessment for credit and trade-terms decisions.",
