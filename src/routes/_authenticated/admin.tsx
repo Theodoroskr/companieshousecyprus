@@ -9,6 +9,7 @@ const ADMIN_LINKS = [
   { to: "/admin/api4all", label: "API4ALL" },
   { to: "/admin/users", label: "Users" },
   { to: "/admin/usage", label: "Usage" },
+  { to: "/admin/emails", label: "Emails" },
 ] as const;
 
 export const Route = createFileRoute("/_authenticated/admin")({
