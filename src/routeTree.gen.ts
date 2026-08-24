@@ -60,6 +60,8 @@ import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as GuidesIndexRouteImport } from './routes/guides.index'
+import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
@@ -360,6 +362,17 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesIndexRoute = GuidesIndexRouteImport.update({
+  id: '/guides/',
+  path: '/guides/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesRegisterCompanyCyprusRoute =
+  GuidesRegisterCompanyCyprusRouteImport.update({
+    id: '/guides/register-company-cyprus',
+    path: '/guides/register-company-cyprus',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OrderReferenceRoute = OrderReferenceRouteImport.update({
   id: '/order/$reference',
   path: '/order/$reference',
@@ -574,11 +587,13 @@ export interface FileRoutesByFullPath {
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/guides/': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
@@ -655,11 +670,13 @@ export interface FileRoutesByTo {
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/guides': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
@@ -739,11 +756,13 @@ export interface FileRoutesById {
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/guides/': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
@@ -823,11 +842,13 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
+    | '/guides/'
     | '/.mcp/invoke-tool/$tool'
     | '/account/orders'
     | '/admin/api4all'
@@ -904,11 +925,13 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout'
+    | '/guides'
     | '/.mcp/invoke-tool/$tool'
     | '/account/orders'
     | '/admin/api4all'
@@ -987,11 +1010,13 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
+    | '/guides/'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/account/orders'
     | '/_authenticated/admin/api4all'
@@ -1070,11 +1095,13 @@ export interface RootRouteChildren {
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  GuidesIndexRoute: typeof GuidesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
   ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
@@ -1451,6 +1478,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/': {
+      id: '/guides/'
+      path: '/guides'
+      fullPath: '/guides/'
+      preLoaderRoute: typeof GuidesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/register-company-cyprus': {
+      id: '/guides/register-company-cyprus'
+      path: '/guides/register-company-cyprus'
+      fullPath: '/guides/register-company-cyprus'
+      preLoaderRoute: typeof GuidesRegisterCompanyCyprusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order/$reference': {
       id: '/order/$reference'
       path: '/order/$reference'
@@ -1758,11 +1799,13 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutReturnRoute: CheckoutReturnRoute,
   CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
   CompanySlugRoute: CompanySlugRoute,
+  GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  GuidesIndexRoute: GuidesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
   ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,

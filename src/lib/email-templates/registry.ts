@@ -4,6 +4,8 @@ import { template as orderAssistanceTemplate } from './order-assistance'
 import { template as paymentReceiptTemplate } from './payment-receipt'
 import { template as documentReadyTemplate } from './document-ready'
 import { template as contactInquiryTemplate } from './contact-inquiry'
+import { template as guideLeadInternalTemplate } from './guide-lead-internal'
+import { template as guideLeadConfirmationTemplate } from './guide-lead-confirmation'
 
 
 export interface TemplateEntry {
@@ -25,5 +27,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-receipt': paymentReceiptTemplate,
   'document-ready': documentReadyTemplate,
   'contact-inquiry': contactInquiryTemplate,
+  'guide-lead-internal': guideLeadInternalTemplate,
+  'guide-lead-confirmation': guideLeadConfirmationTemplate,
 
 }
