@@ -206,12 +206,14 @@ function Kpi({
   value,
   hint,
   tone,
+  view,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | string;
   hint: string;
   tone: "default" | "danger" | "warning" | "success";
+  view: "new" | "processing" | "overdue" | "due_today" | "delivered" | "open";
 }) {
   const toneClass =
     tone === "danger"
@@ -222,16 +224,21 @@ function Kpi({
           ? "text-emerald-600 dark:text-emerald-400"
           : "text-copper";
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <Link
+      to="/admin/orders"
+      search={{ view }}
+      className="rounded-xl border bg-card p-4 transition-colors hover:border-copper/60 hover:bg-muted/40"
+    >
       <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wide ${toneClass}`}>
         {icon}
         {label}
       </div>
       <p className="mt-2 font-display text-2xl font-semibold tracking-tight">{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-    </div>
+    </Link>
   );
 }
+
 
 function QuickLink({ to, title, body }: { to: string; title: string; body: string }) {
   return (
