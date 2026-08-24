@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail, AlertCircle } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { PRODUCTS_BY_SLUG, formatPrice } from '@/lib/products';
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from '@/lib/pricing';
-import { submitOrder, submitOrderAsUser, startStripeOrderPayment } from '@/lib/orders.functions';
+import { submitOrder, submitOrderAsUser, startStripeOrderPayment, listMyOrders } from '@/lib/orders.functions';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import { useAccount } from '@/hooks/useAccount';
 import { supabase } from '@/integrations/supabase/client';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
