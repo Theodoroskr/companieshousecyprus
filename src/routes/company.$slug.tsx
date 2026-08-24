@@ -96,9 +96,8 @@ const ORDERABLE = [
 ];
 
 export const Route = createFileRoute("/company/$slug")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    product: typeof search["product"] === "string" ? (search["product"] as string) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { product?: string } =>
+    typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
     return { name: data.company.name, officialNo: displayOfficialNo(data.company), status: data.company.status_en };

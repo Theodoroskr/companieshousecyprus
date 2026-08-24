@@ -13,10 +13,10 @@ const searchQueryOptions = (q: string, page: number) =>
   });
 
 export const Route = createFileRoute("/search")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { q: string; page: number; product?: string } => ({
     q: typeof search["q"] === "string" ? (search["q"] as string) : "",
     page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
-    product: typeof search["product"] === "string" ? (search["product"] as string) : undefined,
+    ...(typeof search["product"] === "string" ? { product: search["product"] as string } : {}),
   }),
   loaderDeps: ({ search }) => ({ q: search.q, page: search.page }),
   loader: async ({ context, deps }) => {
@@ -97,7 +97,7 @@ function SearchPage() {
               <Link
                 to="/company/$slug"
                 params={{ slug: company.slug }}
-                search={pendingProduct ? { product: pendingProduct.slug } : undefined}
+                search={{ product: pendingProduct?.slug }}
                 className="flex flex-wrap items-center justify-between gap-3 p-4"
               >
                 <span>
