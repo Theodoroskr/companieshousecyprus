@@ -28,14 +28,6 @@ const showDate = (value?: string | null) =>
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-const STATUS_LABEL: Record<string, string> = {
-  awaiting_payment: "Awaiting payment",
-  paid: "Paid",
-  processing: "Processing",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
 function isOpen(order: { status: string }) {
   return order.status !== "delivered" && order.status !== "cancelled";
 }
