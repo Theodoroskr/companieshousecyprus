@@ -17,7 +17,24 @@ import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
 
+const VIEWS = ["all", "new", "processing", "overdue", "due_today", "delivered", "open"] as const;
+type OrderView = (typeof VIEWS)[number];
+
+const VIEW_LABEL: Record<OrderView, string> = {
+  all: "All",
+  new: "New requests",
+  processing: "In progress",
+  overdue: "Overdue",
+  due_today: "Due today",
+  delivered: "Delivered",
+  open: "Open",
+};
+
 export const Route = createFileRoute("/_authenticated/admin/orders")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    view: (VIEWS.includes(search.view as OrderView) ? (search.view as OrderView) : "all") as OrderView,
+    ref: typeof search.ref === "string" && search.ref ? search.ref : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Orders — Admin" },
@@ -38,6 +55,9 @@ const STATUSES = ["awaiting_payment", "paid", "processing", "delivered", "cancel
 const dateInput = (value?: string | null) => (value ? value.slice(0, 10) : "");
 const showDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }) : "—";
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
 
 function fileToBase64(file: File) {
   return new Promise<string>((resolve, reject) => {
