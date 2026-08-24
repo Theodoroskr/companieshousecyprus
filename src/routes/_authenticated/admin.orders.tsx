@@ -34,12 +34,35 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
 const euros = (cents: number) => formatPrice(cents / 100);
 const STATUSES = ["awaiting_payment", "paid", "processing", "delivered", "cancelled"];
 
+const dateInput = (value?: string | null) => (value ? value.slice(0, 10) : "");
+const showDate = (value?: string | null) =>
+  value ? new Date(value).toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }) : "—";
+
+function fileToBase64(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result);
+      resolve(result.slice(result.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(new Error("Could not read the file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 function AdminOrdersPage() {
   const list = useServerFn(adminListOrders);
   const setStatus = useServerFn(adminSetOrderStatus);
   const fulfil = useServerFn(adminFulfilItem);
+  const setOrderDates = useServerFn(adminSetOrderDates);
+  const setItemDue = useServerFn(adminSetItemDueDate);
+  const uploadDocument = useServerFn(adminUploadItemDocument);
+  const documentUrl = useServerFn(adminDocumentUrl);
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
+  const [notify, setNotify] = useState(true);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const query = useQuery({ queryKey: ["admin", "orders"], queryFn: () => list() });
 
@@ -50,6 +73,55 @@ function AdminOrdersPage() {
     onSuccess: invalidate,
   });
 
+  const datesMutation = useMutation({
+    mutationFn: (input: { reference: string; dueDate?: string | null; deliveredAt?: string | null }) =>
+      setOrderDates({ data: input }),
+    onSuccess: () => {
+      setMessage("Order dates saved.");
+      void invalidate();
+    },
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Could not save dates"),
+  });
+
+  const itemDueMutation = useMutation({
+    mutationFn: (input: { itemId: string; dueDate?: string | null }) => setItemDue({ data: input }),
+    onSuccess: invalidate,
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (input: { itemId: string; file: File }) => {
+      const base64 = await fileToBase64(input.file);
+      return uploadDocument({
+        data: {
+          itemId: input.itemId,
+          fileName: input.file.name,
+          contentType: input.file.type || "application/octet-stream",
+          base64,
+          notify,
+        },
+      });
+    },
+    onSuccess: (result) => {
+      setMessage(
+        result.notified
+          ? `Uploaded ${result.documentName} — the client has been emailed.`
+          : `Uploaded ${result.documentName}.`,
+      );
+      void invalidate();
+    },
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Upload failed"),
+    onSettled: () => setUploadingId(null),
+  });
+
+  const openDocument = async (path: string) => {
+    try {
+      const { url } = await documentUrl({ data: { path } });
+      window.open(url, "_blank", "noopener");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not open the document");
+    }
+  };
+
   const fulfilMutation = useMutation({
     mutationFn: (itemId: string) => fulfil({ data: { itemId } }),
     onSuccess: (result) => {
@@ -58,6 +130,7 @@ function AdminOrdersPage() {
     },
     onError: (error) => setMessage(error instanceof Error ? error.message : "Fulfilment failed"),
   });
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
