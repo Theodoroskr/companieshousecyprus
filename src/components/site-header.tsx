@@ -69,7 +69,7 @@ export function SiteHeader() {
                         <Link
                           to="/report/$type"
                           params={{ type: product.slug }}
-                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none transition-colors hover:bg-muted focus:bg-muted"
+                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none transition-colors"
                         >
                           <span className="font-medium leading-tight">{product.name}</span>
                           <span className="shrink-0 text-xs font-semibold text-copper">{formatPrice(product.price)}</span>
@@ -89,7 +89,7 @@ export function SiteHeader() {
                         <Link
                           to="/report/$type"
                           params={{ type: product.slug }}
-                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none transition-colors hover:bg-muted focus:bg-muted"
+                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none transition-colors"
                         >
                           <span className="font-medium leading-tight">{product.name}</span>
                           <span className="shrink-0 text-xs font-semibold text-copper">{formatPrice(product.price)}</span>
@@ -104,7 +104,7 @@ export function SiteHeader() {
                 <DropdownMenuItem asChild className="p-0">
                   <Link
                     to="/pricing"
-                    className="flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted"
+                    className="flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm font-medium text-foreground outline-none transition-colors"
                   >
                     <span>View all products</span>
                     <ArrowRight className="size-4 text-copper" />
