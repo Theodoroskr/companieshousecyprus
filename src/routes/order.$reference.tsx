@@ -2,10 +2,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
-import { fetchOrder } from "@/lib/orders.functions";
+import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
+import { fetchOrder, startOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+
 
 const TITLE = "Order status — Companies House Cyprus";
 
