@@ -57,6 +57,40 @@ type IndexNowStatus = {
   batchSize: number;
 };
 
+type CanonicalCheck = {
+  slug: string;
+  url: string;
+  sample: string;
+  status: number | null;
+  redirectedTo: string | null;
+  canonicalHref: string | null;
+  expectedChunk: number | null;
+  inSitemap: boolean | null;
+  issues: string[];
+  ok: boolean;
+};
+
+type CanonicalHealth = {
+  checkedAt: string;
+  healthy: boolean;
+  error?: string;
+  totals?: {
+    companies: number;
+    checked: number;
+    failing: number;
+    sitemapChunksProbed: number;
+    missingInSitemap: number;
+    redirected: number;
+    notOk: number;
+    canonicalMismatch: number;
+    fetchFailed: number;
+    sitemapUnreachable: number;
+  };
+  failures?: CanonicalCheck[];
+  checks?: CanonicalCheck[];
+};
+
+
 function SitemapHealthPage() {
   const query = useQuery<Health>({
     queryKey: ["sitemap-health"],
@@ -78,7 +112,19 @@ function SitemapHealthPage() {
     refetchOnWindowFocus: false,
   });
 
+  const canonical = useQuery<CanonicalHealth>({
+    queryKey: ["canonical-health"],
+    queryFn: async () => {
+      const res = await fetch("/api/public/canonical-health");
+      if (!res.ok) throw new Error(`Canonical check failed (${res.status})`);
+      return res.json();
+    },
+    refetchOnWindowFocus: false,
+  });
+
   const data = query.data;
+  const canonicalData = canonical.data;
+
 
 
   return (
@@ -207,6 +253,91 @@ function SitemapHealthPage() {
           </Card>
         </>
       )}
+
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+          <div>
+            <CardTitle className="text-base">Canonical URL checks</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Samples recent, chunk-boundary and random companies: each canonical{" "}
+              <code>/company/&#123;ID&#125;</code> must return 200 (no redirect) and appear in its sitemap chunk.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => canonical.refetch()} disabled={canonical.isFetching}>
+              {canonical.isFetching ? "Checking…" : "Run checks"}
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/api/public/canonical-health" target="_blank" rel="noreferrer">JSON</a>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {canonical.isLoading && <p className="text-sm text-muted-foreground">Probing canonical URLs…</p>}
+          {canonical.isError && <p className="text-sm text-destructive">{(canonical.error as Error).message}</p>}
+          {canonicalData?.error && <p className="text-sm text-destructive">{canonicalData.error}</p>}
+
+          {canonicalData?.totals && (
+            <>
+              <div className="mb-4 flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+                <Badge variant={canonicalData.healthy ? "default" : "destructive"}>
+                  {canonicalData.healthy ? "All canonical URLs OK" : `${canonicalData.totals.failing} flagged`}
+                </Badge>
+                <span className="text-muted-foreground">
+                  Checked <span className="font-medium text-foreground">{canonicalData.totals.checked}</span> of{" "}
+                  {canonicalData.totals.companies.toLocaleString("en-GB")} companies across{" "}
+                  {canonicalData.totals.sitemapChunksProbed} chunks
+                </span>
+                <span className="text-muted-foreground">
+                  Missing in sitemap: <span className="font-medium text-foreground">{canonicalData.totals.missingInSitemap}</span> ·
+                  Redirected: <span className="font-medium text-foreground">{canonicalData.totals.redirected}</span> ·
+                  Non-200: <span className="font-medium text-foreground">{canonicalData.totals.notOk}</span> ·
+                  Canonical mismatch: <span className="font-medium text-foreground">{canonicalData.totals.canonicalMismatch}</span>
+                </span>
+                <span className="text-muted-foreground">{fmt(canonicalData.checkedAt)}</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-2">Company URL</th>
+                      <th className="px-4 py-2">Sample</th>
+                      <th className="px-4 py-2">Status</th>
+                      <th className="px-4 py-2">Sitemap chunk</th>
+                      <th className="px-4 py-2">Flags</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(canonicalData.failures?.length ? canonicalData.failures : canonicalData.checks ?? []).map((c) => (
+                      <tr key={c.slug} className="border-t">
+                        <td className="px-4 py-2">
+                          <a className="text-copper hover:underline" href={`/company/${c.slug}`} target="_blank" rel="noreferrer">
+                            /company/{c.slug}
+                          </a>
+                          {c.redirectedTo && (
+                            <span className="block text-xs text-muted-foreground">→ {c.redirectedTo}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-muted-foreground">{c.sample}</td>
+                        <td className="px-4 py-2">
+                          <Badge variant={c.status === 200 ? "secondary" : "destructive"}>{c.status ?? "no response"}</Badge>
+                        </td>
+                        <td className="px-4 py-2 text-muted-foreground">
+                          {c.expectedChunk === null ? "—" : `#${c.expectedChunk}`}{" "}
+                          {c.inSitemap === null ? "(unknown)" : c.inSitemap ? "· present" : "· missing"}
+                        </td>
+                        <td className="px-4 py-2 text-destructive">{c.issues.join(", ")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
