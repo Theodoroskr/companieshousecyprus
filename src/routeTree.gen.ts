@@ -30,6 +30,7 @@ import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.ses
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
+import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
@@ -143,6 +144,12 @@ const ReportTypeRoute = ReportTypeRouteImport.update({
   path: '/report/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAccountOrdersRoute =
+  AuthenticatedAccountOrdersRouteImport.update({
+    id: '/account/orders',
+    path: '/account/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminApi4allRoute =
   AuthenticatedAdminApi4allRouteImport.update({
     id: '/admin/api4all',
@@ -210,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -240,6 +248,7 @@ export interface FileRoutesByTo {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -272,6 +281,7 @@ export interface FileRoutesById {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/account/orders'
     | '/admin/api4all'
     | '/admin/import'
     | '/admin/orders'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/account/orders'
     | '/admin/api4all'
     | '/admin/import'
     | '/admin/orders'
@@ -365,6 +377,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/_authenticated/account/orders'
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/orders'
@@ -551,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/account/orders': {
+      id: '/_authenticated/account/orders'
+      path: '/account/orders'
+      fullPath: '/account/orders'
+      preLoaderRoute: typeof AuthenticatedAccountOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/api4all': {
       id: '/_authenticated/admin/api4all'
       path: '/admin/api4all'
@@ -611,12 +631,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountOrdersRoute: typeof AuthenticatedAccountOrdersRoute
   AuthenticatedAdminApi4allRoute: typeof AuthenticatedAdminApi4allRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountOrdersRoute: AuthenticatedAccountOrdersRoute,
   AuthenticatedAdminApi4allRoute: AuthenticatedAdminApi4allRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
