@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
-import { fetchOrder, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
+import { fetchOrder, orderDocumentUrl, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ function OrderPage() {
   const load = useServerFn(fetchOrder);
   const startStripe = useServerFn(startStripeOrderPayment);
   const syncPayment = useServerFn(syncOrderPayment);
+  const getDocumentUrl = useServerFn(orderDocumentUrl);
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   useEffect(() => setTokenInput(token), [token]);
