@@ -144,3 +144,20 @@ export function maskName(name: string | null | undefined): string {
     })
     .join(" ");
 }
+
+/**
+ * Build the set of query variants to match against Latin-script registry names.
+ * A Greek query is transliterated (ELOT-743 style) so "ΤΡΑΠΕΖΑ ΚΥΠΡΟΥ" also
+ * matches "TRAPEZA KYPROU"; accents and final sigma are normalised too.
+ */
+export function searchVariants(q: string): string[] {
+  const base = stripAccents(q).trim().replace(/\s+/g, " ");
+  const out: string[] = [];
+  const push = (value?: string | null) => {
+    const v = (value ?? "").trim();
+    if (v && !out.some((existing) => existing.toLowerCase() === v.toLowerCase())) out.push(v);
+  };
+  push(base);
+  push(greekToLatin(base));
+  return out;
+}
