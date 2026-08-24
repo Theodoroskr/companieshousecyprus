@@ -289,16 +289,29 @@ function CompanyPage() {
               </p>
             </div>
 
-            <Button
-              asChild
-              size="lg"
-              className="h-12 w-full shrink-0 rounded-xl bg-copper px-6 font-display text-sm font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30 sm:h-14 sm:w-auto sm:px-8 sm:text-base"
-            >
-              <a href="#order" className="gap-2">
-                Order certificates
-                <ShieldCheck className="size-5 shrink-0" />
-              </a>
-            </Button>
+            <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              <Button
+                asChild
+                size="lg"
+                className="h-12 w-full rounded-xl bg-copper px-6 font-display text-sm font-bold text-copper-foreground shadow-lg shadow-copper/25 transition-all hover:-translate-y-0.5 hover:bg-copper/90 hover:shadow-xl hover:shadow-copper/30 sm:h-14 sm:w-auto sm:px-8 sm:text-base"
+              >
+                <a href="#order" className="gap-2">
+                  Order certificates
+                  <ShieldCheck className="size-5 shrink-0" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 w-full rounded-xl border-primary-foreground/25 bg-primary-foreground/5 px-6 font-display text-sm font-bold text-primary-foreground backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-primary-foreground/10 hover:text-primary-foreground sm:h-14 sm:w-auto sm:px-8 sm:text-base"
+              >
+                <a href="#reports" className="gap-2">
+                  Order reports
+                  <FileCheck2 className="size-5 shrink-0" />
+                </a>
+              </Button>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5 md:mt-12 lg:grid-cols-3">
@@ -540,13 +553,27 @@ function CompanyPage() {
 
         <aside id="order" className="h-fit space-y-4 lg:sticky lg:top-24">
           <TooltipProvider delayDuration={200}>
-            <div className="rounded-xl border bg-card p-6 shadow-panel">
-              <h2 className="font-display text-lg font-semibold">Order for this company</h2>
+            {([
+              {
+                id: "certificates",
+                title: "Order certificates",
+                blurb: `Certified registrar documents for ${company.name}, delivered digitally.`,
+                slugs: ORDERABLE.filter((slug) => PRODUCTS.find((p) => p.slug === slug)?.category === "certificate"),
+              },
+              {
+                id: "reports",
+                title: "Order reports",
+                blurb: `Structure, credit and due diligence intelligence on ${company.name}.`,
+                slugs: ORDERABLE.filter((slug) => PRODUCTS.find((p) => p.slug === slug)?.category !== "certificate"),
+              },
+            ] as const).filter((group) => group.slugs.length > 0).map((group) => (
+            <div key={group.id} id={group.id} className="scroll-mt-24 rounded-xl border bg-card p-6 shadow-panel">
+              <h2 className="font-display text-lg font-semibold">{group.title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Certified documents for {company.name}, delivered digitally.
+                {group.blurb}
               </p>
               <ul className="mt-5 space-y-3">
-                {ORDERABLE.map((productSlug) => {
+                {group.slugs.map((productSlug) => {
                   const product = PRODUCTS.find((item) => item.slug === productSlug);
                   if (!product) return null;
                   return (
@@ -621,6 +648,7 @@ function CompanyPage() {
                 })}
               </ul>
             </div>
+            ))}
           </TooltipProvider>
 
           <div className="rounded-xl border bg-sand p-6 text-sm text-muted-foreground">
