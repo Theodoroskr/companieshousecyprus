@@ -35,6 +35,19 @@ function isOpen(order: { status: string }) {
   return order.status !== "delivered" && order.status !== "cancelled";
 }
 
+const shiftDays = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+};
+
+const PRESETS = [
+  { key: "7", label: "Last 7 days", days: 6 },
+  { key: "30", label: "Last 30 days", days: 29 },
+  { key: "90", label: "Last 90 days", days: 89 },
+  { key: "all", label: "All time", days: null as number | null },
+] as const;
+
 function AdminDashboardPage() {
   const list = useServerFn(adminListOrders);
   const { data, isLoading, isFetching, refetch } = useQuery({
@@ -42,8 +55,32 @@ function AdminDashboardPage() {
     queryFn: () => list(),
   });
 
-  const orders = data?.orders ?? [];
+  const allOrders = data?.orders ?? [];
   const today = todayISO();
+
+  const [preset, setPreset] = useState<string>("30");
+  const [from, setFrom] = useState<string>(shiftDays(29));
+  const [to, setTo] = useState<string>(today);
+
+  const applyPreset = (key: string) => {
+    setPreset(key);
+    const found = PRESETS.find((p) => p.key === key);
+    if (!found) return;
+    setTo(todayISO());
+    setFrom(found.days === null ? "" : shiftDays(found.days));
+  };
+
+  const orders = useMemo(
+    () =>
+      allOrders.filter((o) => {
+        const day = (o.created_at ?? "").slice(0, 10);
+        if (!day) return true;
+        if (from && day < from) return false;
+        if (to && day > to) return false;
+        return true;
+      }),
+    [allOrders, from, to],
+  );
 
   const open = orders.filter(isOpen);
   const newOrders = orders.filter((o) => o.status === "paid" || o.status === "awaiting_payment");
@@ -57,6 +94,50 @@ function AdminDashboardPage() {
     .reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
   const missingDue = open.filter((o) => !o.due_date);
 
+  const stats = useMemo(() => {
+    const items = orders.flatMap((o) => o.order_items ?? []);
+    const requests = items.reduce((sum, i) => sum + (i.quantity ?? 1), 0);
+    const byProduct = new Map<string, { count: number; value: number }>();
+    for (const i of items) {
+      const key = i.product_name ?? "Unknown";
+      const entry = byProduct.get(key) ?? { count: 0, value: 0 };
+      entry.count += i.quantity ?? 1;
+      entry.value += i.total_cents ?? 0;
+      byProduct.set(key, entry);
+    }
+    const topProducts = [...byProduct.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const turnarounds = orders
+      .filter((o) => o.status === "delivered" && o.delivered_at && o.created_at)
+      .map(
+        (o) =>
+          (new Date(o.delivered_at as string).getTime() - new Date(o.created_at as string).getTime()) /
+          86_400_000,
+      );
+    const avgTurnaround = turnarounds.length
+      ? turnarounds.reduce((a, b) => a + b, 0) / turnarounds.length
+      : null;
+
+    const statusCounts = orders.reduce<Record<string, number>>((acc, o) => {
+      acc[o.status] = (acc[o.status] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    const paidOrders = orders.filter((o) => o.status !== "awaiting_payment" && o.status !== "cancelled");
+    const avgOrderValue = paidOrders.length
+      ? paidOrders.reduce((s, o) => s + (o.total_cents ?? 0), 0) / paidOrders.length
+      : 0;
+
+    const deliveredCount = delivered.length;
+    const completionRate = orders.length ? Math.round((deliveredCount / orders.length) * 100) : 0;
+
+    return { requests, topProducts, avgTurnaround, statusCounts, avgOrderValue, completionRate, items: items.length };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders]);
+
   const attention = [...overdue, ...dueToday, ...newOrders.filter((o) => o.status === "paid")]
     .filter((o, i, arr) => arr.findIndex((x) => x.id === o.id) === i)
     .slice(0, 12);
@@ -67,7 +148,7 @@ function AdminDashboardPage() {
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight">Support dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Live view of requests, due dates and deliveries — newest {orders.length} orders.
+            {orders.length} orders in the selected period ({allOrders.length} loaded).
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
@@ -75,6 +156,54 @@ function AdminDashboardPage() {
           Refresh
         </Button>
       </div>
+
+      <section className="mt-5 flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => applyPreset(p.key)}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                preset === p.key
+                  ? "border-copper bg-copper/10 text-copper"
+                  : "text-muted-foreground hover:border-copper/50 hover:text-foreground"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="grid gap-1">
+            <Label htmlFor="from" className="text-xs text-muted-foreground">From</Label>
+            <Input
+              id="from"
+              type="date"
+              value={from}
+              onChange={(e) => {
+                setFrom(e.target.value);
+                setPreset("custom");
+              }}
+              className="h-9 w-[150px]"
+            />
+          </div>
+          <div className="grid gap-1">
+            <Label htmlFor="to" className="text-xs text-muted-foreground">To</Label>
+            <Input
+              id="to"
+              type="date"
+              value={to}
+              onChange={(e) => {
+                setTo(e.target.value);
+                setPreset("custom");
+              }}
+              className="h-9 w-[150px]"
+            />
+          </div>
+        </div>
+      </section>
+
 
       {isLoading ? (
         <div className="mt-10 flex items-center gap-2 text-sm text-muted-foreground">
