@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, CreditCard, FileText, Loader2, PackageSearch, ShieldCheck } from "lucide-react";
+import { Building2, CheckCircle2, Clock, CreditCard, FileText, Loader2, Mail, PackageSearch, Phone, Receipt, ShieldCheck, User } from "lucide-react";
 import { listMyOrders, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
@@ -53,6 +53,32 @@ function progressFor(status: string, items: { fulfilment_status: string }[]) {
   return Math.max(40, Math.round(40 + (delivered / items.length) * 60));
 }
 
+type DetailRow = { icon: typeof User; label: string; value: string | null | undefined };
+
+function DetailItem({ icon: Icon, label, value }: DetailRow) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-copper/10 text-copper">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="block truncate text-sm font-medium">{value?.trim() ? value : "—"}</span>
+      </span>
+    </div>
+  );
+}
+
+function StatCard({ label, value, hint }: { label: string; value: string; hint?: string | undefined }) {
+  return (
+    <div className="rounded-xl border bg-card px-4 py-3">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
+      {hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
+  );
+}
+
 function MyOrdersPage() {
   const load = useServerFn(listMyOrders);
   const query = useQuery({
@@ -63,6 +89,17 @@ function MyOrdersPage() {
 
   const orders = query.data?.orders ?? [];
   const account = useAccount();
+
+  const profile = orders.find((order: OrderListItem) => order.full_name || order.firm || order.phone);
+  const paidOrders = orders.filter((order: OrderListItem) => order.status !== "awaiting_payment" && order.status !== "cancelled");
+  const totalSpent = paidOrders.reduce((sum: number, order: OrderListItem) => sum + (order.total_cents ?? 0), 0);
+  const documentsReady = orders.reduce(
+    (sum: number, order: OrderListItem) =>
+      sum + (order.order_items ?? []).filter((item) => item.fulfilment_status === "delivered").length,
+    0,
+  );
+  const awaiting = orders.filter((order: OrderListItem) => order.status === "awaiting_payment").length;
+  const memberSince = orders.length ? orders[orders.length - 1]!.created_at : null;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
@@ -86,6 +123,40 @@ function MyOrdersPage() {
         </div>
         <SignOutButton />
       </header>
+
+      {orders.length > 0 && (
+        <section className="mb-8 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="rounded-xl border bg-card p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Your details</h2>
+              {memberSince ? (
+                <span className="text-xs text-muted-foreground">Client since {formatDate(memberSince)}</span>
+              ) : null}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <DetailItem icon={User} label="Contact name" value={profile?.full_name} />
+              <DetailItem icon={Mail} label="Delivery email" value={query.data?.email || profile?.email} />
+              <DetailItem icon={Building2} label="Company / firm" value={profile?.firm} />
+              <DetailItem icon={Receipt} label="VAT number" value={profile?.vat_number} />
+              <DetailItem icon={Phone} label="Phone" value={profile?.phone} />
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              These details come from your most recent order. Update them at checkout on your next purchase.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <StatCard label="Orders" value={String(orders.length)} hint={awaiting ? `${awaiting} awaiting payment` : "All settled"} />
+            <StatCard label="Documents ready" value={String(documentsReady)} hint="Available to download" />
+            <StatCard label="Total paid" value={euros(totalSpent)} hint="Excluding unpaid orders" />
+            <StatCard
+              label="Last order"
+              value={(orders[0] ? formatDate(orders[0].created_at) : null) || "—"}
+              hint={orders[0]?.reference ?? undefined}
+            />
+          </div>
+        </section>
+      )}
 
 
       {account.isAdmin && (
