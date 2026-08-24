@@ -20,7 +20,16 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as McpRouteImport } from './routes/mcp'
-import { Route as New_company_sitemap_nDotxmlRouteImport } from './routes/new_company_sitemap_$n[.]xml'
+import { Route as New_company_sitemapDotxmlRouteImport } from './routes/new_company_sitemap[.]xml'
+import { Route as New_company_sitemap_10DotxmlRouteImport } from './routes/new_company_sitemap_10[.]xml'
+import { Route as New_company_sitemap_2DotxmlRouteImport } from './routes/new_company_sitemap_2[.]xml'
+import { Route as New_company_sitemap_3DotxmlRouteImport } from './routes/new_company_sitemap_3[.]xml'
+import { Route as New_company_sitemap_4DotxmlRouteImport } from './routes/new_company_sitemap_4[.]xml'
+import { Route as New_company_sitemap_5DotxmlRouteImport } from './routes/new_company_sitemap_5[.]xml'
+import { Route as New_company_sitemap_6DotxmlRouteImport } from './routes/new_company_sitemap_6[.]xml'
+import { Route as New_company_sitemap_7DotxmlRouteImport } from './routes/new_company_sitemap_7[.]xml'
+import { Route as New_company_sitemap_8DotxmlRouteImport } from './routes/new_company_sitemap_8[.]xml'
+import { Route as New_company_sitemap_9DotxmlRouteImport } from './routes/new_company_sitemap_9[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -115,10 +124,64 @@ const McpRoute = McpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const New_company_sitemap_nDotxmlRoute =
-  New_company_sitemap_nDotxmlRouteImport.update({
-    id: '/new_company_sitemap_$n.xml',
-    path: '/new_company_sitemap_$n.xml',
+const New_company_sitemapDotxmlRoute =
+  New_company_sitemapDotxmlRouteImport.update({
+    id: '/new_company_sitemap.xml',
+    path: '/new_company_sitemap.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_10DotxmlRoute =
+  New_company_sitemap_10DotxmlRouteImport.update({
+    id: '/new_company_sitemap_10.xml',
+    path: '/new_company_sitemap_10.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_2DotxmlRoute =
+  New_company_sitemap_2DotxmlRouteImport.update({
+    id: '/new_company_sitemap_2.xml',
+    path: '/new_company_sitemap_2.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_3DotxmlRoute =
+  New_company_sitemap_3DotxmlRouteImport.update({
+    id: '/new_company_sitemap_3.xml',
+    path: '/new_company_sitemap_3.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_4DotxmlRoute =
+  New_company_sitemap_4DotxmlRouteImport.update({
+    id: '/new_company_sitemap_4.xml',
+    path: '/new_company_sitemap_4.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_5DotxmlRoute =
+  New_company_sitemap_5DotxmlRouteImport.update({
+    id: '/new_company_sitemap_5.xml',
+    path: '/new_company_sitemap_5.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_6DotxmlRoute =
+  New_company_sitemap_6DotxmlRouteImport.update({
+    id: '/new_company_sitemap_6.xml',
+    path: '/new_company_sitemap_6.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_7DotxmlRoute =
+  New_company_sitemap_7DotxmlRouteImport.update({
+    id: '/new_company_sitemap_7.xml',
+    path: '/new_company_sitemap_7.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_8DotxmlRoute =
+  New_company_sitemap_8DotxmlRouteImport.update({
+    id: '/new_company_sitemap_8.xml',
+    path: '/new_company_sitemap_8.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_9DotxmlRoute =
+  New_company_sitemap_9DotxmlRouteImport.update({
+    id: '/new_company_sitemap_9.xml',
+    path: '/new_company_sitemap_9.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -341,7 +404,16 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
-  '/new_company_sitemap_$n.xml': typeof New_company_sitemap_nDotxmlRoute
+  '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
+  '/new_company_sitemap_10.xml': typeof New_company_sitemap_10DotxmlRoute
+  '/new_company_sitemap_2.xml': typeof New_company_sitemap_2DotxmlRoute
+  '/new_company_sitemap_3.xml': typeof New_company_sitemap_3DotxmlRoute
+  '/new_company_sitemap_4.xml': typeof New_company_sitemap_4DotxmlRoute
+  '/new_company_sitemap_5.xml': typeof New_company_sitemap_5DotxmlRoute
+  '/new_company_sitemap_6.xml': typeof New_company_sitemap_6DotxmlRoute
+  '/new_company_sitemap_7.xml': typeof New_company_sitemap_7DotxmlRoute
+  '/new_company_sitemap_8.xml': typeof New_company_sitemap_8DotxmlRoute
+  '/new_company_sitemap_9.xml': typeof New_company_sitemap_9DotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -393,7 +465,16 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
-  '/new_company_sitemap_$n.xml': typeof New_company_sitemap_nDotxmlRoute
+  '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
+  '/new_company_sitemap_10.xml': typeof New_company_sitemap_10DotxmlRoute
+  '/new_company_sitemap_2.xml': typeof New_company_sitemap_2DotxmlRoute
+  '/new_company_sitemap_3.xml': typeof New_company_sitemap_3DotxmlRoute
+  '/new_company_sitemap_4.xml': typeof New_company_sitemap_4DotxmlRoute
+  '/new_company_sitemap_5.xml': typeof New_company_sitemap_5DotxmlRoute
+  '/new_company_sitemap_6.xml': typeof New_company_sitemap_6DotxmlRoute
+  '/new_company_sitemap_7.xml': typeof New_company_sitemap_7DotxmlRoute
+  '/new_company_sitemap_8.xml': typeof New_company_sitemap_8DotxmlRoute
+  '/new_company_sitemap_9.xml': typeof New_company_sitemap_9DotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -446,7 +527,16 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
-  '/new_company_sitemap_$n.xml': typeof New_company_sitemap_nDotxmlRoute
+  '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
+  '/new_company_sitemap_10.xml': typeof New_company_sitemap_10DotxmlRoute
+  '/new_company_sitemap_2.xml': typeof New_company_sitemap_2DotxmlRoute
+  '/new_company_sitemap_3.xml': typeof New_company_sitemap_3DotxmlRoute
+  '/new_company_sitemap_4.xml': typeof New_company_sitemap_4DotxmlRoute
+  '/new_company_sitemap_5.xml': typeof New_company_sitemap_5DotxmlRoute
+  '/new_company_sitemap_6.xml': typeof New_company_sitemap_6DotxmlRoute
+  '/new_company_sitemap_7.xml': typeof New_company_sitemap_7DotxmlRoute
+  '/new_company_sitemap_8.xml': typeof New_company_sitemap_8DotxmlRoute
+  '/new_company_sitemap_9.xml': typeof New_company_sitemap_9DotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -500,7 +590,16 @@ export interface FileRouteTypes {
     | '/faq'
     | '/llms.txt'
     | '/mcp'
-    | '/new_company_sitemap_$n.xml'
+    | '/new_company_sitemap.xml'
+    | '/new_company_sitemap_10.xml'
+    | '/new_company_sitemap_2.xml'
+    | '/new_company_sitemap_3.xml'
+    | '/new_company_sitemap_4.xml'
+    | '/new_company_sitemap_5.xml'
+    | '/new_company_sitemap_6.xml'
+    | '/new_company_sitemap_7.xml'
+    | '/new_company_sitemap_8.xml'
+    | '/new_company_sitemap_9.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -552,7 +651,16 @@ export interface FileRouteTypes {
     | '/faq'
     | '/llms.txt'
     | '/mcp'
-    | '/new_company_sitemap_$n.xml'
+    | '/new_company_sitemap.xml'
+    | '/new_company_sitemap_10.xml'
+    | '/new_company_sitemap_2.xml'
+    | '/new_company_sitemap_3.xml'
+    | '/new_company_sitemap_4.xml'
+    | '/new_company_sitemap_5.xml'
+    | '/new_company_sitemap_6.xml'
+    | '/new_company_sitemap_7.xml'
+    | '/new_company_sitemap_8.xml'
+    | '/new_company_sitemap_9.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -604,7 +712,16 @@ export interface FileRouteTypes {
     | '/faq'
     | '/llms.txt'
     | '/mcp'
-    | '/new_company_sitemap_$n.xml'
+    | '/new_company_sitemap.xml'
+    | '/new_company_sitemap_10.xml'
+    | '/new_company_sitemap_2.xml'
+    | '/new_company_sitemap_3.xml'
+    | '/new_company_sitemap_4.xml'
+    | '/new_company_sitemap_5.xml'
+    | '/new_company_sitemap_6.xml'
+    | '/new_company_sitemap_7.xml'
+    | '/new_company_sitemap_8.xml'
+    | '/new_company_sitemap_9.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -658,7 +775,16 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
-  New_company_sitemap_nDotxmlRoute: typeof New_company_sitemap_nDotxmlRoute
+  New_company_sitemapDotxmlRoute: typeof New_company_sitemapDotxmlRoute
+  New_company_sitemap_10DotxmlRoute: typeof New_company_sitemap_10DotxmlRoute
+  New_company_sitemap_2DotxmlRoute: typeof New_company_sitemap_2DotxmlRoute
+  New_company_sitemap_3DotxmlRoute: typeof New_company_sitemap_3DotxmlRoute
+  New_company_sitemap_4DotxmlRoute: typeof New_company_sitemap_4DotxmlRoute
+  New_company_sitemap_5DotxmlRoute: typeof New_company_sitemap_5DotxmlRoute
+  New_company_sitemap_6DotxmlRoute: typeof New_company_sitemap_6DotxmlRoute
+  New_company_sitemap_7DotxmlRoute: typeof New_company_sitemap_7DotxmlRoute
+  New_company_sitemap_8DotxmlRoute: typeof New_company_sitemap_8DotxmlRoute
+  New_company_sitemap_9DotxmlRoute: typeof New_company_sitemap_9DotxmlRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -768,11 +894,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/new_company_sitemap_$n.xml': {
-      id: '/new_company_sitemap_$n.xml'
-      path: '/new_company_sitemap_$n.xml'
-      fullPath: '/new_company_sitemap_$n.xml'
-      preLoaderRoute: typeof New_company_sitemap_nDotxmlRouteImport
+    '/new_company_sitemap.xml': {
+      id: '/new_company_sitemap.xml'
+      path: '/new_company_sitemap.xml'
+      fullPath: '/new_company_sitemap.xml'
+      preLoaderRoute: typeof New_company_sitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_10.xml': {
+      id: '/new_company_sitemap_10.xml'
+      path: '/new_company_sitemap_10.xml'
+      fullPath: '/new_company_sitemap_10.xml'
+      preLoaderRoute: typeof New_company_sitemap_10DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_2.xml': {
+      id: '/new_company_sitemap_2.xml'
+      path: '/new_company_sitemap_2.xml'
+      fullPath: '/new_company_sitemap_2.xml'
+      preLoaderRoute: typeof New_company_sitemap_2DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_3.xml': {
+      id: '/new_company_sitemap_3.xml'
+      path: '/new_company_sitemap_3.xml'
+      fullPath: '/new_company_sitemap_3.xml'
+      preLoaderRoute: typeof New_company_sitemap_3DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_4.xml': {
+      id: '/new_company_sitemap_4.xml'
+      path: '/new_company_sitemap_4.xml'
+      fullPath: '/new_company_sitemap_4.xml'
+      preLoaderRoute: typeof New_company_sitemap_4DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_5.xml': {
+      id: '/new_company_sitemap_5.xml'
+      path: '/new_company_sitemap_5.xml'
+      fullPath: '/new_company_sitemap_5.xml'
+      preLoaderRoute: typeof New_company_sitemap_5DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_6.xml': {
+      id: '/new_company_sitemap_6.xml'
+      path: '/new_company_sitemap_6.xml'
+      fullPath: '/new_company_sitemap_6.xml'
+      preLoaderRoute: typeof New_company_sitemap_6DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_7.xml': {
+      id: '/new_company_sitemap_7.xml'
+      path: '/new_company_sitemap_7.xml'
+      fullPath: '/new_company_sitemap_7.xml'
+      preLoaderRoute: typeof New_company_sitemap_7DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_8.xml': {
+      id: '/new_company_sitemap_8.xml'
+      path: '/new_company_sitemap_8.xml'
+      fullPath: '/new_company_sitemap_8.xml'
+      preLoaderRoute: typeof New_company_sitemap_8DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_9.xml': {
+      id: '/new_company_sitemap_9.xml'
+      path: '/new_company_sitemap_9.xml'
+      fullPath: '/new_company_sitemap_9.xml'
+      preLoaderRoute: typeof New_company_sitemap_9DotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -1104,7 +1293,16 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
-  New_company_sitemap_nDotxmlRoute: New_company_sitemap_nDotxmlRoute,
+  New_company_sitemapDotxmlRoute: New_company_sitemapDotxmlRoute,
+  New_company_sitemap_10DotxmlRoute: New_company_sitemap_10DotxmlRoute,
+  New_company_sitemap_2DotxmlRoute: New_company_sitemap_2DotxmlRoute,
+  New_company_sitemap_3DotxmlRoute: New_company_sitemap_3DotxmlRoute,
+  New_company_sitemap_4DotxmlRoute: New_company_sitemap_4DotxmlRoute,
+  New_company_sitemap_5DotxmlRoute: New_company_sitemap_5DotxmlRoute,
+  New_company_sitemap_6DotxmlRoute: New_company_sitemap_6DotxmlRoute,
+  New_company_sitemap_7DotxmlRoute: New_company_sitemap_7DotxmlRoute,
+  New_company_sitemap_8DotxmlRoute: New_company_sitemap_8DotxmlRoute,
+  New_company_sitemap_9DotxmlRoute: New_company_sitemap_9DotxmlRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResourcesRoute: ResourcesRoute,
