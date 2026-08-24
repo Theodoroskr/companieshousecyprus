@@ -96,59 +96,26 @@ async function releaseLock(supabase: Supa, lastError: string | null) {
     .eq("key", JOB_KEY);
 }
 
-/** Store a retrieved report on the item, mark it delivered and notify the client. */
+/**
+ * Store a retrieved report on the item and queue it for admin review.
+ * The client is emailed only when an administrator releases it
+ * (see releaseOrderItemReport in orders.server.ts).
+ */
 async function deliverReport(
   supabase: Supa,
   item: { id: string; order_id: string; product_name: string; company_name: string | null; company_number: string | null },
   payload: { kind: string; code: string | null; report: unknown },
 ) {
-  const deliveredAt = new Date().toISOString();
   await supabase
     .from("order_items")
     .update({
       report_json: { kind: payload.kind, code: payload.code, report: payload.report } as never,
-      fulfilment_status: "delivered",
-      fulfilment_message: null,
-      delivered_at: deliveredAt,
+      fulfilment_status: "awaiting_review",
+      fulfilment_message: "Report received from API4ALL — awaiting admin review before release.",
+      delivered_at: null,
       a4a_next_attempt_at: null,
     })
     .eq("id", item.id);
-
-  const { data: siblings } = await supabase
-    .from("order_items")
-    .select("fulfilment_status")
-    .eq("order_id", item.order_id);
-  const allDelivered = (siblings ?? []).every((row) => row.fulfilment_status === "delivered");
-
-  const { data: order } = await supabase
-    .from("orders")
-    .select("id, reference, full_name, email")
-    .eq("id", item.order_id)
-    .maybeSingle();
-
-  if (order && allDelivered) {
-    await supabase
-      .from("orders")
-      .update({ status: "delivered", delivered_at: deliveredAt })
-      .eq("id", order.id);
-  }
-
-  if (order) {
-    try {
-      const { sendDocumentReadyEmail } = await import("@/lib/order-emails.server");
-      await sendDocumentReadyEmail(
-        { reference: order.reference, full_name: order.full_name, email: order.email },
-        {
-          product_name: item.product_name,
-          company_name: item.company_name,
-          company_number: item.company_number,
-          document_name: `${item.product_name} (available in your portal)`,
-        },
-      );
-    } catch (error) {
-      console.error("Report delivery email failed", order.reference, error);
-    }
-  }
 }
 
 /** Retry a bounded batch of pending API4ALL reports. */
