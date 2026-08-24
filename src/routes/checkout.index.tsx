@@ -286,13 +286,16 @@ function CheckoutPage() {
                   vatNumber: String(form.get('vat') ?? ''),
                   phone: String(form.get('phone') ?? ''),
                   notes: String(form.get('notes') ?? ''),
-                  items: items.map((item) => ({
-                    productSlug: item.productSlug,
-                    companySlug: item.companySlug,
-                    companyName: item.companyName,
-                    companyNumber: item.companyNumber,
-                    quantity: item.quantity,
-                  })),
+                  items: items.map((item, index) => {
+                    const input = companyInputs[index];
+                    return {
+                      productSlug: item.productSlug,
+                      companySlug: item.companySlug,
+                      companyName: input?.companyName.trim() || item.companyName,
+                      companyNumber: input?.companyNumber.trim() || item.companyNumber,
+                      quantity: item.quantity,
+                    };
+                  }),
                 };
                 const result = useAuthenticated
                   ? await placeOrderAsUser({ data: orderPayload })
