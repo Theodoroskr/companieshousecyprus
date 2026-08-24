@@ -46,6 +46,17 @@ export const Route = createFileRoute("/_authenticated/admin/sitemap")({
   component: SitemapHealthPage,
 });
 
+type IndexNowStatus = {
+  paused: boolean;
+  pausedReason: string | null;
+  lastRunAt: string | null;
+  lastSubmittedCount: number;
+  lastError: string | null;
+  pending: number;
+  keyLocation: string;
+  batchSize: number;
+};
+
 function SitemapHealthPage() {
   const query = useQuery<Health>({
     queryKey: ["sitemap-health"],
@@ -57,7 +68,18 @@ function SitemapHealthPage() {
     refetchOnWindowFocus: false,
   });
 
+  const indexNow = useQuery<IndexNowStatus>({
+    queryKey: ["indexnow-status"],
+    queryFn: async () => {
+      const res = await fetch("/api/public/indexnow");
+      if (!res.ok) throw new Error(`IndexNow status failed (${res.status})`);
+      return res.json();
+    },
+    refetchOnWindowFocus: false,
+  });
+
   const data = query.data;
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
