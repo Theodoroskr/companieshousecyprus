@@ -115,16 +115,25 @@ export const Route = createFileRoute("/company/$slug")({
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
+    const c = data.company;
     return {
-      name: data.company.name,
-      officialNo: displayOfficialNo(data.company),
-      status: data.company.status_en,
-      statusGroup: data.company.status_group ?? null,
-      typeEn: data.company.type_en ?? null,
-      registrationDate: formatDate(data.company.registration_date),
-      district_en: data.company.district_en ?? null,
+      name: c.name,
+      officialNo: displayOfficialNo(c),
+      status: c.status_en,
+      statusGroup: c.status_group ?? null,
+      typeEn: c.type_en ?? null,
+      registrationDate: formatDate(c.registration_date),
+      registrationIso: c.registration_date ? String(c.registration_date).slice(0, 10) : null,
+      district_en: c.district_en ?? null,
+      addressFull: c.address_full ?? null,
+      building: c.building ?? null,
+      street: c.street ?? null,
+      locality: c.locality ?? null,
+      postcode: c.postcode ?? null,
+      isForeignAddress: Boolean(c.is_foreign_address),
     };
   },
+
   head: ({ loaderData, params }) => {
     if (!loaderData) {
       return {
