@@ -169,6 +169,27 @@ export const PRODUCTS: Product[] = [
     ],
     typicalUse: "Estate administration, claim settlement, account closure verification.",
   },
+  {
+    slug: "memorandum-and-articles-of-association",
+    name: "Memorandum and Articles of Association",
+    eyebrow: "Registrar certificate",
+    headline: "The company's founding constitutional documents",
+    tagline: "Statutory document containing the company name, registered office, share capital, shareholders and governance rules.",
+    price: 70,
+    delivery: "1–2 business days",
+    category: "certificate",
+    description: [
+      "The Memorandum and Articles of Association is a statutory document for registering a company in Cyprus. It contains information including the company's name and registered office as well as details about share capital such as currency, price per share, names of the shareholders and the amount of shares held as well as internal management and governance of a company.",
+    ],
+    includes: [
+      { title: "Company name and registered office", detail: "Legal name and official address as filed with the Registrar." },
+      { title: "Share capital details", detail: "Currency, price per share, authorised and issued capital." },
+      { title: "Shareholders", detail: "Names of shareholders and the amount of shares held." },
+      { title: "Governance rules", detail: "Internal management, directors' powers and meeting procedures." },
+      { title: "Digital delivery", detail: "Certified PDF delivered by email." },
+    ],
+    typicalUse: "Due diligence, shareholder agreements, corporate restructuring, legal reviews.",
+  },
 
   {
     slug: "cyprus-company-profile",
