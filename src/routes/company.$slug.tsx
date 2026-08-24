@@ -118,13 +118,15 @@ export const Route = createFileRoute("/company/$slug")({
     let data: Awaited<ReturnType<typeof getCompanyBySlug>>;
     try {
       data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
-    } catch (err) {
+    } catch {
       if (import.meta.env.SSR) {
         const { setNoStoreHeaders } = await import("@/lib/http-cache.server");
-        setNoStoreHeaders(404);
+        setNoStoreHeaders();
       }
-      throw err;
+      // Unknown company: a real 404 (not a 500) so crawlers drop it cleanly.
+      throw notFound();
     }
+
     const c = data.company;
     if (import.meta.env.SSR) {
       const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
