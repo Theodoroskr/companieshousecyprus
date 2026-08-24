@@ -263,6 +263,8 @@ function CheckoutPage() {
             <div className='mt-6 grid gap-4 sm:grid-cols-2'>
               {FIELDS.map((field) => {
                 const errorText = field.name === 'email' ? fieldErrors.email : undefined;
+                const prefill =
+                  field.name === 'email' && account.signedIn && account.email ? account.email : undefined;
                 return (
                   <label
                     key={field.name}
@@ -275,6 +277,7 @@ function CheckoutPage() {
                       required={field.required}
                       placeholder={field.placeholder}
                       aria-invalid={!!errorText}
+                      {...(prefill ? { key: prefill, defaultValue: prefill, readOnly: true } : {})}
                       onChange={() => {
                         if (errorText) {
                           setFieldErrors((prev) => ({ ...prev, email: undefined }));
@@ -282,9 +285,11 @@ function CheckoutPage() {
                       }}
                       className={cn(
                         'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                        prefill && 'bg-muted/40 text-muted-foreground',
                         errorText && 'border-destructive focus:border-destructive',
                       )}
                     />
+
 
                     {errorText && (
                       <span className='mt-1 block text-xs text-destructive'>{errorText}</span>
@@ -323,6 +328,18 @@ function CheckoutPage() {
                     </p>
                   </div>
                 </label>
+                <p className='mt-3 border-t border-copper/20 pt-3 text-xs text-muted-foreground'>
+                  Already have an account?{' '}
+                  <Link
+                    to='/auth'
+                    search={{ redirect: '/checkout' }}
+                    className='font-semibold text-copper underline underline-offset-2'
+                  >
+                    Sign in
+                  </Link>{' '}
+                  to link this order to your client portal.
+                </p>
+
                 {createAccount && (
                   <div className='mt-4 grid gap-4 sm:grid-cols-2'>
                     <label>
