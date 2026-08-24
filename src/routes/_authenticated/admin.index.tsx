@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Clock, Inbox, Loader2, RefreshCw, Timer } 
 import { adminListOrders } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/admin/status-badge";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
@@ -26,14 +27,6 @@ const showDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }) : "—";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
-
-const STATUS_LABEL: Record<string, string> = {
-  awaiting_payment: "Awaiting payment",
-  paid: "Paid",
-  processing: "Processing",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
 
 function isOpen(order: { status: string }) {
   return order.status !== "delivered" && order.status !== "cancelled";
@@ -171,9 +164,7 @@ function AdminDashboardPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
-                            {STATUS_LABEL[order.status] ?? order.status}
-                          </span>
+                          <StatusBadge status={order.status} />
                           <span
                             className={
                               late
