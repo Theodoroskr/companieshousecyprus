@@ -514,8 +514,8 @@ function CompanyPage() {
                             const breakdown = priceBreakdown(product);
                             return (
                               <>
-                                <span className="block text-sm font-semibold">{formatPrice(breakdown.total)}</span>
-                                <span className="block text-[10px] text-muted-foreground">incl. VAT</span>
+                                <span className="block text-sm font-semibold">{formatPrice(breakdown.documentPrice)}</span>
+                                <span className="block text-[10px] text-muted-foreground">certificate only</span>
                               </>
                             );
                           })()}
@@ -527,15 +527,12 @@ function CompanyPage() {
                           const breakdown = priceBreakdown(product);
                           return (
                             <>
-                              <span>{formatPrice(breakdown.documentPrice)} doc</span>
-                              {breakdown.serviceFee > 0 && (
-                                <>
-                                  <span className="text-border">|</span>
-                                  <span>{formatPrice(breakdown.serviceFee)} fee</span>
-                                </>
+                              {product.category === "certificate" && (
+                                <span>€50 handling fee per certificate applies at checkout</span>
                               )}
-                              <span className="text-border">|</span>
-                              <span>{formatPrice(breakdown.vat)} VAT</span>
+                              {product.category !== "certificate" && (
+                                <span>{formatPrice(breakdown.total)} incl. VAT</span>
+                              )}
                             </>
                           );
                         })()}

@@ -79,8 +79,15 @@ function ReportPage() {
               const breakdown = priceBreakdown(product);
               return (
                 <>
-                  <p className="font-display text-4xl font-bold">{formatPrice(breakdown.total)}</p>
-                  <p className="mt-1 text-sm text-primary-foreground/70">per company · incl. VAT</p>
+                  <p className="font-display text-4xl font-bold">{formatPrice(breakdown.documentPrice)}</p>
+                  <p className="mt-1 text-sm text-primary-foreground/70">
+                    per company {product.category === "certificate" ? "· certificate only" : "· incl. VAT"}
+                  </p>
+                  {product.category === "certificate" && (
+                    <p className="mt-1 text-xs text-primary-foreground/60">
+                      A €50 handling fee per certificate is added at checkout.
+                    </p>
+                  )}
                   <div className="mt-4 space-y-1 rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-primary-foreground/80">
                     <div className="flex justify-between">
                       <span>Document</span>
@@ -88,13 +95,17 @@ function ReportPage() {
                     </div>
                     {product.category === "certificate" && (
                       <div className="flex justify-between">
-                        <span>Service fee</span>
+                        <span>Handling fee</span>
                         <span>{formatPrice(breakdown.serviceFee)}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span>VAT ({Math.round(VAT_RATE * 100)}%)</span>
                       <span>{formatPrice(breakdown.vat)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-white/10 pt-1 font-medium">
+                      <span>Total</span>
+                      <span>{formatPrice(breakdown.total)}</span>
                     </div>
                   </div>
                 </>
