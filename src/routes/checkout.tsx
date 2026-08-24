@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail, AlertCircle } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { PRODUCTS_BY_SLUG, formatPrice } from '@/lib/products';
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from '@/lib/pricing';
-import { submitOrder, submitOrderAsUser, startStripeOrderPayment } from '@/lib/orders.functions';
+import { submitOrder, submitOrderAsUser, startStripeOrderPayment, listMyOrders } from '@/lib/orders.functions';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import { useAccount } from '@/hooks/useAccount';
 import { supabase } from '@/integrations/supabase/client';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -106,7 +107,39 @@ function passwordStrength(password: string) {
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const account = useAccount();
+  const loadMyOrders = useServerFn(listMyOrders);
+  const [profile, setProfile] = useState<Record<string, string>>({});
+
+  // Prefill the delivery details from the signed-in customer's most recent order.
+  useEffect(() => {
+    if (!account.ready || !account.signedIn) {
+      setProfile({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await loadMyOrders();
+        const latest = res?.orders?.[0];
+        if (cancelled) return;
+        const next: Record<string, string> = {};
+        if (account.email) next['email'] = account.email;
+        if (latest?.full_name) next['fullName'] = latest.full_name;
+        if (latest?.firm) next['company'] = latest.firm;
+        if (latest?.vat_number) next['vat'] = latest.vat_number;
+        if (latest?.phone) next['phone'] = latest.phone;
+        setProfile(next);
+      } catch {
+        if (!cancelled) setProfile(account.email ? { email: account.email } : {});
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account.ready, account.signedIn, account.email, loadMyOrders]);
+
   const placeOrder = useServerFn(submitOrder);
+
   const placeOrderAsUser = useServerFn(submitOrderAsUser);
   const startStripe = useServerFn(startStripeOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
@@ -272,8 +305,8 @@ function CheckoutPage() {
             <div className='mt-6 grid gap-4 sm:grid-cols-2'>
               {FIELDS.map((field) => {
                 const errorText = field.name === 'email' ? fieldErrors.email : undefined;
-                const prefill =
-                  field.name === 'email' && account.signedIn && account.email ? account.email : undefined;
+                const prefill = profile[field.name];
+                const locked = field.name === 'email' && !!prefill;
                 return (
                   <label
                     key={field.name}
@@ -286,7 +319,8 @@ function CheckoutPage() {
                       required={field.required}
                       placeholder={field.placeholder}
                       aria-invalid={!!errorText}
-                      {...(prefill ? { key: prefill, defaultValue: prefill, readOnly: true } : {})}
+                      {...(prefill ? { key: prefill, defaultValue: prefill } : {})}
+                      {...(locked ? { readOnly: true } : {})}
                       onChange={() => {
                         if (errorText) {
                           setFieldErrors((prev) => ({ ...prev, email: undefined }));
@@ -294,9 +328,10 @@ function CheckoutPage() {
                       }}
                       className={cn(
                         'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
-                        prefill && 'bg-muted/40 text-muted-foreground',
+                        locked && 'bg-muted/40 text-muted-foreground',
                         errorText && 'border-destructive focus:border-destructive',
                       )}
+
                     />
 
 
