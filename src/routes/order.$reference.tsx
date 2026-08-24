@@ -42,7 +42,11 @@ function OrderPage() {
   const { token } = Route.useSearch();
   const navigate = useNavigate();
   const [tokenInput, setTokenInput] = useState(token);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const load = useServerFn(fetchOrder);
+  const startPayment = useServerFn(startOrderPayment);
+  const syncPayment = useServerFn(syncOrderPayment);
 
   useEffect(() => setTokenInput(token), [token]);
 
@@ -52,6 +56,32 @@ function OrderPage() {
     enabled: token.length > 0,
     refetchInterval: 60_000,
   });
+
+  const refetch = query.refetch;
+  // Reconcile with Revolut when the customer returns from the hosted checkout.
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    let attempts = 0;
+    const tick = async () => {
+      attempts += 1;
+      try {
+        const result = await syncPayment({ data: { reference, token } });
+        if (!cancelled && result.paid) {
+          void refetch();
+          return;
+        }
+      } catch {
+        /* ignore transient sync errors */
+      }
+      if (!cancelled && attempts < 5) setTimeout(() => void tick(), 4000);
+    };
+    void tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [reference, token, syncPayment, refetch]);
+
 
   if (!token) {
     return (
