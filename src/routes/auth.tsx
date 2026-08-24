@@ -11,11 +11,11 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
 
     meta: [
-      { title: "Staff sign in | Companies House Cyprus" },
-      { name: "description", content: "Sign in to manage Cyprus registrar data imports and updates." },
+      { title: "Sign in | Companies House Cyprus" },
+      { name: "description", content: "Sign in to your Companies House Cyprus account to track orders and download reports." },
       { name: "robots", content: "noindex, nofollow" },
-      { property: "og:title", content: "Staff sign in | Companies House Cyprus" },
-      { property: "og:description", content: "Sign in to manage Cyprus registrar data imports." },
+      { property: "og:title", content: "Sign in | Companies House Cyprus" },
+      { property: "og:description", content: "Sign in to your Companies House Cyprus account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -63,9 +63,9 @@ function AuthPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
-      <h1 className="text-2xl font-bold tracking-tight">Staff sign in</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Access to the registrar data import tools is restricted to administrators.
+        Sign in to track your orders and download your certificates and reports.
       </p>
       <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg border bg-card p-6">
         <div className="space-y-2">
