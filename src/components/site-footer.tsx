@@ -3,8 +3,8 @@ import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
 
 
-const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
 const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
+
 
 export function SiteFooter() {
   return (
