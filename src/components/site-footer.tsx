@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Mail, Phone } from "lucide-react";
 import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
 import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
