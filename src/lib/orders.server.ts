@@ -447,14 +447,15 @@ export async function setOrderDates(input: {
   deliveredAt?: string | null;
 }) {
   const supabase = ordersClient();
-  const patch: Record<string, string | null> = {};
-  patch["due_date"] = nullableDate(input.dueDate);
   const delivered = nullableDate(input.deliveredAt);
-  patch["delivered_at"] = delivered ? new Date(`${delivered}T12:00:00Z`).toISOString() : null;
   const { error } = await supabase
     .from("orders")
-    .update(patch)
+    .update({
+      due_date: nullableDate(input.dueDate),
+      delivered_at: delivered ? new Date(`${delivered}T12:00:00Z`).toISOString() : null,
+    })
     .eq("reference", input.reference.trim().toUpperCase());
+
   if (error) throw new Error(error.message);
   return { ok: true as const };
 }
