@@ -36,6 +36,7 @@ import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -175,6 +176,12 @@ const SitemapsCompaniesNDotxmlRoute =
     path: '/sitemaps/companies/$n.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -231,6 +239,7 @@ export interface FileRoutesByTo {
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -261,6 +270,7 @@ export interface FileRoutesById {
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -348,6 +360,7 @@ export interface FileRouteTypes {
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -374,6 +387,7 @@ export interface RootRouteChildren {
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -567,6 +581,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapsCompaniesNDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -621,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
