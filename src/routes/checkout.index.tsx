@@ -157,7 +157,7 @@ function CheckoutPage() {
   const [accountCreated, setAccountCreated] = useState(false);
 
   const [companyInputs, setCompanyInputs] = useState<Record<number, { companyName: string; companyNumber: string }>>({});
-  const [companyInputErrors, setCompanyInputErrors] = useState<Record<number, { companyName?: string; companyNumber?: string }>>({});
+  const [companyInputErrors, setCompanyInputErrors] = useState<Record<number, { companyName?: string | undefined; companyNumber?: string | undefined }>>({});
 
   const itemsNeedingCompany = items
     .map((item, index) => ({ item, index, product: PRODUCTS_BY_SLUG[item.productSlug] }))
