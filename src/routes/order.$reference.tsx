@@ -228,26 +228,22 @@ function OrderPage() {
                 </div>
               </div>
 
-              {item.reportJson && (
+              {item.hasReport && item.fulfilment_status === "delivered" && (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      const blob = new Blob([item.reportJson ?? ""], { type: "application/json" });
-                      const url = URL.createObjectURL(blob);
-                      const link = document.createElement("a");
-                      link.href = url;
-                      link.download = `${order.reference}-${item.product_slug}.json`;
-                      link.click();
-                      URL.revokeObjectURL(url);
-                    }}
-                  >
-                    <Download className="size-4" /> Download report
+                  <Button asChild size="sm">
+                    <Link to="/account/reports/$itemId" params={{ itemId: item.id }}>
+                      <Download className="size-4" /> Open report
+                    </Link>
                   </Button>
                   <span className="text-xs text-muted-foreground">
-                    Delivered {item.delivered_at ? new Date(item.delivered_at).toLocaleString("en-GB") : ""}
+                    Sign in with {order.email} to view and save it as PDF.
                   </span>
                 </div>
+              )}
+              {item.fulfilment_status === "awaiting_review" && (
+                <p className="mt-3 rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
+                  The report has arrived and is being checked by our analysts before release.
+                </p>
               )}
               {(item.order_documents?.length ?? 0) > 0 && (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
