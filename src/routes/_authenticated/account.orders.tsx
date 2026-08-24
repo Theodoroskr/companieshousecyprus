@@ -69,7 +69,7 @@ function DetailItem({ icon: Icon, label, value }: DetailRow) {
   );
 }
 
-function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function StatCard({ label, value, hint }: { label: string; value: string; hint?: string | undefined }) {
   return (
     <div className="rounded-xl border bg-card px-4 py-3">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
