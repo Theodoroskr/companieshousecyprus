@@ -251,13 +251,13 @@ function SearchPage() {
 
           {totalPages > 1 && (
             <div className="mt-8 flex items-center justify-between">
-              <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
+              <Button variant="outline" disabled={page <= 1} onClick={() => setSearch({ page: page - 1 })}>
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
                 Page {page} of {totalPages.toLocaleString()}
               </span>
-              <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
+              <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch({ page: page + 1 })}>
                 Next
               </Button>
             </div>
