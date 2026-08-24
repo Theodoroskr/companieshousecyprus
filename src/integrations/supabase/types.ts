@@ -435,6 +435,27 @@ export type Database = {
         }
         Relationships: []
       }
+      sitemap_chunks: {
+        Row: {
+          chunk_index: number
+          lastmod: string | null
+          refreshed_at: string
+          url_count: number
+        }
+        Insert: {
+          chunk_index: number
+          lastmod?: string | null
+          refreshed_at?: string
+          url_count: number
+        }
+        Update: {
+          chunk_index?: number
+          lastmod?: string | null
+          refreshed_at?: string
+          url_count?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -470,6 +491,7 @@ export type Database = {
         Returns: boolean
       }
       refresh_officials_count: { Args: never; Returns: number }
+      refresh_sitemap_chunks: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "client"
