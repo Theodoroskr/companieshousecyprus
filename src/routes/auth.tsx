@@ -9,8 +9,10 @@ import { accountDestination } from "@/lib/account-destination";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { redirect?: string | undefined } => ({
+    redirect: typeof search["redirect"] === "string" ? (search["redirect"] as string) : undefined,
+  }),
   head: () => ({
-
     meta: [
       { title: "Sign in | Companies House Cyprus" },
       { name: "description", content: "Sign in to your Companies House Cyprus account to track orders and download reports." },
@@ -24,14 +26,27 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+function safeRedirect(path: string | undefined): string | null {
+  if (typeof path !== "string") return null;
+  if (!path.startsWith("/") || path.startsWith("//")) return null;
+  if (path.startsWith("/auth")) return null;
+  return path;
+}
+
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const navigateForUser = async (userId: string) => {
+  const navigateForUser = async (userId: string, requestedRedirect?: string | undefined) => {
+    const target = safeRedirect(requestedRedirect);
+    if (target) {
+      await navigate({ to: target, replace: true });
+      return;
+    }
     const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     if (error) throw error;
     await navigate({ to: accountDestination((data ?? []).map((row) => String(row.role))), replace: true });
@@ -40,12 +55,12 @@ function AuthPage() {
   useEffect(() => {
     let active = true;
     supabase.auth.getUser().then(({ data }) => {
-      if (active && data.user) void navigateForUser(data.user.id);
+      if (active && data.user) void navigateForUser(data.user.id, redirect);
     });
     return () => {
       active = false;
     };
-  }, [navigate]);
+  }, [navigate, redirect]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +78,7 @@ function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        await navigateForUser(data.user.id);
+        await navigateForUser(data.user.id, redirect);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");

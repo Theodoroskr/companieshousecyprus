@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, ShoppingCart, ChevronDown, Menu, X, ArrowRight, ShieldCheck } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -18,6 +18,8 @@ import {
 
 export function SiteHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const signInRedirect = location.pathname + location.searchStr;
   const { count } = useCart();
   const account = useAccount();
   const [q, setQ] = useState("");
@@ -164,7 +166,7 @@ export function SiteHeader() {
               )}
             </>
           ) : (
-            <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+            <Link to="/auth" search={{ redirect: signInRedirect }} className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
               Sign in
             </Link>
           )}
@@ -247,7 +249,7 @@ export function SiteHeader() {
                 )}
               </>
             ) : (
-              <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              <Link to="/auth" search={{ redirect: signInRedirect }} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
                 Sign in
               </Link>
             )}
