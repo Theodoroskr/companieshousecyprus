@@ -126,7 +126,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
     const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
     if (!context.userId || !email) return { email: email || "", orders: [] };
     const { listOrdersForUser } = await import("@/lib/orders.server");
-    return { email, orders: (await listOrdersForUser(context.userId, email)) as OrderListItem[] };
+    return { email, orders: (await listOrdersForUser(context.userId, email)) as unknown as OrderListItem[] };
   });
 
 /** Place an order while signed in. The user id is taken from the verified session. */
