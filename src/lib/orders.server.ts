@@ -5,7 +5,7 @@ import { priceBreakdown } from "@/lib/pricing";
 
 /** Products fulfilled through API4ALL. */
 export { A4A_PRODUCT_KIND } from "@/lib/api4all-codes";
-import { A4A_PRODUCT_KIND, pickCompanyCode } from "@/lib/api4all-codes";
+import { A4A_PRODUCT_KIND, pickCompanyCode, registrationCandidates } from "@/lib/api4all-codes";
 
 function ordersClient() {
   const url = process.env["SUPABASE_URL"];
@@ -310,13 +310,18 @@ export async function fulfilOrderItem(itemId: string) {
 
   if (!code) {
     if (!regNo) return fail("No registration number stored for this item");
+    const candidates = registrationCandidates(regNo);
     try {
-      const hits = await searchByRegistration(regNo);
-      code = pickCompanyCode(hits, regNo);
+      for (const candidate of candidates) {
+        const hits = await searchByRegistration(candidate);
+        code = pickCompanyCode(hits, candidate);
+        if (code) break;
+      }
     } catch (searchError) {
       return fail(searchError instanceof Error ? searchError.message : "API4ALL search failed");
     }
-    if (!code) return fail(`API4ALL has no company code for ${regNo}`);
+    if (!code) return fail(`API4ALL has no company code for ${regNo} (tried ${candidates.join(", ")})`);
+
     if (item.company_slug) {
       await supabase.from("companies").update({ a4a_code: code }).eq("slug", item.company_slug);
     }

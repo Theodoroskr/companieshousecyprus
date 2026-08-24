@@ -51,3 +51,18 @@ export function pickCompanyCode(hits: CodedHit[], regNo: string): string | null 
   );
   return exact?.code ?? hits.find((hit) => hit.code)?.code ?? null;
 }
+
+/**
+ * API4ALL indexes Cyprus entities with registrar-independent prefixes
+ * (e.g. our "HE4404" is "C4404" upstream). Produce the reg-no variants to try,
+ * most likely first, de-duplicated.
+ */
+export function registrationCandidates(regNo: string): string[] {
+  const raw = (regNo ?? "").trim().toUpperCase().replace(/\s+/g, "");
+  const digits = registrationDigits(raw);
+  if (!digits) return raw ? [raw] : [];
+  const prefix = raw.replace(/\d+$/, "");
+  const mapped: Record<string, string> = { HE: "C", C: "C", EE: "E", E: "E", S: "S", P: "P", BN: "BN", AE: "AE" };
+  const list = [raw, mapped[prefix] ? `${mapped[prefix]}${digits}` : "", `C${digits}`, `E${digits}`, `S${digits}`, `P${digits}`];
+  return [...new Set(list.filter(Boolean))];
+}
