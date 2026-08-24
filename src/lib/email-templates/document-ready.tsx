@@ -23,6 +23,7 @@ export interface DocumentReadyProps {
   companyName?: string | null
   companyNumber?: string | null
   deliveredAt?: string
+  sentAt?: string
   portalUrl?: string
   documents?: { name: string; url?: string | null }[]
 }
