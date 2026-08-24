@@ -169,7 +169,8 @@ export async function createOrder(input: {
         product: REPORT_PRODUCTS[input.kind],
         format: "JSON",
         speed: input.speed ?? "Normal",
-        freshinvestigation: 0,
+        // Always request a fresh investigation so reports are re-verified at source.
+        freshinvestigation: 1,
         comments: "",
       },
     ],

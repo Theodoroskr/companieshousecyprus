@@ -175,4 +175,11 @@ describe("API4ALL order product codes", () => {
     body = calls.find((c) => c.startsWith("BODY "))!;
     expect(JSON.parse(body.slice(5)).items[0].product).toBe("2300");
   });
+
+  it("always requests a fresh investigation", async () => {
+    const { createOrder } = await import("@/lib/api4all.server");
+    await createOrder({ kind: "structure", code: A4A_CODE, reference: "CHC-3" });
+    const body = calls.find((c) => c.startsWith("BODY "))!;
+    expect(JSON.parse(body.slice(5)).items[0].freshinvestigation).toBe(1);
+  });
 });
