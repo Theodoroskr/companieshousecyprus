@@ -114,7 +114,7 @@ export function SiteFooter() {
             </li>
             <li>
               <Link to="/auth" className="text-muted-foreground hover:text-foreground">
-                Staff sign in
+                Sign in
               </Link>
             </li>
           </ul>
