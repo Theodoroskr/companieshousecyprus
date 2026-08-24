@@ -77,6 +77,7 @@ import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-po
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
+import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -445,6 +446,11 @@ const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
   path: '/api/public/revolut-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSitemapHealthRoute = ApiPublicSitemapHealthRouteImport.update({
+  id: '/api/public/sitemap-health',
+  path: '/api/public/sitemap-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
   id: '/companies/a-z/$letter',
   path: '/companies/a-z/$letter',
@@ -553,6 +559,7 @@ export interface FileRoutesByFullPath {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -628,6 +635,7 @@ export interface FileRoutesByTo {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -706,6 +714,7 @@ export interface FileRoutesById {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -784,6 +793,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sitemap-health'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -859,6 +869,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sitemap-health'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -936,6 +947,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sitemap-health'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1006,6 +1018,7 @@ export interface RootRouteChildren {
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
+  ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -1491,6 +1504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRevolutWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sitemap-health': {
+      id: '/api/public/sitemap-health'
+      path: '/api/public/sitemap-health'
+      fullPath: '/api/public/sitemap-health'
+      preLoaderRoute: typeof ApiPublicSitemapHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/companies/a-z/$letter': {
       id: '/companies/a-z/$letter'
       path: '/companies/a-z/$letter'
@@ -1645,6 +1665,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
+  ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,
