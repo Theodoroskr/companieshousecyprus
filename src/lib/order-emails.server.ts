@@ -121,6 +121,7 @@ export async function sendOrderDeliveredEmail(
     const first = items[0];
     await sendTemplateEmail("document-ready", order.email, {
       idempotencyKey: `order-delivered-${order.reference}-${documents.length}`,
+      sendOfficeCopy: true,
       templateData: {
         fullName: order.full_name ?? undefined,
         reference: order.reference,
