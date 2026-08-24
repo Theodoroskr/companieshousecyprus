@@ -108,3 +108,33 @@ export async function sendDocumentReadyEmail(
     console.error("Document ready email failed", order.reference, error);
   }
 }
+
+/** Sent when an order is marked delivered — lists every document with a secure link. */
+export async function sendOrderDeliveredEmail(
+  order: OrderEmailOrder,
+  documents: { name: string; url?: string | null }[],
+  items: OrderEmailItem[],
+) {
+  if (!order.email) return;
+  try {
+    const first = items[0];
+    await sendTemplateEmail("document-ready", order.email, {
+      idempotencyKey: `order-delivered-${order.reference}-${documents.length}`,
+      templateData: {
+        fullName: order.full_name ?? undefined,
+        reference: order.reference,
+        productName: items.map((item) => item.product_name).join(", ") || undefined,
+        companyName: first?.company_name ?? null,
+        companyNumber: first?.company_number ?? null,
+        documentName: documents.map((doc) => doc.name).join(", ") || null,
+        documents,
+        deliveredAt: new Date().toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }),
+        portalUrl: order.access_token
+          ? `${SITE_URL}/order/${order.reference}?token=${order.access_token}`
+          : `${SITE_URL}/account/orders`,
+      },
+    });
+  } catch (error) {
+    console.error("Order delivered email failed", order.reference, error);
+  }
+}

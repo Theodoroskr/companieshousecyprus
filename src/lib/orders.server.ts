@@ -209,13 +209,14 @@ export async function setOrderStatus(reference: string, status: string) {
   const supabase = ordersClient();
   const patch: { status: string; delivered_at?: string | null } = { status };
 
+  const { data: existing } = await supabase
+    .from("orders")
+    .select("id, reference, access_token, full_name, email, status, delivered_at")
+    .eq("reference", reference)
+    .maybeSingle();
+
   // The delivery date follows the status automatically.
   if (status === "delivered") {
-    const { data: existing } = await supabase
-      .from("orders")
-      .select("delivered_at")
-      .eq("reference", reference)
-      .maybeSingle();
     if (!existing?.delivered_at) patch.delivered_at = new Date().toISOString();
   } else {
     patch.delivered_at = null;
@@ -223,8 +224,51 @@ export async function setOrderStatus(reference: string, status: string) {
 
   const { error } = await supabase.from("orders").update(patch).eq("reference", reference);
   if (error) throw new Error(error.message);
+
+  // Notify the client the first time an order is marked delivered.
+  if (status === "delivered" && existing && existing.status !== "delivered") {
+    await notifyOrderDelivered(existing.id, {
+      reference: existing.reference,
+      access_token: existing.access_token,
+      full_name: existing.full_name,
+      email: existing.email,
+    });
+  }
+
   return { ok: true as const };
 }
+
+/** Collect every uploaded document for an order, sign it, and email the client. */
+async function notifyOrderDelivered(
+  orderId: string,
+  order: { reference: string; access_token?: string | null; full_name?: string | null; email?: string | null },
+) {
+  try {
+    const supabase = ordersClient();
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("product_name, company_name, company_number")
+      .eq("order_id", orderId);
+    const { data: docs } = await supabase
+      .from("order_documents")
+      .select("name, path, created_at")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: true });
+
+    const documents = await Promise.all(
+      (docs ?? []).map(async (doc) => ({
+        name: doc.name,
+        url: await signOrderDocument(doc.path, 60 * 60 * 24 * 7).catch(() => null),
+      })),
+    );
+
+    const { sendOrderDeliveredEmail } = await import("@/lib/order-emails.server");
+    await sendOrderDeliveredEmail(order, documents, items ?? []);
+  } catch (error) {
+    console.error("Delivered notification failed", order.reference, error);
+  }
+}
+
 
 
 /** Pull the report from API4ALL for one order item and store it. */
