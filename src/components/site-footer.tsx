@@ -57,12 +57,21 @@ export function SiteFooter() {
             ))}
             <li>
               <Link
+                to="/cyprus-companies-registry"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Cyprus companies registry
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/solutions/kyb-for-banks"
                 className="text-muted-foreground hover:text-foreground"
               >
                 KYB for banks
               </Link>
             </li>
+
             <li>
               <Link to="/pricing" className="font-medium text-copper hover:underline">
                 All pricing
