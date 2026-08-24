@@ -58,7 +58,6 @@ export function SiteFooter() {
 
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Company</h3>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Company</h3>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
               <Link to="/about" className="text-muted-foreground hover:text-foreground">
