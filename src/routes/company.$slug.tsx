@@ -286,7 +286,6 @@ function CompanyPage() {
 
   return (
     <div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {pendingProduct && (
         <div className="border-b border-copper/30 bg-copper/10">
