@@ -20,6 +20,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as New_company_sitemap_nDotxmlRouteImport } from './routes/new_company_sitemap_$n[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -114,6 +115,12 @@ const McpRoute = McpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const New_company_sitemap_nDotxmlRoute =
+  New_company_sitemap_nDotxmlRouteImport.update({
+    id: '/new_company_sitemap_$n.xml',
+    path: '/new_company_sitemap_$n.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
+  '/new_company_sitemap_$n.xml': typeof New_company_sitemap_nDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -385,6 +393,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
+  '/new_company_sitemap_$n.xml': typeof New_company_sitemap_nDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -437,6 +446,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
+  '/new_company_sitemap_$n.xml': typeof New_company_sitemap_nDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/llms.txt'
     | '/mcp'
+    | '/new_company_sitemap_$n.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -541,6 +552,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/llms.txt'
     | '/mcp'
+    | '/new_company_sitemap_$n.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -592,6 +604,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/llms.txt'
     | '/mcp'
+    | '/new_company_sitemap_$n.xml'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -645,6 +658,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
+  New_company_sitemap_nDotxmlRoute: typeof New_company_sitemap_nDotxmlRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -752,6 +766,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_$n.xml': {
+      id: '/new_company_sitemap_$n.xml'
+      path: '/new_company_sitemap_$n.xml'
+      fullPath: '/new_company_sitemap_$n.xml'
+      preLoaderRoute: typeof New_company_sitemap_nDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -1083,6 +1104,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
+  New_company_sitemap_nDotxmlRoute: New_company_sitemap_nDotxmlRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResourcesRoute: ResourcesRoute,
