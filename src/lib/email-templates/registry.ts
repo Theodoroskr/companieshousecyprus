@@ -21,6 +21,7 @@ export interface TemplateEntry {
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'order-confirmation': orderConfirmationTemplate,
+  'order-assistance': orderAssistanceTemplate,
   'payment-receipt': paymentReceiptTemplate,
   'document-ready': documentReadyTemplate,
   'contact-inquiry': contactInquiryTemplate,
