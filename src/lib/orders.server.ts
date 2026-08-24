@@ -278,15 +278,6 @@ async function notifyOrderDelivered(
 const REPORT_ITEM_COLUMNS =
   "id, order_id, product_name, company_name, company_number, a4a_kind, fulfilment_status, delivered_at, report_json";
 
-function parseStoredReport(item: {
-  a4a_kind: string | null;
-  report_json: unknown;
-  product_name: string;
-}) {
-  const { parseReport } = require("@/lib/reports/parser") as typeof import("@/lib/reports/parser");
-  const kind: "structure" | "credit" = item.a4a_kind === "credit" ? "credit" : "structure";
-  return parseReport(item.report_json, kind);
-}
 
 /** Admin: parsed report for review, whatever the fulfilment state. */
 export async function reportForReview(itemId: string) {
