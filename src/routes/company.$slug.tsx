@@ -460,14 +460,44 @@ function CompanyPage() {
                 </div>
               </>
             ) : officials.length > 0 ? (
-              <ul className="mt-4 divide-y">
-                {officials.map((official, index) => (
-                  <li key={index} className="flex items-center justify-between gap-4 py-3">
-                    <span className="font-medium">{official.person_name}</span>
-                    <span className="text-sm text-muted-foreground">{official.position_en ?? official.position_el}</span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Names of directors and the secretary are masked. Full names are released on the certified Certificate
+                  of Directors &amp; Secretary, issued directly from the Registrar.
+                </p>
+                <ul className="mt-4 divide-y">
+                  {officials.map((official, index) => (
+                    <li key={index} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
+                      <span className="select-none font-medium tracking-wide text-muted-foreground/80 blur-[0.6px]">
+                        {maskName(official.person_name)}
+                      </span>
+                      <span className="text-xs font-semibold uppercase tracking-widest text-copper">
+                        {official.position_en ?? official.position_el}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-5 rounded-lg border border-copper/30 bg-copper/5 p-5">
+                  <p className="font-display font-semibold">Unlock the full names</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    The Certificate of Directors &amp; Secretary lists every current officer of {company.name} in full,
+                    certified by the Registrar.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <AddToCartButton
+                      productSlug="certificate-of-directors-and-secretary"
+                      companySlug={company.slug}
+                      companyName={company.name}
+                      companyNumber={displayOfficialNo(company)}
+                      label="Add officials certificate"
+                    />
+                    <Button asChild variant="outline">
+                      <Link to="/cart">Go to basket &amp; pay</Link>
+                    </Button>
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="mt-4 rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
                 Officials are not published for this entity in our copy of the register. A Certificate of Directors &amp;
