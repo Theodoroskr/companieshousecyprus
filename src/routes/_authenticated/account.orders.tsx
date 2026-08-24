@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, CreditCard, FileText, Loader2, PackageSearch } from "lucide-react";
+import { CheckCircle2, Clock, CreditCard, FileText, Loader2, PackageSearch, ShieldCheck } from "lucide-react";
 import { listMyOrders } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { useAccount } from "@/hooks/useAccount";
 
 const TITLE = "My orders — Companies House Cyprus";
 const DESCRIPTION = "Sign in to review your Cyprus Registrar certificate and report orders, payment status and deliveries.";
@@ -59,6 +60,7 @@ function MyOrdersPage() {
   });
 
   const orders = query.data?.orders ?? [];
+  const account = useAccount();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
@@ -71,6 +73,18 @@ function MyOrdersPage() {
           payment and delivery progress.
         </p>
       </header>
+
+      {account.isAdmin && (
+        <div className="mb-8 flex flex-wrap items-center gap-3 rounded-xl border border-copper/40 bg-copper/5 p-4">
+          <ShieldCheck className="size-5 text-copper" />
+          <p className="mr-auto text-sm">
+            <span className="font-semibold text-copper">Admin access</span> — manage every customer order and imports.
+          </p>
+          <Button asChild size="sm" variant="outline"><Link to="/admin/orders">All orders</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link to="/admin/import">Data import</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link to="/admin/api4all">API4ALL</Link></Button>
+        </div>
+      )}
 
       {query.isLoading ? (
         <div className="flex items-center gap-3 rounded-xl border bg-card p-8 text-muted-foreground">
