@@ -41,7 +41,6 @@ const FIELDS = [
 
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
-  const navigate = useNavigate();
   const account = useAccount();
   const placeOrder = useServerFn(submitOrder);
   const placeOrderAsUser = useServerFn(submitOrderAsUser);
