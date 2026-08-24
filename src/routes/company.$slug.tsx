@@ -11,6 +11,7 @@ import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { normalizeCompanySlug } from "@/lib/slug";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
+import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
 
 
 function RelatedCompanies({ slug }: { slug: string }) {
@@ -115,16 +116,25 @@ export const Route = createFileRoute("/company/$slug")({
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
+    const c = data.company;
     return {
-      name: data.company.name,
-      officialNo: displayOfficialNo(data.company),
-      status: data.company.status_en,
-      statusGroup: data.company.status_group ?? null,
-      typeEn: data.company.type_en ?? null,
-      registrationDate: formatDate(data.company.registration_date),
-      district_en: data.company.district_en ?? null,
+      name: c.name,
+      officialNo: displayOfficialNo(c),
+      status: c.status_en,
+      statusGroup: c.status_group ?? null,
+      typeEn: c.type_en ?? null,
+      registrationDate: formatDate(c.registration_date),
+      registrationIso: c.registration_date ? String(c.registration_date).slice(0, 10) : null,
+      district_en: c.district_en ?? null,
+      addressFull: c.address_full ?? null,
+      building: c.building ?? null,
+      street: c.street ?? null,
+      locality: c.locality ?? null,
+      postcode: c.postcode ?? null,
+      isForeignAddress: Boolean(c.is_foreign_address),
     };
   },
+
   head: ({ loaderData, params }) => {
     if (!loaderData) {
       return {
@@ -189,7 +199,12 @@ export const Route = createFileRoute("/company/$slug")({
             itemListElement: breadcrumbItems,
           }),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(companyOrganizationJsonLd(loaderData, canonicalSlug)),
+        },
       ],
+
     };
   },
   component: CompanyPage,
@@ -223,23 +238,6 @@ function CompanyPage() {
   const { data } = useSuspenseQuery(companyQueryOptions(slug));
   const { company, officials } = data;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: company.name,
-    identifier: displayOfficialNo(company),
-    address: company.address_full
-      ? {
-          "@type": "PostalAddress",
-          streetAddress: [company.building, company.street].filter(Boolean).join(", "),
-          addressLocality: company.locality ?? undefined,
-          addressRegion: company.district_en ?? undefined,
-          postalCode: company.postcode ?? undefined,
-          addressCountry: company.is_foreign_address ? undefined : "CY",
-        }
-      : undefined,
-    knowsAbout: company.type_en ?? undefined,
-  };
 
   const pendingProduct = pendingProductSlug ? PRODUCTS.find((item) => item.slug === pendingProductSlug) : undefined;
   const businessName = isBusinessName(company);
@@ -271,7 +269,6 @@ function CompanyPage() {
 
   return (
     <div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {pendingProduct && (
         <div className="border-b border-copper/30 bg-copper/10">
