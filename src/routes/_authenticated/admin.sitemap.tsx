@@ -100,10 +100,36 @@ function SitemapHealthPage() {
         </div>
       </div>
 
+      {indexNow.data && (
+        <Card className="mb-6">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">IndexNow (Bing and compatible crawlers)</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+            <span>
+              <Badge variant={indexNow.data.paused ? "destructive" : "default"}>
+                {indexNow.data.paused ? "Paused" : "Active"}
+              </Badge>
+            </span>
+            <span className="text-muted-foreground">
+              Pending URLs: <span className="font-medium text-foreground">{indexNow.data.pending.toLocaleString()}</span>
+            </span>
+            <span className="text-muted-foreground">
+              Last batch: <span className="font-medium text-foreground">{indexNow.data.lastSubmittedCount}</span> of{" "}
+              {indexNow.data.batchSize} at {fmt(indexNow.data.lastRunAt)}
+            </span>
+            {(indexNow.data.pausedReason ?? indexNow.data.lastError) && (
+              <span className="text-destructive">{indexNow.data.pausedReason ?? indexNow.data.lastError}</span>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {query.isLoading && <p className="text-sm text-muted-foreground">Probing sitemaps…</p>}
       {query.isError && (
         <p className="text-sm text-destructive">{(query.error as Error).message}</p>
       )}
+
 
       {data && (
         <>
