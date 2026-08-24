@@ -4,10 +4,8 @@ import { PRODUCTS } from "@/lib/products";
 import { priceBreakdown } from "@/lib/pricing";
 
 /** Products fulfilled through API4ALL. */
-export const A4A_PRODUCT_KIND: Record<string, "structure" | "credit"> = {
-  "cyprus-company-profile": "structure",
-  "cyprus-credit-report": "credit",
-};
+export { A4A_PRODUCT_KIND } from "@/lib/api4all-codes";
+import { A4A_PRODUCT_KIND, pickCompanyCode } from "@/lib/api4all-codes";
 
 function ordersClient() {
   const url = process.env["SUPABASE_URL"];
@@ -230,12 +228,7 @@ export async function fulfilOrderItem(itemId: string) {
     if (!regNo) return fail("No registration number stored for this item");
     try {
       const hits = await searchByRegistration(regNo);
-      const digits = regNo.replace(/\D/g, "");
-      // Prefer the hit whose registration number matches ours, else the first coded hit.
-      code =
-        hits.find((hit) => hit.code && hit.regNo && hit.regNo.replace(/\D/g, "") === digits)?.code ??
-        hits.find((hit) => hit.code)?.code ??
-        null;
+      code = pickCompanyCode(hits, regNo);
     } catch (searchError) {
       return fail(searchError instanceof Error ? searchError.message : "API4ALL search failed");
     }
