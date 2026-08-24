@@ -114,7 +114,9 @@ function ContactPage() {
                   <span className="text-sm font-medium">How can we help?</span>
                   <textarea
                     required
+                    minLength={5}
                     name="message"
+
                     rows={5}
                     placeholder="Which company, which document, and by when?"
                     className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring"
