@@ -207,10 +207,25 @@ export async function listOrders(limit = 50) {
 
 export async function setOrderStatus(reference: string, status: string) {
   const supabase = ordersClient();
-  const { error } = await supabase.from("orders").update({ status }).eq("reference", reference);
+  const patch: { status: string; delivered_at?: string | null } = { status };
+
+  // The delivery date follows the status automatically.
+  if (status === "delivered") {
+    const { data: existing } = await supabase
+      .from("orders")
+      .select("delivered_at")
+      .eq("reference", reference)
+      .maybeSingle();
+    if (!existing?.delivered_at) patch.delivered_at = new Date().toISOString();
+  } else {
+    patch.delivered_at = null;
+  }
+
+  const { error } = await supabase.from("orders").update(patch).eq("reference", reference);
   if (error) throw new Error(error.message);
   return { ok: true as const };
 }
+
 
 /** Pull the report from API4ALL for one order item and store it. */
 export async function fulfilOrderItem(itemId: string) {
