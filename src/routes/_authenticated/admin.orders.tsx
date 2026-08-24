@@ -10,6 +10,7 @@ import {
   adminSetItemDueDate,
   adminSetOrderDates,
   adminSetOrderStatus,
+  adminDeleteItemDocument,
   adminUploadItemDocument,
 } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
@@ -58,6 +59,7 @@ function AdminOrdersPage() {
   const setItemDue = useServerFn(adminSetItemDueDate);
   const uploadDocument = useServerFn(adminUploadItemDocument);
   const documentUrl = useServerFn(adminDocumentUrl);
+  const deleteDocument = useServerFn(adminDeleteItemDocument);
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
   const [notify, setNotify] = useState(true);
@@ -89,28 +91,34 @@ function AdminOrdersPage() {
   });
 
   const uploadMutation = useMutation({
-    mutationFn: async (input: { itemId: string; file: File }) => {
-      const base64 = await fileToBase64(input.file);
-      return uploadDocument({
-        data: {
-          itemId: input.itemId,
-          fileName: input.file.name,
-          contentType: input.file.type || "application/octet-stream",
-          base64,
-          notify,
-        },
-      });
+    mutationFn: async (input: { itemId: string; files: File[] }) => {
+      const files = await Promise.all(
+        input.files.map(async (file) => ({
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+          base64: await fileToBase64(file),
+        })),
+      );
+      return uploadDocument({ data: { itemId: input.itemId, files, notify } });
     },
     onSuccess: (result) => {
+      const names = result.documentNames.join(", ");
       setMessage(
-        result.notified
-          ? `Uploaded ${result.documentName} — the client has been emailed.`
-          : `Uploaded ${result.documentName}.`,
+        result.notified ? `Uploaded ${names} — the client has been emailed.` : `Uploaded ${names}.`,
       );
       void invalidate();
     },
     onError: (error) => setMessage(error instanceof Error ? error.message : "Upload failed"),
     onSettled: () => setUploadingId(null),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (documentId: string) => deleteDocument({ data: { documentId } }),
+    onSuccess: () => {
+      setMessage("Document removed.");
+      void invalidate();
+    },
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Could not remove the document"),
   });
 
   const openDocument = async (path: string) => {
@@ -281,14 +289,15 @@ function AdminOrdersPage() {
                         fileInputs.current[item.id] = element;
                       }}
                       type="file"
+                      multiple
                       accept=".pdf,.png,.jpg,.jpeg,.zip"
                       className="hidden"
                       onChange={(event) => {
-                        const file = event.target.files?.[0];
+                        const files = Array.from(event.target.files ?? []);
                         event.target.value = "";
-                        if (!file) return;
+                        if (files.length === 0) return;
                         setUploadingId(item.id);
-                        uploadMutation.mutate({ itemId: item.id, file });
+                        uploadMutation.mutate({ itemId: item.id, files });
                       }}
                     />
                     <Button
@@ -302,14 +311,32 @@ function AdminOrdersPage() {
                       ) : (
                         <Upload className="size-4" />
                       )}
-                      {item.document_name ? "Replace certificate" : "Upload certificate"}
+                      {(item.order_documents?.length ?? 0) > 0 ? "Add documents" : "Upload documents"}
                     </Button>
-                    {item.document_path && (
-                      <Button size="sm" variant="ghost" onClick={() => void openDocument(item.document_path!)}>
-                        <Download className="size-4" /> {item.document_name}
-                      </Button>
-                    )}
                   </div>
+                  {(item.order_documents?.length ?? 0) > 0 && (
+                    <ul className="mt-3 space-y-1">
+                      {[...(item.order_documents ?? [])]
+                        .sort((a, b) => a.created_at.localeCompare(b.created_at))
+                        .map((doc) => (
+                          <li key={doc.id} className="flex flex-wrap items-center gap-2 text-xs">
+                            <Button size="sm" variant="ghost" onClick={() => void openDocument(doc.path)}>
+                              <Download className="size-4" /> {doc.name}
+                            </Button>
+                            <span className="text-muted-foreground">
+                              {Math.max(1, Math.round(doc.size_bytes / 1024))} KB · {showDate(doc.created_at)}
+                            </span>
+                            <button
+                              type="button"
+                              className="text-muted-foreground underline hover:text-foreground"
+                              onClick={() => removeMutation.mutate(doc.id)}
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>
