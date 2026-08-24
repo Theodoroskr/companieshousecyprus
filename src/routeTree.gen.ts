@@ -46,6 +46,7 @@ import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$l
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
 import { Route as AuthenticatedAccountReportsItemIdRouteImport } from './routes/_authenticated/account.reports.$itemId'
+import { Route as AuthenticatedAdminReportsItemIdRouteImport } from './routes/_authenticated/admin.reports.$itemId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
@@ -240,6 +241,12 @@ const AuthenticatedAccountReportsItemIdRoute =
     path: '/account/reports/$itemId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminReportsItemIdRoute =
+  AuthenticatedAdminReportsItemIdRouteImport.update({
+    id: '/reports/$itemId',
+    path: '/reports/$itemId',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -290,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/account/reports/$itemId': typeof AuthenticatedAccountReportsItemIdRoute
+  '/admin/reports/$itemId': typeof AuthenticatedAdminReportsItemIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -329,6 +337,7 @@ export interface FileRoutesByTo {
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/account/reports/$itemId': typeof AuthenticatedAccountReportsItemIdRoute
+  '/admin/reports/$itemId': typeof AuthenticatedAdminReportsItemIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -371,6 +380,7 @@ export interface FileRoutesById {
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/account/reports/$itemId': typeof AuthenticatedAccountReportsItemIdRoute
+  '/_authenticated/admin/reports/$itemId': typeof AuthenticatedAdminReportsItemIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/sitemaps/companies/$n.xml'
     | '/admin/'
     | '/account/reports/$itemId'
+    | '/admin/reports/$itemId'
     | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/sitemaps/companies/$n.xml'
     | '/admin'
     | '/account/reports/$itemId'
+    | '/admin/reports/$itemId'
     | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   id:
@@ -493,6 +505,7 @@ export interface FileRouteTypes {
     | '/sitemaps/companies/$n.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/account/reports/$itemId'
+    | '/_authenticated/admin/reports/$itemId'
     | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
@@ -790,6 +803,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountReportsItemIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/reports/$itemId': {
+      id: '/_authenticated/admin/reports/$itemId'
+      path: '/reports/$itemId'
+      fullPath: '/admin/reports/$itemId'
+      preLoaderRoute: typeof AuthenticatedAdminReportsItemIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -815,6 +835,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminReportsItemIdRoute: typeof AuthenticatedAdminReportsItemIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -825,6 +846,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminReportsItemIdRoute: AuthenticatedAdminReportsItemIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

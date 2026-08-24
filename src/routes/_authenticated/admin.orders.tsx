@@ -342,17 +342,35 @@ function AdminOrdersPage() {
                         Due {showDate(item.due_date)} · Delivered {showDate(item.delivered_at)}
                       </p>
                     </div>
-                    {item.a4a_kind && item.fulfilment_status !== "delivered" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={fulfilMutation.isPending}
-                        onClick={() => fulfilMutation.mutate(item.id)}
-                      >
-                        {fulfilMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                        Fetch {item.a4a_kind} report
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {item.a4a_kind && item.fulfilment_status === "awaiting_review" && (
+                        <Button asChild size="sm">
+                          <Link to="/admin/reports/$itemId" params={{ itemId: item.id }}>
+                            <FileSearch className="size-4" /> Review report
+                          </Link>
+                        </Button>
+                      )}
+                      {item.a4a_kind && item.fulfilment_status === "delivered" && (
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/admin/reports/$itemId" params={{ itemId: item.id }}>
+                            <FileSearch className="size-4" /> View report
+                          </Link>
+                        </Button>
+                      )}
+                      {item.a4a_kind &&
+                        item.fulfilment_status !== "delivered" &&
+                        item.fulfilment_status !== "awaiting_review" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={fulfilMutation.isPending}
+                            onClick={() => fulfilMutation.mutate(item.id)}
+                          >
+                            {fulfilMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                            Fetch {item.a4a_kind} report
+                          </Button>
+                        )}
+                    </div>
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
