@@ -51,6 +51,7 @@ export type PlaceOrderInput = {
   vatNumber?: string | null;
   phone?: string | null;
   notes?: string | null;
+  userId?: string | null;
   items: {
     productSlug: string;
     companySlug: string | null;
