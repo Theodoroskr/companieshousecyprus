@@ -365,16 +365,40 @@ function CheckoutPage() {
                 <p className='text-sm text-muted-foreground'>
                   These items are company-specific. Please tell us which Cyprus company each certificate or report is for.
                 </p>
+
+                {companySummaryErrors.length > 0 && (
+                  <Alert variant='destructive' role='alert' aria-live='assertive'>
+                    <AlertCircle className='size-4' />
+                    <AlertTitle>
+                      {companySummaryErrors.length === 1
+                        ? 'One company detail still needs your attention'
+                        : `${companySummaryErrors.length} company details still need your attention`}
+                    </AlertTitle>
+                    <AlertDescription>
+                      <ul className='mt-1 list-disc space-y-1 pl-4'>
+                        {companySummaryErrors.map((message) => (
+                          <li key={message}>{message}</li>
+                        ))}
+                      </ul>
+                      <p className='mt-2'>
+                        Fix the highlighted fields below, then continue to secure payment. Nothing is charged until the
+                        details are complete.
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className='space-y-4'>
                   {itemsNeedingCompany.map(({ item, index, product }) => (
                     <div key={`${item.productSlug}-${index}`} className='rounded-lg border bg-muted/30 p-4'>
                       <h3 className='text-sm font-medium'>{product?.name ?? 'Product'}</h3>
                       <div className='mt-3 grid gap-4 sm:grid-cols-2'>
-                        <label>
+                        <label htmlFor={`company-name-${index}`}>
                           <span className='text-sm font-medium'>
                             Company name <span className='text-destructive'>*</span>
                           </span>
                           <input
+                            id={`company-name-${index}`}
                             type='text'
                             value={companyInputs[index]?.companyName ?? ''}
                             onChange={(e) => {
@@ -386,26 +410,41 @@ function CheckoutPage() {
                                 const existing = prev[index] ?? {};
                                 return { ...prev, [index]: { ...existing, companyName: undefined } };
                               });
+                              setCompanySummaryErrors([]);
                             }}
                             placeholder='e.g. ABC Holdings Ltd'
-                            required
+                            aria-required='true'
                             aria-invalid={!!companyInputErrors[index]?.companyName}
+                            aria-describedby={
+                              companyInputErrors[index]?.companyName
+                                ? `company-name-error-${index}`
+                                : `company-name-hint-${index}`
+                            }
                             className={cn(
                               'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
                               companyInputErrors[index]?.companyName && 'border-destructive focus:border-destructive',
                             )}
                           />
-                          {companyInputErrors[index]?.companyName && (
-                            <span className='mt-1 block text-xs text-destructive'>
+                          {companyInputErrors[index]?.companyName ? (
+                            <span
+                              id={`company-name-error-${index}`}
+                              className='mt-1 flex items-start gap-1 text-xs text-destructive'
+                            >
+                              <AlertCircle className='mt-0.5 size-3 shrink-0' />
                               {companyInputErrors[index]?.companyName}
+                            </span>
+                          ) : (
+                            <span id={`company-name-hint-${index}`} className='mt-1 block text-xs text-muted-foreground'>
+                              Use the full registered name, including Ltd or Limited.
                             </span>
                           )}
                         </label>
-                        <label>
+                        <label htmlFor={`company-number-${index}`}>
                           <span className='text-sm font-medium'>
                             Registration number <span className='text-destructive'>*</span>
                           </span>
                           <input
+                            id={`company-number-${index}`}
                             type='text'
                             value={companyInputs[index]?.companyNumber ?? ''}
                             onChange={(e) => {
@@ -417,18 +456,38 @@ function CheckoutPage() {
                                 const existing = prev[index] ?? {};
                                 return { ...prev, [index]: { ...existing, companyNumber: undefined } };
                               });
+                              setCompanySummaryErrors([]);
                             }}
-                            placeholder='e.g. HE12345'
-                            required
+                            placeholder='e.g. HE 252407'
+                            aria-required='true'
                             aria-invalid={!!companyInputErrors[index]?.companyNumber}
+                            aria-describedby={
+                              companyInputErrors[index]?.companyNumber
+                                ? `company-number-error-${index}`
+                                : `company-number-hint-${index}`
+                            }
                             className={cn(
                               'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
                               companyInputErrors[index]?.companyNumber && 'border-destructive focus:border-destructive',
                             )}
                           />
-                          {companyInputErrors[index]?.companyNumber && (
-                            <span className='mt-1 block text-xs text-destructive'>
+                          {companyInputErrors[index]?.companyNumber ? (
+                            <span
+                              id={`company-number-error-${index}`}
+                              className='mt-1 flex items-start gap-1 text-xs text-destructive'
+                            >
+                              <AlertCircle className='mt-0.5 size-3 shrink-0' />
                               {companyInputErrors[index]?.companyNumber}
+                            </span>
+                          ) : (
+                            <span
+                              id={`company-number-hint-${index}`}
+                              className='mt-1 block text-xs text-muted-foreground'
+                            >
+                              Registrar number such as HE 252407, C 409882 or EE 1234.{' '}
+                              <Link to='/search' search={{ q: '', page: 1 }} className='underline'>
+                                Look it up
+                              </Link>
                             </span>
                           )}
                         </label>
@@ -436,6 +495,7 @@ function CheckoutPage() {
                     </div>
                   ))}
                 </div>
+
               </div>
             )}
 
