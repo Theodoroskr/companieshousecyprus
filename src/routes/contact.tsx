@@ -90,7 +90,7 @@ function ContactPage() {
               <li className="flex gap-3">
                 <Mail className="mt-0.5 size-4 text-copper" />
                 <span>
-                  <span className="block font-medium">orders@companieshousecyprus.com</span>
+                  <span className="block font-medium">info@companieshousecyprus.com</span>
                   <span className="text-muted-foreground">Certificates and report orders</span>
                 </span>
               </li>
