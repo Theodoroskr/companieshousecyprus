@@ -6,6 +6,8 @@
  *   API4ALL_USERNAME, API4ALL_PASSWORD, API4ALL_API_KEY
  */
 
+import { REPORT_PRODUCTS, type A4AReportKind } from "@/lib/api4all-codes";
+
 const BASE = "https://v3.api4all.io/a4a/3.0/api";
 
 type TokenCache = { token: string; expiresAt: number };
@@ -141,21 +143,13 @@ export async function searchByName(name: string): Promise<A4ASearchHit[]> {
   return collectRows(payload).map(normaliseHit);
 }
 
-export type A4AReportKind = "structure" | "credit";
+export type { A4AReportKind } from "@/lib/api4all-codes";
 
 export async function fetchReport(kind: A4AReportKind, code: string): Promise<unknown> {
   return apiGet<unknown>(`/report/${kind}/code/${encodeURIComponent(code)}`);
 }
 
-/**
- * API4ALL product codes.
- * Structure (Cyprus Company Profile) = 2200, Credit report = 2300.
- */
-export const REPORT_PRODUCTS: Record<A4AReportKind, string> = {
-  structure: "2200",
-  credit: "2300",
-};
-
+export { REPORT_PRODUCTS } from "@/lib/api4all-codes";
 
 export async function createOrder(input: {
   kind: A4AReportKind;
