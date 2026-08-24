@@ -195,7 +195,32 @@ function AdminOrdersPage() {
 
       </div>
 
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        {VIEWS.map((option) => (
+          <Link
+            key={option}
+            to="/admin/orders"
+            search={option === "all" ? {} : { view: option }}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              view === option ? "border-copper bg-copper/10 text-copper" : "hover:bg-muted/60"
+            }`}
+          >
+            {VIEW_LABEL[option]}
+          </Link>
+        ))}
+        {refFilter && (
+          <Link
+            to="/admin/orders"
+            search={{}}
+            className="rounded-full border border-copper bg-copper/10 px-3 py-1 text-xs font-medium text-copper"
+          >
+            {refFilter} ✕
+          </Link>
+        )}
+      </div>
+
       {message && <p className="mt-4 rounded-md border bg-card p-3 text-sm">{message}</p>}
+
 
       {query.isLoading && (
         <p className="mt-10 flex items-center gap-2 text-muted-foreground">
