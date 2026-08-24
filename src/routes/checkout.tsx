@@ -107,7 +107,39 @@ function passwordStrength(password: string) {
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const account = useAccount();
+  const loadMyOrders = useServerFn(listMyOrders);
+  const [profile, setProfile] = useState<Record<string, string>>({});
+
+  // Prefill the delivery details from the signed-in customer's most recent order.
+  useEffect(() => {
+    if (!account.ready || !account.signedIn) {
+      setProfile({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await loadMyOrders();
+        const latest = res?.orders?.[0];
+        if (cancelled) return;
+        const next: Record<string, string> = {};
+        if (account.email) next['email'] = account.email;
+        if (latest?.full_name) next['fullName'] = latest.full_name;
+        if (latest?.firm) next['company'] = latest.firm;
+        if (latest?.vat_number) next['vat'] = latest.vat_number;
+        if (latest?.phone) next['phone'] = latest.phone;
+        setProfile(next);
+      } catch {
+        if (!cancelled) setProfile(account.email ? { email: account.email } : {});
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account.ready, account.signedIn, account.email, loadMyOrders]);
+
   const placeOrder = useServerFn(submitOrder);
+
   const placeOrderAsUser = useServerFn(submitOrderAsUser);
   const startStripe = useServerFn(startStripeOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
