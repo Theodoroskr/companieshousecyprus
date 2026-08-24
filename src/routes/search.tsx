@@ -120,7 +120,7 @@ function SearchPage() {
             onSubmit={(e) => {
               e.preventDefault();
               const value = String(new FormData(e.currentTarget).get("q") ?? "");
-              setSearch(value, 1);
+              setSearch({ q: value, page: 1 });
             }}
           >
             <input
