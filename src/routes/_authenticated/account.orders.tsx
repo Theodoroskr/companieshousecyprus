@@ -131,7 +131,7 @@ function MyOrdersPage() {
                   </div>
 
                   <ul className="mt-4 grid gap-2">
-                    {items.map((item) => {
+                    {items.map((item: OrderListItem["order_items"][number]) => {
                       const meta = ITEM_STATUS[item.fulfilment_status] ?? ITEM_STATUS["pending"]!;
                       const Icon = meta.icon;
                       return (
