@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   searchApi4all,
   type A4AReportKind,
 } from "@/lib/api4all.functions";
+import { getA4aJobStatus, resumeA4aJob, runA4aPollNow } from "@/lib/a4a-jobs.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/api4all")({
   head: () => ({
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin/api4all")({
 });
 
 type Hit = Awaited<ReturnType<typeof searchApi4all>>["hits"][number];
+type JobStatus = Awaited<ReturnType<typeof getA4aJobStatus>>;
 
 function Api4allAdminPage() {
   const [status, setStatus] = useState<string>("Not tested");
@@ -33,6 +35,19 @@ function Api4allAdminPage() {
   const [hits, setHits] = useState<Hit[]>([]);
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
+  const [job, setJob] = useState<JobStatus | null>(null);
+
+  const refreshJob = () => {
+    getA4aJobStatus()
+      .then(setJob)
+      .catch(() => undefined);
+  };
+  useEffect(refreshJob, []);
+
+  const callbackUrl = job?.callbackToken
+    ? `${typeof window === "undefined" ? "" : window.location.origin}/api/public/a4a-callback?token=${job.callbackToken}`
+    : null;
+
 
   const run = async (label: string, fn: () => Promise<void>) => {
     setBusy(true);
