@@ -50,9 +50,19 @@ export const Route = createFileRoute("/")({
           "@type": "WebSite",
           name: "Companies House Cyprus",
           url: "https://companieshousecyprus.com/",
+          description:
+            "Free Cyprus company register search and online ordering of official certificates, reports and KYB documents with digital delivery.",
           inLanguage: "en",
+          keywords: [
+            "Companies House Cyprus",
+            "Cyprus company register",
+            "Cyprus company search",
+            "certificate of good standing Cyprus",
+            "Cyprus company report",
+          ],
           potentialAction: {
             "@type": "SearchAction",
+            name: "Search Cyprus companies",
             target: {
               "@type": "EntryPoint",
               urlTemplate: "https://companieshousecyprus.com/search?q={search_term_string}&page=1",
