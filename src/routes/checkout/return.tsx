@@ -29,9 +29,20 @@ export const Route = createFileRoute('/checkout/return')({
 
 function CheckoutReturnPage() {
   const { session_id: sessionId, order_reference: reference, order_token: token } = Route.useSearch();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<'paid' | 'open' | 'unpaid' | 'no_payment_required' | 'error' | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // After a successful payment, take the client straight to their orders page.
+  useEffect(() => {
+    if (status === 'paid' || status === 'no_payment_required') {
+      const timer = setTimeout(() => {
+        void navigate({ to: '/account/orders', replace: true });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [status, navigate]);
 
   useEffect(() => {
     if (!sessionId) {
