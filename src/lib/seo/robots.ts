@@ -1,4 +1,5 @@
-# robots.txt for companieshousecyprus.com
+// Single source of truth for robots.txt. Keep in sync with public/robots.txt.
+export const ROBOTS_TXT = `# robots.txt for companieshousecyprus.com
 # Canonical company profiles: /company/<ID> and /company/<slug> (no query strings)
 # Parameterized variants (?utm_, ?page=, ?sort=, session ids) are excluded to avoid duplicates.
 
@@ -117,3 +118,4 @@ Disallow: /order/
 Sitemap: https://companieshousecyprus.com/sitemap.xml
 AI-sitemap: https://companieshousecyprus.com/llms.txt
 AI-policy: https://companieshousecyprus.com/ai.txt
+`;
