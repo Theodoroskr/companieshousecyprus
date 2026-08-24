@@ -106,9 +106,15 @@ function ContactPage() {
                   />
                 </label>
               </div>
-              <Button type="submit" size="lg" className="mt-6">
-                Send message
+              {error ? (
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  {error}
+                </p>
+              ) : null}
+              <Button type="submit" size="lg" className="mt-6" disabled={sending}>
+                {sending ? "Sending…" : "Send message"}
               </Button>
+
             </form>
           )}
         </div>
