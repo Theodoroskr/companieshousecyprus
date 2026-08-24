@@ -54,7 +54,7 @@ export async function listChangedCompanies(options: {
     id: row.official_no ?? row.slug,
     slug: row.slug,
     name: row.name,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at ?? windowEnd,
     canonicalUrl: canonicalUrl(row.official_no, row.slug),
   }));
 
