@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail } from 'lucide-react';
+import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail, AlertCircle } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { PRODUCTS_BY_SLUG, formatPrice } from '@/lib/products';
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from '@/lib/pricing';
@@ -11,6 +11,10 @@ import { useAccount } from '@/hooks/useAccount';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
+
+
 
 
 const TITLE = 'Checkout — Companies House Cyprus';
@@ -39,6 +43,48 @@ const FIELDS = [
   { name: 'phone', label: 'Phone', type: 'tel', placeholder: '+357 22 000 000', required: false },
 ] as const;
 
+function friendlyAuthError(error: unknown, context: 'signup' | 'checkout' = 'checkout') {
+  const msg = error instanceof Error ? error.message : String(error ?? '');
+  const code =
+    error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+      ? error.code
+      : undefined;
+  const lower = msg.toLowerCase();
+  if (code === 'weak_password' || lower.includes('weak_password')) {
+    return 'Password is too weak. Use at least 8 characters including a mix of letters and numbers.';
+  }
+  if (code === 'user_already_exists' || lower.includes('user already registered') || lower.includes('already exists')) {
+    return 'An account with this email already exists. Sign in to your account before checkout, or use a different email.';
+  }
+  if (code === 'over_email_send_rate_limit' || lower.includes('rate limit')) {
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+  if (code === 'validation_failed' || lower.includes('invalid email')) {
+    return 'Please enter a valid email address.';
+  }
+  if (lower.includes('password') && lower.includes('invalid')) {
+    return 'Invalid password. Make sure it is at least 8 characters.';
+  }
+  if (lower.includes('anonymous_provider_disabled') || lower.includes('signup disabled')) {
+    return 'Account creation is temporarily unavailable. Continue as a guest or try again later.';
+  }
+  return context === 'signup' ? 'Could not create your account. Please check your details and try again.' : 'Could not submit your order. Please check your details and try again.';
+}
+
+function validatePassword(password: string, confirmPassword: string) {
+  if (!password || password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    return 'Password must include at least one letter and one number.';
+  }
+  if (password !== confirmPassword) {
+    return 'Passwords do not match. Please re-enter the same password.';
+  }
+  return null;
+}
+
+
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const account = useAccount();
@@ -47,10 +93,18 @@ function CheckoutPage() {
   const startStripe = useServerFn(startStripeOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; code?: string | undefined } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string | undefined;
+    password?: string | undefined;
+    confirmPassword?: string | undefined;
+  }>({});
+
   const [createAccount, setCreateAccount] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountCreated, setAccountCreated] = useState(false);
+
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   if (placed && !isOpen) {
@@ -113,18 +167,38 @@ function CheckoutPage() {
               const email = String(form.get('email') ?? '');
               setSubmitting(true);
               setError(null);
+              setFieldErrors({});
               let useAuthenticated = account.signedIn;
               try {
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                  setFieldErrors((prev) => ({ ...prev, email: 'Please enter a valid email address.' }));
+                  throw new Error('validation');
+                }
                 if (createAccount) {
-                  if (!password || password.length < 8) throw new Error('Choose a password of at least 8 characters');
-                  if (password !== confirmPassword) throw new Error('Passwords do not match');
-                  const { error: signUpError } = await supabase.auth.signUp({
+                  const passwordError = validatePassword(password, confirmPassword);
+                  if (passwordError) {
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      password: passwordError.includes('match') ? passwordError : passwordError,
+                      confirmPassword: passwordError.includes('match') ? passwordError : undefined,
+                    }));
+                    throw new Error('validation');
+                  }
+                  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
                     options: { data: { full_name: fullName } },
                   });
-                  if (signUpError) throw new Error(signUpError.message);
-                  useAuthenticated = true;
+                  if (signUpError) {
+                    const friendly = friendlyAuthError(signUpError, 'signup');
+                    const code = (signUpError as { code?: string }).code;
+                    setError({ message: friendly, code });
+                    throw new Error('signup');
+                  }
+                  if (signUpData.user) {
+                    setAccountCreated(true);
+                    useAuthenticated = true;
+                  }
                 }
                 const orderPayload = {
                   fullName,
@@ -150,27 +224,57 @@ function CheckoutPage() {
                 await startStripe({ data: { reference: result.reference, token: result.token } });
                 openCheckout(result);
               } catch (submitError) {
-                setError(submitError instanceof Error ? submitError.message : 'Could not submit your order');
+                if (submitError instanceof Error && submitError.message === 'validation') return;
+                if (submitError instanceof Error && submitError.message === 'signup') return;
+                if (!error) {
+                  setError({
+                    message:
+                      submitError instanceof Error
+                        ? submitError.message
+                        : 'Could not submit your order. Please check your details and try again.',
+                  });
+                }
               } finally {
                 setSubmitting(false);
               }
             }}
           >
 
+
             <h2 className='font-display text-lg font-semibold'>Your details</h2>
             <div className='mt-6 grid gap-4 sm:grid-cols-2'>
-              {FIELDS.map((field) => (
-                <label key={field.name} className={field.name === 'fullName' || field.name === 'email' ? 'sm:col-span-2' : ''}>
-                  <span className='text-sm font-medium'>{field.label}</span>
-                  <input
-                    name={field.name}
-                    type={field.type}
-                    required={field.required}
-                    placeholder={field.placeholder}
-                    className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
-                  />
-                </label>
-              ))}
+              {FIELDS.map((field) => {
+                const errorText = field.name === 'email' ? fieldErrors.email : undefined;
+                return (
+                  <label
+                    key={field.name}
+                    className={field.name === 'fullName' || field.name === 'email' ? 'sm:col-span-2' : ''}
+                  >
+                    <span className='text-sm font-medium'>{field.label}</span>
+                    <input
+                      name={field.name}
+                      type={field.type}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      aria-invalid={!!errorText}
+                      onChange={() => {
+                        if (errorText) {
+                          setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                        }
+                      }}
+                      className={cn(
+                        'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                        errorText && 'border-destructive focus:border-destructive',
+                      )}
+                    />
+
+                    {errorText && (
+                      <span className='mt-1 block text-xs text-destructive'>{errorText}</span>
+                    )}
+                  </label>
+                );
+              })}
+
               <label className='sm:col-span-2'>
                 <span className='text-sm font-medium'>Notes for our team (optional)</span>
                 <textarea
@@ -182,7 +286,8 @@ function CheckoutPage() {
               </label>
             </div>
 
-            {!account.signedIn && (
+            {!account.signedIn && !accountCreated && (
+
               <div className='mt-6 rounded-xl border border-copper/20 bg-copper/5 p-4'>
                 <label className='flex cursor-pointer items-start gap-3'>
                   <Checkbox
@@ -207,27 +312,52 @@ function CheckoutPage() {
                       <input
                         type='password'
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (fieldErrors.password) {
+                            setFieldErrors((prev) => ({ ...prev, password: undefined, confirmPassword: undefined }));
+                          }
+                        }}
                         placeholder='Create a secure password'
                         minLength={8}
                         required={createAccount}
-                        className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
+                        aria-invalid={!!fieldErrors.password}
+                        className={cn(
+                          'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                          fieldErrors.password && 'border-destructive focus:border-destructive',
+                        )}
                       />
+                      {fieldErrors.password && (
+                        <span className='mt-1 block text-xs text-destructive'>{fieldErrors.password}</span>
+                      )}
                     </label>
                     <label>
                       <span className='text-sm font-medium'>Confirm password</span>
                       <input
                         type='password'
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (fieldErrors.confirmPassword) {
+                            setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                          }
+                        }}
                         placeholder='Re-enter password'
                         minLength={8}
                         required={createAccount}
-                        className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
+                        aria-invalid={!!fieldErrors.confirmPassword}
+                        className={cn(
+                          'mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring',
+                          fieldErrors.confirmPassword && 'border-destructive focus:border-destructive',
+                        )}
                       />
+                      {fieldErrors.confirmPassword && (
+                        <span className='mt-1 block text-xs text-destructive'>{fieldErrors.confirmPassword}</span>
+                      )}
                     </label>
                   </div>
                 )}
+
               </div>
             )}
 
@@ -239,12 +369,33 @@ function CheckoutPage() {
                 </span>
               </div>
             )}
+            {accountCreated && !account.signedIn && (
+              <div className='mt-6 flex items-center gap-3 rounded-xl border border-emerald-600/20 bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100'>
+                <CheckCircle2 className='size-4 text-emerald-600' />
+                <span>Account created successfully. Continuing as a signed-in user.</span>
+              </div>
+            )}
+
+
             {error && (
-              <p className='mt-4 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive'>
-                {error}
-              </p>
+              <Alert variant='destructive' className='mt-4'>
+                <AlertCircle className='size-4' />
+                <AlertTitle>There was a problem</AlertTitle>
+                <AlertDescription className='space-y-2'>
+                  <p>{error.message}</p>
+                  {error.code === 'user_already_exists' && (
+                    <p>
+                      <Link to='/auth' search={{ redirect: '/checkout' }} className='font-semibold underline'>
+                        Sign in to your existing account
+                      </Link>{' '}
+                      or use a different email address.
+                    </p>
+                  )}
+                </AlertDescription>
+              </Alert>
             )}
             <Button type='submit' size='lg' className='mt-6 w-full' disabled={submitting}>
+
               {submitting ? <Loader2 className='size-4 animate-spin' /> : <Lock className='size-4' />}
               {submitting ? 'Submitting…' : 'Submit order request'}
             </Button>
