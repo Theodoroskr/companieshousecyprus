@@ -95,6 +95,7 @@ export async function placeOrder(input: PlaceOrderInput) {
     .insert({
       reference,
       access_token: accessToken,
+      user_id: input.userId?.trim() || null,
       full_name: input.fullName.trim().slice(0, 200),
       email: input.email.trim().slice(0, 200),
       firm: input.firm?.trim().slice(0, 200) || null,
