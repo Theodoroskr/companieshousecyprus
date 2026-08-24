@@ -280,3 +280,35 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
   });
 
 
+export const getSitemapIndex = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const { data, error } = await supabase
+    .from("sitemap_chunks")
+    .select("chunk_index, url_count, lastmod")
+    .order("chunk_index", { ascending: true });
+  if (error) throw error;
+
+  const chunks = (data ?? []).map((row) => ({
+    index: row.chunk_index,
+    urlCount: row.url_count,
+    lastmod: row.lastmod,
+  }));
+
+  if (chunks.length > 0) return { chunks, source: "metadata" as const };
+
+  // Fallback: the freshness table has not been populated yet, so derive the
+  // chunk count directly. No lastmod is emitted in that case.
+  const { count, error: countError } = await supabase
+    .from("companies")
+    .select("*", { count: "exact", head: true });
+  if (countError) throw countError;
+  const total = Math.max(1, Math.ceil((count ?? 0) / SITEMAP_CHUNK_SIZE));
+  return {
+    chunks: Array.from({ length: total }, (_, i) => ({
+      index: i,
+      urlCount: 0,
+      lastmod: null as string | null,
+    })),
+    source: "fallback" as const,
+  };
+});
