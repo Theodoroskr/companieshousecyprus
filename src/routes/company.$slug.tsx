@@ -598,8 +598,9 @@ function CompanyPage() {
                       }
                     >
                       {product.slug === "cyprus-company-profile" && (
-                        <span className="absolute -top-2 right-3 rounded-full bg-copper px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-copper-foreground">
-                          Most popular
+                        <span className="absolute -top-3 left-4 inline-flex items-center gap-1 rounded-full bg-copper px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-copper-foreground shadow-lg shadow-copper/30">
+                          <Star className="size-3 fill-copper-foreground" />
+                          Best seller
                         </span>
                       )}
                       <div className="flex items-start justify-between gap-3">
