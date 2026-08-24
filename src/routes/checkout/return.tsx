@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -29,9 +29,21 @@ export const Route = createFileRoute('/checkout/return')({
 
 function CheckoutReturnPage() {
   const { session_id: sessionId, order_reference: reference, order_token: token } = Route.useSearch();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<'paid' | 'open' | 'unpaid' | 'no_payment_required' | 'error' | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // After a successful payment, take the client straight to their orders page.
+  useEffect(() => {
+    if (status === 'paid' || status === 'no_payment_required') {
+      const timer = setTimeout(() => {
+        void navigate({ to: '/account/orders', replace: true });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [status, navigate]);
 
   useEffect(() => {
     if (!sessionId) {
@@ -101,15 +113,14 @@ function CheckoutReturnPage() {
       )}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        {reference && token ? (
-          <Button asChild>
-            <Link to="/order/$reference" params={{ reference }} search={{ token }}>
-              Track your order
-            </Link>
-          </Button>
-        ) : (
+        <Button asChild>
+          <Link to="/account/orders">View my orders</Link>
+        </Button>
+        {reference && token && (
           <Button asChild variant="outline">
-            <Link to="/search" search={{ q: '', page: 1 }}>Search another company</Link>
+            <Link to="/order/$reference" params={{ reference }} search={{ token }}>
+              Track this order
+            </Link>
           </Button>
         )}
       </div>
