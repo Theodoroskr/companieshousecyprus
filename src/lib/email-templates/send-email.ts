@@ -13,7 +13,7 @@ const SENDER_DOMAIN = "notify.companieshousecyprus.com"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // Can be the root domain when display_from_root is enabled — this is cosmetic only.
 const FROM_DOMAIN = "notify.companieshousecyprus.com"
-// Every outgoing email is copied to the office inbox.
+// Office copy is sent only for document-ready emails.
 const OFFICE_COPY = "info@companieshousecyprus.com"
 
 export type SendTemplateEmailResult =
