@@ -15,7 +15,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CertificationsRouteImport } from './routes/certifications'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -26,6 +25,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
@@ -73,11 +73,6 @@ const CartRoute = CartRouteImport.update({
 const CertificationsRoute = CertificationsRouteImport.update({
   id: '/certifications',
   path: '/certifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -130,15 +125,20 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
-  id: '/return',
-  path: '/return',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSessionStatusRoute = CheckoutSessionStatusRouteImport.update({
-  id: '/session-status',
-  path: '/session-status',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/session-status',
+  path: '/checkout/session-status',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CompanySlugRoute = CompanySlugRouteImport.update({
   id: '/company/$slug',
@@ -240,7 +240,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/pricing': typeof PricingRoute
@@ -256,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -277,7 +277,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/pricing': typeof PricingRoute
@@ -292,6 +291,7 @@ export interface FileRoutesByTo {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/checkout': typeof CheckoutIndexRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -315,7 +315,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/pricing': typeof PricingRoute
@@ -331,6 +330,7 @@ export interface FileRoutesById {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -354,7 +354,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/certifications'
-    | '/checkout'
     | '/contact'
     | '/faq'
     | '/pricing'
@@ -370,6 +369,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/checkout/'
     | '/account/orders'
     | '/admin/api4all'
     | '/admin/emails'
@@ -391,7 +391,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/certifications'
-    | '/checkout'
     | '/contact'
     | '/faq'
     | '/pricing'
@@ -406,6 +405,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/checkout'
     | '/account/orders'
     | '/admin/api4all'
     | '/admin/emails'
@@ -428,7 +428,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/certifications'
-    | '/checkout'
     | '/contact'
     | '/faq'
     | '/pricing'
@@ -444,6 +443,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/checkout/'
     | '/_authenticated/account/orders'
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/emails'
@@ -467,7 +467,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CertificationsRoute: typeof CertificationsRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   PricingRoute: typeof PricingRoute
@@ -477,9 +476,12 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
+  CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
   CompanySlugRoute: typeof CompanySlugRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
@@ -530,13 +532,6 @@ declare module '@tanstack/react-router' {
       path: '/certifications'
       fullPath: '/certifications'
       preLoaderRoute: typeof CertificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -609,19 +604,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/return': {
       id: '/checkout/return'
-      path: '/return'
+      path: '/checkout/return'
       fullPath: '/checkout/return'
       preLoaderRoute: typeof CheckoutReturnRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/checkout/session-status': {
       id: '/checkout/session-status'
-      path: '/session-status'
+      path: '/checkout/session-status'
       fullPath: '/checkout/session-status'
       preLoaderRoute: typeof CheckoutSessionStatusRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/company/$slug': {
       id: '/company/$slug'
@@ -781,20 +783,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface CheckoutRouteChildren {
-  CheckoutReturnRoute: typeof CheckoutReturnRoute
-  CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutReturnRoute: CheckoutReturnRoute,
-  CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -802,7 +790,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CertificationsRoute: CertificationsRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   PricingRoute: PricingRoute,
@@ -812,9 +799,12 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
+  CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
   CompanySlugRoute: CompanySlugRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,

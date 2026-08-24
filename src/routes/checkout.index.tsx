@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 const TITLE = 'Checkout — Companies House Cyprus';
 const DESCRIPTION = 'Confirm your order details for Cyprus Registrar certificates and company reports.';
 
-export const Route = createFileRoute('/checkout')({
+export const Route = createFileRoute('/checkout/')({
   head: () => ({
     meta: [
       { title: TITLE },
