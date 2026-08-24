@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Mail, Phone } from "lucide-react";
 import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
 import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
@@ -28,6 +29,16 @@ export function SiteFooter() {
             <span className="rounded-full border bg-background px-2.5 py-1">Registrar sourced</span>
             <span className="rounded-full border bg-background px-2.5 py-1">Secure payments</span>
           </div>
+          <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Phone className="size-4 text-copper" />
+              <a href="tel:+35722398241" className="hover:text-foreground hover:underline">+357 22 398241</a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Mail className="size-4 text-copper" />
+              <a href="mailto:info@companieshousecyprus.com" className="hover:text-foreground hover:underline">info@companieshousecyprus.com</a>
+            </li>
+          </ul>
         </div>
 
         <div>
