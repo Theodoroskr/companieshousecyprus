@@ -15,6 +15,7 @@ import {
 } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/admin/status-badge";
 
 
 const VIEWS = ["all", "new", "processing", "overdue", "due_today", "delivered", "open"] as const;
