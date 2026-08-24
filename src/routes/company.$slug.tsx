@@ -36,10 +36,11 @@ function RelatedCompanies({ slug }: { slug: string }) {
           <h3 className="text-sm font-semibold">At the same registered address</h3>
           <ul className="mt-2 divide-y">
             {byAddress.map((row) => (
-              <li key={row.slug} className="flex items-center justify-between gap-4 py-2.5">
+              <li key={row.slug} className="flex flex-col gap-0.5 py-2.5">
                 <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
-                  {displayOfficialNo(row)}
+                  {row.name}
                 </Link>
+                <span className="text-xs text-muted-foreground">{displayOfficialNo(row)}</span>
               </li>
             ))}
           </ul>
@@ -56,11 +57,14 @@ function RelatedCompanies({ slug }: { slug: string }) {
           <h3 className="text-sm font-semibold">Sharing an official or owner</h3>
           <ul className="mt-2 divide-y">
             {byOfficial.map((row) => (
-              <li key={row.slug} className="flex items-center justify-between gap-4 py-2.5">
+              <li key={row.slug} className="flex flex-col gap-0.5 py-2.5">
                 <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
-                  {displayOfficialNo(row)}
+                  {row.name}
                 </Link>
-                <span className="shrink-0 text-xs text-muted-foreground">via {maskName(row.via)}</span>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-muted-foreground">{displayOfficialNo(row)}</span>
+                  <span className="text-xs text-muted-foreground">via {maskName(row.via)}</span>
+                </div>
               </li>
             ))}
           </ul>
