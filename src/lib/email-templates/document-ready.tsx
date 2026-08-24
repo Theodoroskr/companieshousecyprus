@@ -115,6 +115,12 @@ const Email = ({
           <Link href="mailto:info@companieshousecyprus.com" style={footerLink}>
             info@companieshousecyprus.com
           </Link>
+          {sentAt ? (
+            <>
+              <br />
+              Sent {sentAt}
+            </>
+          ) : null}
         </Text>
       </Container>
     </Body>
