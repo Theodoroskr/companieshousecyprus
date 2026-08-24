@@ -161,6 +161,11 @@ function Api4allAdminPage() {
               onClick={() =>
                 run(`${kind} report`, async () => {
                   const result = await getApi4allReport({ data: { kind, code } });
+                  if (!result.ok) {
+                    setOutput(result.message ?? "No report available.");
+                    toast.error(result.message ?? "No report available.");
+                    return;
+                  }
                   setOutput(result.reportJson);
                   toast.success(`${kind === "structure" ? "Structure" : "Credit"} report retrieved`);
                 })

@@ -37,8 +37,24 @@ export const getApi4allReport = createServerFn({ method: "POST" })
     const { assertAdmin } = await import("@/lib/admin.server");
     await assertAdmin(context.userId);
     const { fetchReport } = await import("@/lib/api4all.server");
-    const report = await fetchReport(data.kind, data.code.trim());
-    return { kind: data.kind, code: data.code.trim(), reportJson: JSON.stringify(report, null, 2) };
+    const code = data.code.trim();
+    try {
+      const report = await fetchReport(data.kind, code);
+      return { ok: true as const, kind: data.kind, code, reportJson: JSON.stringify(report, null, 2) };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      // API4ALL answers 400 {"message":"No Report"} when the report has not been produced yet.
+      const notReady = /no report/i.test(message);
+      return {
+        ok: false as const,
+        kind: data.kind,
+        code,
+        reportJson: "",
+        message: notReady
+          ? "No report available yet for this company — place an order first, then fetch again once API4ALL has produced it."
+          : message,
+      };
+    }
   });
 
 export const orderApi4allReport = createServerFn({ method: "POST" })
