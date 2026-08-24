@@ -78,7 +78,9 @@ function fileToBase64(file: File) {
 }
 
 function AdminOrdersPage() {
+  const { view = "all", ref: refFilter } = Route.useSearch();
   const list = useServerFn(adminListOrders);
+
   const setStatus = useServerFn(adminSetOrderStatus);
   const fulfil = useServerFn(adminFulfilItem);
   const setOrderDates = useServerFn(adminSetOrderDates);
