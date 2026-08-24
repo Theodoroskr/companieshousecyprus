@@ -491,9 +491,9 @@ export async function fulfilOrderItem(itemId: string) {
         a4a_attempts: 1,
         a4a_next_attempt_at: null,
         report_json: { placement, report } as never,
-        fulfilment_status: "delivered",
-        fulfilment_message: null,
-        delivered_at: new Date().toISOString(),
+        fulfilment_status: "awaiting_review",
+        fulfilment_message: "Report received from API4ALL — awaiting admin review before release.",
+        delivered_at: null,
       })
       .eq("id", item.id);
     return { ok: true as const, code };
