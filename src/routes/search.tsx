@@ -39,7 +39,7 @@ function SearchPage() {
   const { q, page, product: productSlug } = Route.useSearch();
   const navigate = Route.useNavigate();
   const setSearch = (nextQ: string, nextPage: number) =>
-    navigate({ search: { q: nextQ, page: nextPage, product: productSlug } });
+    navigate({ search: { q: nextQ, page: nextPage, ...(productSlug ? { product: productSlug } : {}) } });
   const pendingProduct = productSlug ? PRODUCTS_BY_SLUG[productSlug] : undefined;
   const { data } = useSuspenseQuery(searchQueryOptions(q, page));
   const totalPages = Math.ceil(data.count / 50);
@@ -97,7 +97,7 @@ function SearchPage() {
               <Link
                 to="/company/$slug"
                 params={{ slug: company.slug }}
-                search={{ product: pendingProduct?.slug }}
+                search={pendingProduct ? { product: pendingProduct.slug } : {}}
                 className="flex flex-wrap items-center justify-between gap-3 p-4"
               >
                 <span>
