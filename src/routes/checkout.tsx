@@ -481,7 +481,7 @@ function CheckoutPage() {
             <Button type='submit' size='lg' className='mt-6 w-full' disabled={submitting}>
 
               {submitting ? <Loader2 className='size-4 animate-spin' /> : <Lock className='size-4' />}
-              {submitting ? 'Submitting…' : 'Submit order request'}
+              {submitting ? 'Opening secure payment…' : 'Continue to secure payment'}
             </Button>
 
             <p className='mt-3 text-xs text-muted-foreground'>
