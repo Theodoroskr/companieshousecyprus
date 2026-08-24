@@ -247,3 +247,114 @@ export async function setUserRole(input: {
 
   return { ok: true as const };
 }
+
+export type UsageFilters = { from?: string | null; to?: string | null; company?: string | null };
+
+export async function readUserUsage(filters: UsageFilters) {
+  const supabase = adminClient();
+
+  let query = supabase
+    .from("orders")
+    .select(
+      "id, email, user_id, status, total_cents, created_at, order_items(company_name, company_number, product_name, fulfilment_status)",
+    )
+    .order("created_at", { ascending: false })
+    .limit(2000);
+
+  if (filters.from) query = query.gte("created_at", `${filters.from}T00:00:00Z`);
+  if (filters.to) query = query.lte("created_at", `${filters.to}T23:59:59Z`);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const orders = data ?? [];
+  const needle = (filters.company ?? "").trim().toLowerCase();
+
+  const companyOptions = new Map<string, string>();
+  for (const order of orders) {
+    for (const item of order.order_items ?? []) {
+      const label = item.company_name ?? item.company_number;
+      if (label) companyOptions.set(label.toLowerCase(), label);
+    }
+  }
+
+  const matching = needle
+    ? orders.filter((order) =>
+        (order.order_items ?? []).some((item) =>
+          `${item.company_name ?? ""} ${item.company_number ?? ""}`.toLowerCase().includes(needle),
+        ),
+      )
+    : orders;
+
+  type Row = {
+    email: string;
+    userId: string | null;
+    orders: number;
+    paid: number;
+    awaitingPayment: number;
+    failedItems: number;
+    deliveredItems: number;
+    pendingItems: number;
+    revenueCents: number;
+    lastActivity: string | null;
+    companies: string[];
+  };
+
+  const byUser = new Map<string, Row>();
+
+  for (const order of matching) {
+    const email = (order.email ?? "unknown").toLowerCase();
+    const row =
+      byUser.get(email) ??
+      ({
+        email,
+        userId: order.user_id ?? null,
+        orders: 0,
+        paid: 0,
+        awaitingPayment: 0,
+        failedItems: 0,
+        deliveredItems: 0,
+        pendingItems: 0,
+        revenueCents: 0,
+        lastActivity: null,
+        companies: [],
+      } satisfies Row);
+
+    row.userId = row.userId ?? order.user_id ?? null;
+    row.orders += 1;
+    if (order.status === "paid" || order.status === "completed") {
+      row.paid += 1;
+      row.revenueCents += order.total_cents ?? 0;
+    }
+    if (order.status === "awaiting_payment") row.awaitingPayment += 1;
+
+    for (const item of order.order_items ?? []) {
+      if (item.fulfilment_status === "failed") row.failedItems += 1;
+      else if (item.fulfilment_status === "delivered") row.deliveredItems += 1;
+      else row.pendingItems += 1;
+      const label = item.company_name ?? item.company_number;
+      if (label && !row.companies.includes(label)) row.companies.push(label);
+    }
+
+    if (!row.lastActivity || (order.created_at && order.created_at > row.lastActivity)) {
+      row.lastActivity = order.created_at ?? row.lastActivity;
+    }
+
+    byUser.set(email, row);
+  }
+
+  const rows = [...byUser.values()].sort((a, b) => (b.lastActivity ?? "").localeCompare(a.lastActivity ?? ""));
+
+  return {
+    rows,
+    companyOptions: [...companyOptions.values()].sort((a, b) => a.localeCompare(b)).slice(0, 200),
+    totals: {
+      users: rows.length,
+      orders: rows.reduce((n, r) => n + r.orders, 0),
+      paid: rows.reduce((n, r) => n + r.paid, 0),
+      awaitingPayment: rows.reduce((n, r) => n + r.awaitingPayment, 0),
+      failedItems: rows.reduce((n, r) => n + r.failedItems, 0),
+      revenueCents: rows.reduce((n, r) => n + r.revenueCents, 0),
+    },
+  };
+}

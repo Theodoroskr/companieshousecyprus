@@ -61,6 +61,9 @@ function AdminUsersPage() {
           <Button asChild variant="outline" size="sm">
             <Link to="/admin/orders">Orders</Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/admin/usage">Usage</Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"

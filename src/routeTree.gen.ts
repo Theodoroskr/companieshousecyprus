@@ -34,6 +34,7 @@ import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
@@ -169,6 +170,11 @@ const AuthenticatedAdminOrdersRoute =
     path: '/admin/orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminUsageRoute = AuthenticatedAdminUsageRouteImport.update({
+  id: '/admin/usage',
+  path: '/admin/usage',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/api4all'
     | '/admin/import'
     | '/admin/orders'
+    | '/admin/usage'
     | '/admin/users'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin/api4all'
     | '/admin/import'
     | '/admin/orders'
+    | '/admin/usage'
     | '/admin/users'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/admin/usage'
     | '/_authenticated/admin/users'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
@@ -604,6 +616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/usage': {
+      id: '/_authenticated/admin/usage'
+      path: '/admin/usage'
+      fullPath: '/admin/usage'
+      preLoaderRoute: typeof AuthenticatedAdminUsageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/admin/users'
@@ -654,6 +673,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminApi4allRoute: typeof AuthenticatedAdminApi4allRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
 
@@ -662,6 +682,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminApi4allRoute: AuthenticatedAdminApi4allRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
 }
 
