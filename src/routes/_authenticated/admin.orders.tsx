@@ -31,7 +31,7 @@ const VIEW_LABEL: Record<OrderView, string> = {
 };
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
-  validateSearch: (search: Record<string, unknown>): { view?: OrderView; ref?: string } => {
+  validateSearch: (search: Record<string, unknown>): { view?: OrderView | undefined; ref?: string | undefined } => {
     const rawView = search["view"];
     const rawRef = search["ref"];
     return {
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
       ref: typeof rawRef === "string" && rawRef ? rawRef : undefined,
     };
   },
+
 
   head: () => ({
     meta: [
