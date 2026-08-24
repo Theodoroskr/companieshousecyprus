@@ -146,6 +146,171 @@ export type Database = {
         }
         Relationships: []
       }
+      guide_editorial: {
+        Row: {
+          date_published: string
+          guide_slug: string
+          guide_version: string
+          last_reviewed: string
+          legal_disclaimer: string
+          official_source_links: Json
+          reviewer_name: string
+          reviewer_role: string
+          tax_disclaimer: string
+          updated_at: string
+        }
+        Insert: {
+          date_published: string
+          guide_slug: string
+          guide_version: string
+          last_reviewed: string
+          legal_disclaimer: string
+          official_source_links?: Json
+          reviewer_name: string
+          reviewer_role: string
+          tax_disclaimer: string
+          updated_at?: string
+        }
+        Update: {
+          date_published?: string
+          guide_slug?: string
+          guide_version?: string
+          last_reviewed?: string
+          legal_disclaimer?: string
+          official_source_links?: Json
+          reviewer_name?: string
+          reviewer_role?: string
+          tax_disclaimer?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      guide_fees: {
+        Row: {
+          amount: string
+          guide_slug: string
+          id: string
+          label: string
+          last_verified: string | null
+          needs_verification: boolean
+          note: string | null
+          sort_order: number
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: string
+          guide_slug: string
+          id?: string
+          label: string
+          last_verified?: string | null
+          needs_verification?: boolean
+          note?: string | null
+          sort_order?: number
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: string
+          guide_slug?: string
+          id?: string
+          label?: string
+          last_verified?: string | null
+          needs_verification?: boolean
+          note?: string | null
+          sort_order?: number
+          source_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      guide_leads: {
+        Row: {
+          assigned_partner: string | null
+          business_activity: string
+          consent_at: string
+          consent_text_version: string
+          corporate_shareholder: boolean | null
+          countries_of_operation: string | null
+          country: string
+          created_at: string
+          email: string
+          form_source: string
+          full_name: string
+          id: string
+          landing_page: string | null
+          lead_status: string
+          lead_type: string
+          nationality: string | null
+          notes: string | null
+          referral_url: string | null
+          services_requested: string[]
+          shareholder_count: string | null
+          telephone: string | null
+          timeframe: string
+          updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          assigned_partner?: string | null
+          business_activity: string
+          consent_at?: string
+          consent_text_version: string
+          corporate_shareholder?: boolean | null
+          countries_of_operation?: string | null
+          country: string
+          created_at?: string
+          email: string
+          form_source: string
+          full_name: string
+          id?: string
+          landing_page?: string | null
+          lead_status?: string
+          lead_type: string
+          nationality?: string | null
+          notes?: string | null
+          referral_url?: string | null
+          services_requested?: string[]
+          shareholder_count?: string | null
+          telephone?: string | null
+          timeframe: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          assigned_partner?: string | null
+          business_activity?: string
+          consent_at?: string
+          consent_text_version?: string
+          corporate_shareholder?: boolean | null
+          countries_of_operation?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          form_source?: string
+          full_name?: string
+          id?: string
+          landing_page?: string | null
+          lead_status?: string
+          lead_type?: string
+          nationality?: string | null
+          notes?: string | null
+          referral_url?: string | null
+          services_requested?: string[]
+          shareholder_count?: string | null
+          telephone?: string | null
+          timeframe?: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       import_runs: {
         Row: {
           created_at: string
