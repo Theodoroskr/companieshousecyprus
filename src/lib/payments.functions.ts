@@ -101,9 +101,7 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
           },
         },
         managed_payments: { enabled: true },
-        // Store the order amount in metadata to ensure no mismatch
-        amount_total: cents(order.total_cents),
-      } as Stripe.Checkout.SessionCreateParams);
+      } as any);
 
       return { clientSecret: session.client_secret ?? '' };
     } catch (error) {
