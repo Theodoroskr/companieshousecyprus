@@ -1,13 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { LogOut } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuthContext } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export function SignOutButton({ className }: { className?: string }) {
   const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const { signOut } = useAuthContext();
 
   return (
     <Button
@@ -17,8 +19,9 @@ export function SignOutButton({ className }: { className?: string }) {
       onClick={async () => {
         await queryClient.cancelQueries();
         queryClient.clear();
-        await supabase.auth.signOut();
-        navigate({ to: '/auth', replace: true });
+        await signOut();
+        await router.invalidate();
+        await navigate({ to: '/auth', replace: true });
       }}
     >
       <LogOut className='size-4' />
