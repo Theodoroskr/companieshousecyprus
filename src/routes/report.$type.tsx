@@ -115,7 +115,7 @@ function ReportPage() {
               className="mt-6"
               onSubmit={(event) => {
                 event.preventDefault();
-                if (q.trim()) navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
+                if (q.trim()) navigate({ to: "/search", search: { q: q.trim(), page: 1, product: product.slug } });
               }}
             >
               <label className="text-xs font-medium uppercase tracking-wide text-primary-foreground/70">
