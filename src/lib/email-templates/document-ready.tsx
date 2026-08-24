@@ -47,7 +47,7 @@ const Email = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src="https://companieshousecyprus.lovable.app/__l5e/assets-v1/5267d511-734b-4e2a-994b-e45c2724c9f4/cyprus-companies-house-logo.png"
+          src="https://companieshousecyprus.com/__l5e/assets-v1/5267d511-734b-4e2a-994b-e45c2724c9f4/cyprus-companies-house-logo.png"
           width="180"
           alt="Companies House Cyprus"
           style={{ display: 'block', marginBottom: '18px' }}

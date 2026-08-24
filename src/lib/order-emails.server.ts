@@ -1,6 +1,6 @@
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
-const SITE_URL = "https://companieshousecyprus.lovable.app";
+const SITE_URL = "https://companieshousecyprus.com";
 
 const euro = (cents: number | null | undefined) =>
   typeof cents === "number" ? `€${(cents / 100).toFixed(2)}` : undefined;
