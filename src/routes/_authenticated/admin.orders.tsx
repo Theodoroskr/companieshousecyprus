@@ -141,7 +141,11 @@ function AdminOrdersPage() {
             Confirm payment and pull Structure / Credit reports from API4ALL.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
+            <input type="checkbox" checked={notify} onChange={(event) => setNotify(event.target.checked)} />
+            Email the client on upload
+          </label>
           <Button asChild variant="outline">
             <Link to="/admin/users">Users</Link>
           </Button>
@@ -152,6 +156,7 @@ function AdminOrdersPage() {
             <RefreshCw className="size-4" /> Refresh
           </Button>
         </div>
+
       </div>
 
       {message && <p className="mt-4 rounded-md border bg-card p-3 text-sm">{message}</p>}
