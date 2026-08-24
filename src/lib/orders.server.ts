@@ -5,7 +5,7 @@ import { priceBreakdown } from "@/lib/pricing";
 
 /** Products fulfilled through API4ALL. */
 export { A4A_PRODUCT_KIND } from "@/lib/api4all-codes";
-import { A4A_PRODUCT_KIND, pickCompanyCode } from "@/lib/api4all-codes";
+import { A4A_PRODUCT_KIND, pickCompanyCode, registrationCandidates } from "@/lib/api4all-codes";
 
 function ordersClient() {
   const url = process.env["SUPABASE_URL"];
