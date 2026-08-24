@@ -104,3 +104,12 @@ export const updateUserRole = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     return setUserRole({ ...data, actorId: context.userId });
   });
+
+export const getUserUsage = createServerFn({ method: "GET" })
+  .inputValidator((data: { from?: string | null; to?: string | null; company?: string | null }) => data ?? {})
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, readUserUsage } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return readUserUsage(data ?? {});
+  });
