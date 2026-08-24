@@ -153,6 +153,7 @@ export function SiteHeader() {
               <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
                 My orders
               </Link>
+              <SignOutButton className='hidden sm:inline-flex' />
               {account.isAdmin && (
                 <Link
                   to="/admin/orders"
