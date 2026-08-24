@@ -93,6 +93,7 @@ function AdminDashboardPage() {
               value={newOrders.length}
               hint={`${newOrders.filter((o) => o.status === "paid").length} paid and ready to work`}
               tone="default"
+              view="new"
             />
             <Kpi
               icon={<Timer className="h-4 w-4" />}
@@ -100,6 +101,7 @@ function AdminDashboardPage() {
               value={processing.length}
               hint={`${open.length} open orders in total`}
               tone="default"
+              view="processing"
             />
             <Kpi
               icon={<AlertTriangle className="h-4 w-4" />}
@@ -107,6 +109,7 @@ function AdminDashboardPage() {
               value={overdue.length}
               hint={overdue.length ? "Past their due date" : "Nothing past due"}
               tone={overdue.length ? "danger" : "default"}
+              view="overdue"
             />
             <Kpi
               icon={<Clock className="h-4 w-4" />}
@@ -114,6 +117,7 @@ function AdminDashboardPage() {
               value={dueToday.length}
               hint={missingDue.length ? `${missingDue.length} open orders have no due date` : "All open orders dated"}
               tone={dueToday.length ? "warning" : "default"}
+              view="due_today"
             />
             <Kpi
               icon={<CheckCircle2 className="h-4 w-4" />}
@@ -121,6 +125,7 @@ function AdminDashboardPage() {
               value={delivered.length}
               hint="Completed in this window"
               tone="success"
+              view="delivered"
             />
             <Kpi
               icon={<Inbox className="h-4 w-4" />}
@@ -128,8 +133,10 @@ function AdminDashboardPage() {
               value={euros(openValue)}
               hint={`${euros(paidValue)} collected`}
               tone="default"
+              view="open"
             />
           </section>
+
 
           <section className="mt-8 rounded-xl border bg-card">
             <header className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
