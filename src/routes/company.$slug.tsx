@@ -198,7 +198,12 @@ export const Route = createFileRoute("/company/$slug")({
             itemListElement: breadcrumbItems,
           }),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(companyOrganizationJsonLd(loaderData, canonicalSlug)),
+        },
       ],
+
     };
   },
   component: CompanyPage,
