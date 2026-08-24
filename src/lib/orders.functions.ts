@@ -66,3 +66,23 @@ export const adminFulfilItem = createServerFn({ method: "POST" })
     const { fulfilOrderItem } = await import("@/lib/orders.server");
     return fulfilOrderItem(data.itemId.trim());
   });
+
+export const startOrderPayment = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; token: string; origin: string }) => {
+    if (!data.reference?.trim() || !data.token?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { startPayment } = await import("@/lib/orders.server");
+    return startPayment(data.reference, data.token, data.origin);
+  });
+
+export const syncOrderPayment = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; token: string }) => {
+    if (!data.reference?.trim() || !data.token?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { syncPayment } = await import("@/lib/orders.server");
+    return syncPayment(data.reference, data.token);
+  });
