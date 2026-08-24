@@ -215,8 +215,6 @@
 
 /* Printing a delivered report: keep the document, drop the chrome. */
 @media print {
-  body > header,
-  body > footer,
   .no-print {
     display: none !important;
   }
