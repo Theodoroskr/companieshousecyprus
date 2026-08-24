@@ -232,6 +232,27 @@ function CheckoutPage() {
                   setFieldErrors((prev) => ({ ...prev, email: 'Please enter a valid email address.' }));
                   throw new Error('validation');
                 }
+
+                const nextCompanyErrors: Record<number, { companyName?: string; companyNumber?: string }> = {};
+                let hasCompanyErrors = false;
+                for (const { index } of itemsNeedingCompany) {
+                  const input = companyInputs[index] ?? { companyName: '', companyNumber: '' };
+                  const errors: { companyName?: string; companyNumber?: string } = {};
+                  if (!input.companyName.trim()) {
+                    errors.companyName = 'Company name is required.';
+                    hasCompanyErrors = true;
+                  }
+                  if (!input.companyNumber.trim()) {
+                    errors.companyNumber = 'Registration number is required.';
+                    hasCompanyErrors = true;
+                  }
+                  nextCompanyErrors[index] = errors;
+                }
+                if (hasCompanyErrors) {
+                  setCompanyInputErrors(nextCompanyErrors);
+                  throw new Error('validation');
+                }
+
                 if (createAccount) {
                   const passwordError = validatePassword(password, confirmPassword);
                   if (passwordError) {
