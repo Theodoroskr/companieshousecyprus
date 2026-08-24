@@ -5,10 +5,6 @@ import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
 import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
 import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
 
-
-
-
-
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t bg-sand">
