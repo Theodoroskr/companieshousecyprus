@@ -351,14 +351,14 @@ function CheckoutPage() {
                             type='text'
                             value={companyInputs[index]?.companyName ?? ''}
                             onChange={(e) => {
-                              setCompanyInputs((prev) => ({
-                                ...prev,
-                                [index]: { ...prev[index], companyName: e.target.value },
-                              }));
-                              setCompanyInputErrors((prev) => ({
-                                ...prev,
-                                [index]: { ...prev[index], companyName: undefined },
-                              }));
+                              setCompanyInputs((prev) => {
+                                const existing = prev[index] ?? { companyName: '', companyNumber: '' };
+                                return { ...prev, [index]: { ...existing, companyName: e.target.value } };
+                              });
+                              setCompanyInputErrors((prev) => {
+                                const existing = prev[index] ?? {};
+                                return { ...prev, [index]: { ...existing, companyName: undefined } };
+                              });
                             }}
                             placeholder='e.g. ABC Holdings Ltd'
                             required
