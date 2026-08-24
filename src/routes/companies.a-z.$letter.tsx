@@ -5,6 +5,7 @@ import { listCompaniesByLetter } from "@/lib/companies.functions";
 import { displayOfficialNo } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { CopyGuard } from "@/components/copy-guard";
 
 const letterQueryOptions = (letter: string, page: number) =>
   queryOptions({
@@ -62,6 +63,7 @@ function LetterPage() {
       <div className="mx-auto max-w-7xl px-4 py-10">
         <AlphabetNav />
 
+        <CopyGuard>
         <ul className="mt-8 divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
           {data.rows.length === 0 && (
             <li className="p-10 text-center text-muted-foreground">No companies found.</li>
@@ -89,6 +91,11 @@ function LetterPage() {
             </li>
           ))}
         </ul>
+        </CopyGuard>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Index data is provided for individual look-ups only. Systematic copying, scraping or
+          redistribution of the register index is not permitted.
+        </p>
 
         {totalPages > 1 && (
           <div className="mt-8 flex items-center justify-between">
