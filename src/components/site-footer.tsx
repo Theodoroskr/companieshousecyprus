@@ -3,8 +3,8 @@ import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
 
 
-const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
 const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
+
 
 export function SiteFooter() {
   return (
@@ -68,18 +68,6 @@ export function SiteFooter() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {LETTERS.map((letter) => (
-              <Link
-                key={letter}
-                to="/companies/a-z/$letter"
-                params={{ letter: letter.toLowerCase() }}
-                className="flex size-7 items-center justify-center rounded border bg-background text-xs text-muted-foreground hover:border-copper hover:text-copper"
-              >
-                {letter}
-              </Link>
-            ))}
-          </div>
         </div>
 
         <div>
