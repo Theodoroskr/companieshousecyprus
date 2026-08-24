@@ -156,33 +156,40 @@ function AdminDashboardPage() {
                   const late = Boolean(order.due_date && order.due_date < today);
                   const due = order.due_date === today;
                   return (
-                    <li key={order.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">
-                          {order.reference} · {order.full_name ?? order.email ?? "—"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {order.order_items?.map((i) => i.product_name).join(", ") || "No items"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
-                          {STATUS_LABEL[order.status] ?? order.status}
-                        </span>
-                        <span
-                          className={
-                            late
-                              ? "rounded-full bg-destructive/10 px-2 py-0.5 font-semibold text-destructive"
-                              : due
-                                ? "rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-700 dark:text-amber-400"
-                                : "text-muted-foreground"
-                          }
-                        >
-                          Due {showDate(order.due_date)}
-                        </span>
-                        <span className="font-semibold">{euros(order.total_cents ?? 0)}</span>
-                      </div>
+                    <li key={order.id}>
+                      <Link
+                        to="/admin/orders"
+                        search={{ ref: order.reference }}
+                        className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {order.reference} · {order.full_name ?? order.email ?? "—"}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {order.order_items?.map((i) => i.product_name).join(", ") || "No items"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
+                            {STATUS_LABEL[order.status] ?? order.status}
+                          </span>
+                          <span
+                            className={
+                              late
+                                ? "rounded-full bg-destructive/10 px-2 py-0.5 font-semibold text-destructive"
+                                : due
+                                  ? "rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-700 dark:text-amber-400"
+                                  : "text-muted-foreground"
+                            }
+                          >
+                            Due {showDate(order.due_date)}
+                          </span>
+                          <span className="font-semibold">{euros(order.total_cents ?? 0)}</span>
+                        </div>
+                      </Link>
                     </li>
+
                   );
                 })}
               </ul>
