@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, ShoppingCart, ChevronDown, Menu, X, ArrowRight, ShieldCheck } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -18,6 +18,8 @@ import {
 
 export function SiteHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const signInRedirect = location.pathname + location.searchStr;
   const { count } = useCart();
   const account = useAccount();
   const [q, setQ] = useState("");
