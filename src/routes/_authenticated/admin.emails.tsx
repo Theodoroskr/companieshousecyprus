@@ -67,7 +67,16 @@ function EventBadge({ type }: { type: string }) {
 function stamp(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("en-GB", { timeZone: "Asia/Nicosia", dateStyle: "medium", timeStyle: "short" });
+  return date.toLocaleString("en-GB", {
+    timeZone: "Asia/Nicosia",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 function AdminEmailsPage() {
@@ -174,7 +183,7 @@ function AdminEmailsPage() {
         <table className="w-full text-sm">
           <thead className="border-b bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 font-semibold">When</th>
+              <th className="px-4 py-3 font-semibold">Sent at (Cyprus time)</th>
               <th className="px-4 py-3 font-semibold">Recipient</th>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Outcome</th>

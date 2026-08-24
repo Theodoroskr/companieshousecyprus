@@ -23,6 +23,7 @@ export interface DocumentReadyProps {
   companyName?: string | null
   companyNumber?: string | null
   deliveredAt?: string
+  sentAt?: string
   portalUrl?: string
   documents?: { name: string; url?: string | null }[]
 }
@@ -35,6 +36,7 @@ const Email = ({
   companyName,
   companyNumber,
   deliveredAt,
+  sentAt,
   portalUrl,
   documents,
 }: DocumentReadyProps) => (
@@ -113,6 +115,12 @@ const Email = ({
           <Link href="mailto:info@companieshousecyprus.com" style={footerLink}>
             info@companieshousecyprus.com
           </Link>
+          {sentAt ? (
+            <>
+              <br />
+              Sent {sentAt}
+            </>
+          ) : null}
         </Text>
       </Container>
     </Body>
@@ -132,6 +140,7 @@ export const template = {
     companyName: 'INFOCREDIT GROUP LIMITED',
     companyNumber: 'HE4404',
     deliveredAt: '24/08/2026',
+    sentAt: '24 Aug 2026, 16:15:42 (Cyprus time)',
     portalUrl: 'https://companieshousecyprus.com/account/orders',
   },
 } satisfies TemplateEntry

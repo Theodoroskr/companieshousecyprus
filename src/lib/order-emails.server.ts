@@ -84,6 +84,21 @@ export async function sendPaymentReceiptEmail(order: OrderEmailOrder) {
   }
 }
 
+/** Exact send timestamp shown in the document-ready email footer (Cyprus time). */
+function exactSendStamp(now = new Date()) {
+  const formatted = now.toLocaleString("en-GB", {
+    timeZone: "Asia/Nicosia",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  return `${formatted} (Cyprus time)`;
+}
+
 /** Sent when an admin uploads a completed document for one order line. */
 export async function sendDocumentReadyEmail(
   order: OrderEmailOrder,
@@ -102,6 +117,7 @@ export async function sendDocumentReadyEmail(
         companyNumber: item.company_number ?? null,
         documentName: item.document_name ?? null,
         deliveredAt: new Date().toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }),
+        sentAt: exactSendStamp(),
         portalUrl: `${SITE_URL}/account/orders`,
       },
     });
@@ -131,6 +147,7 @@ export async function sendOrderDeliveredEmail(
         documentName: documents.map((doc) => doc.name).join(", ") || null,
         documents,
         deliveredAt: new Date().toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }),
+        sentAt: exactSendStamp(),
         portalUrl: order.access_token
           ? `${SITE_URL}/order/${order.reference}?token=${order.access_token}`
           : `${SITE_URL}/account/orders`,
