@@ -104,7 +104,7 @@ export function ReportView({
           </div>
           <div className="rounded-lg bg-primary-foreground/10 px-3 py-2">
             <p className="text-[10px] uppercase tracking-wide text-primary-foreground/70">Report generated</p>
-            <p className="text-sm">{report.generatedAt || date(meta.deliveredAt)}</p>
+            <p className="text-sm">{report.generatedAt ? date(report.generatedAt) : date(meta.deliveredAt)}</p>
           </div>
           <div className="rounded-lg bg-primary-foreground/10 px-3 py-2">
             <p className="text-[10px] uppercase tracking-wide text-primary-foreground/70">
@@ -113,7 +113,7 @@ export function ReportView({
             <p className="text-sm">
               {latestScore
                 ? `${latestScore.score ?? "—"}/100 · ${latestScore.description}`
-                : g.dateUpdated || "—"}
+                : date(g.dateUpdated)}
             </p>
           </div>
         </div>
