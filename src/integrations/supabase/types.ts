@@ -178,6 +178,54 @@ export type Database = {
           },
         ]
       }
+      order_documents: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          id: string
+          name: string
+          order_id: string
+          order_item_id: string
+          path: string
+          size_bytes: number
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          order_id: string
+          order_item_id: string
+          path: string
+          size_bytes?: number
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          order_id?: string
+          order_item_id?: string
+          path?: string
+          size_bytes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_documents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_documents_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           a4a_code: string | null
