@@ -126,26 +126,6 @@ export const PRODUCTS: Product[] = [
     typicalUse: "Service of process, correspondence verification, address confirmation.",
   },
   {
-    slug: "certificate-of-members",
-    name: "Certificate of Members",
-    eyebrow: "Registrar certificate",
-    headline: "Certified list of members for a Cyprus company",
-    tagline: "Official confirmation of the registered members and their membership interests.",
-    price: 40,
-    delivery: "1–2 business days",
-    category: "certificate",
-    description: [
-      "The Certificate of Members is issued by the Cyprus Registrar and certifies the persons or entities registered as members of the company at the relevant date, together with their membership interests where applicable.",
-    ],
-    includes: [
-      { title: "Registered members", detail: "Names of members of record as held by the Registrar." },
-      { title: "Membership interests", detail: "Class and extent of membership interests, where filed." },
-      { title: "Date of certification", detail: "Certification date tied to the Registrar's official extract." },
-      { title: "Digital delivery", detail: "Signed PDF delivered by email." },
-    ],
-    typicalUse: "Membership verification, governance reviews, shareholder dispute support.",
-  },
-  {
     slug: "certificate-of-capital",
     name: "Certificate of Capital",
     eyebrow: "Registrar certificate",
@@ -164,26 +144,6 @@ export const PRODUCTS: Product[] = [
       { title: "Digital delivery", detail: "Signed PDF delivered by email." },
     ],
     typicalUse: "Transaction due diligence, capital verification, investor onboarding.",
-  },
-  {
-    slug: "certificate-of-no-charges",
-    name: "Certificate of No Charges",
-    eyebrow: "Registrar certificate",
-    headline: "Confirmation that no charges are registered",
-    tagline: "Official certification that the company has no charges recorded at the Registrar.",
-    price: 40,
-    delivery: "1–2 business days",
-    category: "certificate",
-    description: [
-      "The Certificate of No Charges (also known as a Certificate that the company has no charges) confirms that no charge, mortgage or encumbrance is recorded against the company in the Cyprus Registrar's charges register.",
-    ],
-    includes: [
-      { title: "No charges confirmation", detail: "Registrar confirmation that no charges are registered against the company." },
-      { title: "Charges register search", detail: "Official search of the Registrar's charges register." },
-      { title: "Date of certification", detail: "Certification date tied to the official search." },
-      { title: "Digital delivery", detail: "Signed PDF delivered by email." },
-    ],
-    typicalUse: "Security verification, lending, acquisition due diligence.",
   },
   {
     slug: "certificate-of-strike-off",

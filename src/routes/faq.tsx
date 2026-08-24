@@ -86,7 +86,7 @@ const FAQS = [
     items: [
       {
         q: "Which certificates can I order?",
-        a: "We offer Certificate of Good Standing, Certificate of Directors, Certificate of Shareholders, Certificate of Members, Certificate of Capital, Certificate that the company has no charges, Certificate of Strike Off, and bundled profiles such as the Cyprus Company Profile and KYB Pack.",
+        a: "We offer Certificate of Good Standing, Certificate of Directors, Certificate of Shareholders, Certificate of Capital, Certificate of Strike Off, and bundled profiles such as the Cyprus Company Profile and KYB Pack.",
       },
       {
         q: "Are the certificates official documents?",
