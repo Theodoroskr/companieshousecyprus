@@ -6,21 +6,66 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 
-const searchQueryOptions = (q: string, page: number) =>
+const TYPE_OPTIONS = [
+  { code: "C", label: "Company" },
+  { code: "B", label: "Business Name" },
+  { code: "P", label: "Partnership" },
+  { code: "O", label: "Overseas Company" },
+  { code: "N", label: "Partnership (BN)" },
+] as const;
+
+const STATUS_OPTIONS = [
+  { code: "active", label: "Active" },
+  { code: "at_risk", label: "At risk" },
+  { code: "struck_off", label: "Struck off" },
+  { code: "dissolved", label: "Dissolved" },
+  { code: "liquidation", label: "Liquidation" },
+] as const;
+
+const parseList = (value: unknown, allowed: readonly string[]): string[] =>
+  typeof value === "string"
+    ? value
+        .split(",")
+        .map((v) => v.trim())
+        .filter((v) => allowed.includes(v))
+    : [];
+
+const searchQueryOptions = (q: string, page: number, types: string[], statuses: string[]) =>
   queryOptions({
-    queryKey: ["search", q, page],
-    queryFn: () => (q.trim() ? searchCompanies({ data: { q, page } }) : Promise.resolve({ rows: [], count: 0 })),
+    queryKey: ["search", q, page, types.join(","), statuses.join(",")],
+    queryFn: () =>
+      q.trim() ? searchCompanies({ data: { q, page, types, statuses } }) : Promise.resolve({ rows: [], count: 0 }),
   });
 
 export const Route = createFileRoute("/search")({
-  validateSearch: (search: Record<string, unknown>): { q: string; page: number; product?: string } => ({
-    q: typeof search["q"] === "string" ? (search["q"] as string) : "",
-    page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
-    ...(typeof search["product"] === "string" ? { product: search["product"] as string } : {}),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { q: string; page: number; product?: string; type?: string; status?: string } => {
+    const types = parseList(search["type"], TYPE_OPTIONS.map((t) => t.code));
+    const statuses = parseList(search["status"], STATUS_OPTIONS.map((s) => s.code));
+    return {
+      q: typeof search["q"] === "string" ? (search["q"] as string) : "",
+      page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
+      ...(typeof search["product"] === "string" ? { product: search["product"] as string } : {}),
+      ...(types.length > 0 ? { type: types.join(",") } : {}),
+      ...(statuses.length > 0 ? { status: statuses.join(",") } : {}),
+    };
+  },
+  loaderDeps: ({ search }) => ({
+    q: search.q,
+    page: search.page,
+    type: search.type ?? "",
+    status: search.status ?? "",
   }),
-  loaderDeps: ({ search }) => ({ q: search.q, page: search.page }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(searchQueryOptions(deps.q, deps.page));
+    await context.queryClient.ensureQueryData(
+      searchQueryOptions(
+        deps.q,
+        deps.page,
+        deps.type ? deps.type.split(",") : [],
+        deps.status ? deps.status.split(",") : [],
+      ),
+    );
   },
   head: () => ({
     meta: [
