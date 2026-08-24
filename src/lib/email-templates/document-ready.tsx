@@ -140,6 +140,7 @@ export const template = {
     companyName: 'INFOCREDIT GROUP LIMITED',
     companyNumber: 'HE4404',
     deliveredAt: '24/08/2026',
+    sentAt: '24 Aug 2026, 16:15:42 (Cyprus time)',
     portalUrl: 'https://companieshousecyprus.com/account/orders',
   },
 } satisfies TemplateEntry
