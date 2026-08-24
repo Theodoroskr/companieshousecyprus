@@ -246,15 +246,28 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const n = Math.max(0, data.n);
-    const { data: rows, error } = await supabase
-      .from("companies")
-      .select("slug, updated_at")
-      .order("slug", { ascending: true })
-      .range(n * SITEMAP_CHUNK_SIZE, (n + 1) * SITEMAP_CHUNK_SIZE - 1);
-    if (error) throw error;
+    // PostgREST caps a single response at 1,000 rows, so page through the
+    // chunk internally until it is full (or the table runs out).
+    const PAGE = 1_000;
+    const start = n * SITEMAP_CHUNK_SIZE;
+    const rows: { slug: string; updated_at: string | null }[] = [];
+    while (rows.length < SITEMAP_CHUNK_SIZE) {
+      const from = start + rows.length;
+      const to = Math.min(from + PAGE, start + SITEMAP_CHUNK_SIZE) - 1;
+      const { data: page, error } = await supabase
+        .from("companies")
+        .select("slug, updated_at")
+        .order("slug", { ascending: true })
+        .range(from, to);
+      if (error) throw error;
+      const batch = page ?? [];
+      for (const r of batch) rows.push({ slug: r.slug, updated_at: r.updated_at });
+      if (batch.length < to - from + 1) break;
+    }
     return {
       n,
-      rows: (rows ?? []).map((r) => ({ slug: r.slug, updated_at: r.updated_at })),
-      hasMore: (rows ?? []).length === SITEMAP_CHUNK_SIZE,
+      rows,
+      hasMore: rows.length === SITEMAP_CHUNK_SIZE,
     };
   });
+
