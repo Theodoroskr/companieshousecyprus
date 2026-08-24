@@ -180,6 +180,64 @@ function CheckoutPage() {
                 />
               </label>
             </div>
+
+            {!account.signedIn && (
+              <div className='mt-6 rounded-xl border border-copper/20 bg-copper/5 p-4'>
+                <label className='flex cursor-pointer items-start gap-3'>
+                  <Checkbox
+                    checked={createAccount}
+                    onCheckedChange={(checked) => setCreateAccount(checked === true)}
+                    className='mt-0.5'
+                  />
+                  <div>
+                    <span className='flex items-center gap-2 text-sm font-semibold text-foreground'>
+                      <UserPlus className='size-4 text-copper' />
+                      Create an account to track this order
+                    </span>
+                    <p className='mt-1 text-xs text-muted-foreground'>
+                      Optional. Save your orders and download completed documents from the client portal.
+                    </p>
+                  </div>
+                </label>
+                {createAccount && (
+                  <div className='mt-4 grid gap-4 sm:grid-cols-2'>
+                    <label>
+                      <span className='text-sm font-medium'>Password</span>
+                      <input
+                        type='password'
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder='Create a secure password'
+                        minLength={8}
+                        required={createAccount}
+                        className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
+                      />
+                    </label>
+                    <label>
+                      <span className='text-sm font-medium'>Confirm password</span>
+                      <input
+                        type='password'
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder='Re-enter password'
+                        minLength={8}
+                        required={createAccount}
+                        className='mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring'
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {account.signedIn && account.ready && (
+              <div className='mt-6 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm'>
+                <Mail className='size-4 text-primary' />
+                <span>
+                  Signed in as <span className='font-semibold text-foreground'>{account.email}</span>. This order will be linked to your account.
+                </span>
+              </div>
+            )}
             {error && (
               <p className='mt-4 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive'>
                 {error}
