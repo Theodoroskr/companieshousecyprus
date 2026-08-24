@@ -167,6 +167,30 @@ function AdminOrdersPage() {
     onError: (error) => setMessage(error instanceof Error ? error.message : "Fulfilment failed"),
   });
 
+  const today = todayISO();
+  const allOrders = query.data?.orders ?? [];
+  const visibleOrders = allOrders.filter((order) => {
+    if (refFilter && order.reference !== refFilter) return false;
+    const open = order.status !== "delivered" && order.status !== "cancelled";
+    switch (view) {
+      case "new":
+        return order.status === "paid" || order.status === "awaiting_payment";
+      case "processing":
+        return order.status === "processing";
+      case "overdue":
+        return open && Boolean(order.due_date) && String(order.due_date) < today;
+      case "due_today":
+        return open && dateInput(order.due_date) === today;
+      case "delivered":
+        return order.status === "delivered";
+      case "open":
+        return open;
+      default:
+        return true;
+    }
+  });
+
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
