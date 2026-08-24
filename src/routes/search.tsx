@@ -81,12 +81,30 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const { q, page, product: productSlug } = Route.useSearch();
+  const { q, page, product: productSlug, type, status } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const setSearch = (nextQ: string, nextPage: number) =>
-    navigate({ search: { q: nextQ, page: nextPage, ...(productSlug ? { product: productSlug } : {}) } });
+  const types = type ? type.split(",") : [];
+  const statuses = status ? status.split(",") : [];
+
+  const setSearch = (next: { q?: string; page?: number; types?: string[]; statuses?: string[] }) => {
+    const nextTypes = next.types ?? types;
+    const nextStatuses = next.statuses ?? statuses;
+    navigate({
+      search: {
+        q: next.q ?? q,
+        page: next.page ?? 1,
+        ...(productSlug ? { product: productSlug } : {}),
+        ...(nextTypes.length > 0 ? { type: nextTypes.join(",") } : {}),
+        ...(nextStatuses.length > 0 ? { status: nextStatuses.join(",") } : {}),
+      },
+    });
+  };
+
+  const toggle = (list: string[], code: string) =>
+    list.includes(code) ? list.filter((v) => v !== code) : [...list, code];
+
   const pendingProduct = productSlug ? PRODUCTS_BY_SLUG[productSlug] : undefined;
-  const { data } = useSuspenseQuery(searchQueryOptions(q, page));
+  const { data } = useSuspenseQuery(searchQueryOptions(q, page, types, statuses));
   const totalPages = Math.ceil(data.count / 50);
 
   return (
