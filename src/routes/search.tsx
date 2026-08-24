@@ -9,7 +9,7 @@ import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 const searchQueryOptions = (q: string, page: number) =>
   queryOptions({
     queryKey: ["search", q, page],
-    queryFn: () => searchCompanies({ data: { q, page } }),
+    queryFn: () => (q.trim() ? searchCompanies({ data: { q, page } }) : Promise.resolve({ rows: [], count: 0 })),
   });
 
 export const Route = createFileRoute("/search")({
@@ -80,63 +80,72 @@ function SearchPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-10">
-        <p className="text-sm text-muted-foreground">
-          {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
-          {q ? ` for “${q}”` : ""}
-        </p>
+      {q ? (
+        <div className="mx-auto max-w-7xl px-4 py-10">
+          <p className="text-sm text-muted-foreground">
+            {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
+            {q ? ` for “${q}”` : ""}
+          </p>
 
-        <ul className="mt-5 divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
-          {data.rows.length === 0 && (
-            <li className="p-10 text-center text-muted-foreground">
-              No companies matched. Try a shorter name or the HE number.
-            </li>
+          <ul className="mt-5 divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
+            {data.rows.length === 0 && (
+              <li className="p-10 text-center text-muted-foreground">
+                No companies matched. Try a shorter name or the HE number.
+              </li>
+            )}
+            {data.rows.map((company) => (
+              <li key={company.slug} className="transition-colors hover:bg-muted/50">
+                <Link
+                  to="/company/$slug"
+                  params={{ slug: company.slug }}
+                  search={pendingProduct ? { product: pendingProduct.slug } : {}}
+                  className="flex flex-wrap items-center justify-between gap-3 p-4"
+                >
+                  <span>
+                    <span className="block font-medium">{company.name}</span>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      {displayOfficialNo(company)}
+                      {company.district_en && ` · ${company.district_en}`}
+                    </span>
+                  </span>
+                  {company.status_en && (
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                        company.status_group === "active"
+                          ? "border-olive/30 bg-olive/10 text-olive"
+                          : "border-border bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {company.status_en}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {totalPages > 1 && (
+            <div className="mt-8 flex items-center justify-between">
+              <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages.toLocaleString()}
+              </span>
+              <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
+                Next
+              </Button>
+            </div>
           )}
-          {data.rows.map((company) => (
-            <li key={company.slug} className="transition-colors hover:bg-muted/50">
-              <Link
-                to="/company/$slug"
-                params={{ slug: company.slug }}
-                search={pendingProduct ? { product: pendingProduct.slug } : {}}
-                className="flex flex-wrap items-center justify-between gap-3 p-4"
-              >
-                <span>
-                  <span className="block font-medium">{company.name}</span>
-                  <span className="mt-1 block text-sm text-muted-foreground">
-                    {displayOfficialNo(company)}
-                    {company.district_en && ` · ${company.district_en}`}
-                  </span>
-                </span>
-                {company.status_en && (
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                      company.status_group === "active"
-                        ? "border-olive/30 bg-olive/10 text-olive"
-                        : "border-border bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {company.status_en}
-                  </span>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-between">
-            <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages.toLocaleString()}
-            </span>
-            <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
-              Next
-            </Button>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="mx-auto max-w-7xl px-4 py-16 text-center">
+          <p className="text-lg font-medium text-foreground">Start your search</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            Enter a company name or HE / registration number above to find the entity you need.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
