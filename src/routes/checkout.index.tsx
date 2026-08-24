@@ -382,14 +382,14 @@ function CheckoutPage() {
                             type='text'
                             value={companyInputs[index]?.companyNumber ?? ''}
                             onChange={(e) => {
-                              setCompanyInputs((prev) => ({
-                                ...prev,
-                                [index]: { ...prev[index], companyNumber: e.target.value },
-                              }));
-                              setCompanyInputErrors((prev) => ({
-                                ...prev,
-                                [index]: { ...prev[index], companyNumber: undefined },
-                              }));
+                              setCompanyInputs((prev) => {
+                                const existing = prev[index] ?? { companyName: '', companyNumber: '' };
+                                return { ...prev, [index]: { ...existing, companyNumber: e.target.value } };
+                              });
+                              setCompanyInputErrors((prev) => {
+                                const existing = prev[index] ?? {};
+                                return { ...prev, [index]: { ...existing, companyNumber: undefined } };
+                              });
                             }}
                             placeholder='e.g. HE12345'
                             required
