@@ -111,3 +111,18 @@ export const listMyOrders = createServerFn({ method: "GET" })
     const { listOrdersForUser } = await import("@/lib/orders.server");
     return { email, orders: await listOrdersForUser(context.userId, email) };
   });
+
+/** Place an order while signed in. The user id is taken from the verified session. */
+export const submitOrderAsUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: PlaceOrderPayload) => {
+    if (!data.fullName?.trim()) throw new Error("Full name is required");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email?.trim() ?? "")) throw new Error("A valid email is required");
+    if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Your basket is empty");
+    if (data.items.length > 30) throw new Error("Too many items in one order");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    const { placeOrder } = await import("@/lib/orders.server");
+    return placeOrder({ ...data, userId: context.userId });
+  });
