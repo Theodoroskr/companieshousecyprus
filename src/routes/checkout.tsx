@@ -113,6 +113,7 @@ function CheckoutPage() {
               const email = String(form.get('email') ?? '');
               setSubmitting(true);
               setError(null);
+              let useAuthenticated = account.signedIn;
               try {
                 if (createAccount) {
                   if (!password || password.length < 8) throw new Error('Choose a password of at least 8 characters');
@@ -123,6 +124,7 @@ function CheckoutPage() {
                     options: { data: { full_name: fullName } },
                   });
                   if (signUpError) throw new Error(signUpError.message);
+                  useAuthenticated = true;
                 }
                 const orderPayload = {
                   fullName,
@@ -139,7 +141,7 @@ function CheckoutPage() {
                     quantity: item.quantity,
                   })),
                 };
-                const result = account.signedIn
+                const result = useAuthenticated
                   ? await placeOrderAsUser({ data: orderPayload })
                   : await placeOrder({ data: orderPayload });
                 clear();
