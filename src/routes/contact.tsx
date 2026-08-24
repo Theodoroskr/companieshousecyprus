@@ -36,17 +36,31 @@ function ContactPage() {
     event.preventDefault();
     const form = event.currentTarget;
     const fd = new FormData(form);
+    const payload = {
+      name: String(fd.get("name") ?? "").trim(),
+      email: String(fd.get("email") ?? "").trim(),
+      company: String(fd.get("company") ?? "").trim(),
+      message: String(fd.get("message") ?? "").trim(),
+    };
+
+    if (!payload.name) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (!payload.email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (payload.message.length < 5) {
+      setError("Please add a few details about your request (at least 5 characters).");
+      (form.elements.namedItem("message") as HTMLTextAreaElement | null)?.focus();
+      return;
+    }
+
     setSending(true);
     setError(null);
     try {
-      await send({
-        data: {
-          name: String(fd.get("name") ?? ""),
-          email: String(fd.get("email") ?? ""),
-          company: String(fd.get("company") ?? ""),
-          message: String(fd.get("message") ?? ""),
-        },
-      });
+      await send({ data: payload });
       form.reset();
       setSent(true);
     } catch (err) {
@@ -58,6 +72,7 @@ function ContactPage() {
       setSending(false);
     }
   }
+
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
@@ -99,7 +114,9 @@ function ContactPage() {
                   <span className="text-sm font-medium">How can we help?</span>
                   <textarea
                     required
+                    minLength={5}
                     name="message"
+
                     rows={5}
                     placeholder="Which company, which document, and by when?"
                     className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring"
