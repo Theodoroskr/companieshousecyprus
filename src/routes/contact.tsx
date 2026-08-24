@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { CheckCircle2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { submitContactInquiry } from "@/lib/contact.functions";
+
 
 const TITLE = "Contact Companies House Cyprus — certificates & account pricing";
 const DESCRIPTION =
@@ -25,6 +28,36 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const send = useServerFn(submitContactInquiry);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const fd = new FormData(form);
+    setSending(true);
+    setError(null);
+    try {
+      await send({
+        data: {
+          name: String(fd.get("name") ?? ""),
+          email: String(fd.get("email") ?? ""),
+          company: String(fd.get("company") ?? ""),
+          message: String(fd.get("message") ?? ""),
+        },
+      });
+      form.reset();
+      setSent(true);
+    } catch (err) {
+      console.error("Contact form submission failed", err);
+      setError(
+        "We couldn't send your message. Please try again, or email info@companieshousecyprus.com directly.",
+      );
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
@@ -47,13 +80,8 @@ function ContactPage() {
               </Button>
             </div>
           ) : (
-            <form
-              className="mt-10 rounded-xl border bg-card p-6 shadow-panel"
-              onSubmit={(event) => {
-                event.preventDefault();
-                setSent(true);
-              }}
-            >
+            <form className="mt-10 rounded-xl border bg-card p-6 shadow-panel" onSubmit={handleSubmit}>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <label>
                   <span className="text-sm font-medium">Name</span>
@@ -78,9 +106,15 @@ function ContactPage() {
                   />
                 </label>
               </div>
-              <Button type="submit" size="lg" className="mt-6">
-                Send message
+              {error ? (
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  {error}
+                </p>
+              ) : null}
+              <Button type="submit" size="lg" className="mt-6" disabled={sending}>
+                {sending ? "Sending…" : "Send message"}
               </Button>
+
             </form>
           )}
         </div>
