@@ -239,6 +239,7 @@ export function SiteHeader() {
                 <Link to="/account/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
                   My orders
                 </Link>
+                <SignOutButton className='justify-start px-3 py-2 h-auto w-full text-foreground hover:bg-muted' />
                 {account.isAdmin && (
                   <Link to="/admin/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold text-copper hover:bg-muted">
                     Admin dashboard
