@@ -162,6 +162,7 @@ function KybForBanksPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               to="/search"
+              search={{ q: "", page: 1 }}
               className="inline-flex items-center gap-2 rounded-md bg-copper px-4 py-2 text-sm font-semibold text-primary shadow-panel"
             >
               <Search className="size-4" />
