@@ -101,3 +101,13 @@ export const syncOrderPayment = createServerFn({ method: "POST" })
     const { syncPayment } = await import("@/lib/orders.server");
     return syncPayment(data.reference, data.token);
   });
+
+/** Orders belonging to the signed-in customer (matched on their account email). */
+export const listMyOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
+    if (!email) return { email: "", orders: [] };
+    const { listOrdersForEmail } = await import("@/lib/orders.server");
+    return { email, orders: await listOrdersForEmail(email) };
+  });

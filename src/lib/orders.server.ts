@@ -363,3 +363,16 @@ export async function markPaymentState(paymentOrderId: string, state: string) {
   await supabase.from("orders").update({ payment_state: state }).eq("payment_order_id", paymentOrderId);
   return { ok: true as const };
 }
+
+/** Orders placed with a given email address — powers the signed-in client portal. */
+export async function listOrdersForEmail(email: string, limit = 100) {
+  const supabase = ordersClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`${ORDER_COLUMNS}, access_token, paid_at, order_items(${ITEM_COLUMNS})`)
+    .ilike("email", email.trim())
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
