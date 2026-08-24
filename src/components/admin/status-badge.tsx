@@ -21,7 +21,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function StatusBadge({ status }: { status: string }) {
   const label = STATUS_LABEL[status] ?? status.replace(/_/g, " ");
-  const styles = STATUS_STYLES[status] ?? STATUS_STYLES.cancelled;
+  const styles = STATUS_STYLES[status] ?? STATUS_STYLES["cancelled"];
   return (
     <span
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${styles}`}
