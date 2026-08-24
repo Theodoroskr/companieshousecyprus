@@ -42,6 +42,7 @@ const ORDER_STATUS: Record<string, { label: string; tone: string }> = {
 const ITEM_STATUS: Record<string, { label: string; icon: typeof Clock }> = {
   pending: { label: "Queued", icon: Clock },
   processing: { label: "In production", icon: Loader2 },
+  awaiting_review: { label: "In final review", icon: ShieldCheck },
   delivered: { label: "Ready to download", icon: CheckCircle2 },
   failed: { label: "Needs attention", icon: FileText },
 };
@@ -256,6 +257,13 @@ function MyOrdersPage() {
                             ) : null}
                           </span>
                           <span className="flex shrink-0 flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">
+                            {item.a4a_kind && item.fulfilment_status === "delivered" ? (
+                              <Button asChild size="sm">
+                                <Link to="/account/reports/$itemId" params={{ itemId: item.id }}>
+                                  <FileText className="mr-1.5 size-4" /> View report
+                                </Link>
+                              </Button>
+                            ) : null}
                             {(item.order_documents?.length ?? 0) > 0
                               ? [...(item.order_documents ?? [])]
                                   .sort((a, b) => a.created_at.localeCompare(b.created_at))

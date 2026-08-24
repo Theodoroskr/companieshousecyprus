@@ -22,6 +22,7 @@ export type OrderListItem = {
     company_name: string | null;
     company_number: string | null;
     fulfilment_status: string;
+    a4a_kind?: string | null;
     delivered_at?: string | null;
     due_date?: string | null;
     document_name?: string | null;
