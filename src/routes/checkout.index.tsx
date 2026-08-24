@@ -640,17 +640,22 @@ function CheckoutPage() {
           <aside className='h-fit rounded-xl border bg-card p-6 shadow-panel'>
             <h2 className='font-display text-lg font-semibold'>Order summary</h2>
             <ul className='mt-5 space-y-3 text-sm'>
-              {items.map((item) => {
+              {items.map((item, index) => {
                 const product = PRODUCTS_BY_SLUG[item.productSlug];
                 if (!product) return null;
                 const breakdown = priceBreakdown(product, item.quantity);
+                const effectiveName = item.companyName ?? companyInputs[index]?.companyName;
+                const effectiveNumber = item.companyNumber ?? companyInputs[index]?.companyNumber;
                 return (
-                  <li key={`${item.productSlug}-${item.companySlug ?? 'none'}`} className='flex justify-between gap-4'>
+                  <li key={`${item.productSlug}-${index}`} className='flex justify-between gap-4'>
                     <span>
                       {product.name}
                       {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                       <span className='block text-xs text-muted-foreground'>
-                        {item.companyName ?? 'Company confirmed at checkout'}
+                        {effectiveName ?? 'Company confirmed at checkout'}
+                        {effectiveNumber && (
+                          <span className='ml-1 text-muted-foreground/70'>· {effectiveNumber}</span>
+                        )}
                       </span>
                       <span className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground'>
                         <Receipt className='size-3' />
