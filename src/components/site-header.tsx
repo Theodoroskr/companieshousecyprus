@@ -144,6 +144,9 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
+          <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+            My orders
+          </Link>
           <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
             Sign in
           </Link>
@@ -212,6 +215,9 @@ export function SiteHeader() {
             </Link>
             <Link to="/contact" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
               Contact
+            </Link>
+            <Link to="/account/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              My orders
             </Link>
             <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
               Sign in
