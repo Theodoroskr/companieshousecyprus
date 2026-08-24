@@ -62,7 +62,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
       return sum + (product && product.category === "certificate" ? CERTIFICATE_SERVICE_FEE * item.quantity : 0);
     }, 0);
-    const vat = Math.round((subtotal + serviceFee) * VAT_RATE * 100) / 100;
+    const vatBase = items.reduce((sum, item) => {
+      const product = PRODUCTS_BY_SLUG[item.productSlug];
+      return sum + (product && product.category !== "certificate" ? product.price * item.quantity : 0);
+    }, 0);
+    const vat = Math.round(vatBase * VAT_RATE * 100) / 100;
 
     return {
       items,

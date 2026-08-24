@@ -13,7 +13,8 @@ export type PriceBreakdown = {
 export function priceBreakdown(product: { price: number; category: string }, quantity = 1): PriceBreakdown {
   const documentPrice = product.price * quantity;
   const serviceFee = product.category === "certificate" ? CERTIFICATE_SERVICE_FEE * quantity : 0;
-  const vat = Math.round((documentPrice + serviceFee) * VAT_RATE * 100) / 100;
+  const vatBase = product.category === "certificate" ? 0 : documentPrice;
+  const vat = Math.round(vatBase * VAT_RATE * 100) / 100;
   return {
     documentPrice,
     serviceFee,
