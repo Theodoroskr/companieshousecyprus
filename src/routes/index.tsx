@@ -61,6 +61,38 @@ export const Route = createFileRoute("/")({
           },
         }),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Companies House Cyprus",
+          alternateName: "CHC",
+          url: "https://companieshousecyprus.com/",
+          logo: "https://companieshousecyprus.com/favicon.png",
+          description:
+            "Search and browse Cyprus companies from the official Registrar of Companies. Company profiles, officials & owners, addresses, statuses, and certified documents delivered digitally.",
+          sameAs: [
+            "https://companieshousecyprus.com/contact",
+            "https://companieshousecyprus.com/pricing",
+          ],
+          contactPoint: {
+            "@type": "ContactPoint",
+            telephone: "+35722398241",
+            contactType: "customer service",
+            email: "info@companieshousecyprus.com",
+            availableLanguage: ["English", "Greek"],
+            areaServed: "CY",
+          },
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "1 Agiou Andreou Street",
+            addressLocality: "Limassol",
+            postalCode: "3036",
+            addressCountry: "CY",
+          },
+        }),
+      },
     ],
   }),
   component: HomePage,
