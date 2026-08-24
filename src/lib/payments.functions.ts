@@ -60,7 +60,7 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
       }
 
       const stripe = createStripeClient(data.environment);
-      const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+      const lineItems: any[] = [];
 
       for (const item of items as OrderItemRow[]) {
         const productPriceId = await resolvePriceId(stripe, lookupKeyForProductSlug(item.product_slug));
