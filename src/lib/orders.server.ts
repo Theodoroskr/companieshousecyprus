@@ -284,7 +284,14 @@ export async function fulfilOrderItem(itemId: string) {
   const kind = (item.a4a_kind ?? A4A_PRODUCT_KIND[item.product_slug]) as "structure" | "credit" | undefined;
   if (!kind) throw new Error("This product is not fulfilled through API4ALL");
 
-  const { fetchReport, searchByRegistration } = await import("@/lib/api4all.server");
+  const { fetchReport, searchByRegistration, createOrder } = await import("@/lib/api4all.server");
+
+  const { data: parentOrder } = await supabase
+    .from("orders")
+    .select("reference")
+    .eq("id", item.order_id)
+    .maybeSingle();
+
 
   const fail = async (message: string) => {
     await supabase
