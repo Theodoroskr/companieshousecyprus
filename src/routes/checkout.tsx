@@ -84,6 +84,24 @@ function validatePassword(password: string, confirmPassword: string) {
   return null;
 }
 
+const PASSWORD_RULES = [
+  { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { label: 'A letter', test: (p: string) => /[A-Za-z]/.test(p) },
+  { label: 'A number', test: (p: string) => /[0-9]/.test(p) },
+  { label: 'A symbol or 12+ characters (recommended)', test: (p: string) => /[^A-Za-z0-9]/.test(p) || p.length >= 12 },
+];
+
+function passwordStrength(password: string) {
+  const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
+  if (!password) return { score: 0, label: '', tone: 'bg-muted' };
+  if (passed <= 1) return { score: 1, label: 'Weak', tone: 'bg-destructive' };
+  if (passed === 2) return { score: 2, label: 'Fair', tone: 'bg-amber-500' };
+  if (passed === 3) return { score: 3, label: 'Good', tone: 'bg-copper' };
+  return { score: 4, label: 'Strong', tone: 'bg-emerald-500' };
+}
+
+
+
 
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
