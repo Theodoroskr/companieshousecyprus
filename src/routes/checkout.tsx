@@ -42,11 +42,16 @@ const FIELDS = [
 function CheckoutPage() {
   const { items, subtotal, serviceFee, vat, total, clear } = useCart();
   const navigate = useNavigate();
+  const account = useAccount();
   const placeOrder = useServerFn(submitOrder);
+  const placeOrderAsUser = useServerFn(submitOrderAsUser);
   const startStripe = useServerFn(startStripeOrderPayment);
   const [placed, setPlaced] = useState<{ reference: string; token: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   if (placed && !isOpen) {
