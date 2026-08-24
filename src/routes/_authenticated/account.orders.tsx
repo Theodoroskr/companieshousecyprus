@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, CheckCircle2, Clock, CreditCard, FileText, Loader2, Mail, PackageSearch, Phone, Receipt, ShieldCheck, User } from "lucide-react";
-import { listMyOrders, type OrderListItem } from "@/lib/orders.functions";
+import { useState } from "react";
+import { Building2, CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, Mail, PackageSearch, Phone, Receipt, ShieldCheck, User } from "lucide-react";
+import { listMyOrders, myDocumentUrl, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,19 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
 
 function MyOrdersPage() {
   const load = useServerFn(listMyOrders);
+  const getDocumentUrl = useServerFn(myDocumentUrl);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const download = async (itemId: string) => {
+    setDownloadingId(itemId);
+    try {
+      const { url } = await getDocumentUrl({ data: { itemId } });
+      window.open(url, "_blank", "noopener");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const query = useQuery({
     queryKey: ["my-orders"],
     queryFn: () => load(),
