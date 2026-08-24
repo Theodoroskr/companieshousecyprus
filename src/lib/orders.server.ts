@@ -159,9 +159,9 @@ export async function placeOrder(input: PlaceOrderInput) {
 }
 
 const ORDER_COLUMNS =
-  "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, created_at, updated_at";
+  "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, created_at, updated_at, due_date, delivered_at";
 const ITEM_COLUMNS =
-  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at";
+  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size";
 
 export async function readOrder(reference: string, token: string) {
   const supabase = ordersClient();
@@ -426,4 +426,169 @@ export async function listOrdersForUser(userId: string, email: string, limit = 1
     .limit(limit);
   if (error) throw new Error(error.message);
   return data ?? [];
+}
+
+/* ------------------------------------------------------------------ */
+/* Monitoring dates + uploaded documents                               */
+/* ------------------------------------------------------------------ */
+
+const DOCUMENTS_BUCKET = "order-documents";
+
+const nullableDate = (value?: string | null) => {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? trimmed : null;
+};
+
+/** Admin: set the promised due date (and optionally the delivery date) on an order. */
+export async function setOrderDates(input: {
+  reference: string;
+  dueDate?: string | null;
+  deliveredAt?: string | null;
+}) {
+  const supabase = ordersClient();
+  const delivered = nullableDate(input.deliveredAt);
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      due_date: nullableDate(input.dueDate),
+      delivered_at: delivered ? new Date(`${delivered}T12:00:00Z`).toISOString() : null,
+    })
+    .eq("reference", input.reference.trim().toUpperCase());
+
+  if (error) throw new Error(error.message);
+  return { ok: true as const };
+}
+
+/** Admin: set a per-line due date. */
+export async function setOrderItemDueDate(itemId: string, dueDate?: string | null) {
+  const supabase = ordersClient();
+  const { error } = await supabase
+    .from("order_items")
+    .update({ due_date: nullableDate(dueDate) })
+    .eq("id", itemId);
+  if (error) throw new Error(error.message);
+  return { ok: true as const };
+}
+
+/** Admin: upload a completed document for one order line and notify the client. */
+export async function uploadOrderItemDocument(input: {
+  itemId: string;
+  fileName: string;
+  contentType: string;
+  base64: string;
+  notify: boolean;
+}) {
+  const supabase = ordersClient();
+  const { data: item, error } = await supabase
+    .from("order_items")
+    .select("id, order_id, product_name, company_name, company_number")
+    .eq("id", input.itemId)
+    .single();
+  if (error || !item) throw new Error(error?.message ?? "Order item not found");
+
+  const binary = Uint8Array.from(atob(input.base64), (char) => char.charCodeAt(0));
+  if (binary.byteLength === 0) throw new Error("The uploaded file is empty");
+  if (binary.byteLength > 25 * 1024 * 1024) throw new Error("Files must be 25 MB or smaller");
+
+  const safeName = input.fileName.replace(/[^A-Za-z0-9._-]+/g, "-").slice(-120) || "document.pdf";
+  const path = `${item.order_id}/${item.id}/${Date.now()}-${safeName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(DOCUMENTS_BUCKET)
+    .upload(path, binary, { contentType: input.contentType || "application/octet-stream", upsert: true });
+  if (uploadError) throw new Error(uploadError.message);
+
+  const deliveredAt = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("order_items")
+    .update({
+      document_path: path,
+      document_name: safeName,
+      document_size: binary.byteLength,
+      fulfilment_status: "delivered",
+      fulfilment_message: null,
+      delivered_at: deliveredAt,
+    })
+    .eq("id", item.id);
+  if (updateError) throw new Error(updateError.message);
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, reference, full_name, email, status")
+    .eq("id", item.order_id)
+    .maybeSingle();
+
+  // Mark the whole order delivered once every line is done.
+  const { data: siblings } = await supabase
+    .from("order_items")
+    .select("fulfilment_status")
+    .eq("order_id", item.order_id);
+  const allDelivered = (siblings ?? []).every((row) => row.fulfilment_status === "delivered");
+  if (order && allDelivered) {
+    await supabase
+      .from("orders")
+      .update({ status: "delivered", delivered_at: deliveredAt })
+      .eq("id", order.id);
+  }
+
+  if (order && input.notify) {
+    const { sendDocumentReadyEmail } = await import("@/lib/order-emails.server");
+    await sendDocumentReadyEmail(
+      { reference: order.reference, full_name: order.full_name, email: order.email },
+      {
+        product_name: item.product_name,
+        company_name: item.company_name,
+        company_number: item.company_number,
+        document_name: safeName,
+      },
+    );
+  }
+
+  return { ok: true as const, documentName: safeName, notified: input.notify };
+}
+
+/** Time-limited download link for an uploaded document. */
+export async function signOrderDocument(path: string, expiresIn = 300) {
+  const supabase = ordersClient();
+  const { data, error } = await supabase.storage.from(DOCUMENTS_BUCKET).createSignedUrl(path, expiresIn);
+  if (error || !data?.signedUrl) throw new Error(error?.message ?? "Could not create a download link");
+  return data.signedUrl;
+}
+
+/** Resolve a download link for one item, checking the caller owns the order. */
+export async function documentUrlForUser(itemId: string, userId: string, email: string) {
+  const supabase = ordersClient();
+  const { data: item } = await supabase
+    .from("order_items")
+    .select("id, document_path, orders!inner(user_id, email)")
+    .eq("id", itemId)
+    .maybeSingle();
+  const owner = (item as { orders?: { user_id: string | null; email: string | null } } | null)?.orders;
+  if (!item?.document_path || !owner) throw new Error("Document not found");
+  const mine =
+    (owner.user_id && owner.user_id === userId) ||
+    (owner.email ?? "").toLowerCase() === email.trim().toLowerCase();
+  if (!mine) throw new Error("Document not found");
+  return signOrderDocument(item.document_path);
+}
+
+/** Resolve a download link for one item using the order reference + access token. */
+export async function documentUrlForToken(itemId: string, reference: string, token: string) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("reference", reference.trim().toUpperCase())
+    .eq("access_token", token.trim())
+    .maybeSingle();
+  if (!order) throw new Error("Order not found");
+  const { data: item } = await supabase
+    .from("order_items")
+    .select("document_path")
+    .eq("id", itemId)
+    .eq("order_id", order.id)
+    .maybeSingle();
+  if (!item?.document_path) throw new Error("Document not found");
+  return signOrderDocument(item.document_path);
 }

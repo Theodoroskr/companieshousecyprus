@@ -187,7 +187,11 @@ export type Database = {
           company_slug: string | null
           created_at: string
           delivered_at: string | null
+          document_name: string | null
+          document_path: string | null
           document_price_cents: number
+          document_size: number | null
+          due_date: string | null
           fulfilment_message: string | null
           fulfilment_status: string
           id: string
@@ -208,7 +212,11 @@ export type Database = {
           company_slug?: string | null
           created_at?: string
           delivered_at?: string | null
+          document_name?: string | null
+          document_path?: string | null
           document_price_cents?: number
+          document_size?: number | null
+          due_date?: string | null
           fulfilment_message?: string | null
           fulfilment_status?: string
           id?: string
@@ -229,7 +237,11 @@ export type Database = {
           company_slug?: string | null
           created_at?: string
           delivered_at?: string | null
+          document_name?: string | null
+          document_path?: string | null
           document_price_cents?: number
+          document_size?: number | null
+          due_date?: string | null
           fulfilment_message?: string | null
           fulfilment_status?: string
           id?: string
@@ -257,6 +269,8 @@ export type Database = {
           access_token: string
           checkout_url: string | null
           created_at: string
+          delivered_at: string | null
+          due_date: string | null
           email: string
           firm: string | null
           full_name: string
@@ -281,6 +295,8 @@ export type Database = {
           access_token: string
           checkout_url?: string | null
           created_at?: string
+          delivered_at?: string | null
+          due_date?: string | null
           email: string
           firm?: string | null
           full_name: string
@@ -305,6 +321,8 @@ export type Database = {
           access_token?: string
           checkout_url?: string | null
           created_at?: string
+          delivered_at?: string | null
+          due_date?: string | null
           email?: string
           firm?: string | null
           full_name?: string

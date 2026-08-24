@@ -14,12 +14,18 @@ export type OrderListItem = {
   vat_number?: string | null;
   phone?: string | null;
   paid_at?: string | null;
+  due_date?: string | null;
+  delivered_at?: string | null;
   order_items: {
     id: string;
     product_name: string;
     company_name: string | null;
     company_number: string | null;
     fulfilment_status: string;
+    delivered_at?: string | null;
+    due_date?: string | null;
+    document_name?: string | null;
+    document_path?: string | null;
     download_url?: string | null;
   }[];
 };
@@ -148,4 +154,94 @@ export const submitOrderAsUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { placeOrder } = await import("@/lib/orders.server");
     return placeOrder({ ...data, userId: context.userId });
+  });
+
+/** Admin: order-level due date / delivery date for monitoring. */
+export const adminSetOrderDates = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; dueDate?: string | null; deliveredAt?: string | null }) => {
+    if (!data.reference?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { setOrderDates } = await import("@/lib/orders.server");
+    return setOrderDates(data);
+  });
+
+/** Admin: per-line due date. */
+export const adminSetItemDueDate = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string; dueDate?: string | null }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { setOrderItemDueDate } = await import("@/lib/orders.server");
+    return setOrderItemDueDate(data.itemId.trim(), data.dueDate ?? null);
+  });
+
+/** Admin: upload a completed certificate/report and optionally email the client. */
+export const adminUploadItemDocument = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string; fileName: string; contentType: string; base64: string; notify?: boolean }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    if (!data.base64) throw new Error("Missing file contents");
+    if (data.base64.length > 36_000_000) throw new Error("Files must be 25 MB or smaller");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { uploadOrderItemDocument } = await import("@/lib/orders.server");
+    return uploadOrderItemDocument({
+      itemId: data.itemId.trim(),
+      fileName: data.fileName || "document.pdf",
+      contentType: data.contentType || "application/octet-stream",
+      base64: data.base64,
+      notify: data.notify !== false,
+    });
+  });
+
+/** Admin: short-lived download link for any uploaded document. */
+export const adminDocumentUrl = createServerFn({ method: "POST" })
+  .inputValidator((data: { path: string }) => {
+    if (!data.path?.trim()) throw new Error("Missing document");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { signOrderDocument } = await import("@/lib/orders.server");
+    return { url: await signOrderDocument(data.path.trim()) };
+  });
+
+/** Client portal: short-lived download link for one of my documents. */
+export const myDocumentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { itemId: string }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
+    const { documentUrlForUser } = await import("@/lib/orders.server");
+    return { url: await documentUrlForUser(data.itemId.trim(), context.userId, email) };
+  });
+
+/** Guest order page: download link via order reference + access token. */
+export const orderDocumentUrl = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string; reference: string; token: string }) => {
+    if (!data.itemId?.trim() || !data.reference?.trim() || !data.token?.trim()) {
+      throw new Error("Missing order details");
+    }
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { documentUrlForToken } = await import("@/lib/orders.server");
+    return { url: await documentUrlForToken(data.itemId.trim(), data.reference, data.token) };
   });

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
-import { fetchOrder, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
+import { fetchOrder, orderDocumentUrl, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ function OrderPage() {
   const load = useServerFn(fetchOrder);
   const startStripe = useServerFn(startStripeOrderPayment);
   const syncPayment = useServerFn(syncOrderPayment);
+  const getDocumentUrl = useServerFn(orderDocumentUrl);
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   useEffect(() => setTokenInput(token), [token]);
@@ -248,6 +249,25 @@ function OrderPage() {
                   </span>
                 </div>
               )}
+              {item.document_name && (
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      const { url } = await getDocumentUrl({
+                        data: { itemId: item.id, reference: order.reference, token: token ?? "" },
+                      });
+                      window.open(url, "_blank", "noopener");
+                    }}
+                  >
+                    <Download className="size-4" /> Download {item.document_name}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Delivered {item.delivered_at ? new Date(item.delivered_at).toLocaleString("en-GB") : ""}
+                  </span>
+                </div>
+              )}
+
               {item.fulfilment_status === "failed" && (
                 <p className="mt-3 rounded-md border border-copper/40 bg-copper/5 p-3 text-xs text-muted-foreground">
                   We hit an issue retrieving this document automatically. Our team has been notified and will follow up

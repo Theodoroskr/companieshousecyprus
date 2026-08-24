@@ -1,6 +1,6 @@
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
-const SITE_URL = "https://smart-analyse-tool.lovable.app";
+const SITE_URL = "https://companieshousecyprus.lovable.app";
 
 const euro = (cents: number | null | undefined) =>
   typeof cents === "number" ? `€${(cents / 100).toFixed(2)}` : undefined;
@@ -81,5 +81,30 @@ export async function sendPaymentReceiptEmail(order: OrderEmailOrder) {
     });
   } catch (error) {
     console.error("Payment receipt email failed", order.reference, error);
+  }
+}
+
+/** Sent when an admin uploads a completed document for one order line. */
+export async function sendDocumentReadyEmail(
+  order: OrderEmailOrder,
+  item: OrderEmailItem & { document_name?: string | null },
+) {
+  if (!order.email) return;
+  try {
+    await sendTemplateEmail("document-ready", order.email, {
+      idempotencyKey: `document-ready-${order.reference}-${item.document_name ?? item.product_name}`,
+      templateData: {
+        fullName: order.full_name ?? undefined,
+        reference: order.reference,
+        productName: item.product_name,
+        companyName: item.company_name ?? null,
+        companyNumber: item.company_number ?? null,
+        documentName: item.document_name ?? null,
+        deliveredAt: new Date().toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }),
+        portalUrl: `${SITE_URL}/account/orders`,
+      },
+    });
+  } catch (error) {
+    console.error("Document ready email failed", order.reference, error);
   }
 }
