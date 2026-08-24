@@ -69,7 +69,15 @@ function MyOrdersPage() {
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-copper">Client portal</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">My orders</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">My orders</h1>
+            {account.ready && account.signedIn && (
+              <span className="rounded-full border border-copper/40 bg-copper/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-copper">
+                {account.accountType === "admin" ? "Admin account" : "Client account"}
+              </span>
+            )}
+          </div>
+
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Every certificate and report ordered with{" "}
             <span className="font-medium text-foreground">{query.data?.email || "your account email"}</span>, with live

@@ -5,6 +5,8 @@ export type AccountState = {
   email: string | null;
   signedIn: boolean;
   isAdmin: boolean;
+  roles: string[];
+  accountType: 'admin' | 'client' | 'guest';
 };
 
 /**
@@ -14,6 +16,6 @@ export type AccountState = {
  * Backed by a shared AuthContext so sign-out updates every consumer immediately.
  */
 export function useAccount(): AccountState {
-  const { ready, email, signedIn, isAdmin } = useAuthContext();
-  return { ready, email, signedIn, isAdmin };
+  const { ready, email, signedIn, isAdmin, roles, accountType } = useAuthContext();
+  return { ready, email, signedIn, isAdmin, roles, accountType };
 }
