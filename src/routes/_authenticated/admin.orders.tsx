@@ -31,10 +31,15 @@ const VIEW_LABEL: Record<OrderView, string> = {
 };
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    view: (VIEWS.includes(search.view as OrderView) ? (search.view as OrderView) : "all") as OrderView,
-    ref: typeof search.ref === "string" && search.ref ? search.ref : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { view?: OrderView; ref?: string } => {
+    const rawView = search["view"];
+    const rawRef = search["ref"];
+    return {
+      view: VIEWS.includes(rawView as OrderView) ? (rawView as OrderView) : undefined,
+      ref: typeof rawRef === "string" && rawRef ? rawRef : undefined,
+    };
+  },
+
   head: () => ({
     meta: [
       { title: "Orders — Admin" },
