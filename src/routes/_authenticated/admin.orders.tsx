@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,9 +59,14 @@ function AdminOrdersPage() {
             Confirm payment and pull Structure / Credit reports from API4ALL.
           </p>
         </div>
-        <Button variant="outline" onClick={() => void invalidate()}>
-          <RefreshCw className="size-4" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link to="/admin/users">Users</Link>
+          </Button>
+          <Button variant="outline" onClick={() => void invalidate()}>
+            <RefreshCw className="size-4" /> Refresh
+          </Button>
+        </div>
       </div>
 
       {message && <p className="mt-4 rounded-md border bg-card p-3 text-sm">{message}</p>}
