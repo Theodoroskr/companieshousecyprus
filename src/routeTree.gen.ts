@@ -31,6 +31,7 @@ import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.ses
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
+import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
@@ -160,6 +161,11 @@ const ReportTypeRoute = ReportTypeRouteImport.update({
   path: '/report/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SolutionsKybForBanksRoute = SolutionsKybForBanksRouteImport.update({
+  id: '/solutions/kyb-for-banks',
+  path: '/solutions/kyb-for-banks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAccountOrdersRoute =
   AuthenticatedAccountOrdersRouteImport.update({
     id: '/account/orders',
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
@@ -328,6 +335,7 @@ export interface FileRoutesByTo {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout': typeof CheckoutIndexRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
@@ -372,6 +380,7 @@ export interface FileRoutesById {
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
+  '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/solutions/kyb-for-banks'
     | '/checkout/'
     | '/account/orders'
     | '/admin/api4all'
@@ -457,6 +467,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/solutions/kyb-for-banks'
     | '/checkout'
     | '/account/orders'
     | '/admin/api4all'
@@ -500,6 +511,7 @@ export interface FileRouteTypes {
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
+    | '/solutions/kyb-for-banks'
     | '/checkout/'
     | '/_authenticated/account/orders'
     | '/_authenticated/admin/api4all'
@@ -543,6 +555,7 @@ export interface RootRouteChildren {
   CompanySlugRoute: typeof CompanySlugRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
+  SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
   ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       path: '/report/$type'
       fullPath: '/report/$type'
       preLoaderRoute: typeof ReportTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solutions/kyb-for-banks': {
+      id: '/solutions/kyb-for-banks'
+      path: '/solutions/kyb-for-banks'
+      fullPath: '/solutions/kyb-for-banks'
+      preLoaderRoute: typeof SolutionsKybForBanksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account/orders': {
@@ -909,6 +929,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompanySlugRoute: CompanySlugRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
+  SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
   ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,
