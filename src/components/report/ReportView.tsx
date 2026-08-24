@@ -9,7 +9,7 @@ function Section({
   children,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
