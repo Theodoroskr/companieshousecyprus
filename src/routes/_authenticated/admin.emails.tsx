@@ -67,7 +67,16 @@ function EventBadge({ type }: { type: string }) {
 function stamp(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("en-GB", { timeZone: "Asia/Nicosia", dateStyle: "medium", timeStyle: "short" });
+  return date.toLocaleString("en-GB", {
+    timeZone: "Asia/Nicosia",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 function AdminEmailsPage() {
