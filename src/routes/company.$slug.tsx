@@ -9,6 +9,9 @@ import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { normalizeCompanySlug } from "@/lib/slug";
+import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
+
 
 function RelatedCompanies({ slug }: { slug: string }) {
   const { data } = useQuery({
@@ -116,6 +119,9 @@ export const Route = createFileRoute("/company/$slug")({
       name: data.company.name,
       officialNo: displayOfficialNo(data.company),
       status: data.company.status_en,
+      statusGroup: data.company.status_group ?? null,
+      typeEn: data.company.type_en ?? null,
+      registrationDate: formatDate(data.company.registration_date),
       district_en: data.company.district_en ?? null,
     };
   },
@@ -125,9 +131,21 @@ export const Route = createFileRoute("/company/$slug")({
         meta: [{ title: "Company unavailable | Companies House Cyprus" }, { name: "robots", content: "noindex" }],
       };
     }
-    const label = loaderData.officialNo ?? params.slug.toUpperCase();
-    const title = `${loaderData.name} (${label}) — Cyprus company profile`;
-    const description = `${loaderData.name}, ${label}: ${loaderData.status ?? "registered"} Cyprus company. Registered office, directors, secretary and Registrar certificates.`;
+    const canonicalSlug = normalizeCompanySlug(params.slug);
+    const title = companyTitle({
+      name: loaderData.name,
+      officialNo: loaderData.officialNo ?? canonicalSlug,
+    });
+    const description = companyDescription({
+      name: loaderData.name,
+      officialNo: loaderData.officialNo ?? canonicalSlug,
+      status: loaderData.status,
+      statusGroup: loaderData.statusGroup,
+      typeEn: loaderData.typeEn,
+      districtEn: loaderData.district_en,
+      registrationDate: loaderData.registrationDate,
+    });
+
 
     const breadcrumbItems: Array<{ "@type": "ListItem"; position: number; name: string; item: string }> = [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://companieshousecyprus.com/" },
@@ -145,7 +163,7 @@ export const Route = createFileRoute("/company/$slug")({
       "@type": "ListItem",
       position: breadcrumbItems.length + 1,
       name: loaderData.name,
-      item: `https://companieshousecyprus.com/company/${params.slug}`,
+      item: `https://companieshousecyprus.com/company/${canonicalSlug}`,
     });
 
     return {
@@ -156,9 +174,12 @@ export const Route = createFileRoute("/company/$slug")({
         { property: "og:description", content: description },
         { property: "og:type", content: "profile" },
         { name: "twitter:card", content: "summary" },
-        { property: "og:url", content: `/company/${params.slug}` },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { property: "og:url", content: `https://companieshousecyprus.com/company/${canonicalSlug}` },
       ],
-      links: [{ rel: "canonical", href: `/company/${params.slug}` }],
+      links: [{ rel: "canonical", href: `https://companieshousecyprus.com/company/${canonicalSlug}` }],
+
       scripts: [
         {
           type: "application/ld+json",
