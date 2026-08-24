@@ -146,6 +146,63 @@ export type Database = {
         }
         Relationships: []
       }
+      indexnow_queue: {
+        Row: {
+          attempts: number
+          last_error: string | null
+          queued_at: string
+          slug: string
+          submitted_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          last_error?: string | null
+          queued_at?: string
+          slug: string
+          submitted_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          last_error?: string | null
+          queued_at?: string
+          slug?: string
+          submitted_at?: string | null
+        }
+        Relationships: []
+      }
+      indexnow_state: {
+        Row: {
+          consecutive_rate_limits: number
+          id: boolean
+          last_error: string | null
+          last_run_at: string | null
+          last_submitted_count: number
+          lease_until: string | null
+          paused_at: string | null
+          paused_reason: string | null
+        }
+        Insert: {
+          consecutive_rate_limits?: number
+          id?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          last_submitted_count?: number
+          lease_until?: string | null
+          paused_at?: string | null
+          paused_reason?: string | null
+        }
+        Update: {
+          consecutive_rate_limits?: number
+          id?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          last_submitted_count?: number
+          lease_until?: string | null
+          paused_at?: string | null
+          paused_reason?: string | null
+        }
+        Relationships: []
+      }
       job_state: {
         Row: {
           key: string
@@ -490,6 +547,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      indexnow_acquire_lease: { Args: { _seconds?: number }; Returns: boolean }
+      indexnow_release_lease: { Args: never; Returns: undefined }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
     }
