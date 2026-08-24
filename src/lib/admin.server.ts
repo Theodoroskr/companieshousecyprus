@@ -165,8 +165,15 @@ export async function closeRun(runId: string, status: "completed" | "failed", me
     .update({ status, message: message?.slice(0, 1000) ?? null, finished_at: new Date().toISOString() })
     .eq("id", runId);
   if (error) throw new Error(error.message);
+  if (status === "completed") {
+    // Keep the sitemap index and its per-sitemap freshness timestamps aligned
+    // with the data that was just imported.
+    const { error: refreshError } = await supabase.rpc("refresh_sitemap_chunks");
+    if (refreshError) console.error("sitemap chunk refresh failed:", refreshError.message);
+  }
   return { ok: true as const };
 }
+
 
 export async function readRuns() {
   const supabase = adminClient();
