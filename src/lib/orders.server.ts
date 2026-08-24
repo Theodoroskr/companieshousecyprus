@@ -130,6 +130,31 @@ export async function placeOrder(input: PlaceOrderInput) {
   );
   if (itemsError) throw new Error(itemsError.message);
 
+  {
+    const { sendOrderConfirmationEmail } = await import("@/lib/order-emails.server");
+    await sendOrderConfirmationEmail(
+      {
+        reference: order.reference,
+        access_token: order.access_token,
+        full_name: input.fullName,
+        email: input.email,
+        firm: input.firm ?? null,
+        vat_number: input.vatNumber ?? null,
+        subtotal_cents: cents(subtotal),
+        service_fee_cents: cents(serviceFee),
+        vat_cents: cents(vat),
+        total_cents: cents(total),
+      },
+      rows.map((row) => ({
+        product_name: row.product.name,
+        company_name: row.companyName,
+        company_number: row.companyNumber,
+        quantity: row.quantity,
+        total_cents: cents(row.breakdown.total),
+      })),
+    );
+  }
+
   return { reference: order.reference, token: order.access_token };
 }
 
@@ -312,13 +337,23 @@ const PAID_STATES = new Set(["completed", "authorised", "authorized"]);
 /** Mark an order paid and auto-fulfil every API4ALL item on it. */
 export async function markOrderPaid(orderId: string) {
   const supabase = ordersClient();
-  const { data: order } = await supabase.from("orders").select("id, status").eq("id", orderId).maybeSingle();
+  const { data: order } = await supabase
+    .from("orders")
+    .select(
+      "id, status, reference, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, paid_at",
+    )
+    .eq("id", orderId)
+    .maybeSingle();
   if (!order) return { ok: false as const };
   if (order.status !== "paid" && order.status !== "delivered") {
+    const paidAt = new Date().toISOString();
     await supabase
       .from("orders")
-      .update({ status: "paid", payment_state: "completed", paid_at: new Date().toISOString() })
+      .update({ status: "paid", payment_state: "completed", paid_at: paidAt })
       .eq("id", orderId);
+
+    const { sendPaymentReceiptEmail } = await import("@/lib/order-emails.server");
+    await sendPaymentReceiptEmail({ ...order, paid_at: paidAt });
   }
 
   const { data: items } = await supabase
