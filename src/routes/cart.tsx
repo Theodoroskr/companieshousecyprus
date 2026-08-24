@@ -161,10 +161,10 @@ function CartPage() {
               </div>
             </dl>
             <Button asChild size="lg" className="mt-6 w-full">
-              <Link to="/checkout">Continue to checkout</Link>
+              <Link to="/checkout">Continue to payment</Link>
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">
-              Card payments are not live yet — our team confirms your order and invoices you before delivery.
+              Card payments are processed securely by Stripe on the next step.
             </p>
           </aside>
         </div>

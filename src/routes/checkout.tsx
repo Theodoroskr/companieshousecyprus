@@ -239,8 +239,17 @@ function CheckoutPage() {
                 clear();
                 setPlaced(result);
                 // Open Stripe embedded checkout immediately.
-                await startStripe({ data: { reference: result.reference, token: result.token } });
-                openCheckout(result);
+                try {
+                  await startStripe({ data: { reference: result.reference, token: result.token } });
+                  openCheckout(result);
+                } catch (paymentError) {
+                  setError({
+                    message:
+                      paymentError instanceof Error
+                        ? `Your order ${result.reference} was saved, but we could not open the payment form: ${paymentError.message}`
+                        : `Your order ${result.reference} was saved, but we could not open the payment form.`,
+                  });
+                }
               } catch (submitError) {
                 if (submitError instanceof Error && submitError.message === 'validation') return;
                 if (submitError instanceof Error && submitError.message === 'signup') return;
@@ -472,7 +481,7 @@ function CheckoutPage() {
             <Button type='submit' size='lg' className='mt-6 w-full' disabled={submitting}>
 
               {submitting ? <Loader2 className='size-4 animate-spin' /> : <Lock className='size-4' />}
-              {submitting ? 'Submitting…' : 'Submit order request'}
+              {submitting ? 'Opening secure payment…' : 'Continue to secure payment'}
             </Button>
 
             <p className='mt-3 text-xs text-muted-foreground'>
