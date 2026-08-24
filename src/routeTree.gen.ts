@@ -70,6 +70,7 @@ import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as AuthenticatedAdminSitemapRouteImport } from './routes/_authenticated/admin.sitemap'
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as ApiPublicA4aCallbackRouteImport } from './routes/api/public/a4a-callback'
@@ -77,6 +78,7 @@ import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-po
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
+import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -410,6 +412,12 @@ const AuthenticatedAdminOrdersRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSitemapRoute =
+  AuthenticatedAdminSitemapRouteImport.update({
+    id: '/sitemap',
+    path: '/sitemap',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminUsageRoute = AuthenticatedAdminUsageRouteImport.update({
   id: '/usage',
   path: '/usage',
@@ -443,6 +451,11 @@ const ApiPublicOrderRemindersRoute = ApiPublicOrderRemindersRouteImport.update({
 const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
   id: '/api/public/revolut-webhook',
   path: '/api/public/revolut-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSitemapHealthRoute = ApiPublicSitemapHealthRouteImport.update({
+  id: '/api/public/sitemap-health',
+  path: '/api/public/sitemap-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
@@ -546,6 +559,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
@@ -553,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -621,6 +636,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
@@ -628,6 +644,7 @@ export interface FileRoutesByTo {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -699,6 +716,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
@@ -706,6 +724,7 @@ export interface FileRoutesById {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -777,6 +796,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/import'
     | '/admin/orders'
+    | '/admin/sitemap'
     | '/admin/usage'
     | '/admin/users'
     | '/api/public/a4a-callback'
@@ -784,6 +804,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sitemap-health'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -852,6 +873,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/import'
     | '/admin/orders'
+    | '/admin/sitemap'
     | '/admin/usage'
     | '/admin/users'
     | '/api/public/a4a-callback'
@@ -859,6 +881,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sitemap-health'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -929,6 +952,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/emails'
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/admin/sitemap'
     | '/_authenticated/admin/usage'
     | '/_authenticated/admin/users'
     | '/api/public/a4a-callback'
@@ -936,6 +960,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sitemap-health'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1006,6 +1031,7 @@ export interface RootRouteChildren {
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
+  ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -1442,6 +1468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/sitemap': {
+      id: '/_authenticated/admin/sitemap'
+      path: '/sitemap'
+      fullPath: '/admin/sitemap'
+      preLoaderRoute: typeof AuthenticatedAdminSitemapRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/usage': {
       id: '/_authenticated/admin/usage'
       path: '/usage'
@@ -1489,6 +1522,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/revolut-webhook'
       fullPath: '/api/public/revolut-webhook'
       preLoaderRoute: typeof ApiPublicRevolutWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/sitemap-health': {
+      id: '/api/public/sitemap-health'
+      path: '/api/public/sitemap-health'
+      fullPath: '/api/public/sitemap-health'
+      preLoaderRoute: typeof ApiPublicSitemapHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/companies/a-z/$letter': {
@@ -1548,6 +1588,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminSitemapRoute: typeof AuthenticatedAdminSitemapRoute
   AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -1559,6 +1600,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminSitemapRoute: AuthenticatedAdminSitemapRoute,
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
@@ -1645,6 +1687,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
+  ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,

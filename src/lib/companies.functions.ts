@@ -284,7 +284,7 @@ export const getSitemapIndex = createServerFn({ method: "GET" }).handler(async (
   const supabase = getServerClient();
   const { data, error } = await supabase
     .from("sitemap_chunks")
-    .select("chunk_index, url_count, lastmod")
+    .select("chunk_index, url_count, lastmod, refreshed_at")
     .order("chunk_index", { ascending: true });
   if (error) throw error;
 
@@ -292,6 +292,7 @@ export const getSitemapIndex = createServerFn({ method: "GET" }).handler(async (
     index: row.chunk_index,
     urlCount: row.url_count,
     lastmod: row.lastmod,
+    refreshedAt: row.refreshed_at as string | null,
   }));
 
   if (chunks.length > 0) return { chunks, source: "metadata" as const };
@@ -308,7 +309,9 @@ export const getSitemapIndex = createServerFn({ method: "GET" }).handler(async (
       index: i,
       urlCount: 0,
       lastmod: null as string | null,
+      refreshedAt: null as string | null,
     })),
     source: "fallback" as const,
   };
 });
+
