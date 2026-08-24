@@ -25,27 +25,32 @@ function RelatedCompanies({ slug }: { slug: string }) {
     <section className="rounded-xl border bg-card p-6 shadow-panel">
       <div className="flex items-center gap-2">
         <Network className="size-5 text-copper" />
-        <h2 className="font-display text-lg font-semibold">Related companies</h2>
+        <h2 className="font-display text-xl font-semibold">Related companies</h2>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-base text-muted-foreground">
         Entities connected to this company through a shared registered office address or shared officials.
+      </p>
+      <p className="mt-3 rounded-lg border border-copper/30 bg-copper/5 px-3 py-2 text-sm text-muted-foreground">
+        <strong className="font-semibold text-foreground">Note:</strong> these are possible matches identified using
+        name matching. Similar or identical names do not always indicate the same person or entity — please verify
+        before relying on a connection.
       </p>
 
       {byAddress.length > 0 && (
         <div className="mt-5">
-          <h3 className="text-sm font-semibold">At the same registered address</h3>
+          <h3 className="text-base font-semibold">At the same registered address</h3>
           <ul className="mt-2 divide-y">
             {byAddress.map((row) => (
-              <li key={row.slug} className="flex flex-col gap-0.5 py-2.5">
-                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
+              <li key={row.slug} className="flex flex-col gap-0.5 py-3">
+                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
                   {row.name}
                 </Link>
-                <span className="text-xs text-muted-foreground">{displayOfficialNo(row)}</span>
+                <span className="text-sm text-muted-foreground">{displayOfficialNo(row)}</span>
               </li>
             ))}
           </ul>
           {data && data.addressCount > byAddress.length && (
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground">
               {data.addressCount} entities in total share this address.
             </p>
           )}
@@ -54,22 +59,23 @@ function RelatedCompanies({ slug }: { slug: string }) {
 
       {byOfficial.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-sm font-semibold">Sharing an official or owner</h3>
+          <h3 className="text-base font-semibold">Sharing an official or owner</h3>
           <ul className="mt-2 divide-y">
             {byOfficial.map((row) => (
-              <li key={row.slug} className="flex flex-col gap-0.5 py-2.5">
-                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
+              <li key={row.slug} className="flex flex-col gap-0.5 py-3">
+                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
                   {row.name}
                 </Link>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs text-muted-foreground">{displayOfficialNo(row)}</span>
-                  <span className="text-xs text-muted-foreground">via {maskName(row.via)}</span>
+                  <span className="text-sm text-muted-foreground">{displayOfficialNo(row)}</span>
+                  <span className="text-sm text-muted-foreground">via {maskName(row.via)}</span>
                 </div>
               </li>
             ))}
           </ul>
         </div>
       )}
+
     </section>
   );
 }
