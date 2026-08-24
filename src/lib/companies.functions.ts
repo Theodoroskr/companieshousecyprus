@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizeCompanySlug } from "@/lib/slug";
+import { searchVariants } from "@/lib/format";
 
 const PAGE_SIZE = 50;
 const SITEMAP_CHUNK_SIZE = 50_000;
@@ -137,19 +138,43 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     return { byAddress, addressCount, byOfficial, addressFull: base?.address_full ?? null };
   });
 
-export const searchCompanies = createServerFn({ method: "GET" })
+const COMPANY_TYPE_CODES = ["C", "B", "P", "O", "N"] as const;
+const COMPANY_STATUS_GROUPS = [
+  "active",
+  "at_risk",
+  "struck_off",
+  "dissolved",
+  "liquidation",
+  "other",
+] as const;
 
-  .validator((data: { q: string; page: number }) => data)
+export const searchCompanies = createServerFn({ method: "GET" })
+  .validator((data: { q: string; page: number; types?: string[]; statuses?: string[] }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const q = data.q.trim().slice(0, 100);
     const page = Math.max(1, data.page);
+    const types = (data.types ?? []).filter((t): t is (typeof COMPANY_TYPE_CODES)[number] =>
+      (COMPANY_TYPE_CODES as readonly string[]).includes(t),
+    );
+    const statuses = (data.statuses ?? []).filter((s): s is (typeof COMPANY_STATUS_GROUPS)[number] =>
+      (COMPANY_STATUS_GROUPS as readonly string[]).includes(s),
+    );
+    const select =
+      "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
+
+    const build = () => {
+      let query = supabase.from("companies").select(select, { count: "exact" });
+      if (types.length > 0) query = query.in("type_code", types);
+      if (statuses.length > 0) query = query.in("status_group", statuses);
+      return query;
+    };
+
     let rows: CompanyListItem[] = [];
     let count = 0;
+
     if (!q) {
-      const res = await supabase
-        .from("companies")
-        .select("slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality", { count: "exact" })
+      const res = await build()
         .order("name", { ascending: true })
         .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
       rows = (res.data ?? []) as CompanyListItem[];
@@ -157,23 +182,21 @@ export const searchCompanies = createServerFn({ method: "GET" })
     } else {
       const idMatch = q.replace(/\s+/g, "").toUpperCase();
       const isIdLike = /^(HE|EE|AE|BN|S|C|B|P|O|N)?\d+$/.test(idMatch);
-      const select =
-        "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
       if (isIdLike) {
         const digits = idMatch.replace(/^\D+/, "");
-        const res = await supabase
-          .from("companies")
-          .select(select, { count: "exact" })
+        const res = await build()
           .or(`official_no.eq.${idMatch},slug.eq.${idMatch},reg_number.eq.${digits}`)
           .order("name", { ascending: true })
           .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
         rows = (res.data ?? []) as CompanyListItem[];
         count = res.count ?? 0;
       } else {
-        const res = await supabase
-          .from("companies")
-          .select(select, { count: "exact" })
-          .ilike("name", `%${q}%`)
+        // Match the raw term plus its transliterated form, so Greek-script
+        // queries also find the Latin-script registry names.
+        const variants = searchVariants(q).map((v) => v.replace(/[,()*%]/g, " ").trim()).filter(Boolean);
+        const filter = (variants.length > 0 ? variants : [q]).map((v) => `name.ilike.%${v}%`).join(",");
+        const res = await build()
+          .or(filter)
           .order("name", { ascending: true })
           .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
         rows = (res.data ?? []) as CompanyListItem[];

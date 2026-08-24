@@ -6,21 +6,66 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 
-const searchQueryOptions = (q: string, page: number) =>
+const TYPE_OPTIONS = [
+  { code: "C", label: "Company" },
+  { code: "B", label: "Business Name" },
+  { code: "P", label: "Partnership" },
+  { code: "O", label: "Overseas Company" },
+  { code: "N", label: "Partnership (BN)" },
+] as const;
+
+const STATUS_OPTIONS = [
+  { code: "active", label: "Active" },
+  { code: "at_risk", label: "At risk" },
+  { code: "struck_off", label: "Struck off" },
+  { code: "dissolved", label: "Dissolved" },
+  { code: "liquidation", label: "Liquidation" },
+] as const;
+
+const parseList = (value: unknown, allowed: readonly string[]): string[] =>
+  typeof value === "string"
+    ? value
+        .split(",")
+        .map((v) => v.trim())
+        .filter((v) => allowed.includes(v))
+    : [];
+
+const searchQueryOptions = (q: string, page: number, types: string[], statuses: string[]) =>
   queryOptions({
-    queryKey: ["search", q, page],
-    queryFn: () => (q.trim() ? searchCompanies({ data: { q, page } }) : Promise.resolve({ rows: [], count: 0 })),
+    queryKey: ["search", q, page, types.join(","), statuses.join(",")],
+    queryFn: () =>
+      q.trim() ? searchCompanies({ data: { q, page, types, statuses } }) : Promise.resolve({ rows: [], count: 0 }),
   });
 
 export const Route = createFileRoute("/search")({
-  validateSearch: (search: Record<string, unknown>): { q: string; page: number; product?: string } => ({
-    q: typeof search["q"] === "string" ? (search["q"] as string) : "",
-    page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
-    ...(typeof search["product"] === "string" ? { product: search["product"] as string } : {}),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { q: string; page: number; product?: string; type?: string; status?: string } => {
+    const types = parseList(search["type"], TYPE_OPTIONS.map((t) => t.code));
+    const statuses = parseList(search["status"], STATUS_OPTIONS.map((s) => s.code));
+    return {
+      q: typeof search["q"] === "string" ? (search["q"] as string) : "",
+      page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
+      ...(typeof search["product"] === "string" ? { product: search["product"] as string } : {}),
+      ...(types.length > 0 ? { type: types.join(",") } : {}),
+      ...(statuses.length > 0 ? { status: statuses.join(",") } : {}),
+    };
+  },
+  loaderDeps: ({ search }) => ({
+    q: search.q,
+    page: search.page,
+    type: search.type ?? "",
+    status: search.status ?? "",
   }),
-  loaderDeps: ({ search }) => ({ q: search.q, page: search.page }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(searchQueryOptions(deps.q, deps.page));
+    await context.queryClient.ensureQueryData(
+      searchQueryOptions(
+        deps.q,
+        deps.page,
+        deps.type ? deps.type.split(",") : [],
+        deps.status ? deps.status.split(",") : [],
+      ),
+    );
   },
   head: () => ({
     meta: [
@@ -36,12 +81,30 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const { q, page, product: productSlug } = Route.useSearch();
+  const { q, page, product: productSlug, type, status } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const setSearch = (nextQ: string, nextPage: number) =>
-    navigate({ search: { q: nextQ, page: nextPage, ...(productSlug ? { product: productSlug } : {}) } });
+  const types = type ? type.split(",") : [];
+  const statuses = status ? status.split(",") : [];
+
+  const setSearch = (next: { q?: string; page?: number; types?: string[]; statuses?: string[] }) => {
+    const nextTypes = next.types ?? types;
+    const nextStatuses = next.statuses ?? statuses;
+    navigate({
+      search: {
+        q: next.q ?? q,
+        page: next.page ?? 1,
+        ...(productSlug ? { product: productSlug } : {}),
+        ...(nextTypes.length > 0 ? { type: nextTypes.join(",") } : {}),
+        ...(nextStatuses.length > 0 ? { status: nextStatuses.join(",") } : {}),
+      },
+    });
+  };
+
+  const toggle = (list: string[], code: string) =>
+    list.includes(code) ? list.filter((v) => v !== code) : [...list, code];
+
   const pendingProduct = productSlug ? PRODUCTS_BY_SLUG[productSlug] : undefined;
-  const { data } = useSuspenseQuery(searchQueryOptions(q, page));
+  const { data } = useSuspenseQuery(searchQueryOptions(q, page, types, statuses));
   const totalPages = Math.ceil(data.count / 50);
 
   return (
@@ -57,7 +120,7 @@ function SearchPage() {
             onSubmit={(e) => {
               e.preventDefault();
               const value = String(new FormData(e.currentTarget).get("q") ?? "");
-              setSearch(value, 1);
+              setSearch({ q: value, page: 1 });
             }}
           >
             <input
@@ -82,10 +145,72 @@ function SearchPage() {
 
       {q ? (
         <div className="mx-auto max-w-7xl px-4 py-10">
-          <p className="text-sm text-muted-foreground">
+          <div className="rounded-xl border bg-card p-4 shadow-panel">
+            <div className="flex flex-col gap-4 md:flex-row md:gap-8">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Entity type</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {TYPE_OPTIONS.map((option) => {
+                    const on = types.includes(option.code);
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => setSearch({ page: 1, types: toggle(types, option.code) })}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          on
+                            ? "border-copper bg-copper text-copper-foreground"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Registry status</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {STATUS_OPTIONS.map((option) => {
+                    const on = statuses.includes(option.code);
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => setSearch({ page: 1, statuses: toggle(statuses, option.code) })}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          on
+                            ? "border-copper bg-copper text-copper-foreground"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            {(types.length > 0 || statuses.length > 0) && (
+              <button
+                type="button"
+                onClick={() => setSearch({ page: 1, types: [], statuses: [] })}
+                className="mt-4 text-xs font-medium text-copper underline-offset-4 hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          <p className="mt-5 text-sm text-muted-foreground">
             {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
             {q ? ` for “${q}”` : ""}
+            {types.length + statuses.length > 0 ? " (filtered)" : ""}
           </p>
+
 
           <ul className="mt-5 divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
             {data.rows.length === 0 && (
@@ -126,13 +251,13 @@ function SearchPage() {
 
           {totalPages > 1 && (
             <div className="mt-8 flex items-center justify-between">
-              <Button variant="outline" disabled={page <= 1} onClick={() => setSearch(q, page - 1)}>
+              <Button variant="outline" disabled={page <= 1} onClick={() => setSearch({ page: page - 1 })}>
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
                 Page {page} of {totalPages.toLocaleString()}
               </span>
-              <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch(q, page + 1)}>
+              <Button variant="outline" disabled={page >= totalPages} onClick={() => setSearch({ page: page + 1 })}>
                 Next
               </Button>
             </div>
