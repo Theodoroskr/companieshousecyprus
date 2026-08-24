@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, CreditCard, FileText, Loader2, PackageSearch, ShieldCheck } from "lucide-react";
-import { listMyOrders } from "@/lib/orders.functions";
+import { listMyOrders, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
