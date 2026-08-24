@@ -96,6 +96,8 @@ const ORDERABLE = [
 ];
 
 export const Route = createFileRoute("/company/$slug")({
+  validateSearch: (search: Record<string, unknown>): { product?: string } =>
+    typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
     return { name: data.company.name, officialNo: displayOfficialNo(data.company), status: data.company.status_en };
@@ -147,6 +149,7 @@ function statusTone(group: string | null | undefined) {
 
 function CompanyPage() {
   const { slug } = Route.useParams();
+  const { product: pendingProductSlug } = Route.useSearch();
   const { data } = useSuspenseQuery(companyQueryOptions(slug));
   const { company, officials } = data;
 
@@ -168,6 +171,7 @@ function CompanyPage() {
     knowsAbout: company.type_en ?? undefined,
   };
 
+  const pendingProduct = pendingProductSlug ? PRODUCTS.find((item) => item.slug === pendingProductSlug) : undefined;
   const businessName = isBusinessName(company);
   const profileProduct = PRODUCTS.find((item) => item.slug === "cyprus-company-profile");
   const registrationDate = formatDate(company.registration_date);
@@ -198,6 +202,30 @@ function CompanyPage() {
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {pendingProduct && (
+        <div className="border-b border-copper/30 bg-copper/10">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">
+                Add {pendingProduct.name} for {company.name}?
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {formatPrice(pendingProduct.price)}
+                {pendingProduct.category === "certificate" ? " · certificate only, €50 handling fee added at checkout" : " · incl. VAT"}
+              </p>
+            </div>
+            <AddToCartButton
+              productSlug={pendingProduct.slug}
+              companySlug={company.slug}
+              companyName={company.name}
+              companyNumber={displayOfficialNo(company)}
+              label={`Add ${pendingProduct.name}`}
+              className="shrink-0 bg-copper text-copper-foreground hover:bg-copper/90"
+            />
+          </div>
+        </div>
+      )}
 
       <section className="surface-deep relative overflow-hidden">
         <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-primary-glow/20 to-transparent" />
