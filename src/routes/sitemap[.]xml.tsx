@@ -10,18 +10,15 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const count = await getCompanyCount();
         const chunks = Math.ceil(count / SITEMAP_CHUNK_SIZE);
-        const now = new Date().toISOString();
 
         let body = `<?xml version="1.0" encoding="UTF-8"?>\n`;
         body += `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
         body += `  <sitemap>\n`;
         body += `    <loc>${BASE_URL}/sitemaps/companies/0.xml</loc>\n`;
-        body += `    <lastmod>${now}</lastmod>\n`;
         body += `  </sitemap>\n`;
         for (let i = 1; i < chunks; i++) {
           body += `  <sitemap>\n`;
           body += `    <loc>${BASE_URL}/sitemaps/companies/${i}.xml</loc>\n`;
-          body += `    <lastmod>${now}</lastmod>\n`;
           body += `  </sitemap>\n`;
         }
         body += `</sitemapindex>\n`;
