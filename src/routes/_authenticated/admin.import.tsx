@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import Papa from "papaparse";
 import { supabase } from "@/integrations/supabase/client";
@@ -314,10 +314,17 @@ function AdminImportPage() {
           </>
         ) : (
           <p className="mt-2 text-sm text-muted-foreground">
-            This account is not an administrator. Ask an existing admin to grant you access.
+            You're signed in with a client account. This page is limited to registry administrators —
+            your orders and reports live in your client portal.
           </p>
         )}
-        <Button variant="outline" className="mt-4 w-full" onClick={signOut}>
+        <Button asChild className="mt-6 w-full">
+          <Link to="/account/orders">Go to my orders</Link>
+        </Button>
+        <Button asChild variant="outline" className="mt-2 w-full">
+          <Link to="/">Back to home</Link>
+        </Button>
+        <Button variant="ghost" className="mt-2 w-full" onClick={signOut}>
           Sign out
         </Button>
       </div>
