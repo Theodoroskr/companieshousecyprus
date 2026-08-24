@@ -255,12 +255,17 @@ export type Database = {
       orders: {
         Row: {
           access_token: string
+          checkout_url: string | null
           created_at: string
           email: string
           firm: string | null
           full_name: string
           id: string
           notes: string | null
+          paid_at: string | null
+          payment_order_id: string | null
+          payment_provider: string | null
+          payment_state: string | null
           phone: string | null
           reference: string
           service_fee_cents: number
@@ -273,12 +278,17 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          checkout_url?: string | null
           created_at?: string
           email: string
           firm?: string | null
           full_name: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
+          payment_order_id?: string | null
+          payment_provider?: string | null
+          payment_state?: string | null
           phone?: string | null
           reference: string
           service_fee_cents?: number
@@ -291,12 +301,17 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          checkout_url?: string | null
           created_at?: string
           email?: string
           firm?: string | null
           full_name?: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
+          payment_order_id?: string | null
+          payment_provider?: string | null
+          payment_state?: string | null
           phone?: string | null
           reference?: string
           service_fee_cents?: number
