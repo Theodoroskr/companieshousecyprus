@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export type OrderListItem = {
   id: string;
   reference: string;
+  access_token: string;
   status: string;
   created_at: string;
   total_cents: number;
@@ -13,7 +14,7 @@ export type OrderListItem = {
     company_name: string | null;
     company_number: string | null;
     fulfilment_status: string;
-    download_url: string | null;
+    download_url?: string | null;
   }[];
 };
 
