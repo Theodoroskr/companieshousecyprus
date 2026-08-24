@@ -40,9 +40,7 @@ function RelatedCompanies({ slug }: { slug: string }) {
                 <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
                   {row.name}
                 </Link>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {displayOfficialNo(row)} · {row.status_en ?? "—"}
-                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">{displayOfficialNo(row)}</span>
               </li>
             ))}
           </ul>
@@ -63,7 +61,9 @@ function RelatedCompanies({ slug }: { slug: string }) {
                 <Link to="/company/$slug" params={{ slug: row.slug }} className="text-sm font-medium hover:text-copper">
                   {row.name}
                 </Link>
-                <span className="shrink-0 text-xs text-muted-foreground">via {row.via}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {displayOfficialNo(row)} via {maskName(row.via)}
+                </span>
               </li>
             ))}
           </ul>
