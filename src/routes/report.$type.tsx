@@ -87,7 +87,7 @@ function ReportPage() {
                         ? "· report & certificates"
                         : "· report only"}
                   </p>
-                  {product.category === "certificate" && (
+                  {breakdown.serviceFee > 0 && (
                     <p className="mt-1 text-xs text-primary-foreground/60">
                       A €50 handling fee per certificate is added at checkout.
                     </p>
@@ -97,7 +97,7 @@ function ReportPage() {
                       <span>Document</span>
                       <span>{formatPrice(breakdown.documentPrice)}</span>
                     </div>
-                    {product.category === "certificate" && (
+                    {breakdown.serviceFee > 0 && (
                       <div className="flex justify-between">
                         <span>Handling fee</span>
                         <span>{formatPrice(breakdown.serviceFee)}</span>

@@ -60,13 +60,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }, 0);
     const serviceFee = items.reduce((sum, item) => {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
-      return sum + (product && product.category === "certificate" ? CERTIFICATE_SERVICE_FEE * item.quantity : 0);
+      if (!product) return sum;
+      const certificates = product.certificateCount ?? (product.category === "certificate" ? 1 : 0);
+      return sum + CERTIFICATE_SERVICE_FEE * certificates * item.quantity;
     }, 0);
     const vatBase = items.reduce((sum, item) => {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
-      return sum + (product && product.category !== "certificate" ? product.price * item.quantity : 0);
+      if (!product) return sum;
+      const certificates = product.certificateCount ?? (product.category === "certificate" ? 1 : 0);
+      const fee = CERTIFICATE_SERVICE_FEE * certificates * item.quantity;
+      const vatableDocument =
+        product.category === "certificate" ? 0 : (product.vatablePrice ?? product.price) * item.quantity;
+      return sum + fee + vatableDocument;
     }, 0);
     const vat = Math.round(vatBase * VAT_RATE * 100) / 100;
+
 
     return {
       items,

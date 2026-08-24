@@ -81,6 +81,12 @@ function PricingPage() {
                         <>
                           <span>{formatPrice(breakdown.documentPrice)} document</span>
                           <span className="text-border">|</span>
+                          {breakdown.serviceFee > 0 && (
+                            <>
+                              <span>{formatPrice(breakdown.serviceFee)} handling</span>
+                              <span className="text-border">|</span>
+                            </>
+                          )}
                           <span>{formatPrice(breakdown.vat)} VAT ({Math.round(VAT_RATE * 100)}%)</span>
                           <span className="text-border">|</span>
                           <span>{formatPrice(breakdown.total)} total</span>
