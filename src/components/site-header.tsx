@@ -39,9 +39,9 @@ export function SiteHeader() {
           <img
             src={logoAsset.url}
             alt="Cyprus Companies House"
-            className="h-8 w-auto sm:h-9"
-            width={108}
-            height={36}
+            className="h-9 w-auto sm:h-10"
+            width={120}
+            height={40}
           />
         </Link>
 
