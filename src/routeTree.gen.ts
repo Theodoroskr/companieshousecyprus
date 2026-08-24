@@ -76,6 +76,7 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as ApiPublicA4aCallbackRouteImport } from './routes/api/public/a4a-callback'
 import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-poll'
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
+import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/indexnow'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
@@ -443,6 +444,11 @@ const ApiPublicCompanyLookupRoute = ApiPublicCompanyLookupRouteImport.update({
   path: '/api/public/company-lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicIndexnowRoute = ApiPublicIndexnowRouteImport.update({
+  id: '/api/public/indexnow',
+  path: '/api/public/indexnow',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOrderRemindersRoute = ApiPublicOrderRemindersRouteImport.update({
   id: '/api/public/order-reminders',
   path: '/api/public/order-reminders',
@@ -565,6 +571,7 @@ export interface FileRoutesByFullPath {
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
+  '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
@@ -642,6 +649,7 @@ export interface FileRoutesByTo {
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
+  '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
@@ -722,6 +730,7 @@ export interface FileRoutesById {
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
+  '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
@@ -802,6 +811,7 @@ export interface FileRouteTypes {
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
     | '/api/public/company-lookup'
+    | '/api/public/indexnow'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/api/public/sitemap-health'
@@ -879,6 +889,7 @@ export interface FileRouteTypes {
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
     | '/api/public/company-lookup'
+    | '/api/public/indexnow'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/api/public/sitemap-health'
@@ -958,6 +969,7 @@ export interface FileRouteTypes {
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
     | '/api/public/company-lookup'
+    | '/api/public/indexnow'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/api/public/sitemap-health'
@@ -1029,6 +1041,7 @@ export interface RootRouteChildren {
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
   ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
+  ApiPublicIndexnowRoute: typeof ApiPublicIndexnowRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
@@ -1510,6 +1523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCompanyLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/indexnow': {
+      id: '/api/public/indexnow'
+      path: '/api/public/indexnow'
+      fullPath: '/api/public/indexnow'
+      preLoaderRoute: typeof ApiPublicIndexnowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/order-reminders': {
       id: '/api/public/order-reminders'
       path: '/api/public/order-reminders'
@@ -1685,6 +1705,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
   ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
+  ApiPublicIndexnowRoute: ApiPublicIndexnowRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
