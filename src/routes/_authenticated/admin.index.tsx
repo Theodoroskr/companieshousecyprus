@@ -57,7 +57,7 @@ function AdminDashboardPage() {
   const delivered = orders.filter((o) => o.status === "delivered");
   const openValue = open.reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
   const paidValue = orders
-    .filter((o) => o.paid_at)
+    .filter((o) => o.status !== "awaiting_payment" && o.status !== "cancelled")
     .reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
   const missingDue = open.filter((o) => !o.due_date);
 
