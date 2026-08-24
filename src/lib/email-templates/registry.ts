@@ -22,4 +22,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'order-confirmation': orderConfirmationTemplate,
   'payment-receipt': paymentReceiptTemplate,
   'document-ready': documentReadyTemplate,
+  'contact-inquiry': contactInquiryTemplate,
+
 }
