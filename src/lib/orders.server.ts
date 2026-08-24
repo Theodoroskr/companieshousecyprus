@@ -130,30 +130,10 @@ export async function placeOrder(input: PlaceOrderInput) {
   );
   if (itemsError) throw new Error(itemsError.message);
 
-  {
-    const { sendOrderConfirmationEmail } = await import("@/lib/order-emails.server");
-    await sendOrderConfirmationEmail(
-      {
-        reference: order.reference,
-        access_token: order.access_token,
-        full_name: input.fullName,
-        email: input.email,
-        firm: input.firm ?? null,
-        vat_number: input.vatNumber ?? null,
-        subtotal_cents: cents(subtotal),
-        service_fee_cents: cents(serviceFee),
-        vat_cents: cents(vat),
-        total_cents: cents(total),
-      },
-      rows.map((row) => ({
-        product_name: row.product.name,
-        company_name: row.companyName,
-        company_number: row.companyNumber,
-        quantity: row.quantity,
-        total_cents: cents(row.breakdown.total),
-      })),
-    );
-  }
+  // No email here: the order is not confirmed until payment succeeds. The
+  // confirmation + receipt go out from markOrderPaid(); unpaid baskets get a
+  // single "can we help?" follow-up from the scheduled reminder job.
+
 
   return { reference: order.reference, token: order.access_token };
 }
@@ -577,7 +557,7 @@ export async function markOrderPaid(orderId: string) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, reference, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, paid_at",
+      "id, status, reference, access_token, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, paid_at",
     )
     .eq("id", orderId)
     .maybeSingle();
@@ -589,7 +569,15 @@ export async function markOrderPaid(orderId: string) {
       .update({ status: "paid", payment_state: "completed", paid_at: paidAt })
       .eq("id", orderId);
 
-    const { sendPaymentReceiptEmail } = await import("@/lib/order-emails.server");
+    const { data: emailItems } = await supabase
+      .from("order_items")
+      .select("product_name, company_name, company_number, quantity, total_cents")
+      .eq("order_id", orderId);
+
+    const { sendOrderConfirmationEmail, sendPaymentReceiptEmail } = await import(
+      "@/lib/order-emails.server"
+    );
+    await sendOrderConfirmationEmail(order, emailItems ?? []);
     await sendPaymentReceiptEmail({ ...order, paid_at: paidAt });
   }
 

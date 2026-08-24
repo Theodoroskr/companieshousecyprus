@@ -369,6 +369,7 @@ export type Database = {
           payment_state: string | null
           phone: string | null
           reference: string
+          reminder_sent_at: string | null
           service_fee_cents: number
           status: string
           subtotal_cents: number
@@ -395,6 +396,7 @@ export type Database = {
           payment_state?: string | null
           phone?: string | null
           reference: string
+          reminder_sent_at?: string | null
           service_fee_cents?: number
           status?: string
           subtotal_cents?: number
@@ -421,6 +423,7 @@ export type Database = {
           payment_state?: string | null
           phone?: string | null
           reference?: string
+          reminder_sent_at?: string | null
           service_fee_cents?: number
           status?: string
           subtotal_cents?: number
