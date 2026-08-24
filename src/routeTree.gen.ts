@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AiDottxtRouteImport } from './routes/ai[.]txt'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CertificationsRouteImport } from './routes/certifications'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -43,6 +45,7 @@ import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as ApiPublicA4aCallbackRouteImport } from './routes/api/public/a4a-callback'
 import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-poll'
+import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
@@ -65,6 +68,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiDottxtRoute = AiDottxtRouteImport.update({
+  id: '/ai.txt',
+  path: '/ai.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -90,6 +98,11 @@ const ContactRoute = ContactRouteImport.update({
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -227,6 +240,11 @@ const ApiPublicA4aPollRoute = ApiPublicA4aPollRouteImport.update({
   path: '/api/public/a4a-poll',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCompanyLookupRoute = ApiPublicCompanyLookupRouteImport.update({
+  id: '/api/public/company-lookup',
+  path: '/api/public/company-lookup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOrderRemindersRoute = ApiPublicOrderRemindersRouteImport.update({
   id: '/api/public/order-reminders',
   path: '/api/public/order-reminders',
@@ -281,11 +299,13 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai.txt': typeof AiDottxtRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -311,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
+  '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -325,11 +346,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai.txt': typeof AiDottxtRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -354,6 +377,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
+  '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -370,11 +394,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/ai.txt': typeof AiDottxtRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/certifications': typeof CertificationsRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/resources': typeof ResourcesRoute
@@ -400,6 +426,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
+  '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -416,11 +443,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/ai.txt'
     | '/auth'
     | '/cart'
     | '/certifications'
     | '/contact'
     | '/faq'
+    | '/llms.txt'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -446,6 +475,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
+    | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
@@ -460,11 +490,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/ai.txt'
     | '/auth'
     | '/cart'
     | '/certifications'
     | '/contact'
     | '/faq'
+    | '/llms.txt'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -489,6 +521,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
+    | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
@@ -504,11 +537,13 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/about'
+    | '/ai.txt'
     | '/auth'
     | '/cart'
     | '/certifications'
     | '/contact'
     | '/faq'
+    | '/llms.txt'
     | '/pricing'
     | '/privacy'
     | '/resources'
@@ -534,6 +569,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
+    | '/api/public/company-lookup'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/companies/a-z/$letter'
@@ -550,11 +586,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AiDottxtRoute: typeof AiDottxtRoute
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CertificationsRoute: typeof CertificationsRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -572,6 +610,7 @@ export interface RootRouteChildren {
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
   ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
+  ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
@@ -602,6 +641,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai.txt': {
+      id: '/ai.txt'
+      path: '/ai.txt'
+      fullPath: '/ai.txt'
+      preLoaderRoute: typeof AiDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -637,6 +683,13 @@ declare module '@tanstack/react-router' {
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -821,6 +874,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicA4aPollRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/company-lookup': {
+      id: '/api/public/company-lookup'
+      path: '/api/public/company-lookup'
+      fullPath: '/api/public/company-lookup'
+      preLoaderRoute: typeof ApiPublicCompanyLookupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/order-reminders': {
       id: '/api/public/order-reminders'
       path: '/api/public/order-reminders'
@@ -932,11 +992,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
+  AiDottxtRoute: AiDottxtRoute,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CertificationsRoute: CertificationsRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResourcesRoute: ResourcesRoute,
@@ -954,6 +1016,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
   ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,
+  ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
