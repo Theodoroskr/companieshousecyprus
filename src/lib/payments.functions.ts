@@ -28,7 +28,7 @@ async function resolvePriceId(stripe: ReturnType<typeof createStripeClient>, loo
 }
 
 export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
-  .inputValidator((data: { reference: string; token: string; environment: StripeEnv }) => {
+  .inputValidator((data: { reference: string; token: string; environment: StripeEnv; origin?: string }) => {
     if (!data.reference?.trim() || !data.token?.trim()) throw new Error('Missing order reference');
     return data;
   })
