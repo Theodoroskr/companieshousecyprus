@@ -271,6 +271,149 @@ async function notifyOrderDelivered(
 
 
 
+/* ------------------------------------------------------------------ */
+/* API4ALL JSON reports → branded, reviewable deliverables             */
+/* ------------------------------------------------------------------ */
+
+const REPORT_ITEM_COLUMNS =
+  "id, order_id, product_name, company_name, company_number, a4a_kind, fulfilment_status, delivered_at, report_json";
+
+function parseStoredReport(item: {
+  a4a_kind: string | null;
+  report_json: unknown;
+  product_name: string;
+}) {
+  const { parseReport } = require("@/lib/reports/parser") as typeof import("@/lib/reports/parser");
+  const kind: "structure" | "credit" = item.a4a_kind === "credit" ? "credit" : "structure";
+  return parseReport(item.report_json, kind);
+}
+
+/** Admin: parsed report for review, whatever the fulfilment state. */
+export async function reportForReview(itemId: string) {
+  const supabase = ordersClient();
+  const { data: item } = await supabase
+    .from("order_items")
+    .select(REPORT_ITEM_COLUMNS)
+    .eq("id", itemId)
+    .maybeSingle();
+  if (!item) throw new Error("Order item not found");
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("reference, full_name, email")
+    .eq("id", item.order_id)
+    .maybeSingle();
+
+  const { parseReport } = await import("@/lib/reports/parser");
+  const kind: "structure" | "credit" = item.a4a_kind === "credit" ? "credit" : "structure";
+  return {
+    report: parseReport(item.report_json, kind),
+    meta: {
+      itemId: item.id,
+      reference: order?.reference ?? "—",
+      customer: order?.full_name ?? null,
+      email: order?.email ?? null,
+      productName: item.product_name,
+      companyName: item.company_name,
+      companyNumber: item.company_number,
+      fulfilmentStatus: item.fulfilment_status,
+      deliveredAt: item.delivered_at,
+    },
+  };
+}
+
+/** Client portal: parsed report for an item the caller owns, once released. */
+export async function reportForOwner(itemId: string, userId: string, email: string) {
+  const supabase = ordersClient();
+  const { data: item } = await supabase
+    .from("order_items")
+    .select(`${REPORT_ITEM_COLUMNS}, orders!inner(reference, user_id, email)`)
+    .eq("id", itemId)
+    .maybeSingle();
+  const owner = (item as { orders?: { reference: string; user_id: string | null; email: string | null } } | null)?.orders;
+  if (!item || !owner) throw new Error("Report not found");
+  const mine =
+    (owner.user_id && owner.user_id === userId) ||
+    (owner.email ?? "").toLowerCase() === email.trim().toLowerCase();
+  if (!mine) throw new Error("Report not found");
+  if (item.fulfilment_status !== "delivered") throw new Error("This report is still being finalised by our team.");
+
+  const { parseReport } = await import("@/lib/reports/parser");
+  const kind: "structure" | "credit" = item.a4a_kind === "credit" ? "credit" : "structure";
+  const report = parseReport(item.report_json, kind);
+  if (!report) throw new Error("Report not found");
+  return {
+    report,
+    meta: {
+      itemId: item.id,
+      reference: owner.reference,
+      productName: item.product_name,
+      companyName: item.company_name,
+      companyNumber: item.company_number,
+      deliveredAt: item.delivered_at,
+    },
+  };
+}
+
+/** Admin: release a reviewed report to the client and email them. */
+export async function releaseOrderItemReport(itemId: string, notify = true) {
+  const supabase = ordersClient();
+  const { data: item } = await supabase
+    .from("order_items")
+    .select("id, order_id, product_name, company_name, company_number, fulfilment_status, report_json")
+    .eq("id", itemId)
+    .maybeSingle();
+  if (!item) throw new Error("Order item not found");
+  if (!item.report_json) throw new Error("There is no report stored for this line yet");
+
+  const deliveredAt = new Date().toISOString();
+  const { error } = await supabase
+    .from("order_items")
+    .update({
+      fulfilment_status: "delivered",
+      fulfilment_message: null,
+      delivered_at: deliveredAt,
+      a4a_next_attempt_at: null,
+    })
+    .eq("id", item.id);
+  if (error) throw new Error(error.message);
+
+  const { data: siblings } = await supabase
+    .from("order_items")
+    .select("fulfilment_status")
+    .eq("order_id", item.order_id);
+  const allDelivered = (siblings ?? []).every((row) => row.fulfilment_status === "delivered");
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, reference, full_name, email")
+    .eq("id", item.order_id)
+    .maybeSingle();
+
+  if (order && allDelivered) {
+    await supabase.from("orders").update({ status: "delivered", delivered_at: deliveredAt }).eq("id", order.id);
+  }
+
+  if (order && notify) {
+    try {
+      const { sendDocumentReadyEmail } = await import("@/lib/order-emails.server");
+      await sendDocumentReadyEmail(
+        { reference: order.reference, full_name: order.full_name, email: order.email },
+        {
+          product_name: item.product_name,
+          company_name: item.company_name,
+          company_number: item.company_number,
+          document_name: `${item.product_name} — available in your client portal`,
+        },
+      );
+    } catch (emailError) {
+      console.error("Report release email failed", order.reference, emailError);
+    }
+  }
+
+  return { ok: true as const, notified: order ? notify : false };
+}
+
 /** Pull the report from API4ALL for one order item and store it. */
 export async function fulfilOrderItem(itemId: string) {
   const supabase = ordersClient();
