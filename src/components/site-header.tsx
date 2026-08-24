@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, ShoppingCart, ChevronDown, Menu, X, ArrowRight } from "lucide-react";
+import { Search, ShoppingCart, ChevronDown, Menu, X, ArrowRight, ShieldCheck } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useAccount } from "@/hooks/useAccount";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import logoAsset from "@/assets/logo.png.asset.json";
@@ -16,6 +17,7 @@ import {
 export function SiteHeader() {
   const navigate = useNavigate();
   const { count } = useCart();
+  const account = useAccount();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -144,12 +146,25 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
-          <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
-            My orders
-          </Link>
-          <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
-            Sign in
-          </Link>
+          {account.ready && account.signedIn ? (
+            <>
+              <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+                My orders
+              </Link>
+              {account.isAdmin && (
+                <Link
+                  to="/admin/orders"
+                  className="hidden items-center gap-1 rounded-md border border-copper/40 px-2.5 py-1 text-xs font-semibold text-copper hover:bg-copper/10 sm:inline-flex"
+                >
+                  <ShieldCheck className="size-3.5" /> Admin
+                </Link>
+              )}
+            </>
+          ) : (
+            <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+              Sign in
+            </Link>
+          )}
           <Button asChild size="sm" className="hidden sm:inline-flex">
             <Link to="/search" search={{ q: "", page: 1 }}>
               Order a certificate
@@ -216,12 +231,22 @@ export function SiteHeader() {
             <Link to="/contact" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
               Contact
             </Link>
-            <Link to="/account/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
-              My orders
-            </Link>
-            <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
-              Sign in
-            </Link>
+            {account.ready && account.signedIn ? (
+              <>
+                <Link to="/account/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+                  My orders
+                </Link>
+                {account.isAdmin && (
+                  <Link to="/admin/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold text-copper hover:bg-muted">
+                    Admin dashboard
+                  </Link>
+                )}
+              </>
+            ) : (
+              <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       )}
