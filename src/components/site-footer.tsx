@@ -115,6 +115,31 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Certifications</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Independently audited management systems certified by EUROCERT.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <img
+              src={iso27001Asset.url}
+              alt="EUROCERT certified management system — ISO/IEC 27001:2023"
+              className="h-16 w-auto rounded-md bg-background p-1"
+              loading="lazy"
+            />
+            <img
+              src={iso22301Asset.url}
+              alt="EUROCERT certified management system — ISO 22301:2019"
+              className="h-16 w-auto rounded-md bg-background p-1"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Companies House Cyprus. Data sourced from the Department of Registrar of Companies.</p>
           <p>Not affiliated with the Government of the Republic of Cyprus.</p>
