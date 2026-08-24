@@ -208,7 +208,7 @@ export const PRODUCTS: Product[] = [
 
   {
     slug: "cyprus-company-profile",
-    name: "Cyprus Company Profile",
+    name: "Cyprus Company Profile (Structure Report)",
     eyebrow: "Intelligence report",
     headline: "The full registry picture in one document",
     tagline: "Consolidated profile: status, officials & owners, address history and filings.",

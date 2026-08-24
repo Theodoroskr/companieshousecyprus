@@ -103,6 +103,7 @@ const ORDERABLE = [
   "certificate-of-capital",
   "certificate-of-no-charges",
   "certificate-of-strike-off",
+  "cyprus-credit-report",
   "kyb-due-diligence-pack",
   "due-diligence-report",
 ];
@@ -577,7 +578,19 @@ function CompanyPage() {
                   const product = PRODUCTS.find((item) => item.slug === productSlug);
                   if (!product) return null;
                   return (
-                    <li key={product.slug} className="rounded-lg border p-4">
+                    <li
+                      key={product.slug}
+                      className={
+                        product.slug === "cyprus-company-profile"
+                          ? "relative rounded-lg border-2 border-copper bg-copper/5 p-4 shadow-panel"
+                          : "rounded-lg border p-4"
+                      }
+                    >
+                      {product.slug === "cyprus-company-profile" && (
+                        <span className="absolute -top-2 right-3 rounded-full bg-copper px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-copper-foreground">
+                          Most popular
+                        </span>
+                      )}
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-1.5">
