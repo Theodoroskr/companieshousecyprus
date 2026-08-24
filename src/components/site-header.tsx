@@ -249,7 +249,7 @@ export function SiteHeader() {
                 )}
               </>
             ) : (
-              <Link to="/auth" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              <Link to="/auth" search={{ redirect: signInRedirect }} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
                 Sign in
               </Link>
             )}
