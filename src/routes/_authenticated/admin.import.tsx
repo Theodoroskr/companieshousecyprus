@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import Papa from "papaparse";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { SignOutButton } from "@/components/sign-out-button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -17,10 +17,8 @@ import {
   type OfficialImportRow,
 } from "@/lib/registrar-mapping";
 import {
-  claimFirstAdmin,
   clearOfficials,
   finishImportRun,
-  getAdminContext,
   getImportStats,
   importCompanyBatch,
   importOfficialsBatch,
@@ -73,10 +71,7 @@ function parseCsv<T>(
 }
 
 function AdminImportPage() {
-  const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminCount, setAdminCount] = useState(0);
   const [stats, setStats] = useState<{ companies: number; officials: number; companiesWithOfficials: number } | null>(
     null,
   );
@@ -98,33 +93,14 @@ function AdminImportPage() {
   useEffect(() => {
     (async () => {
       try {
-        const ctx = await getAdminContext();
-        setIsAdmin(ctx.isAdmin);
-        setAdminCount(ctx.adminCount);
-        if (ctx.isAdmin) await refresh();
-      } catch {
-        setIsAdmin(false);
+        await refresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not load import tools");
       } finally {
         setChecking(false);
       }
     })();
   }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth" });
-  };
-
-  const claim = async () => {
-    try {
-      await claimFirstAdmin();
-      toast.success("You are now an administrator.");
-      setIsAdmin(true);
-      await refresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not grant admin access");
-    }
-  };
 
   const runCompaniesImport = async () => {
     const orgFile = orgFileRef.current?.files?.[0];
@@ -299,38 +275,6 @@ function AdminImportPage() {
     return <div className="mx-auto max-w-3xl px-4 py-16 text-muted-foreground">Checking access…</div>;
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-16">
-        <h1 className="text-2xl font-bold tracking-tight">Admin access required</h1>
-        {adminCount === 0 ? (
-          <>
-            <p className="mt-2 text-sm text-muted-foreground">
-              No administrator exists yet. Claim the first admin account for this signed-in user.
-            </p>
-            <Button className="mt-6" onClick={claim}>
-              Make me administrator
-            </Button>
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">
-            You're signed in with a client account. This page is limited to registry administrators —
-            your orders and reports live in your client portal.
-          </p>
-        )}
-        <Button asChild className="mt-6 w-full">
-          <Link to="/account/orders">Go to my orders</Link>
-        </Button>
-        <Button asChild variant="outline" className="mt-2 w-full">
-          <Link to="/">Back to home</Link>
-        </Button>
-        <Button variant="ghost" className="mt-2 w-full" onClick={signOut}>
-          Sign out
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex items-start justify-between gap-4">
@@ -340,9 +284,7 @@ function AdminImportPage() {
             Upload the official registrar CSV exports. Imports are incremental and safe to re-run.
           </p>
         </div>
-        <Button variant="outline" onClick={signOut}>
-          Sign out
-        </Button>
+        <SignOutButton />
       </div>
 
       {stats && (

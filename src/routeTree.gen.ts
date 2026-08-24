@@ -25,6 +25,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
@@ -121,6 +122,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   id: '/return',
   path: '/return',
@@ -154,31 +160,31 @@ const AuthenticatedAccountOrdersRoute =
   } as any)
 const AuthenticatedAdminApi4allRoute =
   AuthenticatedAdminApi4allRouteImport.update({
-    id: '/admin/api4all',
-    path: '/admin/api4all',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/api4all',
+    path: '/api4all',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminImportRoute =
   AuthenticatedAdminImportRouteImport.update({
-    id: '/admin/import',
-    path: '/admin/import',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminOrdersRoute =
   AuthenticatedAdminOrdersRouteImport.update({
-    id: '/admin/orders',
-    path: '/admin/orders',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/orders',
+    path: '/orders',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminUsageRoute = AuthenticatedAdminUsageRouteImport.update({
-  id: '/admin/usage',
-  path: '/admin/usage',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
   id: '/api/public/revolut-webhook',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/_authenticated/admin'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
@@ -553,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/checkout/return': {
       id: '/checkout/return'
       path: '/return'
@@ -597,38 +616,38 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin/api4all': {
       id: '/_authenticated/admin/api4all'
-      path: '/admin/api4all'
+      path: '/api4all'
       fullPath: '/admin/api4all'
       preLoaderRoute: typeof AuthenticatedAdminApi4allRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/import': {
       id: '/_authenticated/admin/import'
-      path: '/admin/import'
+      path: '/import'
       fullPath: '/admin/import'
       preLoaderRoute: typeof AuthenticatedAdminImportRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/orders': {
       id: '/_authenticated/admin/orders'
-      path: '/admin/orders'
+      path: '/orders'
       fullPath: '/admin/orders'
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/usage': {
       id: '/_authenticated/admin/usage'
-      path: '/admin/usage'
+      path: '/usage'
       fullPath: '/admin/usage'
       preLoaderRoute: typeof AuthenticatedAdminUsageRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
-      path: '/admin/users'
+      path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/api/public/revolut-webhook': {
       id: '/api/public/revolut-webhook'
@@ -668,8 +687,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAccountOrdersRoute: typeof AuthenticatedAccountOrdersRoute
+interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminApi4allRoute: typeof AuthenticatedAdminApi4allRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
@@ -677,13 +695,25 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
 
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAccountOrdersRoute: AuthenticatedAccountOrdersRoute,
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminApi4allRoute: AuthenticatedAdminApi4allRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAccountOrdersRoute: typeof AuthenticatedAccountOrdersRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAccountOrdersRoute: AuthenticatedAccountOrdersRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
