@@ -53,7 +53,10 @@ export function SiteHeader() {
                 {/* Certificates */}
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-copper">Certificates</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">€{formatPrice(40).replace("€", "")} each</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    {formatPrice(PRODUCTS.find((p) => p.category === "certificate")?.price ?? 40)} each
+                  </p>
+
                   <div className="mt-3 grid gap-0.5">
                     {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
                       <DropdownMenuItem key={product.slug} asChild className="p-0">
