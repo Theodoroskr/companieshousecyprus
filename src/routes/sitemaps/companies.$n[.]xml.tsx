@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getSitemapChunk } from "@/lib/companies.functions";
 
-const BASE_URL = "https://smart-analyse-tool.lovable.app";
+const BASE_URL = "https://companieshousecyprus.com";
 
 export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
   server: {
