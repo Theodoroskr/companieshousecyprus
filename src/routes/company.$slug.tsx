@@ -300,25 +300,38 @@ function CompanyPage() {
         <div className="pointer-events-none absolute -bottom-32 left-1/4 size-80 rounded-full bg-primary-glow/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
-          <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium uppercase tracking-widest text-primary-foreground/50 sm:text-[11px]">
-            <Link to="/" className="transition-colors hover:text-primary-foreground">Home</Link>
-            <span>/</span>
-            <Link to="/search" search={{ q: "", page: 1 }} className="transition-colors hover:text-primary-foreground">Register</Link>
-            {company.district_en && (
-              <>
-                <span>/</span>
-                <Link
-                  to="/companies/city/$district"
-                  params={{ district: company.district_en.toLowerCase() }}
-                  className="max-w-[8rem] truncate transition-colors hover:text-primary-foreground"
-                >
-                  {company.district_en}
-                </Link>
-              </>
-            )}
-            <span>/</span>
-            <span className="text-copper">Company profile</span>
+          <nav aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium uppercase tracking-widest text-primary-foreground/50 sm:text-[11px]">
+              <li>
+                <Link to="/" className="transition-colors hover:text-primary-foreground">Home</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link to="/search" search={{ q: "", page: 1 }} className="transition-colors hover:text-primary-foreground">Register</Link>
+              </li>
+              {company.district_en && (
+                <>
+                  <li aria-hidden="true">/</li>
+                  <li className="min-w-0">
+                    <Link
+                      to="/companies/city/$district"
+                      params={{ district: company.district_en.toLowerCase() }}
+                      className="block max-w-[8rem] truncate transition-colors hover:text-primary-foreground"
+                    >
+                      {company.district_en}
+                    </Link>
+                  </li>
+                </>
+              )}
+              <li aria-hidden="true">/</li>
+              <li className="min-w-0">
+                <span aria-current="page" className="block max-w-[14rem] truncate text-copper sm:max-w-[24rem]">
+                  {company.name}
+                </span>
+              </li>
+            </ol>
           </nav>
+
 
           <div className="mt-6 flex flex-col gap-6 sm:mt-8 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
             <div className="min-w-0 flex-1">
