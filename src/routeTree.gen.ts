@@ -26,6 +26,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
+import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
@@ -122,6 +123,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const CheckoutSessionStatusRoute = CheckoutSessionStatusRouteImport.update({
+  id: '/session-status',
+  path: '/session-status',
+  getParentRoute: () => CheckoutRoute,
+} as any)
 const CompanySlugRoute = CompanySlugRouteImport.update({
   id: '/company/$slug',
   path: '/company/$slug',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -291,6 +300,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/checkout/return'
+    | '/checkout/session-status'
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/checkout/return'
+    | '/checkout/session-status'
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/checkout/return'
+    | '/checkout/session-status'
     | '/company/$slug'
     | '/order/$reference'
     | '/report/$type'
@@ -511,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/checkout/session-status': {
+      id: '/checkout/session-status'
+      path: '/session-status'
+      fullPath: '/checkout/session-status'
+      preLoaderRoute: typeof CheckoutSessionStatusRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
     '/company/$slug': {
       id: '/company/$slug'
       path: '/company/$slug'
@@ -608,10 +627,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface CheckoutRouteChildren {
   CheckoutReturnRoute: typeof CheckoutReturnRoute
+  CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
 }
 
 const CheckoutRouteChildren: CheckoutRouteChildren = {
   CheckoutReturnRoute: CheckoutReturnRoute,
+  CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
 }
 
 const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
