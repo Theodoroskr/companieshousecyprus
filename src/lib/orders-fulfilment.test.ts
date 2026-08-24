@@ -176,10 +176,15 @@ describe("API4ALL order product codes", () => {
     expect(JSON.parse(body.slice(5)).items[0].product).toBe("2300");
   });
 
-  it("always requests a fresh investigation", async () => {
+  it.each([
+    { kind: "structure", product: "2200" },
+    { kind: "credit", product: "2300" },
+  ] as const)("requests product $product with freshinvestigation: 1 for $kind orders", async ({ kind, product }) => {
     const { createOrder } = await import("@/lib/api4all.server");
-    await createOrder({ kind: "structure", code: A4A_CODE, reference: "CHC-3" });
+    await createOrder({ kind, code: A4A_CODE, reference: `CHC-${kind}` });
     const body = calls.find((c) => c.startsWith("BODY "))!;
-    expect(JSON.parse(body.slice(5)).items[0].freshinvestigation).toBe(1);
+    const payload = JSON.parse(body.slice(5));
+    expect(payload.items[0].product).toBe(product);
+    expect(payload.items[0].freshinvestigation).toBe(1);
   });
 });
