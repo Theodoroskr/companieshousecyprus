@@ -25,6 +25,8 @@ export interface SendTemplateEmailOptions {
   /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
   idempotencyKey?: string
   replyTo?: string
+  /** Send an office copy to info@companieshousecyprus.com. Used for document-ready emails only. */
+  sendOfficeCopy?: boolean
 }
 
 /**
