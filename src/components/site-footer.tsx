@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
+import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
 import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
 import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
+
 
 
 const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
@@ -81,6 +83,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link to="/certifications" className="text-muted-foreground hover:text-foreground">
+                Certifications
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" className="text-muted-foreground hover:text-foreground">
                 Contact
               </Link>
@@ -112,6 +119,7 @@ export function SiteFooter() {
             </li>
           </ul>
         </div>
+
       </div>
 
       <div className="border-t">
@@ -123,6 +131,12 @@ export function SiteFooter() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
+            <img
+              src={iso9001Asset.url}
+              alt="EUROCERT certified management system — ISO 9001:2015"
+              className="h-16 w-auto rounded-md bg-background p-1"
+              loading="lazy"
+            />
             <img
               src={iso27001Asset.url}
               alt="EUROCERT certified management system — ISO/IEC 27001:2023"
@@ -136,6 +150,7 @@ export function SiteFooter() {
               loading="lazy"
             />
           </div>
+
         </div>
       </div>
 
