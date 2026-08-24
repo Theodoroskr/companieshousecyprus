@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getSitemapChunk } from "@/lib/companies.functions";
+import { getSitemapChunk, getSitemapIndex } from "@/lib/companies.functions";
 
 const BASE_URL = "https://companieshousecyprus.com";
 
@@ -12,7 +12,10 @@ export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
         if (Number.isNaN(n) || n < 0) {
           return new Response("Invalid sitemap chunk", { status: 400 });
         }
-        const { rows } = await getSitemapChunk({ data: { n } });
+        const [{ rows }, { chunks }] = await Promise.all([
+          getSitemapChunk({ data: { n } }),
+          getSitemapIndex(),
+        ]);
 
         let body = `<?xml version="1.0" encoding="UTF-8"?>\n`;
         body += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
@@ -26,9 +29,17 @@ export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
 
         body += `</urlset>\n`;
 
-        return new Response(body, {
-          headers: { "content-type": "application/xml; charset=utf-8" },
-        });
+        const headers: Record<string, string> = {
+          "content-type": "application/xml; charset=utf-8",
+          "cache-control": "public, max-age=1800, stale-while-revalidate=3600",
+        };
+        const lastmod = chunks.find((chunk) => chunk.index === n)?.lastmod;
+        if (lastmod) {
+          const ms = new Date(lastmod).getTime();
+          if (!Number.isNaN(ms)) headers["last-modified"] = new Date(ms).toUTCString();
+        }
+
+        return new Response(body, { headers });
       },
     },
   },
