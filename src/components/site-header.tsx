@@ -41,31 +41,70 @@ export function SiteHeader() {
 
         <nav className="ml-4 hidden items-center gap-1 text-sm lg:flex">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
               Products <ChevronDown className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-80">
-              <DropdownMenuLabel>Certificates</DropdownMenuLabel>
-              {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
-                <DropdownMenuItem key={product.slug} asChild>
-                  <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
-                    <span className="font-medium">{product.name}</span>
-                    <span className="text-xs text-muted-foreground">{product.delivery}</span>
+            <DropdownMenuContent
+              align="start"
+              sideOffset={8}
+              className="w-[min(640px,calc(100vw-32px))] rounded-xl border border-border/70 bg-popover p-4 shadow-lift"
+            >
+              <div className="grid gap-6 sm:grid-cols-2">
+                {/* Certificates */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-copper">Certificates</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">€{formatPrice(40).replace("€", "")} each</p>
+                  <div className="mt-3 grid gap-0.5">
+                    {PRODUCTS.filter((p) => p.category === "certificate").map((product) => (
+                      <DropdownMenuItem key={product.slug} asChild className="p-0">
+                        <Link
+                          to="/report/$type"
+                          params={{ type: product.slug }}
+                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none transition-colors hover:bg-muted focus:bg-muted"
+                        >
+                          <span className="font-medium leading-tight">{product.name}</span>
+                          <span className="shrink-0 text-xs font-semibold text-copper">{formatPrice(product.price)}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reports & packs */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-copper">Reports &amp; packs</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">Registry intelligence &amp; bundles</p>
+                  <div className="mt-3 grid gap-0.5">
+                    {PRODUCTS.filter((p) => p.category === "report" || p.category === "pack").map((product) => (
+                      <DropdownMenuItem key={product.slug} asChild className="p-0">
+                        <Link
+                          to="/report/$type"
+                          params={{ type: product.slug }}
+                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none transition-colors hover:bg-muted focus:bg-muted"
+                        >
+                          <span className="font-medium leading-tight">{product.name}</span>
+                          <span className="shrink-0 text-xs font-semibold text-copper">{formatPrice(product.price)}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t border-border pt-3">
+                <DropdownMenuItem asChild className="p-0">
+                  <Link
+                    to="/pricing"
+                    className="flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted"
+                  >
+                    <span>View all products</span>
+                    <ArrowRight className="size-4 text-copper" />
                   </Link>
                 </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Reports &amp; packs</DropdownMenuLabel>
-              {PRODUCTS.filter((p) => p.category === "report" || p.category === "pack").map((product) => (
-                <DropdownMenuItem key={product.slug} asChild>
-                  <Link to="/report/$type" params={{ type: product.slug }} className="flex flex-col items-start">
-                    <span className="font-medium">{product.name}</span>
-                    <span className="text-xs text-muted-foreground">{product.delivery}</span>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
+
           <Link to="/pricing" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground">
             Pricing
           </Link>
