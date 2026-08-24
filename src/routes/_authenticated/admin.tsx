@@ -2,7 +2,9 @@ import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router"
 import { supabase } from "@/integrations/supabase/client";
 
 const ADMIN_LINKS = [
+  { to: "/admin", label: "Dashboard" },
   { to: "/admin/orders", label: "Orders" },
+
   { to: "/admin/import", label: "Imports" },
   { to: "/admin/api4all", label: "API4ALL" },
   { to: "/admin/users", label: "Users" },
