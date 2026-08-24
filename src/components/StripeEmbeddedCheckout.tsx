@@ -10,7 +10,12 @@ interface StripeEmbeddedCheckoutProps {
 export function StripeEmbeddedCheckout({ reference, token }: StripeEmbeddedCheckoutProps) {
   const fetchClientSecret = async (): Promise<string> => {
     const result = await createOrderCheckoutSession({
-      data: { reference, token, environment: getStripeEnvironment() },
+      data: {
+        reference,
+        token,
+        environment: getStripeEnvironment(),
+        origin: typeof window !== 'undefined' ? window.location.origin : '',
+      },
     });
     if ('error' in result) throw new Error(result.error);
     if (!result.clientSecret) throw new Error('Stripe did not return a client secret');
