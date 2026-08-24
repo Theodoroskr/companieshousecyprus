@@ -76,6 +76,7 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as ApiPublicA4aCallbackRouteImport } from './routes/api/public/a4a-callback'
 import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-poll'
 import { Route as ApiPublicCanonicalHealthRouteImport } from './routes/api/public/canonical-health'
+import { Route as ApiPublicChangeFeedRouteImport } from './routes/api/public/change-feed'
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
 import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/indexnow'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
@@ -446,6 +447,11 @@ const ApiPublicCanonicalHealthRoute =
     path: '/api/public/canonical-health',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicChangeFeedRoute = ApiPublicChangeFeedRouteImport.update({
+  id: '/api/public/change-feed',
+  path: '/api/public/change-feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCompanyLookupRoute = ApiPublicCompanyLookupRouteImport.update({
   id: '/api/public/company-lookup',
   path: '/api/public/company-lookup',
@@ -578,6 +584,7 @@ export interface FileRoutesByFullPath {
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/canonical-health': typeof ApiPublicCanonicalHealthRoute
+  '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
@@ -657,6 +664,7 @@ export interface FileRoutesByTo {
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/canonical-health': typeof ApiPublicCanonicalHealthRoute
+  '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
@@ -739,6 +747,7 @@ export interface FileRoutesById {
   '/api/public/a4a-callback': typeof ApiPublicA4aCallbackRoute
   '/api/public/a4a-poll': typeof ApiPublicA4aPollRoute
   '/api/public/canonical-health': typeof ApiPublicCanonicalHealthRoute
+  '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
@@ -821,6 +830,7 @@ export interface FileRouteTypes {
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
     | '/api/public/canonical-health'
+    | '/api/public/change-feed'
     | '/api/public/company-lookup'
     | '/api/public/indexnow'
     | '/api/public/order-reminders'
@@ -900,6 +910,7 @@ export interface FileRouteTypes {
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
     | '/api/public/canonical-health'
+    | '/api/public/change-feed'
     | '/api/public/company-lookup'
     | '/api/public/indexnow'
     | '/api/public/order-reminders'
@@ -981,6 +992,7 @@ export interface FileRouteTypes {
     | '/api/public/a4a-callback'
     | '/api/public/a4a-poll'
     | '/api/public/canonical-health'
+    | '/api/public/change-feed'
     | '/api/public/company-lookup'
     | '/api/public/indexnow'
     | '/api/public/order-reminders'
@@ -1054,6 +1066,7 @@ export interface RootRouteChildren {
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
   ApiPublicA4aPollRoute: typeof ApiPublicA4aPollRoute
   ApiPublicCanonicalHealthRoute: typeof ApiPublicCanonicalHealthRoute
+  ApiPublicChangeFeedRoute: typeof ApiPublicChangeFeedRoute
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
   ApiPublicIndexnowRoute: typeof ApiPublicIndexnowRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
@@ -1537,6 +1550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCanonicalHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/change-feed': {
+      id: '/api/public/change-feed'
+      path: '/api/public/change-feed'
+      fullPath: '/api/public/change-feed'
+      preLoaderRoute: typeof ApiPublicChangeFeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/company-lookup': {
       id: '/api/public/company-lookup'
       path: '/api/public/company-lookup'
@@ -1726,6 +1746,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
   ApiPublicA4aPollRoute: ApiPublicA4aPollRoute,
   ApiPublicCanonicalHealthRoute: ApiPublicCanonicalHealthRoute,
+  ApiPublicChangeFeedRoute: ApiPublicChangeFeedRoute,
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
   ApiPublicIndexnowRoute: ApiPublicIndexnowRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,

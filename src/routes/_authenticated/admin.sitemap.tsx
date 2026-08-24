@@ -90,6 +90,33 @@ type CanonicalHealth = {
   checks?: CanonicalCheck[];
 };
 
+type ChangeFeedRun = {
+  id: string;
+  windowStart: string;
+  windowEnd: string;
+  changedCount: number;
+  enqueuedCount: number;
+  chunksRefreshed: number | null;
+  indexNowSubmitted: number;
+  indexNowStatus: string | null;
+  status: string;
+  message: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+};
+
+type ChangeFeed = {
+  generatedAt: string;
+  windowStart: string;
+  windowEnd: string;
+  count: number;
+  truncated: boolean;
+  ids: string[];
+  runs: ChangeFeedRun[];
+};
+
+
+
 
 function SitemapHealthPage() {
   const query = useQuery<Health>({
@@ -122,8 +149,20 @@ function SitemapHealthPage() {
     refetchOnWindowFocus: false,
   });
 
+  const changeFeed = useQuery<ChangeFeed>({
+    queryKey: ["change-feed"],
+    queryFn: async () => {
+      const res = await fetch("/api/public/change-feed?limit=1000");
+      if (!res.ok) throw new Error(`Change feed failed (${res.status})`);
+      return res.json();
+    },
+    refetchOnWindowFocus: false,
+  });
+
   const data = query.data;
   const canonicalData = canonical.data;
+  const feed = changeFeed.data;
+  const lastRun = feed?.runs?.[0];
 
 
 
@@ -170,6 +209,54 @@ function SitemapHealthPage() {
           </CardContent>
         </Card>
       )}
+
+      {feed && (
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Daily change feed (updated company IDs)</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <a href="/api/public/change-feed" target="_blank" rel="noreferrer">JSON feed</a>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => changeFeed.refetch()} disabled={changeFeed.isFetching}>
+                {changeFeed.isFetching ? "Loading…" : "Refresh"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+              <span className="text-muted-foreground">
+                Changed since {fmt(feed.windowStart)}:{" "}
+                <span className="font-medium text-foreground">{feed.count.toLocaleString()}</span>
+                {feed.truncated ? " (capped)" : ""}
+              </span>
+              {lastRun && (
+                <>
+                  <span>
+                    <Badge variant={lastRun.status === "completed" ? "default" : "destructive"}>
+                      Last run: {lastRun.status}
+                    </Badge>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Queued <span className="font-medium text-foreground">{lastRun.enqueuedCount.toLocaleString()}</span> ·
+                    submitted <span className="font-medium text-foreground">{lastRun.indexNowSubmitted.toLocaleString()}</span> ·
+                    chunks {lastRun.chunksRefreshed ?? "—"} · {fmt(lastRun.finishedAt ?? lastRun.startedAt)}
+                  </span>
+                </>
+              )}
+            </div>
+            {lastRun?.message && <p className="text-xs text-destructive">{lastRun.message}</p>}
+            {feed.ids.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Sample IDs: {feed.ids.slice(0, 12).join(", ")}
+                {feed.ids.length > 12 ? ` +${feed.ids.length - 12} more` : ""}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+
 
       {query.isLoading && <p className="text-sm text-muted-foreground">Probing sitemaps…</p>}
       {query.isError && (

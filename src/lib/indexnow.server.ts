@@ -120,7 +120,11 @@ export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
       .update({ attempts: 1, last_error: message })
       .in("slug", slugs);
 
-    if (response.status === 429 || response.status >= 500) {
+    // Bing answers 403 SiteVerificationNotCompleted while it re-checks the key
+    // file — transient, not a bad key.
+    const verificationPending = response.status === 403 && body.includes("SiteVerificationNotCompleted");
+
+    if (response.status === 429 || response.status >= 500 || verificationPending) {
       // Transient: park until the next scheduled run, and pause only after the
       // limiter keeps rejecting us.
       const streak = (state?.consecutive_rate_limits ?? 0) + 1;
