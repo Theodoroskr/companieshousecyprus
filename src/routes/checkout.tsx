@@ -110,11 +110,23 @@ function CheckoutPage() {
                 });
                 clear();
                 setPlaced(result);
+                try {
+                  const payment = await beginPayment({
+                    data: { reference: result.reference, token: result.token, origin: window.location.origin },
+                  });
+                  if (payment.checkoutUrl) {
+                    window.location.href = payment.checkoutUrl;
+                    return;
+                  }
+                } catch {
+                  /* fall back to the order page, where the customer can retry payment */
+                }
                 void navigate({
                   to: "/order/$reference",
                   params: { reference: result.reference },
                   search: { token: result.token },
                 });
+
               } catch (submitError) {
                 setError(submitError instanceof Error ? submitError.message : "Could not submit your order");
               } finally {
