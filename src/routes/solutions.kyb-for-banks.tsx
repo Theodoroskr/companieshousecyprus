@@ -53,7 +53,7 @@ export const Route = createFileRoute("/solutions/kyb-for-banks")({
       },
     ],
   }),
-  component: KybForBanksPage;
+  component: KybForBanksPage,
 });
 
 const USE_CASES = [
