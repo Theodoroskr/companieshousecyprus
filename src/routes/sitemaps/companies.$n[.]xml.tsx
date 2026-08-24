@@ -18,13 +18,12 @@ export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
         body += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
         for (const row of rows) {
           const loc = `${BASE_URL}/company/${row.slug}`;
-          const lastmod = row.updated_at ? new Date(row.updated_at).toISOString() : null;
           body += `  <url>\n`;
           body += `    <loc>${loc}</loc>\n`;
-          if (lastmod) body += `    <lastmod>${lastmod}</lastmod>\n`;
           body += `    <changefreq>monthly</changefreq>\n`;
           body += `  </url>\n`;
         }
+
         body += `</urlset>\n`;
 
         return new Response(body, {
