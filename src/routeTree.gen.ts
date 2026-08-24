@@ -21,6 +21,8 @@ import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as New_company_sitemapDotxmlRouteImport } from './routes/new_company_sitemap[.]xml'
+import { Route as New_company_sitemap_0DotxmlRouteImport } from './routes/new_company_sitemap_0[.]xml'
+import { Route as New_company_sitemap_1DotxmlRouteImport } from './routes/new_company_sitemap_1[.]xml'
 import { Route as New_company_sitemap_10DotxmlRouteImport } from './routes/new_company_sitemap_10[.]xml'
 import { Route as New_company_sitemap_2DotxmlRouteImport } from './routes/new_company_sitemap_2[.]xml'
 import { Route as New_company_sitemap_3DotxmlRouteImport } from './routes/new_company_sitemap_3[.]xml'
@@ -128,6 +130,18 @@ const New_company_sitemapDotxmlRoute =
   New_company_sitemapDotxmlRouteImport.update({
     id: '/new_company_sitemap.xml',
     path: '/new_company_sitemap.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_0DotxmlRoute =
+  New_company_sitemap_0DotxmlRouteImport.update({
+    id: '/new_company_sitemap_0.xml',
+    path: '/new_company_sitemap_0.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const New_company_sitemap_1DotxmlRoute =
+  New_company_sitemap_1DotxmlRouteImport.update({
+    id: '/new_company_sitemap_1.xml',
+    path: '/new_company_sitemap_1.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
 const New_company_sitemap_10DotxmlRoute =
@@ -405,6 +419,8 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
+  '/new_company_sitemap_0.xml': typeof New_company_sitemap_0DotxmlRoute
+  '/new_company_sitemap_1.xml': typeof New_company_sitemap_1DotxmlRoute
   '/new_company_sitemap_10.xml': typeof New_company_sitemap_10DotxmlRoute
   '/new_company_sitemap_2.xml': typeof New_company_sitemap_2DotxmlRoute
   '/new_company_sitemap_3.xml': typeof New_company_sitemap_3DotxmlRoute
@@ -466,6 +482,8 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
+  '/new_company_sitemap_0.xml': typeof New_company_sitemap_0DotxmlRoute
+  '/new_company_sitemap_1.xml': typeof New_company_sitemap_1DotxmlRoute
   '/new_company_sitemap_10.xml': typeof New_company_sitemap_10DotxmlRoute
   '/new_company_sitemap_2.xml': typeof New_company_sitemap_2DotxmlRoute
   '/new_company_sitemap_3.xml': typeof New_company_sitemap_3DotxmlRoute
@@ -528,6 +546,8 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
+  '/new_company_sitemap_0.xml': typeof New_company_sitemap_0DotxmlRoute
+  '/new_company_sitemap_1.xml': typeof New_company_sitemap_1DotxmlRoute
   '/new_company_sitemap_10.xml': typeof New_company_sitemap_10DotxmlRoute
   '/new_company_sitemap_2.xml': typeof New_company_sitemap_2DotxmlRoute
   '/new_company_sitemap_3.xml': typeof New_company_sitemap_3DotxmlRoute
@@ -591,6 +611,8 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new_company_sitemap.xml'
+    | '/new_company_sitemap_0.xml'
+    | '/new_company_sitemap_1.xml'
     | '/new_company_sitemap_10.xml'
     | '/new_company_sitemap_2.xml'
     | '/new_company_sitemap_3.xml'
@@ -652,6 +674,8 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new_company_sitemap.xml'
+    | '/new_company_sitemap_0.xml'
+    | '/new_company_sitemap_1.xml'
     | '/new_company_sitemap_10.xml'
     | '/new_company_sitemap_2.xml'
     | '/new_company_sitemap_3.xml'
@@ -713,6 +737,8 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new_company_sitemap.xml'
+    | '/new_company_sitemap_0.xml'
+    | '/new_company_sitemap_1.xml'
     | '/new_company_sitemap_10.xml'
     | '/new_company_sitemap_2.xml'
     | '/new_company_sitemap_3.xml'
@@ -776,6 +802,8 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   New_company_sitemapDotxmlRoute: typeof New_company_sitemapDotxmlRoute
+  New_company_sitemap_0DotxmlRoute: typeof New_company_sitemap_0DotxmlRoute
+  New_company_sitemap_1DotxmlRoute: typeof New_company_sitemap_1DotxmlRoute
   New_company_sitemap_10DotxmlRoute: typeof New_company_sitemap_10DotxmlRoute
   New_company_sitemap_2DotxmlRoute: typeof New_company_sitemap_2DotxmlRoute
   New_company_sitemap_3DotxmlRoute: typeof New_company_sitemap_3DotxmlRoute
@@ -899,6 +927,20 @@ declare module '@tanstack/react-router' {
       path: '/new_company_sitemap.xml'
       fullPath: '/new_company_sitemap.xml'
       preLoaderRoute: typeof New_company_sitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_0.xml': {
+      id: '/new_company_sitemap_0.xml'
+      path: '/new_company_sitemap_0.xml'
+      fullPath: '/new_company_sitemap_0.xml'
+      preLoaderRoute: typeof New_company_sitemap_0DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new_company_sitemap_1.xml': {
+      id: '/new_company_sitemap_1.xml'
+      path: '/new_company_sitemap_1.xml'
+      fullPath: '/new_company_sitemap_1.xml'
+      preLoaderRoute: typeof New_company_sitemap_1DotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/new_company_sitemap_10.xml': {
@@ -1294,6 +1336,8 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   New_company_sitemapDotxmlRoute: New_company_sitemapDotxmlRoute,
+  New_company_sitemap_0DotxmlRoute: New_company_sitemap_0DotxmlRoute,
+  New_company_sitemap_1DotxmlRoute: New_company_sitemap_1DotxmlRoute,
   New_company_sitemap_10DotxmlRoute: New_company_sitemap_10DotxmlRoute,
   New_company_sitemap_2DotxmlRoute: New_company_sitemap_2DotxmlRoute,
   New_company_sitemap_3DotxmlRoute: New_company_sitemap_3DotxmlRoute,
