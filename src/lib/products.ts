@@ -13,6 +13,10 @@ export type Product = {
   includes: { title: string; detail: string }[];
   typicalUse: string;
   popular?: boolean;
+  /** Number of Registrar certificates included — each attracts the certificate service fee. */
+  certificateCount?: number;
+  /** Portion of the price that is subject to VAT (e.g. the report element inside a bundle). */
+  vatablePrice?: number;
 };
 
 export const CURRENCY = "EUR";
@@ -217,9 +221,11 @@ export const PRODUCTS: Product[] = [
     eyebrow: "Bundle",
     headline: "A complete onboarding file for a Cyprus counterparty",
     tagline: "Good Standing, Directors, Shareholders and full profile in one branded download.",
-    price: 190,
+    price: 185,
     delivery: "1–2 business days",
     category: "pack",
+    certificateCount: 3,
+    vatablePrice: 65,
     description: [
       "Everything a compliance team needs to onboard a Cyprus entity: the three core Registrar certificates plus the consolidated company profile, bundled into a single, indexed PDF.",
     ],
@@ -241,6 +247,7 @@ export const PRODUCTS: Product[] = [
     price: 160,
     delivery: "1–2 business days",
     category: "pack",
+    certificateCount: 4,
     description: [
       "The documentation set most frequently requested in Cyprus public procurement and banking facility applications, issued together so nothing is missing at submission.",
     ],
