@@ -144,12 +144,25 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
-          <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
-            My orders
-          </Link>
-          <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
-            Sign in
-          </Link>
+          {account.ready && account.signedIn ? (
+            <>
+              <Link to="/account/orders" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+                My orders
+              </Link>
+              {account.isAdmin && (
+                <Link
+                  to="/admin/orders"
+                  className="hidden items-center gap-1 rounded-md border border-copper/40 px-2.5 py-1 text-xs font-semibold text-copper hover:bg-copper/10 sm:inline-flex"
+                >
+                  <ShieldCheck className="size-3.5" /> Admin
+                </Link>
+              )}
+            </>
+          ) : (
+            <Link to="/auth" className="hidden text-sm text-muted-foreground hover:text-foreground sm:block">
+              Sign in
+            </Link>
+          )}
           <Button asChild size="sm" className="hidden sm:inline-flex">
             <Link to="/search" search={{ q: "", page: 1 }}>
               Order a certificate
