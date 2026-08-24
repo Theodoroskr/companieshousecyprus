@@ -81,7 +81,11 @@ function ReportPage() {
                 <>
                   <p className="font-display text-4xl font-bold">{formatPrice(breakdown.documentPrice)}</p>
                   <p className="mt-1 text-sm text-primary-foreground/70">
-                    per company {product.category === "certificate" ? "· certificate only" : "· report only"}
+                    per company {product.category === "certificate"
+                      ? "· certificate only"
+                      : product.category === "pack"
+                        ? "· report & certificates"
+                        : "· report only"}
                   </p>
                   {product.category === "certificate" && (
                     <p className="mt-1 text-xs text-primary-foreground/60">
