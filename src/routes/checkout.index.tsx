@@ -234,24 +234,49 @@ function CheckoutPage() {
                 }
 
                 const nextCompanyErrors: Record<number, { companyName?: string; companyNumber?: string }> = {};
-                let hasCompanyErrors = false;
-                for (const { index } of itemsNeedingCompany) {
+                const missingSummary: string[] = [];
+                let firstInvalidField: string | null = null;
+                for (const { index, product } of itemsNeedingCompany) {
                   const input = companyInputs[index] ?? { companyName: '', companyNumber: '' };
+                  const label = product?.name ?? 'this item';
                   const errors: { companyName?: string; companyNumber?: string } = {};
-                  if (!input.companyName.trim()) {
-                    errors.companyName = 'Company name is required.';
-                    hasCompanyErrors = true;
+                  const name = input.companyName.trim();
+                  const number = input.companyNumber.trim();
+
+                  if (!name) {
+                    errors.companyName = `Enter the company name for “${label}”, exactly as it appears on the Cyprus register.`;
+                  } else if (name.length < 3) {
+                    errors.companyName = `“${name}” looks too short — enter the full registered company name for “${label}”.`;
                   }
-                  if (!input.companyNumber.trim()) {
-                    errors.companyNumber = 'Registration number is required.';
-                    hasCompanyErrors = true;
+
+                  if (!number) {
+                    errors.companyNumber = `Enter the registration number for “${label}” (for example HE 252407 or C 409882).`;
+                  } else if (!/\d/.test(number)) {
+                    errors.companyNumber = `“${number}” has no digits — a Cyprus registration number looks like HE 252407 or C 409882.`;
+                  }
+
+                  if (errors.companyName) {
+                    missingSummary.push(`${label}: ${errors.companyName}`);
+                    firstInvalidField ??= `company-name-${index}`;
+                  }
+                  if (errors.companyNumber) {
+                    missingSummary.push(`${label}: ${errors.companyNumber}`);
+                    firstInvalidField ??= `company-number-${index}`;
                   }
                   nextCompanyErrors[index] = errors;
                 }
-                if (hasCompanyErrors) {
+                if (missingSummary.length > 0) {
                   setCompanyInputErrors(nextCompanyErrors);
+                  setCompanySummaryErrors(missingSummary);
+                  if (firstInvalidField) {
+                    const el = document.getElementById(firstInvalidField);
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    (el as HTMLInputElement | null)?.focus({ preventScroll: true });
+                  }
                   throw new Error('validation');
                 }
+                setCompanySummaryErrors([]);
+
 
                 if (createAccount) {
                   const passwordError = validatePassword(password, confirmPassword);
