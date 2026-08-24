@@ -46,8 +46,9 @@ function OrderPage() {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const load = useServerFn(fetchOrder);
-  const startPayment = useServerFn(startOrderPayment);
+  const startStripe = useServerFn(startStripeOrderPayment);
   const syncPayment = useServerFn(syncOrderPayment);
+  const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
   useEffect(() => setTokenInput(token), [token]);
 
