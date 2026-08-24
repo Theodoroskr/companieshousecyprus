@@ -119,7 +119,7 @@ function HomePage() {
               </Button>
             </div>
             <p className="mt-3 text-sm text-primary-foreground/60">
-              Try “SOFTBOT”, “HE 252407” or browse by district below.
+              Try “SOFTBOT” or “HE 252407”.
             </p>
           </form>
 
