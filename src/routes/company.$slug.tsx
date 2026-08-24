@@ -11,6 +11,7 @@ import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { normalizeCompanySlug } from "@/lib/slug";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
+import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
 
 
 function RelatedCompanies({ slug }: { slug: string }) {
