@@ -100,6 +100,81 @@ function Api4allAdminPage() {
       </section>
 
       <section className="mt-6 rounded-xl border bg-card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-medium">Automatic report collection</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Paid structure and credit report items are ordered with API4ALL automatically. A scheduled job
+              retries the report every 5 minutes until it is produced, then stores it and emails the client.
+            </p>
+            <p className="mt-2 text-sm">
+              Job state:{" "}
+              <span className={job?.paused ? "text-destructive" : "text-emerald-600"}>
+                {job ? (job.paused ? "Paused" : "Active") : "Loading…"}
+              </span>
+              {job?.lastRunAt ? ` · last run ${new Date(job.lastRunAt).toLocaleString("en-GB")}` : ""}
+            </p>
+            {job?.lastError && <p className="mt-1 text-sm text-destructive">{job.lastError}</p>}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
+                run("Poll", async () => {
+                  const result = await runA4aPollNow();
+                  setOutput(JSON.stringify(result, null, 2));
+                  toast.success("Poll finished");
+                  refreshJob();
+                })
+              }
+            >
+              Run poll now
+            </Button>
+            {job?.paused && (
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  run("Resume", async () => {
+                    await resumeA4aJob();
+                    toast.success("Job resumed");
+                    refreshJob();
+                  })
+                }
+              >
+                Resume job
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {callbackUrl && (
+          <div className="mt-4">
+            <Label htmlFor="callback">Callback URL for API4ALL (push delivery)</Label>
+            <div className="mt-1 flex gap-2">
+              <Input id="callback" readOnly value={callbackUrl} className="font-mono text-xs" />
+              <Button
+                variant="outline"
+                onClick={() => {
+                  navigator.clipboard.writeText(callbackUrl);
+                  toast.success("Callback URL copied");
+                }}
+              >
+                Copy
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Give this URL to API4ALL to have reports pushed to us as JSON. Keep the token private — it
+              authenticates the endpoint.
+            </p>
+          </div>
+        )}
+      </section>
+
+
+
+      <section className="mt-6 rounded-xl border bg-card p-5">
         <h2 className="text-lg font-medium">1. Find the API4ALL company code</h2>
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <div className="min-w-[120px]">
