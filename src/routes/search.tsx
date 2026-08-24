@@ -145,10 +145,72 @@ function SearchPage() {
 
       {q ? (
         <div className="mx-auto max-w-7xl px-4 py-10">
-          <p className="text-sm text-muted-foreground">
+          <div className="rounded-xl border bg-card p-4 shadow-panel">
+            <div className="flex flex-col gap-4 md:flex-row md:gap-8">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Entity type</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {TYPE_OPTIONS.map((option) => {
+                    const on = types.includes(option.code);
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => setSearch({ page: 1, types: toggle(types, option.code) })}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          on
+                            ? "border-copper bg-copper text-copper-foreground"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Registry status</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {STATUS_OPTIONS.map((option) => {
+                    const on = statuses.includes(option.code);
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => setSearch({ page: 1, statuses: toggle(statuses, option.code) })}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          on
+                            ? "border-copper bg-copper text-copper-foreground"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            {(types.length > 0 || statuses.length > 0) && (
+              <button
+                type="button"
+                onClick={() => setSearch({ page: 1, types: [], statuses: [] })}
+                className="mt-4 text-xs font-medium text-copper underline-offset-4 hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          <p className="mt-5 text-sm text-muted-foreground">
             {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
             {q ? ` for “${q}”` : ""}
+            {types.length + statuses.length > 0 ? " (filtered)" : ""}
           </p>
+
 
           <ul className="mt-5 divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
             {data.rows.length === 0 && (
