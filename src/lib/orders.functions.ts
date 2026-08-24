@@ -121,11 +121,11 @@ export const syncOrderPayment = createServerFn({ method: "POST" })
 /** Orders belonging to the signed-in customer (matched by user id or account email). */
 export const listMyOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ email: string; orders: unknown[] }> => {
+  .handler(async ({ context }): Promise<{ email: string; orders: OrderListItem[] }> => {
     const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
     if (!context.userId || !email) return { email: email || "", orders: [] };
     const { listOrdersForUser } = await import("@/lib/orders.server");
-    return { email, orders: await listOrdersForUser(context.userId, email) };
+    return { email, orders: (await listOrdersForUser(context.userId, email)) as OrderListItem[] };
   });
 
 /** Place an order while signed in. The user id is taken from the verified session. */
