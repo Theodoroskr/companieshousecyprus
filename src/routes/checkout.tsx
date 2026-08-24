@@ -110,26 +110,39 @@ function CheckoutPage() {
               event.preventDefault();
               if (submitting) return;
               const form = new FormData(event.currentTarget);
+              const fullName = String(form.get('fullName') ?? '');
+              const email = String(form.get('email') ?? '');
               setSubmitting(true);
               setError(null);
               try {
-                const result = await placeOrder({
-                  data: {
-                    fullName: String(form.get('fullName') ?? ''),
-                    email: String(form.get('email') ?? ''),
-                    firm: String(form.get('company') ?? ''),
-                    vatNumber: String(form.get('vat') ?? ''),
-                    phone: String(form.get('phone') ?? ''),
-                    notes: String(form.get('notes') ?? ''),
-                    items: items.map((item) => ({
-                      productSlug: item.productSlug,
-                      companySlug: item.companySlug,
-                      companyName: item.companyName,
-                      companyNumber: item.companyNumber,
-                      quantity: item.quantity,
-                    })),
-                  },
-                });
+                if (createAccount) {
+                  if (!password || password.length < 8) throw new Error('Choose a password of at least 8 characters');
+                  if (password !== confirmPassword) throw new Error('Passwords do not match');
+                  const { error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: fullName } },
+                  });
+                  if (signUpError) throw new Error(signUpError.message);
+                }
+                const orderPayload = {
+                  fullName,
+                  email,
+                  firm: String(form.get('company') ?? ''),
+                  vatNumber: String(form.get('vat') ?? ''),
+                  phone: String(form.get('phone') ?? ''),
+                  notes: String(form.get('notes') ?? ''),
+                  items: items.map((item) => ({
+                    productSlug: item.productSlug,
+                    companySlug: item.companySlug,
+                    companyName: item.companyName,
+                    companyNumber: item.companyNumber,
+                    quantity: item.quantity,
+                  })),
+                };
+                const result = account.signedIn
+                  ? await placeOrderAsUser({ data: orderPayload })
+                  : await placeOrder({ data: orderPayload });
                 clear();
                 setPlaced(result);
                 // Open Stripe embedded checkout immediately.
