@@ -153,6 +153,7 @@ export type Database = {
           last_run_at: string | null
           locked_until: string | null
           paused: boolean
+          secret: string | null
           updated_at: string
         }
         Insert: {
@@ -161,6 +162,7 @@ export type Database = {
           last_run_at?: string | null
           locked_until?: string | null
           paused?: boolean
+          secret?: string | null
           updated_at?: string
         }
         Update: {
@@ -169,6 +171,7 @@ export type Database = {
           last_run_at?: string | null
           locked_until?: string | null
           paused?: boolean
+          secret?: string | null
           updated_at?: string
         }
         Relationships: []
