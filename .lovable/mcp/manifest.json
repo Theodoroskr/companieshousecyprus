@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "sdk_version": "0.28.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "companies-house-cyprus",
+      "version": "0.1.0",
+      "title": "Companies House Cyprus"
+    },
+    "tools": [
+      {
+        "name": "search_companies",
+        "title": "Search Cyprus companies",
+        "description": "Search the public Cyprus company registry by company name fragment or registration number (e.g. 'HE 252407', 'C 4404'). Returns matching companies with registration number, status, district and a profile URL.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Company name fragment or registration number."
+            },
+            "page": {
+              "type": "integer",
+              "description": "Result page, starting at 1. Defaults to 1."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_company_profile",
+        "title": "Get Cyprus company profile",
+        "description": "Return the full public registry profile for one Cyprus company: registration number, type, status, registration date, company age, address in Greek and transliterated Latin script, and listed officials. Accepts a registration number ('HE 252407', 'C 4404'), a profile slug, or an exact-ish company name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "description": "Registration number, profile slug, or company name to resolve."
+            }
+          },
+          "required": [
+            "identifier"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_products",
+        "title": "List orderable reports and certificates",
+        "description": "List the Cyprus company reports, certificates and packs that can be ordered on Companies House Cyprus, with prices in EUR, delivery times and order URLs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "certificate",
+                "report",
+                "pack"
+              ],
+              "description": "Optional filter: certificate, report or pack."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
