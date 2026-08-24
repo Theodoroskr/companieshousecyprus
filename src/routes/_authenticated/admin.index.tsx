@@ -172,9 +172,7 @@ function AdminDashboardPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
-                            {STATUS_LABEL[order.status] ?? order.status}
-                          </span>
+                          <StatusBadge status={order.status} />
                           <span
                             className={
                               late
