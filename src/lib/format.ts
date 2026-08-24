@@ -1,11 +1,36 @@
-/** Format an ISO date (YYYY-MM-DD) as DD/MM/YYYY. */
+/** Registry / report timestamps are authored in Cyprus local time. */
+export const REGISTRY_TIME_ZONE = "Asia/Nicosia";
+
+const dayFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: REGISTRY_TIME_ZONE,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+/**
+ * Format a date or timestamp as DD/MM/YYYY.
+ *
+ * Timestamps carrying an explicit zone (trailing `Z` or `±HH:MM`) are converted
+ * to Cyprus time first, so the displayed day matches the actual registry date.
+ * Date-only values and naive timestamps are already Cyprus-local and are read
+ * literally, avoiding an off-by-one-day shift.
+ */
 export function formatDate(value?: string | null): string | null {
   if (!value) return null;
+
+  const zoned = /\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(Z|[+-]\d{2}:?\d{2})$/i.test(value.trim());
+  if (zoned) {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return dayFormatter.format(parsed);
+  }
+
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
   if (!match) return value;
   const [, y, m, d] = match;
   return `${d}/${m}/${y}`;
 }
+
 
 const DIGRAPHS: Record<string, string> = {
   ΑΙ: "Ai", ΕΙ: "Ei", ΟΙ: "Oi", ΟΥ: "Ou", ΑΥ: "Av", ΕΥ: "Ev", ΗΥ: "Iv",
