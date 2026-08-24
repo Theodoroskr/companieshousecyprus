@@ -60,7 +60,12 @@ function RelatedCompanies({ slug }: { slug: string }) {
       {byOfficial.length > 0 && (
         <div className="mt-6">
           <h3 className="text-base font-semibold">Sharing an official or owner</h3>
-          <ul className="mt-2 divide-y">
+          <p className="mt-2 rounded-lg border border-copper/30 bg-copper/5 px-3 py-2 text-sm text-muted-foreground">
+            <strong className="font-semibold text-foreground">Note:</strong> these are possible matches identified using
+            name matching. Similar or identical names do not always indicate the same person or entity — please verify
+            before relying on a connection.
+          </p>
+          <ul className="mt-3 divide-y">
             {byOfficial.map((row) => (
               <li key={row.slug} className="flex flex-col gap-0.5 py-3">
                 <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
