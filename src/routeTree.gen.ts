@@ -26,9 +26,11 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
+import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -117,6 +119,11 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderReferenceRoute = OrderReferenceRouteImport.update({
+  id: '/order/$reference',
+  path: '/order/$reference',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportTypeRoute = ReportTypeRouteImport.update({
   id: '/report/$type',
   path: '/report/$type',
@@ -132,6 +139,12 @@ const AuthenticatedAdminImportRoute =
   AuthenticatedAdminImportRouteImport.update({
     id: '/admin/import',
     path: '/admin/import',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminOrdersRoute =
+  AuthenticatedAdminOrdersRouteImport.update({
+    id: '/admin/orders',
+    path: '/admin/orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
@@ -168,9 +181,11 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -192,9 +207,11 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -218,9 +235,11 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
+  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -244,9 +263,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/company/$slug'
+    | '/order/$reference'
     | '/report/$type'
     | '/admin/api4all'
     | '/admin/import'
+    | '/admin/orders'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -268,9 +289,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/company/$slug'
+    | '/order/$reference'
     | '/report/$type'
     | '/admin/api4all'
     | '/admin/import'
+    | '/admin/orders'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -293,9 +316,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/company/$slug'
+    | '/order/$reference'
     | '/report/$type'
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/import'
+    | '/_authenticated/admin/orders'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -319,6 +344,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
@@ -446,6 +472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order/$reference': {
+      id: '/order/$reference'
+      path: '/order/$reference'
+      fullPath: '/order/$reference'
+      preLoaderRoute: typeof OrderReferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report/$type': {
       id: '/report/$type'
       path: '/report/$type'
@@ -465,6 +498,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/import'
       fullPath: '/admin/import'
       preLoaderRoute: typeof AuthenticatedAdminImportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/orders': {
+      id: '/_authenticated/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/companies/a-z/$letter': {
@@ -494,11 +534,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminApi4allRoute: typeof AuthenticatedAdminApi4allRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
+  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminApi4allRoute: AuthenticatedAdminApi4allRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
+  AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -522,6 +564,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CompanySlugRoute: CompanySlugRoute,
+  OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,

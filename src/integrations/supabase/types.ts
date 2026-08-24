@@ -178,6 +178,137 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          a4a_code: string | null
+          a4a_kind: string | null
+          company_name: string | null
+          company_number: string | null
+          company_slug: string | null
+          created_at: string
+          delivered_at: string | null
+          document_price_cents: number
+          fulfilment_message: string | null
+          fulfilment_status: string
+          id: string
+          order_id: string
+          product_name: string
+          product_slug: string
+          quantity: number
+          report_json: Json | null
+          service_fee_cents: number
+          total_cents: number
+          vat_cents: number
+        }
+        Insert: {
+          a4a_code?: string | null
+          a4a_kind?: string | null
+          company_name?: string | null
+          company_number?: string | null
+          company_slug?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          document_price_cents?: number
+          fulfilment_message?: string | null
+          fulfilment_status?: string
+          id?: string
+          order_id: string
+          product_name: string
+          product_slug: string
+          quantity?: number
+          report_json?: Json | null
+          service_fee_cents?: number
+          total_cents?: number
+          vat_cents?: number
+        }
+        Update: {
+          a4a_code?: string | null
+          a4a_kind?: string | null
+          company_name?: string | null
+          company_number?: string | null
+          company_slug?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          document_price_cents?: number
+          fulfilment_message?: string | null
+          fulfilment_status?: string
+          id?: string
+          order_id?: string
+          product_name?: string
+          product_slug?: string
+          quantity?: number
+          report_json?: Json | null
+          service_fee_cents?: number
+          total_cents?: number
+          vat_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          access_token: string
+          created_at: string
+          email: string
+          firm: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          reference: string
+          service_fee_cents: number
+          status: string
+          subtotal_cents: number
+          total_cents: number
+          updated_at: string
+          vat_cents: number
+          vat_number: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          email: string
+          firm?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          reference: string
+          service_fee_cents?: number
+          status?: string
+          subtotal_cents?: number
+          total_cents?: number
+          updated_at?: string
+          vat_cents?: number
+          vat_number?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          email?: string
+          firm?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          reference?: string
+          service_fee_cents?: number
+          status?: string
+          subtotal_cents?: number
+          total_cents?: number
+          updated_at?: string
+          vat_cents?: number
+          vat_number?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

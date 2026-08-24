@@ -1,0 +1,68 @@
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+export type PlaceOrderPayload = {
+  fullName: string;
+  email: string;
+  firm?: string | null;
+  vatNumber?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  items: {
+    productSlug: string;
+    companySlug: string | null;
+    companyName: string | null;
+    companyNumber: string | null;
+    quantity: number;
+  }[];
+};
+
+export const submitOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: PlaceOrderPayload) => {
+    if (!data.fullName?.trim()) throw new Error("Full name is required");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email?.trim() ?? "")) throw new Error("A valid email is required");
+    if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Your basket is empty");
+    if (data.items.length > 30) throw new Error("Too many items in one order");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { placeOrder } = await import("@/lib/orders.server");
+    return placeOrder(data);
+  });
+
+export const fetchOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; token: string }) => data)
+  .handler(async ({ data }) => {
+    if (!data.reference?.trim() || !data.token?.trim()) return null;
+    const { readOrder } = await import("@/lib/orders.server");
+    return readOrder(data.reference, data.token);
+  });
+
+export const adminListOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { listOrders } = await import("@/lib/orders.server");
+    return { orders: await listOrders() };
+  });
+
+export const adminSetOrderStatus = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; status: string }) => data)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { setOrderStatus } = await import("@/lib/orders.server");
+    return setOrderStatus(data.reference.trim(), data.status);
+  });
+
+export const adminFulfilItem = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string }) => data)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { fulfilOrderItem } = await import("@/lib/orders.server");
+    return fulfilOrderItem(data.itemId.trim());
+  });
