@@ -13,6 +13,8 @@ const SENDER_DOMAIN = "notify.companieshousecyprus.com"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // Can be the root domain when display_from_root is enabled — this is cosmetic only.
 const FROM_DOMAIN = "notify.companieshousecyprus.com"
+// Every outgoing email is copied to the office inbox.
+const OFFICE_COPY = "info@companieshousecyprus.com"
 
 export type SendTemplateEmailResult =
   | { sent: true }
@@ -101,7 +103,7 @@ async function sendOfficeCopy(args: {
   html: string
   text: string
   templateName: string
-  idempotencyKey?: string
+  idempotencyKey?: string | undefined
 }) {
   try {
     await sendLovableEmail(
