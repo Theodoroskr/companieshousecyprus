@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Clock, Inbox, Loader2, RefreshCw, Timer } from "lucide-react";
-import { adminListOrders, type OrderListItem } from "@/lib/orders.functions";
+import { adminListOrders } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +35,7 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-function isOpen(order: OrderListItem) {
+function isOpen(order: { status: string }) {
   return order.status !== "delivered" && order.status !== "cancelled";
 }
 
@@ -46,7 +46,7 @@ function AdminDashboardPage() {
     queryFn: () => list(),
   });
 
-  const orders = (data?.orders ?? []) as OrderListItem[];
+  const orders = data?.orders ?? [];
   const today = todayISO();
 
   const open = orders.filter(isOpen);
