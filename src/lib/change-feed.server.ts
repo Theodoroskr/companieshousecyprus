@@ -39,24 +39,40 @@ export async function listChangedCompanies(options: {
   const windowStart = options.since ?? changeFeedWindowStart(await lastCompletedWindowEnd());
   const limit = Math.min(Math.max(options.limit ?? CHANGE_FEED_MAX_ITEMS, 1), CHANGE_FEED_MAX_ITEMS);
 
-  const { data, error } = await supabaseAdmin
-    .from("companies")
-    .select("slug, official_no, name, updated_at")
-    .gte("updated_at", windowStart)
-    .lt("updated_at", windowEnd)
-    .order("updated_at", { ascending: true })
-    .limit(limit + 1);
-  if (error) throw new Error(error.message);
+  // The Data API caps a single response at 1,000 rows, so page with an
+  // offset until the requested limit is filled.
+  const PAGE = 1000;
+  const items: ChangedCompany[] = [];
+  let truncated = false;
 
-  const rows = data ?? [];
-  const truncated = rows.length > limit;
-  const items: ChangedCompany[] = rows.slice(0, limit).map((row) => ({
-    id: row.official_no ?? row.slug,
-    slug: row.slug,
-    name: row.name,
-    updatedAt: row.updated_at ?? windowEnd,
-    canonicalUrl: canonicalUrl(row.official_no, row.slug),
-  }));
+  for (let offset = 0; offset < limit + 1; offset += PAGE) {
+    const upper = Math.min(offset + PAGE, limit + 1) - 1;
+    const { data, error } = await supabaseAdmin
+      .from("companies")
+      .select("slug, official_no, name, updated_at")
+      .gte("updated_at", windowStart)
+      .lt("updated_at", windowEnd)
+      .order("updated_at", { ascending: true })
+      .order("slug", { ascending: true })
+      .range(offset, upper);
+    if (error) throw new Error(error.message);
+
+    const rows = data ?? [];
+    for (const row of rows) {
+      if (items.length >= limit) {
+        truncated = true;
+        break;
+      }
+      items.push({
+        id: row.official_no ?? row.slug,
+        slug: row.slug,
+        name: row.name,
+        updatedAt: row.updated_at ?? windowEnd,
+        canonicalUrl: canonicalUrl(row.official_no, row.slug),
+      });
+    }
+    if (truncated || rows.length < upper - offset + 1) break;
+  }
 
   return { windowStart, windowEnd, items, truncated };
 }
