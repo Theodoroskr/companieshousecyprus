@@ -145,7 +145,7 @@ function ReportPage() {
                 className="w-full bg-copper text-copper-foreground hover:bg-copper/90"
               />
               <p className="mt-3 text-xs text-primary-foreground/60">
-                You can name the company at checkout. Payment is not yet enabled — orders are confirmed by our team.
+                You can name the company at checkout.
               </p>
             </div>
           </aside>
