@@ -96,7 +96,7 @@ export type A4ASearchHit = {
   vatNo: string | null;
   status: string | null;
   address: string | null;
-  raw: Record<string, unknown>;
+  rawJson: string;
 };
 
 function str(value: unknown): string | null {
@@ -127,7 +127,7 @@ function normaliseHit(row: Record<string, unknown>): A4ASearchHit {
     vatNo: str(row["vat_no"] ?? row["vatNo"] ?? row["vat"]),
     status: str(row["status"] ?? row["company_status"]),
     address: str(row["address"] ?? row["full_address"] ?? row["registered_address"]),
-    raw: row,
+    rawJson: JSON.stringify(row),
   };
 }
 

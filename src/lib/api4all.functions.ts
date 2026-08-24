@@ -38,7 +38,7 @@ export const getApi4allReport = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     const { fetchReport } = await import("@/lib/api4all.server");
     const report = await fetchReport(data.kind, data.code.trim());
-    return { kind: data.kind, code: data.code.trim(), report };
+    return { kind: data.kind, code: data.code.trim(), reportJson: JSON.stringify(report, null, 2) };
   });
 
 export const orderApi4allReport = createServerFn({ method: "POST" })
@@ -53,5 +53,5 @@ export const orderApi4allReport = createServerFn({ method: "POST" })
       code: data.code.trim(),
       reference: data.reference.trim() || `CHC-${Date.now()}`,
     });
-    return { result };
+    return { resultJson: JSON.stringify(result, null, 2) };
   });
