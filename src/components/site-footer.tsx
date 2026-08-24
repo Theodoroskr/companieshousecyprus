@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS } from "@/lib/products";
 import logoAsset from "@/assets/logo.png.asset.json";
+import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
+import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
 
 
 const DISTRICTS = ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Kyrenia"];
