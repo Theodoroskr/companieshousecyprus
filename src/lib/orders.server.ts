@@ -366,13 +366,13 @@ export async function markPaymentState(paymentOrderId: string, state: string) {
   return { ok: true as const };
 }
 
-/** Orders placed with a given email address — powers the signed-in client portal. */
-export async function listOrdersForEmail(email: string, limit = 100) {
+/** Orders linked to a signed-in user account or email address — powers the client portal. */
+export async function listOrdersForUser(userId: string, email: string, limit = 100) {
   const supabase = ordersClient();
   const { data, error } = await supabase
     .from("orders")
     .select(`${ORDER_COLUMNS}, access_token, paid_at, order_items(${ITEM_COLUMNS})`)
-    .ilike("email", email.trim())
+    .or(`user_id.eq.${userId},email.ilike.${email.trim()}`)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw new Error(error.message);
