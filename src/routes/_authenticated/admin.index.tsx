@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Clock, Inbox, Loader2, RefreshCw, Timer } 
 import { adminListOrders } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/admin/status-badge";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({

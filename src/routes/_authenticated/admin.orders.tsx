@@ -267,19 +267,22 @@ function AdminOrdersPage() {
                   {new Date(order.created_at).toLocaleString("en-GB")} · {euros(order.total_cents)} incl. VAT
                 </p>
               </div>
-              <select
-                value={order.status}
-                onChange={(event) =>
-                  statusMutation.mutate({ reference: order.reference, status: event.target.value })
-                }
-                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-              >
-                {STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status.replace(/_/g, " ")}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <StatusBadge status={order.status} />
+                <select
+                  value={order.status}
+                  onChange={(event) =>
+                    statusMutation.mutate({ reference: order.reference, status: event.target.value })
+                  }
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  {STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {status.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {order.notes && <p className="mt-3 rounded-md bg-muted/40 p-3 text-sm">{order.notes}</p>}
