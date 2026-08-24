@@ -8,6 +8,12 @@ export type OrderListItem = {
   status: string;
   created_at: string;
   total_cents: number;
+  full_name?: string | null;
+  email?: string | null;
+  firm?: string | null;
+  vat_number?: string | null;
+  phone?: string | null;
+  paid_at?: string | null;
   order_items: {
     id: string;
     product_name: string;
