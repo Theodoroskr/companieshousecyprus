@@ -6,6 +6,8 @@ const PATHS = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/search", priority: "0.8", changefreq: "weekly" },
   { path: "/cyprus-companies-registry", priority: "0.9", changefreq: "monthly" },
+  { path: "/guides", priority: "0.6", changefreq: "monthly" },
+  { path: "/guides/register-company-cyprus", priority: "0.9", changefreq: "monthly" },
 
   { path: "/pricing", priority: "0.8", changefreq: "monthly" },
   { path: "/solutions/kyb-for-banks", priority: "0.8", changefreq: "monthly" },
