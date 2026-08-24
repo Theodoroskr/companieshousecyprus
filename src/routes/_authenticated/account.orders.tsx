@@ -202,7 +202,11 @@ function MyOrdersPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b bg-muted/40 px-5 py-4">
                   <div>
                     <p className="font-mono text-sm font-semibold">{order.reference}</p>
-                    <p className="text-xs text-muted-foreground">Placed {formatDate(order.created_at)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Placed {formatDate(order.created_at)}
+                      {order.due_date ? ` · Due ${formatDate(order.due_date)}` : ""}
+                      {order.delivered_at ? ` · Delivered ${formatDate(order.delivered_at)}` : ""}
+                    </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.tone}`}>{status.label}</span>
@@ -229,15 +233,40 @@ function MyOrdersPage() {
                             {item.company_number ? (
                               <span className="font-mono text-xs text-muted-foreground"> · {item.company_number}</span>
                             ) : null}
+                            {item.due_date || item.delivered_at ? (
+                              <span className="block text-xs text-muted-foreground">
+                                {item.due_date ? `Due ${formatDate(item.due_date)}` : ""}
+                                {item.due_date && item.delivered_at ? " · " : ""}
+                                {item.delivered_at ? `Delivered ${formatDate(item.delivered_at)}` : ""}
+                              </span>
+                            ) : null}
                           </span>
-                          <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                            <Icon className={`size-4 ${item.fulfilment_status === "processing" ? "animate-spin" : ""}`} />
-                            {meta.label}
+                          <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                            {item.document_name ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={downloadingId === item.id}
+                                onClick={() => void download(item.id)}
+                              >
+                                {downloadingId === item.id ? (
+                                  <Loader2 className="mr-1.5 size-4 animate-spin" />
+                                ) : (
+                                  <Download className="mr-1.5 size-4" />
+                                )}
+                                Download
+                              </Button>
+                            ) : null}
+                            <span className="flex items-center gap-1.5">
+                              <Icon className={`size-4 ${item.fulfilment_status === "processing" ? "animate-spin" : ""}`} />
+                              {meta.label}
+                            </span>
                           </span>
                         </li>
                       );
                     })}
                   </ul>
+
 
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Button asChild size="sm">
