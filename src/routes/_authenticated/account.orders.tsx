@@ -108,7 +108,7 @@ function MyOrdersPage() {
         </div>
       ) : (
         <ul className="grid gap-5">
-          {orders.map((order) => {
+          {orders.map((order: OrderListItem) => {
             const items = order.order_items ?? [];
             const status = ORDER_STATUS[order.status] ?? { label: order.status, tone: "bg-muted text-muted-foreground" };
             const progress = progressFor(order.status, items);
