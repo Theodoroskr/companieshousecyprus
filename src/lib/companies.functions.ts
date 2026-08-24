@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizeCompanySlug } from "@/lib/slug";
+import { searchVariants } from "@/lib/format";
 
 const PAGE_SIZE = 50;
 const SITEMAP_CHUNK_SIZE = 50_000;
