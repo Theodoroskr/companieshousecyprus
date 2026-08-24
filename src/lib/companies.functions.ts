@@ -246,28 +246,37 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const n = Math.max(0, data.n);
-    // PostgREST caps a single response at 1,000 rows, so page through the
-    // chunk internally until it is full (or the table runs out).
+    // PostgREST caps a single response at 1,000 rows, so the chunk is filled
+    // by paging internally. Only the first page uses a deep OFFSET; the rest
+    // use a keyset cursor on the slug primary key, which stays fast.
     const PAGE = 1_000;
     const start = n * SITEMAP_CHUNK_SIZE;
-    const rows: { slug: string; updated_at: string | null }[] = [];
+    const rows: { slug: string }[] = [];
+    let cursor: string | null = null;
+
     while (rows.length < SITEMAP_CHUNK_SIZE) {
-      const from = start + rows.length;
-      const to = Math.min(from + PAGE, start + SITEMAP_CHUNK_SIZE) - 1;
-      const { data: page, error } = await supabase
+      const limit = Math.min(PAGE, SITEMAP_CHUNK_SIZE - rows.length);
+      let query = supabase
         .from("companies")
-        .select("slug, updated_at")
-        .order("slug", { ascending: true })
-        .range(from, to);
+        .select("slug")
+        .order("slug", { ascending: true });
+      query = cursor
+        ? query.gt("slug", cursor).limit(limit)
+        : query.range(start, start + limit - 1);
+
+      const { data: page, error } = await query;
       if (error) throw error;
       const batch = page ?? [];
-      for (const r of batch) rows.push({ slug: r.slug, updated_at: r.updated_at });
-      if (batch.length < to - from + 1) break;
+      for (const r of batch) rows.push({ slug: r.slug });
+      if (batch.length < limit) break;
+      cursor = batch[batch.length - 1]!.slug;
     }
+
     return {
       n,
       rows,
       hasMore: rows.length === SITEMAP_CHUNK_SIZE,
     };
   });
+
 
