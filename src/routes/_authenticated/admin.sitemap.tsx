@@ -122,8 +122,20 @@ function SitemapHealthPage() {
     refetchOnWindowFocus: false,
   });
 
+  const changeFeed = useQuery<ChangeFeed>({
+    queryKey: ["change-feed"],
+    queryFn: async () => {
+      const res = await fetch("/api/public/change-feed?limit=1000");
+      if (!res.ok) throw new Error(`Change feed failed (${res.status})`);
+      return res.json();
+    },
+    refetchOnWindowFocus: false,
+  });
+
   const data = query.data;
   const canonicalData = canonical.data;
+  const feed = changeFeed.data;
+  const lastRun = feed?.runs?.[0];
 
 
 
