@@ -23,6 +23,7 @@ export interface DocumentReadyProps {
   companyNumber?: string | null
   deliveredAt?: string
   portalUrl?: string
+  documents?: { name: string; url?: string | null }[]
 }
 
 const Email = ({
@@ -34,7 +35,9 @@ const Email = ({
   companyNumber,
   deliveredAt,
   portalUrl,
+  documents,
 }: DocumentReadyProps) => (
+
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{`Your document for order ${reference} is ready to download`}</Preview>
