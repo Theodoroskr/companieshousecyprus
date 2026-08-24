@@ -1,6 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type OrderListItem = {
+  id: string;
+  reference: string;
+  status: string;
+  created_at: string;
+  total_cents: number;
+  order_items: {
+    id: string;
+    product_name: string;
+    company_name: string | null;
+    company_number: string | null;
+    fulfilment_status: string;
+    download_url: string | null;
+  }[];
+};
+
 export type PlaceOrderPayload = {
   fullName: string;
   email: string;
