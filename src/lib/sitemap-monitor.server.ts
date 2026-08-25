@@ -96,7 +96,8 @@ async function probeOnce(origin: string, path: string, partial: boolean) {
   const body = await res.text();
   const contentType = res.headers.get("content-type");
   const isXml = !!contentType && contentType.includes("xml");
-  const truncated = res.status === 206 || (partial && body.length >= RANGE_BYTES - 1024);
+  // Some origins ignore Range and return the whole file; only 206 is truly partial.
+  const truncated = res.status === 206;
   let error: string | null = null;
   if (res.status >= 300 && res.status < 400) error = `redirected to ${res.headers.get("location") ?? "unknown"}`;
   else if (res.status !== 200 && res.status !== 206) error = `HTTP ${res.status}`;
