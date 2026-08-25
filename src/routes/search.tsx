@@ -208,7 +208,9 @@ function SearchPage() {
           </div>
 
           <p className="mt-5 text-sm text-muted-foreground">
-            {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
+            {data.count.toLocaleString()}
+            {data.capped ? "+" : ""} {data.count === 1 ? "result" : "results"}
+            {data.capped ? " — refine your search to narrow this down" : ""}
             {q ? ` for “${q}”` : ""}
             {types.length + statuses.length > 0 ? " (filtered)" : ""}
           </p>
