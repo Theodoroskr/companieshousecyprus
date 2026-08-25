@@ -4,9 +4,8 @@
  * Runs from the scheduler every 15 minutes: fetches /sitemap.xml, discovers
  * every sitemap it advertises (pages + company chunks) and fetches each one.
  * Any non-200 response, non-XML body or network failure is recorded and an
- * alert email is sent to the office address. Repeat alerts for the same
- * failure signature are throttled; a recovery email is sent once the
- * sitemaps are healthy again.
+ * alert email is sent to the office address. Failure alerts are deduplicated
+ * per incident; a recovery email is sent once the incident clears.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -17,8 +16,6 @@ import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 const JOB_KEY = "sitemap_monitor";
 const SITE_URL = "https://companieshousecyprus.com";
 const ALERT_TO = "info@companieshousecyprus.com";
-/** Don't re-send an identical failure alert more often than this. */
-const RE_ALERT_MINUTES = 360;
 const FETCH_TIMEOUT_MS = 25_000;
 /** Company chunks are multi-megabyte; probe a few at a time so none time out. */
 const CONCURRENCY = 4;
@@ -174,6 +171,51 @@ export type SitemapMonitorResult = {
   alert: { sent: boolean; kind: "failure" | "recovery" | null; reason: string | null };
 };
 
+type PreviousMonitorRun = {
+  healthy: boolean;
+  alert_signature: string | null;
+  alerted: boolean;
+  alert_kind: string | null;
+  checked_at: string;
+};
+
+async function readLatestRun(supabase: ReturnType<typeof client>) {
+  const { data } = await supabase
+    .from("sitemap_health_runs")
+    .select("healthy, alert_signature, alerted, alert_kind, checked_at")
+    .order("checked_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return data as PreviousMonitorRun | null;
+}
+
+async function readLatestHealthyRunAt(supabase: ReturnType<typeof client>) {
+  const { data } = await supabase
+    .from("sitemap_health_runs")
+    .select("checked_at")
+    .eq("healthy", true)
+    .order("checked_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return (data as { checked_at: string } | null)?.checked_at ?? null;
+}
+
+async function hasFailureAlertInOpenIncident(supabase: ReturnType<typeof client>, since: string | null) {
+  let query = supabase
+    .from("sitemap_health_runs")
+    .select("id", { count: "exact", head: true })
+    .eq("healthy", false)
+    .eq("alerted", true)
+    .eq("alert_kind", "failure");
+
+  if (since) query = query.gt("checked_at", since);
+
+  const { count } = await query;
+  return (count ?? 0) > 0;
+}
+
 /** Runs one full health check, persists it and alerts on state changes. */
 export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMonitorResult> {
   const startedAt = Date.now();
@@ -207,35 +249,29 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
         .sort()
         .join("|");
 
-  const { data: previous } = await supabase
-    .from("sitemap_health_runs")
-    .select("healthy, alert_signature, alerted, checked_at")
-    .order("checked_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const prev = previous as
-    | { healthy: boolean; alert_signature: string | null; alerted: boolean; checked_at: string }
-    | null;
+  const prev = await readLatestRun(supabase);
 
   let alertKind: "failure" | "recovery" | null = null;
   let alertReason: string | null = null;
+  let incidentKey = signature;
 
   if (!healthy) {
-    const sameFailure = prev?.alert_signature === signature && prev?.alerted === true;
-    const lastAlertMs = prev?.checked_at ? new Date(prev.checked_at).getTime() : 0;
-    const stale = Date.now() - lastAlertMs > RE_ALERT_MINUTES * 60_000;
-    if (!sameFailure || stale) alertKind = "failure";
-    else alertReason = "throttled: identical failure already reported";
+    const latestHealthyAt = await readLatestHealthyRunAt(supabase);
+    const alreadyAlerted = await hasFailureAlertInOpenIncident(supabase, latestHealthyAt);
+    incidentKey = `${latestHealthyAt ?? "initial"}-${signature}`;
+
+    if (!alreadyAlerted) alertKind = "failure";
+    else alertReason = "deduplicated: failure incident already reported";
   } else if (prev && prev.healthy === false) {
     alertKind = "recovery";
+    incidentKey = prev.alert_signature ?? signature;
   }
 
   let alertError: string | null = null;
   if (alertKind) {
     try {
       await sendTemplateEmail("sitemap-alert", ALERT_TO, {
-        idempotencyKey: `sitemap-${alertKind}-${signature}-${new Date().toISOString().slice(0, 13)}`,
+        idempotencyKey: `sitemap-${alertKind}-${incidentKey}`,
         templateData: {
           state: alertKind,
           checkedAt: new Date().toLocaleString("en-GB", { timeZone: "Asia/Nicosia" }),
