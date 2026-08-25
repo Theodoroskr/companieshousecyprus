@@ -141,9 +141,18 @@ export async function insertOfficials(runId: string, rows: OfficialImportRow[]) 
       await bumpRun(runId, 0, rows.length);
       throw new Error(error.message);
     }
+    await updateOfficialsCountForSlugs(payload.map((r) => r.slug));
   }
   await bumpRun(runId, payload.length, skipped);
   return { inserted: payload.length, skipped };
+}
+
+export async function updateOfficialsCountForSlugs(slugs: string[]) {
+  const supabase = adminClient();
+  const unique = [...new Set(slugs)];
+  if (unique.length === 0) return;
+  const { error } = await supabase.rpc("update_officials_count_for_slugs", { slugs: unique });
+  if (error) throw new Error(error.message);
 }
 
 export async function truncateOfficials() {
