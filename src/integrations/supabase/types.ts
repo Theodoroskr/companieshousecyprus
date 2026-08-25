@@ -750,6 +750,21 @@ export type Database = {
     }
     Functions: {
       clear_officials: { Args: never; Returns: undefined }
+      companies_by_letter_page: {
+        Args: { p_letter: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          district_en: string
+          locality: string
+          name: string
+          official_no: string
+          reg_number: number
+          slug: string
+          status_en: string
+          status_group: string
+          total_matches: number
+          type_code: string
+        }[]
+      }
       companies_district_counts: {
         Args: never
         Returns: {
