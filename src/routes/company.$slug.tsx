@@ -393,10 +393,10 @@ function CompanyPage() {
                 variant="outline"
                 className="h-12 w-full rounded-xl border-primary-foreground/25 bg-primary-foreground/5 px-6 font-display text-sm font-bold text-primary-foreground backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-primary-foreground/10 hover:text-primary-foreground sm:h-14 sm:w-auto sm:px-8 sm:text-base"
               >
-                <Link to="/search" search={{ q: "", page: 1 }} className="gap-2">
+                <a href="#certificates" className="gap-2">
                   Order certificates
                   <ShieldCheck className="size-5 shrink-0" />
-                </Link>
+                </a>
               </Button>
               <Button
                 asChild
