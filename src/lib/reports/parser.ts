@@ -377,6 +377,7 @@ export function parseReport(stored: unknown, kind: "structure" | "credit"): Pars
     ratios: ratioSets(asArray(c["KeyRatios"])),
     balanceSheets,
     incomeStatements,
+    negativesPresent,
     negatives: {
       unpaidBills: asArray(negatives["UnpaidBills"]).length,
       bankruptcies: asArray(negatives["Bankruptcies"]).length,
