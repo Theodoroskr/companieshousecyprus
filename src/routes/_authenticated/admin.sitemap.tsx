@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getSitemapMonitorHistory } from "@/lib/admin.functions";
 
 type Sitemap = {
   url: string;
@@ -149,6 +150,12 @@ function SitemapHealthPage() {
     refetchOnWindowFocus: false,
   });
 
+  const monitor = useQuery({
+    queryKey: ["sitemap-monitor-history"],
+    queryFn: () => getSitemapMonitorHistory(),
+    refetchOnWindowFocus: false,
+  });
+
   const changeFeed = useQuery<ChangeFeed>({
     queryKey: ["change-feed"],
     queryFn: async () => {
@@ -209,6 +216,41 @@ function SitemapHealthPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
+          <CardTitle className="text-sm text-muted-foreground">
+            Automated monitor (every 15 minutes, email alert on failure)
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={() => monitor.refetch()} disabled={monitor.isFetching}>
+            {monitor.isFetching ? "Loading…" : "Refresh"}
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {monitor.data && monitor.data.length > 0 ? (
+            monitor.data.map((run) => (
+              <div key={run.id} className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-border/50 pb-2 last:border-0">
+                <Badge variant={run.healthy ? "default" : "destructive"}>{run.healthy ? "Healthy" : "Failing"}</Badge>
+                <span className="text-muted-foreground">{fmt(run.checkedAt)}</span>
+                <span className="text-muted-foreground">
+                  {run.checked} probed · {run.failing} failing
+                  {run.durationMs !== null ? ` · ${run.durationMs} ms` : ""}
+                </span>
+                {run.alerted && <Badge variant="outline">Alert sent{run.alertKind ? ` (${run.alertKind})` : ""}</Badge>}
+                {run.failures.length > 0 && (
+                  <span className="text-xs text-destructive">
+                    {run.failures.map((f) => `${f.path} — ${f.error ?? f.status}`).join("; ")}
+                  </span>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-muted-foreground">
+              No automated runs recorded yet — the first scheduled check runs within 15 minutes.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {feed && (
         <Card className="mb-6">
