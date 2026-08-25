@@ -85,6 +85,28 @@ function AdminImportPage() {
   const [replaceOfficials, setReplaceOfficials] = useState(true);
   const cancelRef = useRef(false);
 
+  const [diagNumber, setDiagNumber] = useState("");
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagResult, setDiagResult] = useState<DiagnosticResult | null>(null);
+
+  const runDiagnostic = async () => {
+    const value = diagNumber.trim();
+    if (!value) {
+      toast.error("Enter a registry number first");
+      return;
+    }
+    setDiagLoading(true);
+    try {
+      const result = await diagnoseCompanyNumber({ data: { number: value } });
+      setDiagResult(result);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Lookup failed");
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
+
   const orgFileRef = useRef<HTMLInputElement>(null);
   const addrFileRef = useRef<HTMLInputElement>(null);
   const officialsFileRef = useRef<HTMLInputElement>(null);
