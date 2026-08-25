@@ -9,15 +9,39 @@ import {
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
 const MAX_CONSECUTIVE_RATE_LIMITS = 4;
+const RATE_LIMIT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 export type IndexNowRunResult = {
   ok: boolean;
-  status: "submitted" | "idle" | "locked" | "paused" | "error";
+  status: "submitted" | "idle" | "locked" | "cooling_down" | "paused" | "error";
   submitted: number;
   pendingRemaining: number;
   httpStatus?: number;
   message?: string;
 };
+
+function isRateLimitMessage(value: string | null | undefined): boolean {
+  return Boolean(value?.includes("IndexNow HTTP 429") || value?.includes("TooManyRequests"));
+}
+
+function retryAt(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const started = new Date(value).getTime();
+  if (Number.isNaN(started)) return null;
+  return new Date(started + RATE_LIMIT_COOLDOWN_MS);
+}
+
+function isCoolingDown(value: string | null | undefined): boolean {
+  const retry = retryAt(value);
+  return Boolean(retry && retry.getTime() > Date.now());
+}
+
+function cooldownMessage(value: string | null | undefined): string {
+  const retry = retryAt(value);
+  return retry
+    ? `IndexNow is cooling down after Bing rate limiting. Next retry after ${retry.toISOString()}.`
+    : "IndexNow is cooling down after Bing rate limiting.";
+}
 
 async function readState() {
   const { data } = await supabaseAdmin
@@ -46,12 +70,39 @@ async function countPending(): Promise<number> {
 export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
   const state = await readState();
   if (state?.paused_reason) {
+    if (isRateLimitMessage(state.paused_reason)) {
+      if (isCoolingDown(state.paused_at ?? state.last_run_at)) {
+        return {
+          ok: false,
+          status: "cooling_down",
+          submitted: 0,
+          pendingRemaining: await countPending(),
+          message: cooldownMessage(state.paused_at ?? state.last_run_at),
+        };
+      }
+
+      await supabaseAdmin
+        .from("indexnow_state")
+        .update({ paused_reason: null, paused_at: null, consecutive_rate_limits: 0, last_error: null })
+        .eq("id", true);
+    } else {
+      return {
+        ok: false,
+        status: "paused",
+        submitted: 0,
+        pendingRemaining: await countPending(),
+        message: state.paused_reason,
+      };
+    }
+  }
+
+  if (isRateLimitMessage(state?.last_error) && isCoolingDown(state?.last_run_at)) {
     return {
       ok: false,
-      status: "paused",
+      status: "cooling_down",
       submitted: 0,
       pendingRemaining: await countPending(),
-      message: state.paused_reason,
+      message: cooldownMessage(state?.last_run_at),
     };
   }
 
@@ -124,9 +175,20 @@ export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
     // file — transient, not a bad key.
     const verificationPending = response.status === 403 && body.includes("SiteVerificationNotCompleted");
 
-    if (response.status === 429 || response.status >= 500 || verificationPending) {
-      // Transient: park until the next scheduled run, and pause only after the
-      // limiter keeps rejecting us.
+    if (response.status === 429) {
+      // Rate limits are expected when Bing tightens quotas. Do not permanently
+      // pause; record the error and let later cron runs respect the cooldown.
+      const streak = (state?.consecutive_rate_limits ?? 0) + 1;
+      await supabaseAdmin
+        .from("indexnow_state")
+        .update({
+          consecutive_rate_limits: streak,
+          last_error: message,
+        })
+        .eq("id", true);
+    } else if (response.status >= 500 || verificationPending) {
+      // Transient provider errors: park until the next scheduled run, and pause
+      // only after repeated failures.
       const streak = (state?.consecutive_rate_limits ?? 0) + 1;
       const pause = streak >= MAX_CONSECUTIVE_RATE_LIMITS;
       await supabaseAdmin
@@ -160,9 +222,16 @@ export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
 
 export async function getIndexNowStatus() {
   const [state, pending] = await Promise.all([readState(), countPending()]);
+  const pausedReason = isRateLimitMessage(state?.paused_reason) ? null : (state?.paused_reason ?? null);
+  const coolingDown =
+    (isRateLimitMessage(state?.paused_reason) && isCoolingDown(state?.paused_at ?? state?.last_run_at)) ||
+    (isRateLimitMessage(state?.last_error) && isCoolingDown(state?.last_run_at));
+  const nextRetryAt = retryAt(state?.paused_at ?? state?.last_run_at)?.toISOString() ?? null;
   return {
-    paused: Boolean(state?.paused_reason),
-    pausedReason: state?.paused_reason ?? null,
+    paused: Boolean(pausedReason),
+    pausedReason,
+    coolingDown,
+    nextRetryAt: coolingDown ? nextRetryAt : null,
     lastRunAt: state?.last_run_at ?? null,
     lastSubmittedCount: state?.last_submitted_count ?? 0,
     lastError: state?.last_error ?? null,
