@@ -114,6 +114,20 @@ const ORDERABLE = [
 export const Route = createFileRoute("/company/$slug")({
   validateSearch: (search: Record<string, unknown>): { product?: string } =>
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
+  // Legacy WordPress URLs (template placeholders like "{{vcompany.name}}-c4404",
+  // "dfd.name") and lowercase/pretty slugs must not render duplicate content:
+  // send them to the canonical registry-id URL with a permanent redirect.
+  beforeLoad: ({ params }) => {
+    const canonical = normalizeCompanySlug(params.slug);
+    if (canonical && canonical !== params.slug) {
+      throw redirect({
+        to: "/company/$slug",
+        params: { slug: canonical },
+        statusCode: 301,
+        replace: true,
+      });
+    }
+  },
   loader: async ({ params, context }) => {
     let data: Awaited<ReturnType<typeof getCompanyBySlug>>;
     try {
