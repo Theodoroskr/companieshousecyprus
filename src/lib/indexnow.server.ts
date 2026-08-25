@@ -246,3 +246,16 @@ export async function getIndexNowStatus() {
     batchSize: INDEXNOW_BATCH_SIZE,
   };
 }
+
+/**
+ * Queue arbitrary site paths (sitemaps, landing pages, guides) for the next
+ * IndexNow batch. Company profiles and sitemap chunks are queued automatically
+ * by database triggers; this is for app-initiated content changes.
+ */
+export async function enqueueIndexNowPaths(paths: string[]): Promise<number> {
+  const clean = Array.from(new Set(paths.filter((p) => p.startsWith("/"))));
+  if (clean.length === 0) return 0;
+  const { data, error } = await supabaseAdmin.rpc("enqueue_indexnow_urls", { _paths: clean });
+  if (error) throw new Error(error.message);
+  return (data as number | null) ?? clean.length;
+}
