@@ -424,19 +424,6 @@ export async function readRun(runId: string) {
   return data;
 }
 
-function textEncoder(): (text: string) => Uint8Array {
-  if (typeof TextEncoder !== "undefined") {
-    const enc = new TextEncoder();
-    return (text) => enc.encode(text);
-  }
-  // Fallback for environments without TextEncoder (unlikely in Workers).
-  return (text) => {
-    const buf = new Uint8Array(text.length);
-    for (let i = 0; i < text.length; i++) buf[i] = text.charCodeAt(i) & 0xff;
-    return buf;
-  };
-}
-
 function parseCsvText<T>(text: string): T[] {
   const parsed = Papa.parse<T>(text, { header: true, skipEmptyLines: true });
   if (parsed.errors.length) {
@@ -444,6 +431,24 @@ function parseCsvText<T>(text: string): T[] {
     console.error("CSV parse errors:", parsed.errors.slice(0, 5));
   }
   return parsed.data;
+}
+
+function findLastNewline(bytes: Uint8Array, fromIndex: number) {
+  for (let i = bytes.length - 1; i >= fromIndex; i -= 1) {
+    if (bytes[i] === 10) return i;
+  }
+  return -1;
+}
+
+async function readCsvHeader(signedUrl: string) {
+  const response = await fetch(signedUrl, { headers: { Range: "bytes=0-65535" } });
+  if (!response.ok && response.status !== 206) {
+    throw new Error(`Storage header download failed: ${response.status} ${response.statusText}`);
+  }
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  const newline = bytes.indexOf(10);
+  const end = newline === -1 ? bytes.length : newline;
+  return new TextDecoder("utf-8").decode(bytes.slice(0, end)).replace(/^\uFEFF/, "").replace(/\r$/, "");
 }
 
 export async function processOfficialsChunk(runId: string) {
@@ -473,41 +478,52 @@ export async function processOfficialsChunk(runId: string) {
   }
 
   const end = Math.min(fileSize, start + OFFICIALS_CHUNK_BYTES);
+  const rangeStart = start > 0 ? Math.max(0, start - 1) : 0;
   const { data: signed, error: signError } = await supabase.storage.from("imports").createSignedUrl(run.storage_path, 60);
   if (signError || !signed?.signedUrl) throw new Error(signError?.message ?? "Could not access import file");
 
   const response = await fetch(signed.signedUrl, {
-    headers: { Range: `bytes=${start}-${end - 1}` },
+    headers: { Range: `bytes=${rangeStart}-${end - 1}` },
   });
   if (!response.ok && response.status !== 206) {
     throw new Error(`Storage download failed: ${response.status} ${response.statusText}`);
   }
 
-  let text = await response.text();
-  const encode = textEncoder();
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  let parseStartByte = 0;
 
-  // Drop the partial first line unless this is the very start of the file.
+  // If resuming from an old/partial byte position, skip through the next line
+  // break. If the previous byte is already a newline, start exactly at the
+  // stored cursor so newly-created runs don't lose one valid row per chunk.
   if (start > 0) {
-    const firstNewline = text.indexOf("\n");
-    if (firstNewline === -1) {
-      // No complete row in this chunk; advance a little to avoid getting stuck.
-      const consumed = Math.min(OFFICIALS_CHUNK_BYTES, fileSize - start);
-      await supabase.from("import_runs").update({ bytes_processed: start + consumed }).eq("id", runId);
-      return { done: false as const, processed: run.rows_processed, bytesProcessed: start + consumed, fileSize };
+    if (bytes[0] === 10) {
+      parseStartByte = 1;
+    } else {
+      const firstNewline = bytes.indexOf(10);
+      if (firstNewline === -1) {
+        await supabase.from("import_runs").update({ bytes_processed: end }).eq("id", runId);
+        return { done: end >= fileSize, processed: run.rows_processed, failed: run.rows_failed, bytesProcessed: end, fileSize };
+      }
+      parseStartByte = firstNewline + 1;
     }
-    text = text.slice(firstNewline + 1);
   }
 
-  // Trim the trailing partial row.
-  const lastNewline = text.lastIndexOf("\n");
-  if (lastNewline === -1) {
-    const consumed = Math.min(OFFICIALS_CHUNK_BYTES, fileSize - start);
-    await supabase.from("import_runs").update({ bytes_processed: start + consumed }).eq("id", runId);
-    return { done: start + consumed >= fileSize, processed: run.rows_processed, bytesProcessed: start + consumed, fileSize };
+  // Trim the trailing partial row unless this is the final byte range.
+  let parseEndByte = bytes.length;
+  if (end < fileSize) {
+    const lastNewline = findLastNewline(bytes, parseStartByte);
+    if (lastNewline === -1) {
+      await supabase.from("import_runs").update({ bytes_processed: end }).eq("id", runId);
+      return { done: false as const, processed: run.rows_processed, failed: run.rows_failed, bytesProcessed: end, fileSize };
+    }
+    parseEndByte = lastNewline + 1;
   }
-  text = text.slice(0, lastNewline + 1);
 
-  const rows = parseCsvText<Record<string, string>>(text);
+  const decoder = new TextDecoder("utf-8");
+  const chunkText = decoder.decode(bytes.slice(parseStartByte, parseEndByte));
+  const header = start === 0 ? null : await readCsvHeader(signed.signedUrl);
+  const csvText = header ? `${header}\n${chunkText}` : chunkText;
+  const rows = parseCsvText<Record<string, string>>(csvText);
   const mapped: OfficialImportRow[] = [];
   let parseFailed = 0;
   for (const row of rows) {
@@ -516,25 +532,30 @@ export async function processOfficialsChunk(runId: string) {
     else parseFailed += 1;
   }
 
+  let insertedCount = 0;
+  let skippedCount = parseFailed;
   for (let i = 0; i < mapped.length; i += OFFICIALS_INSERT_BATCH) {
     const batch = mapped.slice(i, i + OFFICIALS_INSERT_BATCH);
-    await insertOfficials(runId, batch);
+    const result = await insertOfficials(runId, batch);
+    insertedCount += result.inserted;
+    skippedCount += result.skipped;
   }
   if (parseFailed > 0) await bumpRun(runId, 0, parseFailed);
 
-  const consumedBytes = encode(text).length;
-  const newBytesProcessed = start + consumedBytes;
+  const newBytesProcessed = Math.max(start, rangeStart + parseEndByte);
+  const processedTotal = (run.rows_processed ?? 0) + insertedCount;
+  const failedTotal = (run.rows_failed ?? 0) + skippedCount;
   await supabase.from("import_runs").update({ bytes_processed: newBytesProcessed }).eq("id", runId);
 
   if (newBytesProcessed >= fileSize) {
     await closeRun(runId, "completed", "processed via server-side chunked import");
-    return { done: true as const, processed: run.rows_processed, failed: run.rows_failed };
+    return { done: true as const, processed: processedTotal, failed: failedTotal };
   }
 
   return {
     done: false as const,
-    processed: run.rows_processed,
-    failed: run.rows_failed,
+    processed: processedTotal,
+    failed: failedTotal,
     bytesProcessed: newBytesProcessed,
     fileSize,
   };
