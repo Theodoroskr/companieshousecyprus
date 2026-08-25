@@ -151,7 +151,8 @@ export async function updateOfficialsCountForSlugs(slugs: string[]) {
   const supabase = adminClient();
   const unique = [...new Set(slugs)];
   if (unique.length === 0) return;
-  const { error } = await supabase.rpc("update_officials_count_for_slugs", { slugs: unique });
+  // Generated types are updated asynchronously; cast until the next type refresh.
+  const { error } = await (supabase.rpc as any)("update_officials_count_for_slugs", { slugs: unique });
   if (error) throw new Error(error.message);
 }
 
