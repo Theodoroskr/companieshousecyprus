@@ -138,6 +138,7 @@ export type ParsedReport = {
   ratios: RatioSet[];
   balanceSheets: FinancialStatement[];
   incomeStatements: FinancialStatement[];
+  negativesPresent: boolean;
   negatives: { unpaidBills: number; bankruptcies: number };
   detrimental: { label: string; company: string; registrationNumber: string; detail: string }[];
   hasFinancials: boolean;
@@ -267,7 +268,9 @@ export function parseReport(stored: unknown, kind: "structure" | "credit"): Pars
 
   const general = asArray(c["GeneralInfo"])[0] ?? {};
   const moreInfo = asArray(c["MoreInfo"])[0] ?? {};
-  const negatives = asArray(c["Negatives"])[0] ?? {};
+  const negativesRaw = c["Negatives"];
+  const negativesPresent = Array.isArray(negativesRaw) && negativesRaw.length > 0 && !!negativesRaw[0] && typeof negativesRaw[0] === "object" && Object.keys(negativesRaw[0]).length > 0;
+  const negatives = asArray(negativesRaw)[0] ?? {};
   const detrimentalRow = asArray(c["CorporateStructureDetrimental"])[0] ?? {};
 
   const detrimental: ParsedReport["detrimental"] = [];
@@ -374,6 +377,7 @@ export function parseReport(stored: unknown, kind: "structure" | "credit"): Pars
     ratios: ratioSets(asArray(c["KeyRatios"])),
     balanceSheets,
     incomeStatements,
+    negativesPresent,
     negatives: {
       unpaidBills: asArray(negatives["UnpaidBills"]).length,
       bankruptcies: asArray(negatives["Bankruptcies"]).length,
