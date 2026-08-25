@@ -63,6 +63,58 @@ export type SitemapProbe = {
   error: string | null;
 };
 
+const USER_AGENT =
+  "Mozilla/5.0 (compatible; CHCSitemapMonitor/1.0; +https://companieshousecyprus.com/admin/sitemap)";
+/** Company chunks are ~6 MB; only the first slice is needed to validate them. */
+const RANGE_BYTES = 256 * 1024;
+/** Transient 403/429/5xx/timeouts are retried before a failure is recorded. */
+const MAX_ATTEMPTS = 3;
+
+function isLargeChunk(path: string) {
+  return path.includes("/sitemaps/companies/");
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchSitemap(url: string, partial: boolean) {
+  const headers: Record<string, string> = {
+    "user-agent": USER_AGENT,
+    accept: "application/xml,text/xml;q=0.9,*/*;q=0.5",
+    "cache-control": "no-cache",
+  };
+  if (partial) headers["range"] = `bytes=0-${RANGE_BYTES - 1}`;
+  return fetch(url, {
+    method: "GET",
+    redirect: "manual",
+    headers,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+}
+
+async function probeOnce(origin: string, path: string, partial: boolean) {
+  const res = await fetchSitemap(`${origin}${path}`, partial);
+  const body = await res.text();
+  const contentType = res.headers.get("content-type");
+  const isXml = !!contentType && contentType.includes("xml");
+  const truncated = res.status === 206 || (partial && body.length >= RANGE_BYTES - 1024);
+  let error: string | null = null;
+  if (res.status >= 300 && res.status < 400) error = `redirected to ${res.headers.get("location") ?? "unknown"}`;
+  else if (res.status !== 200 && res.status !== 206) error = `HTTP ${res.status}`;
+  else if (!isXml) error = `unexpected content-type: ${contentType ?? "none"}`;
+  else if (!body.includes("<loc>")) error = "sitemap contains no <loc> entries";
+  return {
+    status: res.status,
+    contentType,
+    error,
+    urlCount: isXml && !truncated ? extractLocs(body).size : null,
+  };
+}
+
+function retryable(status: number | null, error: string | null): boolean {
+  if (status === 403 || status === 429 || (status !== null && status >= 500)) return true;
+  return status === null && !!error;
+}
+
 async function probe(origin: string, path: string, kind: SitemapProbe["kind"]): Promise<SitemapProbe> {
   const base: SitemapProbe = {
     url: `${SITE_URL}${path}`,
@@ -74,41 +126,24 @@ async function probe(origin: string, path: string, kind: SitemapProbe["kind"]): 
     urlCount: null,
     error: null,
   };
-  try {
-    const res = await fetch(`${origin}${path}`, {
-      method: "GET",
-      redirect: "manual",
-      headers: { "user-agent": "chc-sitemap-monitor" },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    const body = await res.text();
-    const contentType = res.headers.get("content-type");
-    const isXml = !!contentType && contentType.includes("xml");
-    let error: string | null = null;
-    if (res.status >= 300 && res.status < 400) error = `redirected to ${res.headers.get("location") ?? "unknown"}`;
-    else if (!res.ok) error = `HTTP ${res.status}`;
-    else if (!isXml) error = `unexpected content-type: ${contentType ?? "none"}`;
-    else if (!body.includes("<loc>")) error = "sitemap contains no <loc> entries";
-    return {
-      ...base,
-      ok: error === null,
-      status: res.status,
-      contentType,
-      urlCount: isXml ? extractLocs(body).size : null,
-      error,
-      // Keep the parsed locs out of the return shape; callers ask for them separately.
-    };
-  } catch (err) {
-    return { ...base, error: err instanceof Error ? err.message : "fetch failed" };
+  const partial = kind === "child" && isLargeChunk(path);
+  let last: SitemapProbe = base;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const result = await probeOnce(origin, path, partial);
+      last = { ...base, ...result, ok: result.error === null };
+    } catch (err) {
+      last = { ...base, error: err instanceof Error ? err.message : "fetch failed" };
+    }
+    if (last.ok || !retryable(last.status, last.error)) return last;
+    if (attempt < MAX_ATTEMPTS) await sleep(attempt * 1_500);
   }
+  return last;
 }
 
 async function discoverChildPaths(origin: string): Promise<{ paths: string[]; error: string | null }> {
   try {
-    const res = await fetch(`${origin}/sitemap.xml`, {
-      headers: { "user-agent": "chc-sitemap-monitor" },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
+    const res = await fetchSitemap(`${origin}/sitemap.xml`, false);
     if (!res.ok) return { paths: [], error: `index HTTP ${res.status}` };
     const xml = await res.text();
     const paths = Array.from(extractLocs(xml), (loc) => {
