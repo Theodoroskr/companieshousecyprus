@@ -3,12 +3,7 @@
   "sdk_version": "0.28.0",
   "path": "/mcp",
   "auth": {
-    "type": "oauth",
-    "issuer": "https://anuegutinkfufwsdhhuh.supabase.co/auth/v1",
-    "resource_name": "Companies House Cyprus",
-    "accepted_audiences": [
-      "authenticated"
-    ]
+    "type": "none"
   },
   "mcp": {
     "server": {
