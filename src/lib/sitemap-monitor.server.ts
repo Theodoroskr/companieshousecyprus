@@ -76,6 +76,10 @@ function isLargeChunk(path: string) {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function canonicalOrigin() {
+  return new URL(SITE_URL).origin;
+}
+
 async function fetchSitemap(url: string, partial: boolean) {
   const headers: Record<string, string> = {
     "user-agent": USER_AGENT,
@@ -171,9 +175,10 @@ export type SitemapMonitorResult = {
 };
 
 /** Runs one full health check, persists it and alerts on state changes. */
-export async function runSitemapHealthCheck(origin: string): Promise<SitemapMonitorResult> {
+export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMonitorResult> {
   const startedAt = Date.now();
   const supabase = client();
+  const origin = canonicalOrigin();
 
   const indexProbe = await probe(origin, "/sitemap.xml", "index");
   const discovered = indexProbe.ok ? await discoverChildPaths(origin) : { paths: [], error: null };
