@@ -265,7 +265,7 @@ function AdminImportPage() {
             : 5;
         setRun({
           active: true,
-          label: result.stage === "clearing" ? "Clearing existing officials…" : "Processing officials on the server…",
+          label: result.stage === "resetting_counts" ? "Clearing existing officials…" : "Processing officials on the server…",
           processed: lastProcessed,
           failed: lastFailed,
           percent,
@@ -317,7 +317,7 @@ function AdminImportPage() {
             : 5;
         setRun({
           active: true,
-          label: result.stage === "clearing" ? "Clearing existing officials…" : "Resuming server-side officials import…",
+          label: result.stage === "resetting_counts" ? "Clearing existing officials…" : "Resuming server-side officials import…",
           processed: lastProcessed,
           failed: lastFailed,
           percent,
