@@ -527,7 +527,6 @@ export async function processOfficialsChunk(runId: string) {
   await supabase.from("import_runs").update({ bytes_processed: newBytesProcessed }).eq("id", runId);
 
   if (newBytesProcessed >= fileSize) {
-    await runRefreshOfficialsCount();
     await closeRun(runId, "completed", "processed via server-side chunked import");
     return { done: true as const, processed: run.rows_processed, failed: run.rows_failed };
   }
