@@ -224,7 +224,8 @@ export async function getIndexNowStatus() {
   const [state, pending] = await Promise.all([readState(), countPending()]);
   const pausedReason = isRateLimitMessage(state?.paused_reason) ? null : (state?.paused_reason ?? null);
   const coolingDown =
-    isRateLimitMessage(state?.paused_reason) || (isRateLimitMessage(state?.last_error) && isCoolingDown(state?.last_run_at));
+    (isRateLimitMessage(state?.paused_reason) && isCoolingDown(state?.paused_at ?? state?.last_run_at)) ||
+    (isRateLimitMessage(state?.last_error) && isCoolingDown(state?.last_run_at));
   const nextRetryAt = retryAt(state?.paused_at ?? state?.last_run_at)?.toISOString() ?? null;
   return {
     paused: Boolean(pausedReason),
