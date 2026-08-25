@@ -115,26 +115,6 @@ async function probeOnce(origin: string, path: string, partial: boolean) {
   };
 }
 
-async function fetchSitemapWithRetry(origin: string, path: string, partial: boolean) {
-  let last: Awaited<ReturnType<typeof probeOnce>> | null = null;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    try {
-      const result = await probeOnce(origin, path, partial);
-      last = result;
-      if (!result.error || !retryable(result.status, result.error)) return result;
-    } catch (err) {
-      last = {
-        status: null,
-        contentType: null,
-        error: err instanceof Error ? err.message : "fetch failed",
-        urlCount: null,
-      };
-    }
-    if (attempt < MAX_ATTEMPTS) await sleep(attempt * 1_500);
-  }
-  return last ?? { status: null, contentType: null, error: "fetch failed", urlCount: null };
-}
-
 function retryable(status: number | null, error: string | null): boolean {
   if (status === 403 || status === 429 || (status !== null && status >= 500)) return true;
   return status === null && !!error;
