@@ -274,6 +274,50 @@ export const getCompanyCount = createServerFn({ method: "GET" }).handler(async (
   return count ?? 0;
 });
 
+/**
+ * Central registry statistics used anywhere the site shows "how many entities
+ * do we cover" and "when was that data last refreshed".
+ *
+ * Never throws: a database hiccup returns nulls so callers can degrade to a
+ * label instead of breaking the page or printing a stale/false figure.
+ * - count       -> exact row count of `companies`
+ * - lastRefresh -> finish time of the most recent successful registry import,
+ *                  falling back to the newest `companies.updated_at`
+ */
+export const getRegistryStats = createServerFn({ method: "GET" }).handler(async () => {
+  let count: number | null = null;
+  let lastRefresh: string | null = null;
+  try {
+    const supabase = getServerClient();
+    const [countRes, importRes, updatedRes] = await Promise.all([
+      supabase.from("companies").select("*", { count: "exact", head: true }),
+      supabase
+        .from("import_runs")
+        .select("finished_at")
+        .eq("status", "completed")
+        .not("finished_at", "is", null)
+        .order("finished_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("companies")
+        .select("updated_at")
+        .not("updated_at", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+    if (!countRes.error) count = countRes.count ?? null;
+    lastRefresh =
+      (!importRes.error && importRes.data?.finished_at) ||
+      (!updatedRes.error && updatedRes.data?.updated_at) ||
+      null;
+  } catch {
+    // Fall through with nulls — statistics are decorative, never load-bearing.
+  }
+  return { count, lastRefresh };
+});
+
 export const getSitemapChunk = createServerFn({ method: "GET" })
   .validator((data: { n: number }) => data)
   .handler(async ({ data }) => {
