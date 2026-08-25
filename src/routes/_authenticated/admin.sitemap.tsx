@@ -50,6 +50,8 @@ export const Route = createFileRoute("/_authenticated/admin/sitemap")({
 type IndexNowStatus = {
   paused: boolean;
   pausedReason: string | null;
+  coolingDown?: boolean;
+  nextRetryAt?: string | null;
   lastRunAt: string | null;
   lastSubmittedCount: number;
   lastError: string | null;
@@ -200,7 +202,7 @@ function SitemapHealthPage() {
           <CardContent className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
             <span>
               <Badge variant={indexNow.data.paused ? "destructive" : "default"}>
-                {indexNow.data.paused ? "Paused" : "Active"}
+                {indexNow.data.paused ? "Paused" : indexNow.data.coolingDown ? "Cooling down" : "Active"}
               </Badge>
             </span>
             <span className="text-muted-foreground">
@@ -212,6 +214,9 @@ function SitemapHealthPage() {
             </span>
             {(indexNow.data.pausedReason ?? indexNow.data.lastError) && (
               <span className="text-destructive">{indexNow.data.pausedReason ?? indexNow.data.lastError}</span>
+            )}
+            {indexNow.data.coolingDown && indexNow.data.nextRetryAt && (
+              <span className="text-muted-foreground">Next retry: {fmt(indexNow.data.nextRetryAt)}</span>
             )}
           </CardContent>
         </Card>

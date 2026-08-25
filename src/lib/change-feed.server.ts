@@ -9,7 +9,7 @@ import {
 } from "@/lib/change-feed";
 
 /** How many IndexNow batches a single daily run may push. */
-const MAX_BATCHES_PER_RUN = 4;
+const MAX_BATCHES_PER_RUN = 1;
 
 function canonicalUrl(officialNo: string | null, slug: string): string {
   return `${INDEXNOW_ORIGIN}/company/${officialNo && officialNo.length > 0 ? officialNo : slug}`;

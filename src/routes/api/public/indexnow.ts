@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/public/indexnow")({
         try {
           const result = await runIndexNowBatch();
           return Response.json(result, {
-            status: result.ok || result.status === "locked" || result.status === "paused" ? 200 : 502,
+            status: result.ok || result.status === "locked" || result.status === "cooling_down" || result.status === "paused" ? 200 : 502,
             headers: { "cache-control": "no-store" },
           });
         } catch (error) {
