@@ -331,19 +331,35 @@ export function ReportView({
       ) : null}
 
       <Section title="Negative information">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Unpaid bills on record" value={String(report.negatives.unpaidBills)} />
-          <Field label="Bankruptcy filings" value={String(report.negatives.bankruptcies)} />
-        </div>
-        {report.detrimental.length > 0 ? (
-          <div className="mt-4">
-            <p className="mb-2 text-sm font-semibold">Detrimental information in the corporate structure</p>
-            <Table
-              head={["Category", "Entity", "Reg. no.", "Detail"]}
-              rows={report.detrimental.map((entry) => [entry.label, entry.company, entry.registrationNumber, entry.detail])}
-            />
+        {report.negativesPresent ? (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Unpaid bills on record" value={String(report.negatives.unpaidBills)} />
+              <Field label="Bankruptcy filings" value={String(report.negatives.bankruptcies)} />
+            </div>
+            {report.detrimental.length > 0 ? (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-semibold">Detrimental information in the corporate structure</p>
+                <Table
+                  head={["Category", "Entity", "Reg. no.", "Detail"]}
+                  rows={report.detrimental.map((entry) => [entry.label, entry.company, entry.registrationNumber, entry.detail])}
+                />
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="rounded-lg border border-copper/30 bg-copper/10 p-4">
+            <p className="text-sm font-semibold text-copper">Not included in this report</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Adverse credit checks such as unpaid bills and bankruptcy filings are not covered by the Cyprus Company
+              Profile (Structure Report). Order a{" "}
+              <a href="/products/cyprus-credit-report" className="font-semibold underline hover:text-copper">
+                Cyprus Credit Report
+              </a>{" "}
+              to retrieve negative information and credit scoring.
+            </p>
           </div>
-        ) : null}
+        )}
       </Section>
 
       <footer className="rounded-xl border bg-muted/30 p-5 text-xs leading-relaxed text-muted-foreground">
