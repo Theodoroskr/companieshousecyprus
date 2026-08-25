@@ -21,12 +21,12 @@ export function SiteFooter() {
             />
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Open access to the Cyprus register of companies, with certified certificates and company intelligence
-            delivered digitally.
+            An independent Infocredit Group service providing searchable Cyprus company information, official
+            Registrar-issued certificates, company profiles and credit reports.
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-medium text-muted-foreground">
-            <span className="rounded-full border bg-background px-2.5 py-1">GDPR compliant</span>
-            <span className="rounded-full border bg-background px-2.5 py-1">Registrar sourced</span>
+            <span className="rounded-full border bg-background px-2.5 py-1">Data protection controls</span>
+            <span className="rounded-full border bg-background px-2.5 py-1">Registry-sourced information</span>
             <span className="rounded-full border bg-background px-2.5 py-1">Secure payments</span>
           </div>
           <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
