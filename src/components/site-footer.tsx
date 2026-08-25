@@ -169,9 +169,25 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Companies House Cyprus. Data sourced from the Department of Registrar of Companies.</p>
-          <p>Not affiliated with the Government of the Republic of Cyprus.</p>
+        <div className="mx-auto max-w-7xl space-y-3 px-4 py-6 text-xs leading-relaxed text-muted-foreground">
+          <p className="max-w-4xl">
+            Companies House Cyprus is an independent digital service operated by{" "}
+            <a
+              href="https://www.infocreditgroup.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground hover:underline"
+            >
+              Infocredit Group Ltd
+            </a>
+            , a company registered in the Republic of Cyprus under registration number HE4404. Registered office:
+            Chatzigeorgiou Filippou 5A, Akropoli, 2006 Nicosia, Cyprus.
+          </p>
+          <p className="max-w-4xl">
+            Companies House Cyprus is not affiliated with, endorsed by, or part of the Government of the Republic of
+            Cyprus or the Department of Registrar of Companies and Intellectual Property.
+          </p>
+          <p>© {new Date().getFullYear()} Companies House Cyprus. Registry-sourced information from the Department of Registrar of Companies and Intellectual Property.</p>
         </div>
       </div>
     </footer>
