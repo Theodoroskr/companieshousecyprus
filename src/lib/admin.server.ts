@@ -461,7 +461,7 @@ export async function processOfficialsChunk(runId: string) {
   if (run.stage === "uploaded") {
     if (run.mode === "replace") {
       await truncateOfficials();
-      const { error } = await supabase.from("import_runs").update({ stage: "clearing" }).eq("id", runId);
+      const { error } = await supabase.from("import_runs").update({ stage: "resetting_counts" }).eq("id", runId);
       if (error) throw new Error(error.message);
       return {
         done: false as const,
@@ -469,13 +469,24 @@ export async function processOfficialsChunk(runId: string) {
         failed: 0,
         bytesProcessed: undefined,
         fileSize: run.file_size,
-        stage: "clearing" as const,
+        stage: "resetting_counts" as const,
       };
     }
     run.stage = "clearing";
   }
 
+  // Runs created before the chunked reset fix can be left in "clearing"
+  // even though the timed-out clear transaction rolled back. Re-truncate once.
   if (run.stage === "clearing") {
+    if (run.mode === "replace") {
+      await truncateOfficials();
+      const { error } = await supabase.from("import_runs").update({ stage: "resetting_counts" }).eq("id", runId);
+      if (error) throw new Error(error.message);
+      run.stage = "resetting_counts";
+    }
+  }
+
+  if (run.stage === "resetting_counts") {
     if (run.mode === "replace") {
       const resetCount = await resetOfficialsCountsChunk();
       if (resetCount > 0) {
@@ -485,7 +496,7 @@ export async function processOfficialsChunk(runId: string) {
           failed: 0,
           bytesProcessed: undefined,
           fileSize: run.file_size,
-          stage: "clearing" as const,
+          stage: "resetting_counts" as const,
         };
       }
     }
