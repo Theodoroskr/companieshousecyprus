@@ -19,6 +19,7 @@ import {
 } from "@/lib/registrar-mapping";
 import {
   clearOfficials,
+  diagnoseCompanyNumber,
   finishImportRun,
   getImportStats,
   importCompanyBatch,
@@ -50,6 +51,7 @@ type RunState = { active: boolean; label: string; processed: number; failed: num
 const idleRun: RunState = { active: false, label: "", processed: 0, failed: 0, percent: 0 };
 
 type ImportRunRow = Awaited<ReturnType<typeof listImportRuns>>[number];
+type DiagnosticResult = Awaited<ReturnType<typeof diagnoseCompanyNumber>>;
 
 function parseCsv<T>(
   file: File,
@@ -84,6 +86,28 @@ function AdminImportPage() {
   const [run, setRun] = useState<RunState>(idleRun);
   const [replaceOfficials, setReplaceOfficials] = useState(true);
   const cancelRef = useRef(false);
+
+  const [diagNumber, setDiagNumber] = useState("");
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagResult, setDiagResult] = useState<DiagnosticResult | null>(null);
+
+  const runDiagnostic = async () => {
+    const value = diagNumber.trim();
+    if (!value) {
+      toast.error("Enter a registry number first");
+      return;
+    }
+    setDiagLoading(true);
+    try {
+      const result = await diagnoseCompanyNumber({ data: { number: value } });
+      setDiagResult(result);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Lookup failed");
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
 
   const orgFileRef = useRef<HTMLInputElement>(null);
   const addrFileRef = useRef<HTMLInputElement>(null);
@@ -387,6 +411,93 @@ function AdminImportPage() {
       )}
 
       <section className="mt-8 rounded-lg border bg-card p-6">
+        <h2 className="text-xl font-semibold">Check a registry number</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Enter a public number such as <code>HE266225</code> to see the company key the importer resolves it to, and
+          whether the company and its directors are present in our copy.
+        </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="diag-number">Public number</Label>
+            <Input
+              id="diag-number"
+              value={diagNumber}
+              placeholder="HE266225"
+              onChange={(event) => setDiagNumber(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void runDiagnostic();
+              }}
+            />
+          </div>
+          <Button variant="outline" disabled={diagLoading} onClick={() => void runDiagnostic()}>
+            {diagLoading ? "Checking…" : "Check"}
+          </Button>
+        </div>
+
+        {diagResult && (
+          <div className="mt-4 space-y-3 rounded-md border bg-muted/30 p-4 text-sm">
+            {!diagResult.resolved ? (
+              <p className="font-medium text-destructive">
+                Could not resolve “{diagResult.input}” to a company key. Check the prefix and number.
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div>
+                    <p className="text-muted-foreground">Company key</p>
+                    <p className="font-mono font-medium">{diagResult.slug}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Type code</p>
+                    <p className="font-medium">{diagResult.typeCode}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Registration number</p>
+                    <p className="font-medium">{diagResult.regNumber?.toLocaleString()}</p>
+                  </div>
+                </div>
+                {diagResult.company ? (
+                  <p>
+                    <span className="font-medium">{diagResult.company.name}</span>{" "}
+                    <span className="text-muted-foreground">
+                      ({diagResult.company.official_no ?? "—"} · {diagResult.company.status_en ?? "unknown status"})
+                    </span>
+                  </p>
+                ) : (
+                  <p className="font-medium text-destructive">
+                    No company row stored for {diagResult.slug} — officials rows for it would be skipped.
+                  </p>
+                )}
+                <p>
+                  Directors &amp; officials stored:{" "}
+                  <span className="font-medium">{diagResult.officialsCount.toLocaleString()}</span>
+                  {diagResult.company?.officials_count != null && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      (cached count {Number(diagResult.company.officials_count).toLocaleString()})
+                    </span>
+                  )}
+                </p>
+                {diagResult.officials.length > 0 && (
+                  <ul className="space-y-1">
+                    {diagResult.officials.map((official, index) => (
+                      <li key={`${official.person_name}-${index}`} className="text-muted-foreground">
+                        {official.person_name}
+                        {official.position_en || official.position_el
+                          ? ` — ${official.position_en ?? official.position_el}`
+                          : ""}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6 rounded-lg border bg-card p-6">
+
         <h2 className="text-xl font-semibold">Companies &amp; new registrations</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Upload <code>organisations_*.csv</code>. New companies are added, existing ones are updated (name, status,

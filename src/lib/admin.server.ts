@@ -539,3 +539,55 @@ export async function processOfficialsChunk(runId: string) {
     fileSize,
   };
 }
+
+/**
+ * Diagnostic: resolve a public registry number (e.g. "HE266225") through the
+ * importer's normaliser and report whether the company row and its officials
+ * exist in our copy of the registry.
+ */
+export async function diagnoseCompanyKey(input: string) {
+  const { normaliseCompanyKey } = await import("@/lib/registrar-mapping");
+  const raw = input.trim();
+  const key =
+    normaliseCompanyKey(null, raw) ??
+    normaliseCompanyKey(raw.replace(/[^A-Za-zΑ-Ωα-ω]/g, ""), raw.replace(/[^0-9]/g, ""));
+
+  if (!key) {
+    return {
+      input: raw,
+      resolved: false as const,
+      slug: null,
+      typeCode: null,
+      regNumber: null,
+      company: null,
+      officialsCount: 0,
+      officials: [] as { person_name: string; position_en: string | null; position_el: string | null }[],
+    };
+  }
+
+  const supabase = adminClient();
+  const [{ data: company }, { data: officials, count }] = await Promise.all([
+    supabase
+      .from("companies")
+      .select("slug, name, official_no, type_code, status_en, officials_count, updated_at")
+      .eq("slug", key.slug)
+      .maybeSingle(),
+    supabase
+      .from("officials")
+      .select("person_name, position_en, position_el", { count: "exact" })
+      .eq("slug", key.slug)
+      .order("id", { ascending: true })
+      .limit(25),
+  ]);
+
+  return {
+    input: raw,
+    resolved: true as const,
+    slug: key.slug,
+    typeCode: key.typeCode,
+    regNumber: key.regNumber,
+    company: company ?? null,
+    officialsCount: count ?? (officials?.length ?? 0),
+    officials: officials ?? [],
+  };
+}

@@ -142,3 +142,12 @@ export const getSitemapMonitorHistory = createServerFn({ method: "GET" })
     const { readSitemapMonitorHistory } = await import("@/lib/sitemap-monitor.server");
     return readSitemapMonitorHistory(20);
   });
+
+export const diagnoseCompanyNumber = createServerFn({ method: "POST" })
+  .inputValidator((data: { number: string }) => data)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, diagnoseCompanyKey } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return diagnoseCompanyKey(data.number);
+  });
