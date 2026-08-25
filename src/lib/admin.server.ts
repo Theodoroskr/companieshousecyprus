@@ -145,9 +145,16 @@ export async function updateOfficialsCountForSlugs(slugs: string[]) {
 
 export async function truncateOfficials() {
   const supabase = adminClient();
-  const { error } = await supabase.rpc("clear_officials");
+  const { error } = await (supabase.rpc as any)("truncate_officials_only");
   if (error) throw new Error(error.message);
   return { cleared: true as const };
+}
+
+async function resetOfficialsCountsChunk() {
+  const supabase = adminClient();
+  const { data, error } = await (supabase.rpc as any)("reset_officials_counts_chunk", { batch_size: 5000 });
+  if (error) throw new Error(error.message);
+  return Number(data ?? 0);
 }
 
 export async function runRefreshOfficialsCount() {
@@ -451,12 +458,36 @@ export async function processOfficialsChunk(runId: string) {
     throw new Error(run.message ?? "Import run failed");
   }
 
-  if (run.stage === "uploaded" || run.stage === "clearing") {
-    if (run.stage === "uploaded") {
-      await supabase.from("import_runs").update({ stage: "clearing" }).eq("id", runId);
-    }
+  if (run.stage === "uploaded") {
     if (run.mode === "replace") {
       await truncateOfficials();
+      const { error } = await supabase.from("import_runs").update({ stage: "clearing" }).eq("id", runId);
+      if (error) throw new Error(error.message);
+      return {
+        done: false as const,
+        processed: 0,
+        failed: 0,
+        bytesProcessed: undefined,
+        fileSize: run.file_size,
+        stage: "clearing" as const,
+      };
+    }
+    run.stage = "clearing";
+  }
+
+  if (run.stage === "clearing") {
+    if (run.mode === "replace") {
+      const resetCount = await resetOfficialsCountsChunk();
+      if (resetCount > 0) {
+        return {
+          done: false as const,
+          processed: 0,
+          failed: 0,
+          bytesProcessed: undefined,
+          fileSize: run.file_size,
+          stage: "clearing" as const,
+        };
+      }
     }
     await supabase
       .from("import_runs")
