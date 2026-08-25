@@ -19,7 +19,9 @@ const SITE_URL = "https://companieshousecyprus.com";
 const ALERT_TO = "info@companieshousecyprus.com";
 /** Don't re-send an identical failure alert more often than this. */
 const RE_ALERT_MINUTES = 360;
-const FETCH_TIMEOUT_MS = 15_000;
+const FETCH_TIMEOUT_MS = 25_000;
+/** Company chunks are multi-megabyte; probe a few at a time so none time out. */
+const CONCURRENCY = 3;
 
 function client() {
   const url = process.env["SUPABASE_URL"];
@@ -140,10 +142,13 @@ export async function runSitemapHealthCheck(origin: string): Promise<SitemapMoni
   const indexProbe = await probe(origin, "/sitemap.xml", "index");
   const discovered = indexProbe.ok ? await discoverChildPaths(origin) : { paths: [], error: null };
 
-  const childProbes = await Promise.all(
-    // Cap the fan-out so a very large index cannot exhaust the worker.
-    discovered.paths.slice(0, 60).map((path) => probe(origin, path, "child")),
-  );
+  // Cap the fan-out so a very large index cannot exhaust the worker.
+  const paths = discovered.paths.slice(0, 60);
+  const childProbes: SitemapProbe[] = [];
+  for (let i = 0; i < paths.length; i += CONCURRENCY) {
+    const batch = paths.slice(i, i + CONCURRENCY);
+    childProbes.push(...(await Promise.all(batch.map((path) => probe(origin, path, "child")))));
+  }
 
   const probes = [indexProbe, ...childProbes];
   const failures = probes
