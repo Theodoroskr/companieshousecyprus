@@ -21,7 +21,7 @@ const ALERT_TO = "info@companieshousecyprus.com";
 const RE_ALERT_MINUTES = 360;
 const FETCH_TIMEOUT_MS = 25_000;
 /** Company chunks are multi-megabyte; probe a few at a time so none time out. */
-const CONCURRENCY = 3;
+const CONCURRENCY = 4;
 
 function client() {
   const url = process.env["SUPABASE_URL"];
