@@ -252,19 +252,12 @@ export const listCompaniesByDistrict = createServerFn({ method: "GET" })
 
 export const getDistricts = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = getServerClient();
-  const { data: rows, error } = await supabase
-    .from("companies")
-    .select("district_en")
-    .not("district_en", "is", null)
-    .order("district_en", { ascending: true });
+  // Aggregated in SQL: streaming every district_en row to the app both
+  // truncated at the PostgREST 1,000-row cap and risked a statement timeout.
+  const { data, error } = await supabase.rpc("companies_district_counts");
   if (error) throw error;
-  const map = new Map<string, number>();
-  for (const r of rows ?? []) {
-    if (!r.district_en) continue;
-    map.set(r.district_en, (map.get(r.district_en) ?? 0) + 1);
-  }
-  return Array.from(map.entries())
-    .map(([name, count]) => ({ name, count }))
+  return ((data ?? []) as Array<{ name: string; count: number }>)
+    .map((r) => ({ name: r.name, count: Number(r.count) }))
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 
