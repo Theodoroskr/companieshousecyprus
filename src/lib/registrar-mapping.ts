@@ -229,22 +229,23 @@ export function mapOrganisationRow(
   row: Record<string, string>,
   addresses?: Map<string, AddressRecord>,
 ): CompanyImportRow | null {
-  const typeCode = cleanText(row["ORGANISATION_TYPE_CODE"]);
-  const regNo = cleanText(row["REGISTRATION_NO"]);
+  const typeCodeRaw = cleanText(row["ORGANISATION_TYPE_CODE"]);
+  const regNoRaw = cleanText(row["REGISTRATION_NO"]);
   const name = cleanText(row["ORGANISATION_NAME"]);
-  if (!typeCode || !regNo || !name) return null;
-  if (!(VALID_TYPES as readonly string[]).includes(typeCode)) return null;
-  if (!/^\d+$/.test(regNo)) return null;
+  if (!name) return null;
+  const key = normaliseCompanyKey(typeCodeRaw, regNoRaw);
+  if (!key) return null;
+  const { typeCode, regNumber } = key;
 
   const statusEl = cleanText(row["ORGANISATION_STATUS"]);
   const status = statusEl ? STATUS_EN[statusEl] : undefined;
   const subtypeEl = cleanText(row["ORGANISATION_SUB_TYPE"]);
 
   const mapped: CompanyImportRow = {
-    slug: `${typeCode}${regNo}`,
+    slug: key.slug,
     type_code: typeCode,
-    reg_number: Number(regNo),
-    official_no: OFFICIAL_PREFIX[typeCode] ? `${OFFICIAL_PREFIX[typeCode]}${regNo}` : null,
+    reg_number: regNumber,
+    official_no: OFFICIAL_PREFIX[typeCode] ? `${OFFICIAL_PREFIX[typeCode]}${regNumber}` : null,
     name,
     type_el: cleanText(row["ORGANISATION_TYPE"]),
     type_en: TYPE_EN[typeCode] ?? null,
