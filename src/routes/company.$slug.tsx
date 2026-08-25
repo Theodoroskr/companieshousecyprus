@@ -278,8 +278,11 @@ function CompanyPage() {
     { label: "District", value: company.district_en ?? "—" },
     {
       label: OFFICIALS_ON_RECORD_LABEL,
-      value: "Yes",
-      description: OFFICIALS_ON_RECORD_DESCRIPTION,
+      value: officials.length > 0 ? String(officials.length) : "Not in our copy",
+      description:
+        officials.length > 0
+          ? OFFICIALS_ON_RECORD_DESCRIPTION
+          : "No directors, secretaries or owners are present for this entity in our copy of the register. A Certificate of Directors & Secretary returns them directly from the Registrar.",
     },
   ];
 
