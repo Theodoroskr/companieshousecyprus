@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enqueue_indexnow_guide() FROM public, anon, authenticated;

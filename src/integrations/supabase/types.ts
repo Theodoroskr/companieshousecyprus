@@ -360,6 +360,7 @@ export type Database = {
         Row: {
           attempts: number
           last_error: string | null
+          path: string | null
           queued_at: string
           slug: string
           submitted_at: string | null
@@ -367,6 +368,7 @@ export type Database = {
         Insert: {
           attempts?: number
           last_error?: string | null
+          path?: string | null
           queued_at?: string
           slug: string
           submitted_at?: string | null
@@ -374,6 +376,7 @@ export type Database = {
         Update: {
           attempts?: number
           last_error?: string | null
+          path?: string | null
           queued_at?: string
           slug?: string
           submitted_at?: string | null
@@ -814,6 +817,7 @@ export type Database = {
           name: string
         }[]
       }
+      enqueue_indexnow_urls: { Args: { _paths: string[] }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
