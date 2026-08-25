@@ -158,9 +158,9 @@ function HomePage() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Search {data.count.toLocaleString()} Cyprus companies free on official Department of Registrar of Companies
-            data — status, directors, shareholders and registered office — then order certificates and reports with
-            instant digital delivery. Independent service, not the Registrar.
+            Free access to Cyprus company information sourced from the Department of Registrar of Companies — status,
+            directors, shareholders and registered office — then order certificates and reports with instant digital
+            delivery. Independent service, not the Registrar.
           </p>
 
 
