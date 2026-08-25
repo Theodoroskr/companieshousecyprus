@@ -179,6 +179,11 @@ type PreviousMonitorRun = {
   checked_at: string;
 };
 
+type OpenIncidentFailureAlert = {
+  checked_at: string;
+  alert_signature: string | null;
+};
+
 async function readLatestRun(supabase: ReturnType<typeof client>) {
   const { data } = await supabase
     .from("sitemap_health_runs")
@@ -202,18 +207,20 @@ async function readLatestHealthyRunAt(supabase: ReturnType<typeof client>) {
   return (data as { checked_at: string } | null)?.checked_at ?? null;
 }
 
-async function hasFailureAlertInOpenIncident(supabase: ReturnType<typeof client>, since: string | null) {
+async function readOpenIncidentFailureAlert(supabase: ReturnType<typeof client>, since: string | null) {
   let query = supabase
     .from("sitemap_health_runs")
-    .select("id", { count: "exact", head: true })
+    .select("checked_at, alert_signature")
     .eq("healthy", false)
     .eq("alerted", true)
-    .eq("alert_kind", "failure");
+    .eq("alert_kind", "failure")
+    .order("checked_at", { ascending: true })
+    .limit(1);
 
   if (since) query = query.gt("checked_at", since);
 
-  const { count } = await query;
-  return (count ?? 0) > 0;
+  const { data } = await query.maybeSingle();
+  return data as OpenIncidentFailureAlert | null;
 }
 
 /** Runs one full health check, persists it and alerts on state changes. */
@@ -254,17 +261,27 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
   let alertKind: "failure" | "recovery" | null = null;
   let alertReason: string | null = null;
   let incidentKey = signature;
+  let latestHealthyAt: string | null = null;
+  let openIncidentFailureAlert: OpenIncidentFailureAlert | null = null;
 
   if (!healthy) {
-    const latestHealthyAt = await readLatestHealthyRunAt(supabase);
-    const alreadyAlerted = await hasFailureAlertInOpenIncident(supabase, latestHealthyAt);
-    incidentKey = `${latestHealthyAt ?? "initial"}-${signature}`;
+    latestHealthyAt = await readLatestHealthyRunAt(supabase);
+    openIncidentFailureAlert = await readOpenIncidentFailureAlert(supabase, latestHealthyAt);
+    incidentKey = openIncidentFailureAlert
+      ? `${openIncidentFailureAlert.checked_at}-${openIncidentFailureAlert.alert_signature ?? "failure"}`
+      : `${latestHealthyAt ?? "initial"}-${signature}`;
 
-    if (!alreadyAlerted) alertKind = "failure";
+    if (!openIncidentFailureAlert) alertKind = "failure";
     else alertReason = "deduplicated: failure incident already reported";
   } else if (prev && prev.healthy === false) {
-    alertKind = "recovery";
-    incidentKey = prev.alert_signature ?? signature;
+    latestHealthyAt = await readLatestHealthyRunAt(supabase);
+    openIncidentFailureAlert = await readOpenIncidentFailureAlert(supabase, latestHealthyAt);
+    if (openIncidentFailureAlert) {
+      alertKind = "recovery";
+      incidentKey = `${openIncidentFailureAlert.checked_at}-${openIncidentFailureAlert.alert_signature ?? prev.alert_signature ?? "failure"}`;
+    } else {
+      alertReason = "recovered: no prior failure alert was sent for this incident";
+    }
   }
 
   let alertError: string | null = null;
