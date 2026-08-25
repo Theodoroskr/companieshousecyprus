@@ -76,6 +76,10 @@ function isLargeChunk(path: string) {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function canonicalOrigin() {
+  return new URL(SITE_URL).origin;
+}
+
 async function fetchSitemap(url: string, partial: boolean) {
   const headers: Record<string, string> = {
     "user-agent": USER_AGENT,
@@ -109,6 +113,26 @@ async function probeOnce(origin: string, path: string, partial: boolean) {
     error,
     urlCount: isXml && !truncated ? extractLocs(body).size : null,
   };
+}
+
+async function fetchSitemapWithRetry(origin: string, path: string, partial: boolean) {
+  let last: Awaited<ReturnType<typeof probeOnce>> | null = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const result = await probeOnce(origin, path, partial);
+      last = result;
+      if (!result.error || !retryable(result.status, result.error)) return result;
+    } catch (err) {
+      last = {
+        status: null,
+        contentType: null,
+        error: err instanceof Error ? err.message : "fetch failed",
+        urlCount: null,
+      };
+    }
+    if (attempt < MAX_ATTEMPTS) await sleep(attempt * 1_500);
+  }
+  return last ?? { status: null, contentType: null, error: "fetch failed", urlCount: null };
 }
 
 function retryable(status: number | null, error: string | null): boolean {
@@ -171,9 +195,10 @@ export type SitemapMonitorResult = {
 };
 
 /** Runs one full health check, persists it and alerts on state changes. */
-export async function runSitemapHealthCheck(origin: string): Promise<SitemapMonitorResult> {
+export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMonitorResult> {
   const startedAt = Date.now();
   const supabase = client();
+  const origin = canonicalOrigin();
 
   const indexProbe = await probe(origin, "/sitemap.xml", "index");
   const discovered = indexProbe.ok ? await discoverChildPaths(origin) : { paths: [], error: null };
