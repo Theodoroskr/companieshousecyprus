@@ -424,19 +424,6 @@ export async function readRun(runId: string) {
   return data;
 }
 
-function textEncoder(): (text: string) => Uint8Array {
-  if (typeof TextEncoder !== "undefined") {
-    const enc = new TextEncoder();
-    return (text) => enc.encode(text);
-  }
-  // Fallback for environments without TextEncoder (unlikely in Workers).
-  return (text) => {
-    const buf = new Uint8Array(text.length);
-    for (let i = 0; i < text.length; i++) buf[i] = text.charCodeAt(i) & 0xff;
-    return buf;
-  };
-}
-
 function parseCsvText<T>(text: string): T[] {
   const parsed = Papa.parse<T>(text, { header: true, skipEmptyLines: true });
   if (parsed.errors.length) {
