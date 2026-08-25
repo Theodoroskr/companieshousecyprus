@@ -113,3 +113,12 @@ export const getUserUsage = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     return readUserUsage(data ?? {});
   });
+
+export const getSitemapMonitorHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { readSitemapMonitorHistory } = await import("@/lib/sitemap-monitor.server");
+    return readSitemapMonitorHistory(20);
+  });
