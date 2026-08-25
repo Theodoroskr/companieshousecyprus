@@ -12,6 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { extractLocs } from "@/lib/seo/canonical-health";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+import { decideSitemapIncidentAlert } from "@/lib/sitemap-monitor-incident";
 
 const JOB_KEY = "sitemap_monitor";
 const SITE_URL = "https://companieshousecyprus.com";
@@ -258,39 +259,29 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
 
   const prev = await readLatestRun(supabase);
 
-  let alertKind: "failure" | "recovery" | null = null;
-  let alertReason: string | null = null;
-  let incidentKey = signature;
   let latestHealthyAt: string | null = null;
   let openIncidentFailureAlert: OpenIncidentFailureAlert | null = null;
 
-  if (!healthy) {
+  if (!healthy || (prev && prev.healthy === false)) {
     latestHealthyAt = await readLatestHealthyRunAt(supabase);
     openIncidentFailureAlert = await readOpenIncidentFailureAlert(supabase, latestHealthyAt);
-    incidentKey = openIncidentFailureAlert
-      ? `${openIncidentFailureAlert.checked_at}-${openIncidentFailureAlert.alert_signature ?? "failure"}`
-      : `${latestHealthyAt ?? "initial"}-${signature}`;
-
-    if (!openIncidentFailureAlert) alertKind = "failure";
-    else alertReason = "deduplicated: failure incident already reported";
-  } else if (prev && prev.healthy === false) {
-    latestHealthyAt = await readLatestHealthyRunAt(supabase);
-    openIncidentFailureAlert = await readOpenIncidentFailureAlert(supabase, latestHealthyAt);
-    if (openIncidentFailureAlert) {
-      alertKind = "recovery";
-      incidentKey = `${openIncidentFailureAlert.checked_at}-${openIncidentFailureAlert.alert_signature ?? prev.alert_signature ?? "failure"}`;
-    } else {
-      alertReason = "recovered: no prior failure alert was sent for this incident";
-    }
   }
 
+  const alertDecision = decideSitemapIncidentAlert({
+    healthy,
+    signature,
+    previousRun: prev,
+    latestHealthyAt,
+    openFailureAlert: openIncidentFailureAlert,
+  });
+
   let alertError: string | null = null;
-  if (alertKind) {
+  if (alertDecision.kind) {
     try {
       await sendTemplateEmail("sitemap-alert", ALERT_TO, {
-        idempotencyKey: `sitemap-${alertKind}-${incidentKey}`,
+        idempotencyKey: `sitemap-${alertDecision.kind}-${alertDecision.incidentKey}`,
         templateData: {
-          state: alertKind,
+          state: alertDecision.kind,
           checkedAt: new Date().toLocaleString("en-GB", { timeZone: "Asia/Nicosia" }),
           checked: probes.length,
           failing: failures.length,
@@ -317,8 +308,8 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
     duration_ms: durationMs,
     failures,
     alert_signature: signature,
-    alerted: alertKind !== null && alertError === null,
-    alert_kind: alertKind,
+    alerted: alertDecision.kind !== null && alertError === null,
+    alert_kind: alertDecision.kind,
     alert_error: alertError,
   });
 
@@ -341,7 +332,11 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
     },
     failures,
     probes,
-    alert: { sent: alertKind !== null && alertError === null, kind: alertKind, reason: alertReason ?? alertError },
+    alert: {
+      sent: alertDecision.kind !== null && alertError === null,
+      kind: alertDecision.kind,
+      reason: alertDecision.reason ?? alertError,
+    },
   };
 }
 
