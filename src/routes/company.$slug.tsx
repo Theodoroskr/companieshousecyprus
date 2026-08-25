@@ -118,7 +118,13 @@ export const Route = createFileRoute("/company/$slug")({
   // "dfd.name") and lowercase/pretty slugs must not render duplicate content:
   // send them to the canonical registry-id URL with a permanent redirect.
   beforeLoad: ({ params }) => {
-    const canonical = normalizeCompanySlug(params.slug);
+    const legacy = classifyLegacyPath(`/company/${params.slug}`);
+    const token = legacy ? extractRegistryToken(params.slug) : null;
+    if (legacy && !token) {
+      // Template-leak URL with nothing to resolve: a clean not-found, never content.
+      throw notFound();
+    }
+    const canonical = normalizeCompanySlug(token ?? params.slug);
     if (canonical && canonical !== params.slug) {
       throw redirect({
         to: "/company/$slug",
