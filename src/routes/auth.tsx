@@ -36,10 +36,11 @@ function safeRedirect(path: string | undefined): string | null {
 function AuthPage() {
   const navigate = useNavigate();
   const { redirect } = Route.useSearch();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const navigateForUser = async (userId: string, requestedRedirect?: string | undefined) => {
     const target = safeRedirect(requestedRedirect);
@@ -66,7 +67,14 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "signup") {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setResetSent(true);
+        toast.success("Password reset email sent. Check your inbox.");
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -87,12 +95,16 @@ function AuthPage() {
     }
   };
 
+  const heading = mode === "forgot" ? "Reset your password" : "Sign in";
+  const intro =
+    mode === "forgot"
+      ? "Enter the email address on your account and we'll send you a link to choose a new password."
+      : "Sign in to track your orders and download your certificates and reports.";
+
   return (
     <div className="mx-auto max-w-md px-4 py-16">
-      <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Sign in to track your orders and download your certificates and reports.
-      </p>
+      <h1 className="text-2xl font-bold tracking-tight">{heading}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{intro}</p>
       <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg border bg-card p-6">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -105,27 +117,60 @@ function AuthPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        {mode !== "forgot" && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="password">Password</Label>
+              {mode === "signin" && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                  onClick={() => {
+                    setResetSent(false);
+                    setMode("forgot");
+                  }}
+                >
+                  Forgot your password?
+                </button>
+              )}
+            </div>
+            <Input
+              id="password"
+              type="password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+        )}
+        {mode === "forgot" && resetSent && (
+          <p className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm text-muted-foreground">
+            If an account exists for {email}, a reset link is on its way. The link expires after a
+            short while — request another one if it stops working.
+          </p>
+        )}
         <Button type="submit" className="w-full" disabled={busy}>
-          {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+          {busy
+            ? "Please wait…"
+            : mode === "forgot"
+              ? resetSent
+                ? "Resend reset link"
+                : "Send reset link"
+              : mode === "signup"
+                ? "Create account"
+                : "Sign in"}
         </Button>
         <button
           type="button"
           className="w-full text-sm text-muted-foreground underline-offset-4 hover:underline"
-          onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+          onClick={() => {
+            setResetSent(false);
+            setMode(mode === "signin" ? "signup" : "signin");
+          }}
         >
-          {mode === "signup" ? "Already have an account? Sign in" : "Need an account? Create one"}
+          {mode === "signin" ? "Need an account? Create one" : "Back to sign in"}
         </button>
       </form>
     </div>
