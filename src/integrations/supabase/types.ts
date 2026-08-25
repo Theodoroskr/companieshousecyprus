@@ -806,6 +806,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_officials_count_chunk: {
+        Args: { batch_size: number; start_offset: number }
+        Returns: {
+          next_offset: number
+          updated: number
+        }[]
+      }
       clear_officials: { Args: never; Returns: undefined }
       companies_by_letter_page: {
         Args: { p_letter: string; p_limit?: number; p_offset?: number }
