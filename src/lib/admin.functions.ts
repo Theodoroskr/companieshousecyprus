@@ -88,6 +88,26 @@ export const listImportRuns = createServerFn({ method: "GET" })
     return readRuns();
   });
 
+export const startServerImport = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: { kind: ImportKind; mode: string; filename: string; storagePath: string; fileSize: number }) => data,
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, startServerImport: start } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return start({ ...data, userId: context.userId });
+  });
+
+export const processImportChunk = createServerFn({ method: "POST" })
+  .inputValidator((data: { runId: string }) => data)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, processOfficialsChunk } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return processOfficialsChunk(data.runId);
+  });
+
 export const listUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

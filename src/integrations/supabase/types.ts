@@ -313,8 +313,10 @@ export type Database = {
       }
       import_runs: {
         Row: {
+          bytes_processed: number | null
           created_at: string
           created_by: string | null
+          file_size: number | null
           filename: string | null
           finished_at: string | null
           id: string
@@ -323,12 +325,16 @@ export type Database = {
           mode: string
           rows_failed: number
           rows_processed: number
+          stage: string | null
           status: string
+          storage_path: string | null
           updated_at: string
         }
         Insert: {
+          bytes_processed?: number | null
           created_at?: string
           created_by?: string | null
+          file_size?: number | null
           filename?: string | null
           finished_at?: string | null
           id?: string
@@ -337,12 +343,16 @@ export type Database = {
           mode?: string
           rows_failed?: number
           rows_processed?: number
+          stage?: string | null
           status?: string
+          storage_path?: string | null
           updated_at?: string
         }
         Update: {
+          bytes_processed?: number | null
           created_at?: string
           created_by?: string | null
+          file_size?: number | null
           filename?: string | null
           finished_at?: string | null
           id?: string
@@ -351,7 +361,9 @@ export type Database = {
           mode?: string
           rows_failed?: number
           rows_processed?: number
+          stage?: string | null
           status?: string
+          storage_path?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -827,6 +839,7 @@ export type Database = {
       }
       indexnow_acquire_lease: { Args: { _seconds?: number }; Returns: boolean }
       indexnow_release_lease: { Args: never; Returns: undefined }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
       search_companies_page: {
