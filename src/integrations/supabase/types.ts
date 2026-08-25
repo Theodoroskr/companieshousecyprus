@@ -723,6 +723,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sitemap_health_runs: {
+        Row: {
+          alert_error: string | null
+          alert_kind: string | null
+          alert_signature: string | null
+          alerted: boolean
+          checked_at: string
+          checked_count: number
+          duration_ms: number | null
+          failing_count: number
+          failures: Json
+          healthy: boolean
+          id: string
+        }
+        Insert: {
+          alert_error?: string | null
+          alert_kind?: string | null
+          alert_signature?: string | null
+          alerted?: boolean
+          checked_at?: string
+          checked_count?: number
+          duration_ms?: number | null
+          failing_count?: number
+          failures?: Json
+          healthy: boolean
+          id?: string
+        }
+        Update: {
+          alert_error?: string | null
+          alert_kind?: string | null
+          alert_signature?: string | null
+          alerted?: boolean
+          checked_at?: string
+          checked_count?: number
+          duration_ms?: number | null
+          failing_count?: number
+          failures?: Json
+          healthy?: boolean
+          id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
