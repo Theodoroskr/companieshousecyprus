@@ -21,7 +21,7 @@ type Probe = {
   error: string | null;
 };
 
-async function probe(origin: string, path: string, kind: Probe["kind"], meta?: { urlCount: number; lastmod: string | null }): Promise<Probe> {
+async function probe(path: string, kind: Probe["kind"], meta?: { urlCount: number; lastmod: string | null }): Promise<Probe> {
   const base: Probe = {
     url: `${CANONICAL_ORIGIN}${path}`,
     path,
@@ -35,7 +35,7 @@ async function probe(origin: string, path: string, kind: Probe["kind"], meta?: {
     error: null,
   };
   try {
-    const res = await fetch(`${origin}${path}`, { method: "GET", headers: { "user-agent": "chc-sitemap-health" } });
+    const res = await fetch(`${CANONICAL_ORIGIN}${path}`, { method: "GET", headers: { "user-agent": "chc-sitemap-health" } });
     // Drain the body so the connection closes; we only need headers + status.
     await res.arrayBuffer();
     const contentType = res.headers.get("content-type");
@@ -57,8 +57,6 @@ export const Route = createFileRoute("/api/public/sitemap-health")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const origin = new URL(request.url).origin;
-
         let meta: Awaited<ReturnType<typeof getSitemapIndex>> | null = null;
         let metaError: string | null = null;
         try {
@@ -69,10 +67,10 @@ export const Route = createFileRoute("/api/public/sitemap-health")({
 
         const chunks = meta?.chunks ?? [];
         const targets: Array<Promise<Probe>> = [
-          probe(origin, "/sitemap.xml", "index"),
-          probe(origin, "/sitemaps/pages.xml", "pages"),
+          probe("/sitemap.xml", "index"),
+          probe("/sitemaps/pages.xml", "pages"),
           ...chunks.map((chunk) =>
-            probe(origin, `/sitemaps/companies/${chunk.index}.xml`, "companies", {
+            probe(`/sitemaps/companies/${chunk.index}.xml`, "companies", {
               urlCount: chunk.urlCount,
               lastmod: chunk.lastmod,
             }),
