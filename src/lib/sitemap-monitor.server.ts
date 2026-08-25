@@ -4,21 +4,19 @@
  * Runs from the scheduler every 15 minutes: fetches /sitemap.xml, discovers
  * every sitemap it advertises (pages + company chunks) and fetches each one.
  * Any non-200 response, non-XML body or network failure is recorded and an
- * alert email is sent to the office address. Repeat alerts for the same
- * failure signature are throttled; a recovery email is sent once the
- * sitemaps are healthy again.
+ * alert email is sent to the office address. Failure alerts are deduplicated
+ * per incident; a recovery email is sent once the incident clears.
  */
 
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { extractLocs } from "@/lib/seo/canonical-health";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+import { decideSitemapIncidentAlert } from "@/lib/sitemap-monitor-incident";
 
 const JOB_KEY = "sitemap_monitor";
 const SITE_URL = "https://companieshousecyprus.com";
 const ALERT_TO = "info@companieshousecyprus.com";
-/** Don't re-send an identical failure alert more often than this. */
-const RE_ALERT_MINUTES = 360;
 const FETCH_TIMEOUT_MS = 25_000;
 /** Company chunks are multi-megabyte; probe a few at a time so none time out. */
 const CONCURRENCY = 4;
@@ -174,6 +172,58 @@ export type SitemapMonitorResult = {
   alert: { sent: boolean; kind: "failure" | "recovery" | null; reason: string | null };
 };
 
+type PreviousMonitorRun = {
+  healthy: boolean;
+  alert_signature: string | null;
+  alerted: boolean;
+  alert_kind: string | null;
+  checked_at: string;
+};
+
+type OpenIncidentFailureAlert = {
+  checked_at: string;
+  alert_signature: string | null;
+};
+
+async function readLatestRun(supabase: ReturnType<typeof client>) {
+  const { data } = await supabase
+    .from("sitemap_health_runs")
+    .select("healthy, alert_signature, alerted, alert_kind, checked_at")
+    .order("checked_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return data as PreviousMonitorRun | null;
+}
+
+async function readLatestHealthyRunAt(supabase: ReturnType<typeof client>) {
+  const { data } = await supabase
+    .from("sitemap_health_runs")
+    .select("checked_at")
+    .eq("healthy", true)
+    .order("checked_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return (data as { checked_at: string } | null)?.checked_at ?? null;
+}
+
+async function readOpenIncidentFailureAlert(supabase: ReturnType<typeof client>, since: string | null) {
+  let query = supabase
+    .from("sitemap_health_runs")
+    .select("checked_at, alert_signature")
+    .eq("healthy", false)
+    .eq("alerted", true)
+    .eq("alert_kind", "failure")
+    .order("checked_at", { ascending: true })
+    .limit(1);
+
+  if (since) query = query.gt("checked_at", since);
+
+  const { data } = await query.maybeSingle();
+  return data as OpenIncidentFailureAlert | null;
+}
+
 /** Runs one full health check, persists it and alerts on state changes. */
 export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMonitorResult> {
   const startedAt = Date.now();
@@ -207,37 +257,31 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
         .sort()
         .join("|");
 
-  const { data: previous } = await supabase
-    .from("sitemap_health_runs")
-    .select("healthy, alert_signature, alerted, checked_at")
-    .order("checked_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const prev = await readLatestRun(supabase);
 
-  const prev = previous as
-    | { healthy: boolean; alert_signature: string | null; alerted: boolean; checked_at: string }
-    | null;
+  let latestHealthyAt: string | null = null;
+  let openIncidentFailureAlert: OpenIncidentFailureAlert | null = null;
 
-  let alertKind: "failure" | "recovery" | null = null;
-  let alertReason: string | null = null;
-
-  if (!healthy) {
-    const sameFailure = prev?.alert_signature === signature && prev?.alerted === true;
-    const lastAlertMs = prev?.checked_at ? new Date(prev.checked_at).getTime() : 0;
-    const stale = Date.now() - lastAlertMs > RE_ALERT_MINUTES * 60_000;
-    if (!sameFailure || stale) alertKind = "failure";
-    else alertReason = "throttled: identical failure already reported";
-  } else if (prev && prev.healthy === false) {
-    alertKind = "recovery";
+  if (!healthy || (prev && prev.healthy === false)) {
+    latestHealthyAt = await readLatestHealthyRunAt(supabase);
+    openIncidentFailureAlert = await readOpenIncidentFailureAlert(supabase, latestHealthyAt);
   }
 
+  const alertDecision = decideSitemapIncidentAlert({
+    healthy,
+    signature,
+    previousRun: prev,
+    latestHealthyAt,
+    openFailureAlert: openIncidentFailureAlert,
+  });
+
   let alertError: string | null = null;
-  if (alertKind) {
+  if (alertDecision.kind) {
     try {
       await sendTemplateEmail("sitemap-alert", ALERT_TO, {
-        idempotencyKey: `sitemap-${alertKind}-${signature}-${new Date().toISOString().slice(0, 13)}`,
+        idempotencyKey: `sitemap-${alertDecision.kind}-${alertDecision.incidentKey}`,
         templateData: {
-          state: alertKind,
+          state: alertDecision.kind,
           checkedAt: new Date().toLocaleString("en-GB", { timeZone: "Asia/Nicosia" }),
           checked: probes.length,
           failing: failures.length,
@@ -264,8 +308,8 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
     duration_ms: durationMs,
     failures,
     alert_signature: signature,
-    alerted: alertKind !== null && alertError === null,
-    alert_kind: alertKind,
+    alerted: alertDecision.kind !== null && alertError === null,
+    alert_kind: alertDecision.kind,
     alert_error: alertError,
   });
 
@@ -288,7 +332,11 @@ export async function runSitemapHealthCheck(_origin: string): Promise<SitemapMon
     },
     failures,
     probes,
-    alert: { sent: alertKind !== null && alertError === null, kind: alertKind, reason: alertReason ?? alertError },
+    alert: {
+      sent: alertDecision.kind !== null && alertError === null,
+      kind: alertDecision.kind,
+      reason: alertDecision.reason ?? alertError,
+    },
   };
 }
 
