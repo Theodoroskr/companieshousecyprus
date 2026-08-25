@@ -19,6 +19,7 @@ import {
 } from "@/lib/registrar-mapping";
 import {
   clearOfficials,
+  diagnoseCompanyNumber,
   finishImportRun,
   getImportStats,
   importCompanyBatch,
@@ -50,6 +51,7 @@ type RunState = { active: boolean; label: string; processed: number; failed: num
 const idleRun: RunState = { active: false, label: "", processed: 0, failed: 0, percent: 0 };
 
 type ImportRunRow = Awaited<ReturnType<typeof listImportRuns>>[number];
+type DiagnosticResult = Awaited<ReturnType<typeof diagnoseCompanyNumber>>;
 
 function parseCsv<T>(
   file: File,
