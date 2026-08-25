@@ -860,6 +860,10 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
+      reset_officials_counts_chunk: {
+        Args: { batch_size?: number }
+        Returns: number
+      }
       search_companies_page: {
         Args: {
           p_cap?: number
@@ -883,6 +887,7 @@ export type Database = {
           type_code: string
         }[]
       }
+      truncate_officials_only: { Args: never; Returns: undefined }
       update_officials_count_for_slugs: {
         Args: { slugs: string[] }
         Returns: undefined
