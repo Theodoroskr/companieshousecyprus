@@ -158,7 +158,57 @@ export function mapAddressRow(row: Record<string, string>): { seq: string; addre
   };
 }
 
+// --- Company key normalisation -------------------------------------------
+// Registrar exports are inconsistent: the type code may be a public prefix
+// (HE / EE / AE / BN / P), it may be glued onto the registration number
+// ("HE266225", "HE 266 225"), it may use Greek lookalike letters, and the
+// number may carry leading zeros. Everything below collapses to the stored
+// company key (e.g. "C266225").
+
+const GREEK_TO_LATIN: Record<string, string> = {
+  Α: "A", Β: "B", Ε: "E", Η: "H", Ι: "I", Κ: "K", Μ: "M", Ν: "N",
+  Ο: "O", Ρ: "P", Τ: "T", Υ: "Y", Χ: "X", Ζ: "Z",
+};
+
+// Public prefix -> stored type code (reverse of OFFICIAL_PREFIX), plus aliases.
+const PREFIX_TO_TYPE: Record<string, string> = {
+  HE: "C", C: "C", EE: "B", B: "B", P: "P", AE: "O", O: "O", BN: "N", N: "N",
+};
+
+function latinise(value: string): string {
+  return value
+    .toUpperCase()
+    .replace(/[ΑΒΕΗΙΚΜΝΟΡΤΥΧΖ]/g, (ch) => GREEK_TO_LATIN[ch] ?? ch);
+}
+
+/**
+ * Resolve a registrar type code + registration number pair to the stored
+ * company key. Returns null when the pair can't be understood.
+ */
+export function normaliseCompanyKey(
+  typeCodeRaw: string | null | undefined,
+  regNoRaw: string | null | undefined,
+): { slug: string; typeCode: string; regNumber: number } | null {
+  const rawCode = latinise(String(typeCodeRaw ?? "")).replace(/[^A-Z0-9]/g, "");
+  const rawNo = latinise(String(regNoRaw ?? "")).replace(/[^A-Z0-9]/g, "");
+  if (!rawNo && !rawCode) return null;
+
+  // Letters may live on either field; digits only ever live in the number part.
+  const noLetters = rawNo.replace(/[0-9]/g, "");
+  const digits = `${rawCode.replace(/[^0-9]/g, "")}${rawNo.replace(/[^0-9]/g, "")}`;
+  const letters = (rawCode.replace(/[0-9]/g, "") || noLetters).trim();
+  if (!digits) return null;
+
+  const typeCode = PREFIX_TO_TYPE[letters] ?? PREFIX_TO_TYPE[letters.slice(0, 2)] ?? PREFIX_TO_TYPE[letters.slice(0, 1)];
+  if (!typeCode) return null;
+
+  const regNumber = Number(digits.replace(/^0+/, "") || "0");
+  if (!Number.isSafeInteger(regNumber) || regNumber <= 0) return null;
+  return { slug: `${typeCode}${regNumber}`, typeCode, regNumber };
+}
+
 export type CompanyImportRow = {
+
   slug: string;
   type_code: string;
   reg_number: number;
@@ -179,22 +229,23 @@ export function mapOrganisationRow(
   row: Record<string, string>,
   addresses?: Map<string, AddressRecord>,
 ): CompanyImportRow | null {
-  const typeCode = cleanText(row["ORGANISATION_TYPE_CODE"]);
-  const regNo = cleanText(row["REGISTRATION_NO"]);
+  const typeCodeRaw = cleanText(row["ORGANISATION_TYPE_CODE"]);
+  const regNoRaw = cleanText(row["REGISTRATION_NO"]);
   const name = cleanText(row["ORGANISATION_NAME"]);
-  if (!typeCode || !regNo || !name) return null;
-  if (!(VALID_TYPES as readonly string[]).includes(typeCode)) return null;
-  if (!/^\d+$/.test(regNo)) return null;
+  if (!name) return null;
+  const key = normaliseCompanyKey(typeCodeRaw, regNoRaw);
+  if (!key) return null;
+  const { typeCode, regNumber } = key;
 
   const statusEl = cleanText(row["ORGANISATION_STATUS"]);
   const status = statusEl ? STATUS_EN[statusEl] : undefined;
   const subtypeEl = cleanText(row["ORGANISATION_SUB_TYPE"]);
 
   const mapped: CompanyImportRow = {
-    slug: `${typeCode}${regNo}`,
+    slug: key.slug,
     type_code: typeCode,
-    reg_number: Number(regNo),
-    official_no: OFFICIAL_PREFIX[typeCode] ? `${OFFICIAL_PREFIX[typeCode]}${regNo}` : null,
+    reg_number: regNumber,
+    official_no: OFFICIAL_PREFIX[typeCode] ? `${OFFICIAL_PREFIX[typeCode]}${regNumber}` : null,
     name,
     type_el: cleanText(row["ORGANISATION_TYPE"]),
     type_en: TYPE_EN[typeCode] ?? null,
@@ -221,15 +272,15 @@ export type OfficialImportRow = {
 };
 
 export function mapOfficialRow(row: Record<string, string>): OfficialImportRow | null {
-  const typeCode = cleanText(row["ORGANISATION_TYPE_CODE"]);
-  const regNo = cleanText(row["REGISTRATION_NO"]);
+  const typeCodeRaw = cleanText(row["ORGANISATION_TYPE_CODE"]);
+  const regNoRaw = cleanText(row["REGISTRATION_NO"]);
   const personName = cleanText(row["PERSON_OR_ORGANISATION_NAME"] ?? row["PERSON_OR_ORGANISATION"]);
-  if (!typeCode || !regNo || !personName) return null;
-  if (!(VALID_TYPES as readonly string[]).includes(typeCode)) return null;
-  if (!/^\d+$/.test(regNo)) return null;
+  if (!personName) return null;
+  const key = normaliseCompanyKey(typeCodeRaw, regNoRaw);
+  if (!key) return null;
   const positionEl = cleanText(row["OFFICIAL_POSITION"]);
   return {
-    slug: `${typeCode}${regNo}`,
+    slug: key.slug,
     person_name: personName,
     position_el: positionEl,
     position_en: positionEl ? (POSITION_EN[positionEl] ?? null) : null,
