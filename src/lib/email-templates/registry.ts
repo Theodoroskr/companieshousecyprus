@@ -6,6 +6,7 @@ import { template as documentReadyTemplate } from './document-ready'
 import { template as contactInquiryTemplate } from './contact-inquiry'
 import { template as guideLeadInternalTemplate } from './guide-lead-internal'
 import { template as guideLeadConfirmationTemplate } from './guide-lead-confirmation'
+import { template as sitemapAlertTemplate } from './sitemap-alert'
 
 
 export interface TemplateEntry {
@@ -29,5 +30,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'contact-inquiry': contactInquiryTemplate,
   'guide-lead-internal': guideLeadInternalTemplate,
   'guide-lead-confirmation': guideLeadConfirmationTemplate,
+  'sitemap-alert': sitemapAlertTemplate,
 
 }
