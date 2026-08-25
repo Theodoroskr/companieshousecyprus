@@ -172,39 +172,46 @@ export const searchCompanies = createServerFn({ method: "GET" })
 
     let rows: CompanyListItem[] = [];
     let count = 0;
+    let capped = false;
 
-    if (!q) {
+    const idMatch = q.replace(/\s+/g, "").toUpperCase();
+    const isIdLike = q.length > 0 && /^(HE|EE|AE|BN|S|C|B|P|O|N)?\d+$/.test(idMatch);
+
+    if (isIdLike) {
+      const digits = idMatch.replace(/^\D+/, "");
       const res = await build()
+        .or(`official_no.eq.${idMatch},slug.eq.${idMatch},reg_number.eq.${digits}`)
         .order("name", { ascending: true })
         .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
       rows = (res.data ?? []) as CompanyListItem[];
       count = res.count ?? 0;
     } else {
-      const idMatch = q.replace(/\s+/g, "").toUpperCase();
-      const isIdLike = /^(HE|EE|AE|BN|S|C|B|P|O|N)?\d+$/.test(idMatch);
-      if (isIdLike) {
-        const digits = idMatch.replace(/^\D+/, "");
-        const res = await build()
-          .or(`official_no.eq.${idMatch},slug.eq.${idMatch},reg_number.eq.${digits}`)
-          .order("name", { ascending: true })
-          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-        rows = (res.data ?? []) as CompanyListItem[];
-        count = res.count ?? 0;
-      } else {
-        // Match the raw term plus its transliterated form, so Greek-script
-        // queries also find the Latin-script registry names.
-        const variants = searchVariants(q).map((v) => v.replace(/[,()*%]/g, " ").trim()).filter(Boolean);
-        const filter = (variants.length > 0 ? variants : [q]).map((v) => `name.ilike.%${v}%`).join(",");
-        const res = await build()
-          .or(filter)
-          .order("name", { ascending: true })
-          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-        rows = (res.data ?? []) as CompanyListItem[];
-        count = res.count ?? 0;
-      }
+      // Name / browse queries run through a capped-candidate SQL helper:
+      // exact counts and full ORDER BY over 570k+ rows blow the Postgres
+      // statement timeout on common terms like "limited".
+      // Match the raw term plus its transliterated form, so Greek-script
+      // queries also find the Latin-script registry names.
+      const variants = q
+        ? searchVariants(q).map((v) => v.replace(/[,()*%]/g, " ").trim()).filter(Boolean)
+        : [];
+      const patterns = q ? (variants.length > 0 ? variants : [q]).map((v) => `%${v}%`) : null;
+      const args = {
+        p_patterns: patterns,
+        p_types: types.length > 0 ? types : null,
+        p_statuses: statuses.length > 0 ? statuses : null,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE,
+        p_cap: SEARCH_CANDIDATE_CAP,
+      } as unknown as Parameters<typeof supabase.rpc<"search_companies_page">>[1];
+      const { data: res, error } = await supabase.rpc("search_companies_page", args);
+      if (error) throw error;
+      const list = (res ?? []) as Array<CompanyListItem & { total_matches: number; capped: boolean }>;
+      rows = list.map(({ total_matches: _t, capped: _c, ...rest }) => rest as CompanyListItem);
+      count = list[0]?.total_matches ?? 0;
+      capped = Boolean(list[0]?.capped);
     }
 
-    return { rows, count };
+    return { rows, count, capped };
   });
 
 export const listCompaniesByLetter = createServerFn({ method: "GET" })

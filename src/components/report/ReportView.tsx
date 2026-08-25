@@ -353,7 +353,7 @@ export function ReportView({
             <p className="mt-1 text-xs text-muted-foreground">
               Adverse credit checks such as unpaid bills and bankruptcy filings are not covered by the Cyprus Company
               Profile (Structure Report). Order a{" "}
-              <a href="/products/cyprus-credit-report" className="font-semibold underline hover:text-copper">
+              <a href="/report/cyprus-credit-report" className="font-semibold underline hover:text-copper">
                 Cyprus Credit Report
               </a>{" "}
               to retrieve negative information and credit scoring.

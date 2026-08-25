@@ -750,6 +750,13 @@ export type Database = {
     }
     Functions: {
       clear_officials: { Args: never; Returns: undefined }
+      companies_district_counts: {
+        Args: never
+        Returns: {
+          count: number
+          name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -761,6 +768,29 @@ export type Database = {
       indexnow_release_lease: { Args: never; Returns: undefined }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
+      search_companies_page: {
+        Args: {
+          p_cap?: number
+          p_limit?: number
+          p_offset?: number
+          p_patterns: string[]
+          p_statuses?: string[]
+          p_types?: string[]
+        }
+        Returns: {
+          capped: boolean
+          district_en: string
+          locality: string
+          name: string
+          official_no: string
+          reg_number: number
+          slug: string
+          status_en: string
+          status_group: string
+          total_matches: number
+          type_code: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "client"
