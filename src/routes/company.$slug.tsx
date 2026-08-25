@@ -10,6 +10,7 @@ import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/li
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { normalizeCompanySlug } from "@/lib/slug";
+import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
 import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
 
