@@ -272,15 +272,15 @@ export type OfficialImportRow = {
 };
 
 export function mapOfficialRow(row: Record<string, string>): OfficialImportRow | null {
-  const typeCode = cleanText(row["ORGANISATION_TYPE_CODE"]);
-  const regNo = cleanText(row["REGISTRATION_NO"]);
+  const typeCodeRaw = cleanText(row["ORGANISATION_TYPE_CODE"]);
+  const regNoRaw = cleanText(row["REGISTRATION_NO"]);
   const personName = cleanText(row["PERSON_OR_ORGANISATION_NAME"] ?? row["PERSON_OR_ORGANISATION"]);
-  if (!typeCode || !regNo || !personName) return null;
-  if (!(VALID_TYPES as readonly string[]).includes(typeCode)) return null;
-  if (!/^\d+$/.test(regNo)) return null;
+  if (!personName) return null;
+  const key = normaliseCompanyKey(typeCodeRaw, regNoRaw);
+  if (!key) return null;
   const positionEl = cleanText(row["OFFICIAL_POSITION"]);
   return {
-    slug: `${typeCode}${regNo}`,
+    slug: key.slug,
     person_name: personName,
     position_el: positionEl,
     position_en: positionEl ? (POSITION_EN[positionEl] ?? null) : null,
