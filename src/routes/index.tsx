@@ -23,9 +23,10 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Companies House Cyprus — Search & order certificates online";
+const TITLE = "Companies House Cyprus — Free Cyprus Company Search";
 const DESCRIPTION =
-  "Search the Cyprus Companies House register free and order official certificates online. Faster search, digital delivery, and company reports — without visiting the Registrar.";
+  "Free Cyprus company search on official Registrar data. Check status, directors and shareholders, then order certificates and reports with instant digital delivery.";
+
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
