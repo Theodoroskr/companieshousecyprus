@@ -1,0 +1,1 @@
+create index if not exists companies_district_en_name_idx on public.companies (district_en, name);

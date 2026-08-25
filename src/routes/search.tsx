@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { searchCompanies } from "@/lib/companies.functions";
+import { searchCompanies, type CompanyListItem } from "@/lib/companies.functions";
 import { displayOfficialNo } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
@@ -34,7 +34,9 @@ const searchQueryOptions = (q: string, page: number, types: string[], statuses: 
   queryOptions({
     queryKey: ["search", q, page, types.join(","), statuses.join(",")],
     queryFn: () =>
-      q.trim() ? searchCompanies({ data: { q, page, types, statuses } }) : Promise.resolve({ rows: [], count: 0 }),
+      q.trim()
+        ? searchCompanies({ data: { q, page, types, statuses } })
+        : Promise.resolve({ rows: [] as CompanyListItem[], count: 0, capped: false }),
   });
 
 export const Route = createFileRoute("/search")({
@@ -206,7 +208,9 @@ function SearchPage() {
           </div>
 
           <p className="mt-5 text-sm text-muted-foreground">
-            {data.count.toLocaleString()} {data.count === 1 ? "result" : "results"}
+            {data.count.toLocaleString()}
+            {data.capped ? "+" : ""} {data.count === 1 ? "result" : "results"}
+            {data.capped ? " — refine your search to narrow this down" : ""}
             {q ? ` for “${q}”` : ""}
             {types.length + statuses.length > 0 ? " (filtered)" : ""}
           </p>
