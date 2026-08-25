@@ -138,6 +138,7 @@ export type ParsedReport = {
   ratios: RatioSet[];
   balanceSheets: FinancialStatement[];
   incomeStatements: FinancialStatement[];
+  negativesPresent: boolean;
   negatives: { unpaidBills: number; bankruptcies: number };
   detrimental: { label: string; company: string; registrationNumber: string; detail: string }[];
   hasFinancials: boolean;
