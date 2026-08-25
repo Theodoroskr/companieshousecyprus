@@ -5,6 +5,10 @@ import { normalizeCompanySlug } from "@/lib/slug";
 import { searchVariants } from "@/lib/format";
 
 const PAGE_SIZE = 50;
+// Cap on how many matching rows the search helper materialises before
+// sorting/counting: unbounded ORDER BY + exact COUNT over 570k+ rows
+// exceeds the Postgres statement timeout on common terms.
+const SEARCH_CANDIDATE_CAP = 2_000;
 const SITEMAP_CHUNK_SIZE = 50_000;
 
 function isNewSupabaseApiKey(value: string): boolean {
