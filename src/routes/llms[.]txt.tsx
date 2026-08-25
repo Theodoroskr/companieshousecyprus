@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getRegistryStats } from "@/lib/companies.functions";
+import { formatEntityCount, hasEntityCount } from "@/lib/registry-stats";
 
 /**
  * llms.txt — A machine-readable guide to Companies House Cyprus for LLMs and AI agents.
@@ -10,7 +12,13 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
-      GET: () => {
+      GET: async () => {
+        // Coverage figure comes from the central registry statistics source so the
+        // machine-readable guide never advertises a stale hard-coded number.
+        const stats = await getRegistryStats();
+        const coverage = hasEntityCount(stats.count)
+          ? `${formatEntityCount(stats.count)} entities`
+          : "Cyprus-registered entities";
         const body = `# Companies House Cyprus — LLM guide
 
 > Search and browse the official Cyprus Registrar of Companies. Free public search; paid certificates, company profiles, KYB and credit reports delivered digitally.
@@ -23,7 +31,7 @@ Companies House Cyprus (https://companieshousecyprus.com) is an unofficial but a
 
 - Base URL: https://companieshousecyprus.com
 - Language: English (company names and registry data), Greek addresses transliterated to Latin where available
-- Coverage: 571,000+ entities from the Cyprus Registrar of Companies
+- Coverage: ${coverage} from the Cyprus Registrar of Companies
 - Data source: Official Registrar of Companies records, refreshed through administrative imports and API4ALL integrations
 - Contact: info@companieshousecyprus.com | +357 22 398241
 - Physical office: 1 Agiou Andreou Street, Limassol 3036, Cyprus
