@@ -268,7 +268,9 @@ export function parseReport(stored: unknown, kind: "structure" | "credit"): Pars
 
   const general = asArray(c["GeneralInfo"])[0] ?? {};
   const moreInfo = asArray(c["MoreInfo"])[0] ?? {};
-  const negatives = asArray(c["Negatives"])[0] ?? {};
+  const negativesRaw = c["Negatives"];
+  const negativesPresent = Array.isArray(negativesRaw) && negativesRaw.length > 0 && !!negativesRaw[0] && typeof negativesRaw[0] === "object" && Object.keys(negativesRaw[0]).length > 0;
+  const negatives = asArray(negativesRaw)[0] ?? {};
   const detrimentalRow = asArray(c["CorporateStructureDetrimental"])[0] ?? {};
 
   const detrimental: ParsedReport["detrimental"] = [];
