@@ -117,13 +117,14 @@ export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
   try {
     const { data: pending, error } = await supabaseAdmin
       .from("indexnow_queue")
-      .select("slug")
+      .select("slug, path")
       .is("submitted_at", null)
       .order("queued_at", { ascending: true })
       .limit(INDEXNOW_BATCH_SIZE);
     if (error) throw error;
 
-    const slugs = (pending ?? []).map((row) => row.slug);
+    const rows = pending ?? [];
+    const slugs = rows.map((row) => row.slug);
     if (slugs.length === 0) {
       await supabaseAdmin
         .from("indexnow_state")
@@ -132,7 +133,12 @@ export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
       return { ok: true, status: "idle", submitted: 0, pendingRemaining: 0 };
     }
 
-    const urlList = slugs.map((slug) => `${INDEXNOW_ORIGIN}/company/${slug}`);
+    // Rows queued before paths existed (and company rows) fall back to the
+    // canonical profile URL built from the slug.
+    const urlList = rows.map(
+      (row) => `${INDEXNOW_ORIGIN}${row.path ?? `/company/${row.slug}`}`,
+    );
+
     const response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "content-type": "application/json; charset=utf-8" },
