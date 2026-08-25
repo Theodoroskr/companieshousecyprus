@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
+import Papa from "papaparse";
 import type { Database } from "@/integrations/supabase/types";
 import type { CompanyImportRow, OfficialImportRow } from "@/lib/registrar-mapping";
+import { mapOfficialRow } from "@/lib/registrar-mapping";
 
 function adminClient() {
   const url = process.env["SUPABASE_URL"];
@@ -139,9 +141,19 @@ export async function insertOfficials(runId: string, rows: OfficialImportRow[]) 
       await bumpRun(runId, 0, rows.length);
       throw new Error(error.message);
     }
+    await updateOfficialsCountForSlugs(payload.map((r) => r.slug));
   }
   await bumpRun(runId, payload.length, skipped);
   return { inserted: payload.length, skipped };
+}
+
+export async function updateOfficialsCountForSlugs(slugs: string[]) {
+  const supabase = adminClient();
+  const unique = [...new Set(slugs)];
+  if (unique.length === 0) return;
+  // Generated types are updated asynchronously; cast until the next type refresh.
+  const { error } = await (supabase.rpc as any)("update_officials_count_for_slugs", { slugs: unique });
+  if (error) throw new Error(error.message);
 }
 
 export async function truncateOfficials() {
@@ -179,7 +191,9 @@ export async function readRuns() {
   const supabase = adminClient();
   const { data, error } = await supabase
     .from("import_runs")
-    .select("id, kind, mode, filename, status, rows_processed, rows_failed, message, created_at, finished_at")
+    .select(
+      "id, kind, mode, filename, status, rows_processed, rows_failed, message, created_at, finished_at, storage_path, file_size, bytes_processed, stage",
+    )
     .order("created_at", { ascending: false })
     .limit(20);
   if (error) throw new Error(error.message);
@@ -363,5 +377,165 @@ export async function readUserUsage(filters: UsageFilters) {
       failedItems: rows.reduce((n, r) => n + r.failedItems, 0),
       revenueCents: rows.reduce((n, r) => n + r.revenueCents, 0),
     },
+  };
+}
+
+const OFFICIALS_CHUNK_BYTES = 1024 * 1024; // 1 MiB
+const OFFICIALS_INSERT_BATCH = 2_000;
+
+export async function startServerImport(input: {
+  kind: string;
+  mode: string;
+  filename: string;
+  userId: string;
+  storagePath: string;
+  fileSize: number;
+}) {
+  const supabase = adminClient();
+  const { data, error } = await supabase
+    .from("import_runs")
+    .insert({
+      kind: input.kind,
+      mode: input.mode,
+      filename: input.filename.slice(0, 200),
+      status: "running",
+      created_by: input.userId,
+      storage_path: input.storagePath,
+      file_size: input.fileSize,
+      bytes_processed: 0,
+      stage: "uploaded",
+    })
+    .select("id")
+    .single();
+  if (error || !data) throw new Error(error?.message ?? "Could not start import run");
+  return { runId: data.id };
+}
+
+export async function readRun(runId: string) {
+  const supabase = adminClient();
+  const { data, error } = await supabase
+    .from("import_runs")
+    .select(
+      "id, kind, mode, filename, status, rows_processed, rows_failed, message, created_at, finished_at, storage_path, file_size, bytes_processed, stage",
+    )
+    .eq("id", runId)
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+function textEncoder(): (text: string) => Uint8Array {
+  if (typeof TextEncoder !== "undefined") {
+    const enc = new TextEncoder();
+    return (text) => enc.encode(text);
+  }
+  // Fallback for environments without TextEncoder (unlikely in Workers).
+  return (text) => {
+    const buf = new Uint8Array(text.length);
+    for (let i = 0; i < text.length; i++) buf[i] = text.charCodeAt(i) & 0xff;
+    return buf;
+  };
+}
+
+function parseCsvText<T>(text: string): T[] {
+  const parsed = Papa.parse<T>(text, { header: true, skipEmptyLines: true });
+  if (parsed.errors.length) {
+    // Surface the first parse error but keep going with valid rows.
+    console.error("CSV parse errors:", parsed.errors.slice(0, 5));
+  }
+  return parsed.data;
+}
+
+export async function processOfficialsChunk(runId: string) {
+  const supabase = adminClient();
+  const run = await readRun(runId);
+  if (!run.storage_path || run.file_size == null) {
+    throw new Error("Import run has no stored file");
+  }
+  if (run.stage === "completed" || run.status === "completed") {
+    return { done: true as const, processed: run.rows_processed, failed: run.rows_failed };
+  }
+  if (run.stage === "failed") {
+    throw new Error(run.message ?? "Import run failed");
+  }
+
+  if (run.stage === "uploaded") {
+    await supabase.from("import_runs").update({ stage: "processing" }).eq("id", runId);
+  }
+
+  const start = run.bytes_processed ?? 0;
+  const fileSize = run.file_size;
+  if (start >= fileSize) {
+    await supabase.from("import_runs").update({ stage: "completed", bytes_processed: fileSize }).eq("id", runId);
+    await runRefreshOfficialsCount();
+    await closeRun(runId, "completed", "processed via server-side chunked import");
+    return { done: true as const, processed: run.rows_processed, failed: run.rows_failed };
+  }
+
+  const end = Math.min(fileSize, start + OFFICIALS_CHUNK_BYTES);
+  const { data: signed, error: signError } = await supabase.storage.from("imports").createSignedUrl(run.storage_path, 60);
+  if (signError || !signed?.signedUrl) throw new Error(signError?.message ?? "Could not access import file");
+
+  const response = await fetch(signed.signedUrl, {
+    headers: { Range: `bytes=${start}-${end - 1}` },
+  });
+  if (!response.ok && response.status !== 206) {
+    throw new Error(`Storage download failed: ${response.status} ${response.statusText}`);
+  }
+
+  let text = await response.text();
+  const encode = textEncoder();
+
+  // Drop the partial first line unless this is the very start of the file.
+  if (start > 0) {
+    const firstNewline = text.indexOf("\n");
+    if (firstNewline === -1) {
+      // No complete row in this chunk; advance a little to avoid getting stuck.
+      const consumed = Math.min(OFFICIALS_CHUNK_BYTES, fileSize - start);
+      await supabase.from("import_runs").update({ bytes_processed: start + consumed }).eq("id", runId);
+      return { done: false as const, processed: run.rows_processed, bytesProcessed: start + consumed, fileSize };
+    }
+    text = text.slice(firstNewline + 1);
+  }
+
+  // Trim the trailing partial row.
+  const lastNewline = text.lastIndexOf("\n");
+  if (lastNewline === -1) {
+    const consumed = Math.min(OFFICIALS_CHUNK_BYTES, fileSize - start);
+    await supabase.from("import_runs").update({ bytes_processed: start + consumed }).eq("id", runId);
+    return { done: start + consumed >= fileSize, processed: run.rows_processed, bytesProcessed: start + consumed, fileSize };
+  }
+  text = text.slice(0, lastNewline + 1);
+
+  const rows = parseCsvText<Record<string, string>>(text);
+  const mapped: OfficialImportRow[] = [];
+  let parseFailed = 0;
+  for (const row of rows) {
+    const official = mapOfficialRow(row);
+    if (official) mapped.push(official);
+    else parseFailed += 1;
+  }
+
+  for (let i = 0; i < mapped.length; i += OFFICIALS_INSERT_BATCH) {
+    const batch = mapped.slice(i, i + OFFICIALS_INSERT_BATCH);
+    await insertOfficials(runId, batch);
+  }
+  if (parseFailed > 0) await bumpRun(runId, 0, parseFailed);
+
+  const consumedBytes = encode(text).length;
+  const newBytesProcessed = start + consumedBytes;
+  await supabase.from("import_runs").update({ bytes_processed: newBytesProcessed }).eq("id", runId);
+
+  if (newBytesProcessed >= fileSize) {
+    await closeRun(runId, "completed", "processed via server-side chunked import");
+    return { done: true as const, processed: run.rows_processed, failed: run.rows_failed };
+  }
+
+  return {
+    done: false as const,
+    processed: run.rows_processed,
+    failed: run.rows_failed,
+    bytesProcessed: newBytesProcessed,
+    fileSize,
   };
 }

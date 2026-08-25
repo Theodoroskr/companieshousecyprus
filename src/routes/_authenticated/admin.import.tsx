@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import {
   mapAddressRow,
@@ -23,9 +24,12 @@ import {
   importCompanyBatch,
   importOfficialsBatch,
   listImportRuns,
+  processImportChunk,
   refreshOfficialsCount,
   startImportRun,
+  startServerImport,
 } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/import")({
   head: () => ({
@@ -38,7 +42,8 @@ export const Route = createFileRoute("/_authenticated/admin/import")({
   component: AdminImportPage,
 });
 
-const BATCH_SIZE = 500;
+const OFFICIALS_BATCH_SIZE = 5_000;
+const COMPANY_BATCH_SIZE = 2_000;
 
 type RunState = { active: boolean; label: string; processed: number; failed: number; percent: number };
 
@@ -156,9 +161,9 @@ function AdminImportPage() {
           if (mapped) buffer.push(mapped);
           else failed += 1;
         }
-        while (buffer.length >= BATCH_SIZE) {
-          const batch = buffer.slice(0, BATCH_SIZE);
-          buffer = buffer.slice(BATCH_SIZE);
+        while (buffer.length >= COMPANY_BATCH_SIZE) {
+          const batch = buffer.slice(0, COMPANY_BATCH_SIZE);
+          buffer = buffer.slice(COMPANY_BATCH_SIZE);
           try {
             const res = await importCompanyBatch({ data: { runId, rows: batch } });
             processed += res.inserted;
@@ -196,65 +201,124 @@ function AdminImportPage() {
       return;
     }
     cancelRef.current = false;
-    setRun({ active: true, label: "Preparing…", processed: 0, failed: 0, percent: 0 });
+    setRun({ active: true, label: "Uploading file to secure storage…", processed: 0, failed: 0, percent: 0 });
 
     try {
-      const { runId } = await startImportRun({
-        data: { kind: "officials", mode: replaceOfficials ? "replace" : "append", filename: file.name },
+      const storagePath = `officials-${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("imports").upload(storagePath, file, {
+        contentType: "text/csv",
+        upsert: false,
+      });
+      if (uploadError) throw new Error(uploadError.message);
+
+      const { runId } = await startServerImport({
+        data: {
+          kind: "officials",
+          mode: replaceOfficials ? "replace" : "append",
+          filename: file.name,
+          storagePath,
+          fileSize: file.size,
+        },
       });
       if (replaceOfficials) {
         setRun((r) => ({ ...r, label: "Clearing existing officials…" }));
         await clearOfficials();
       }
 
-      let processed = 0;
-      let failed = 0;
-      let buffer: OfficialImportRow[] = [];
+      setRun((r) => ({ ...r, label: "Processing officials on the server…", percent: 5 }));
 
-      const send = async (batch: OfficialImportRow[]) => {
-        try {
-          const res = await importOfficialsBatch({ data: { runId, rows: batch } });
-          processed += res.inserted;
-          failed += res.skipped;
-        } catch (error) {
-          failed += batch.length;
-          console.error(error);
-        }
-      };
-
-      await parseCsv(file, async (rows, bytes) => {
-        if (cancelRef.current) throw new Error("Cancelled by user");
-        for (const row of rows) {
-          const mapped = mapOfficialRow(row);
-          if (mapped) buffer.push(mapped);
-          else failed += 1;
-        }
-        while (buffer.length >= BATCH_SIZE) {
-          const batch = buffer.slice(0, BATCH_SIZE);
-          buffer = buffer.slice(BATCH_SIZE);
-          await send(batch);
-        }
+      let lastProcessed = 0;
+      let lastFailed = 0;
+      let lastBytesProcessed = 0;
+      let stalledTicks = 0;
+      while (!cancelRef.current) {
+        const result = await processImportChunk({ data: { runId } });
+        lastProcessed = result.processed;
+        lastFailed = result.failed ?? lastFailed;
+        if (result.done) break;
+        const percent =
+          result.bytesProcessed != null && result.fileSize && result.fileSize > 0
+            ? Math.min(95, Math.round((result.bytesProcessed / result.fileSize) * 95))
+            : 5;
         setRun({
           active: true,
-          label: "Importing officials…",
-          processed,
-          failed,
-          percent: Math.min(92, Math.round((bytes / file.size) * 92)),
+          label: "Processing officials on the server…",
+          processed: lastProcessed,
+          failed: lastFailed,
+          percent,
         });
-      });
-      if (buffer.length) await send(buffer);
+        // Detect stalls so the user can refresh and resume if needed.
+        if (result.bytesProcessed != null && result.bytesProcessed === lastBytesProcessed) {
+          stalledTicks += 1;
+          if (stalledTicks >= 3) {
+            throw new Error(
+              "Import appears stalled. Refresh the page and click Resume next to this run to continue.",
+            );
+          }
+        } else {
+          stalledTicks = 0;
+        }
+        lastBytesProcessed = result.bytesProcessed ?? lastBytesProcessed;
+        await new Promise((resolve) => setTimeout(resolve, 1_500));
+      }
+      if (cancelRef.current) throw new Error("Cancelled by user");
 
-      setRun((r) => ({ ...r, label: "Recalculating officials per company…", percent: 96 }));
+      setRun((r) => ({ ...r, label: "Recalculating officials per company…", percent: 98 }));
       const { updated } = await refreshOfficialsCount();
       await finishImportRun({
-        data: { runId, status: "completed", message: `${failed} skipped, ${updated} company counts updated` },
+        data: { runId, status: "completed", message: `${lastFailed} skipped, ${updated} company counts updated` },
       });
-      setRun({ active: false, label: "", processed, failed, percent: 100 });
-      toast.success(`Officials imported: ${processed.toLocaleString()} rows (${failed.toLocaleString()} skipped).`);
+      setRun({ active: false, label: "", processed: lastProcessed, failed: lastFailed, percent: 100 });
+      toast.success(`Officials imported: ${lastProcessed.toLocaleString()} rows (${lastFailed.toLocaleString()} skipped).`);
       await refresh();
     } catch (error) {
       setRun(idleRun);
       toast.error(error instanceof Error ? error.message : "Import failed");
+    }
+  };
+
+  const resumeServerImport = async (runId: string, fileSize: number) => {
+    cancelRef.current = false;
+    setRun({ active: true, label: "Resuming server-side officials import…", processed: 0, failed: 0, percent: 5 });
+    try {
+      let lastProcessed = 0;
+      let lastFailed = 0;
+      let lastBytesProcessed = 0;
+      let stalledTicks = 0;
+      while (!cancelRef.current) {
+        const result = await processImportChunk({ data: { runId } });
+        lastProcessed = result.processed;
+        lastFailed = result.failed ?? lastFailed;
+        if (result.done) break;
+        const percent =
+          result.bytesProcessed != null && fileSize > 0
+            ? Math.min(95, Math.round((result.bytesProcessed / fileSize) * 95))
+            : 5;
+        setRun({
+          active: true,
+          label: "Resuming server-side officials import…",
+          processed: lastProcessed,
+          failed: lastFailed,
+          percent,
+        });
+        if (result.bytesProcessed != null && result.bytesProcessed === lastBytesProcessed) {
+          stalledTicks += 1;
+          if (stalledTicks >= 3) {
+            throw new Error("Import appears stalled. Refresh and try Resume again.");
+          }
+        } else {
+          stalledTicks = 0;
+        }
+        lastBytesProcessed = result.bytesProcessed ?? lastBytesProcessed;
+        await new Promise((resolve) => setTimeout(resolve, 1_500));
+      }
+      if (cancelRef.current) throw new Error("Cancelled by user");
+      setRun({ active: false, label: "", processed: lastProcessed, failed: lastFailed, percent: 100 });
+      toast.success(`Officials import resumed and completed: ${lastProcessed.toLocaleString()} rows.`);
+      await refresh();
+    } catch (error) {
+      setRun(idleRun);
+      toast.error(error instanceof Error ? error.message : "Resume failed");
     }
   };
 
@@ -349,6 +413,14 @@ function AdminImportPage() {
           Upload <code>organisation_officials_*.csv</code>. Officials for unknown companies are skipped, and the
           per-company officials count is recalculated when the import finishes.
         </p>
+        <Alert className="mt-4" variant="default">
+          <AlertTitle>Keep this tab open</AlertTitle>
+          <AlertDescription>
+            The file is uploaded to secure storage and then processed in 1&nbsp;MB chunks by the server. Each chunk is
+            short, but the browser must stay open to request the next chunk. Do not close or background this tab until
+            the import reaches 100%.
+          </AlertDescription>
+        </Alert>
         <div className="mt-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="officials-file">Officials CSV</Label>
@@ -375,21 +447,47 @@ function AdminImportPage() {
         <h2 className="text-xl font-semibold">Recent imports</h2>
         <ul className="mt-4 divide-y">
           {runs.length === 0 && <li className="py-3 text-sm text-muted-foreground">No imports yet.</li>}
-          {runs.map((r) => (
-            <li key={r.id} className="py-3 text-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-medium">
-                  {r.kind} · {r.mode}
-                </span>
-                <span className="text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
-              </div>
-              <p className="mt-1 text-muted-foreground">
-                {r.filename ?? "—"} · {r.status} · {r.rows_processed.toLocaleString()} rows ·{" "}
-                {r.rows_failed.toLocaleString()} skipped
-                {r.message ? ` · ${r.message}` : ""}
-              </p>
-            </li>
-          ))}
+          {runs.map((r) => {
+            const isServerSide = Boolean(r.storage_path);
+            const canResume = isServerSide && r.status === "running" && (r.bytes_processed ?? 0) < (r.file_size ?? 0);
+            return (
+              <li key={r.id} className="py-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">
+                    {r.kind} · {r.mode}
+                    {isServerSide && (
+                      <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">server</span>
+                    )}
+                  </span>
+                  <span className="text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                </div>
+                <p className="mt-1 text-muted-foreground">
+                  {r.filename ?? "—"} · {r.status} · {r.rows_processed.toLocaleString()} rows ·{" "}
+                  {r.rows_failed.toLocaleString()} skipped
+                  {isServerSide && r.file_size != null && r.file_size > 0 && (
+                    <>
+                      {" · "}
+                      {Math.round(((r.bytes_processed ?? 0) / r.file_size) * 100)}%
+                      {" ("}
+                      {(r.bytes_processed ?? 0).toLocaleString()} / {r.file_size.toLocaleString()} bytes{")"}
+                    </>
+                  )}
+                  {r.message ? ` · ${r.message}` : ""}
+                </p>
+                {canResume && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={run.active}
+                    onClick={() => resumeServerImport(r.id, r.file_size ?? 0)}
+                  >
+                    Resume
+                  </Button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
     </div>
