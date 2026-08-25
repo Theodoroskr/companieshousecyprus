@@ -18,7 +18,6 @@ import {
   type OfficialImportRow,
 } from "@/lib/registrar-mapping";
 import {
-  clearOfficials,
   diagnoseCompanyNumber,
   finishImportRun,
   getImportStats,
@@ -244,12 +243,12 @@ function AdminImportPage() {
           fileSize: file.size,
         },
       });
-      if (replaceOfficials) {
-        setRun((r) => ({ ...r, label: "Clearing existing officials…" }));
-        await clearOfficials();
-      }
 
-      setRun((r) => ({ ...r, label: "Processing officials on the server…", percent: 5 }));
+      setRun((r) => ({
+        ...r,
+        label: replaceOfficials ? "Clearing existing officials…" : "Processing officials on the server…",
+        percent: 5,
+      }));
 
       let lastProcessed = 0;
       let lastFailed = 0;
@@ -287,10 +286,8 @@ function AdminImportPage() {
       }
       if (cancelRef.current) throw new Error("Cancelled by user");
 
-      setRun((r) => ({ ...r, label: "Recalculating officials per company…", percent: 98 }));
-      const { updated } = await refreshOfficialsCount();
       await finishImportRun({
-        data: { runId, status: "completed", message: `${lastFailed} skipped, ${updated} company counts updated` },
+        data: { runId, status: "completed", message: `${lastFailed} skipped` },
       });
       setRun({ active: false, label: "", processed: lastProcessed, failed: lastFailed, percent: 100 });
       toast.success(`Officials imported: ${lastProcessed.toLocaleString()} rows (${lastFailed.toLocaleString()} skipped).`);

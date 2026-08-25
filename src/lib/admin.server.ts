@@ -122,29 +122,16 @@ export async function upsertCompanies(runId: string, rows: CompanyImportRow[]) {
 export async function insertOfficials(runId: string, rows: OfficialImportRow[]) {
   if (rows.length === 0) return { inserted: 0, skipped: 0 };
   const supabase = adminClient();
-  // Only officials whose company exists (the table has an FK on slug).
-  const slugs = [...new Set(rows.map((r) => r.slug))];
-  const known = new Set<string>();
-  for (let i = 0; i < slugs.length; i += 500) {
-    const { data, error } = await supabase
-      .from("companies")
-      .select("slug")
-      .in("slug", slugs.slice(i, i + 500));
-    if (error) throw new Error(error.message);
-    for (const row of data ?? []) known.add(row.slug);
+  const { data, error } = await (supabase.rpc as any)("insert_officials_import_batch", { rows });
+  if (error) {
+    await bumpRun(runId, 0, rows.length);
+    throw new Error(error.message);
   }
-  const payload = rows.filter((r) => known.has(r.slug));
-  const skipped = rows.length - payload.length;
-  if (payload.length > 0) {
-    const { error } = await supabase.from("officials").insert(payload);
-    if (error) {
-      await bumpRun(runId, 0, rows.length);
-      throw new Error(error.message);
-    }
-    await updateOfficialsCountForSlugs(payload.map((r) => r.slug));
-  }
-  await bumpRun(runId, payload.length, skipped);
-  return { inserted: payload.length, skipped };
+  const result = Array.isArray(data) ? data[0] : data;
+  const inserted = Number(result?.inserted ?? 0);
+  const skipped = Number(result?.skipped ?? rows.length - inserted);
+  await bumpRun(runId, inserted, skipped);
+  return { inserted, skipped };
 }
 
 export async function updateOfficialsCountForSlugs(slugs: string[]) {
@@ -381,7 +368,7 @@ export async function readUserUsage(filters: UsageFilters) {
 }
 
 const OFFICIALS_CHUNK_BYTES = 1024 * 1024; // 1 MiB
-const OFFICIALS_INSERT_BATCH = 2_000;
+const OFFICIALS_INSERT_BATCH = 500;
 
 export async function startServerImport(input: {
   kind: string;
@@ -464,15 +451,27 @@ export async function processOfficialsChunk(runId: string) {
     throw new Error(run.message ?? "Import run failed");
   }
 
-  if (run.stage === "uploaded") {
-    await supabase.from("import_runs").update({ stage: "processing" }).eq("id", runId);
+  if (run.stage === "uploaded" || run.stage === "clearing") {
+    if (run.stage === "uploaded") {
+      await supabase.from("import_runs").update({ stage: "clearing" }).eq("id", runId);
+    }
+    if (run.mode === "replace") {
+      await truncateOfficials();
+    }
+    await supabase
+      .from("import_runs")
+      .update({ stage: "processing", rows_processed: 0, rows_failed: 0, bytes_processed: 0, message: null })
+      .eq("id", runId);
+    run.rows_processed = 0;
+    run.rows_failed = 0;
+    run.bytes_processed = 0;
+    run.stage = "processing";
   }
 
   const start = run.bytes_processed ?? 0;
   const fileSize = run.file_size;
   if (start >= fileSize) {
     await supabase.from("import_runs").update({ stage: "completed", bytes_processed: fileSize }).eq("id", runId);
-    await runRefreshOfficialsCount();
     await closeRun(runId, "completed", "processed via server-side chunked import");
     return { done: true as const, processed: run.rows_processed, failed: run.rows_failed };
   }

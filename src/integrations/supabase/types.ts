@@ -844,8 +844,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_officials_count_for_slugs: {
+        Args: { slugs: string[] }
+        Returns: undefined
+      }
       indexnow_acquire_lease: { Args: { _seconds?: number }; Returns: boolean }
       indexnow_release_lease: { Args: never; Returns: undefined }
+      insert_officials_import_batch: {
+        Args: { rows: Json }
+        Returns: {
+          inserted: number
+          skipped: number
+        }[]
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
