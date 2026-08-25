@@ -40,6 +40,7 @@ import { Route as PageSitemapDotxmlRouteImport } from './routes/page-sitemap[.]x
 import { Route as PostSitemapDotxmlRouteImport } from './routes/post-sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
@@ -258,6 +259,11 @@ const PricingRoute = PricingRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesRoute = ResourcesRouteImport.update({
@@ -574,6 +580,7 @@ export interface FileRoutesByFullPath {
   '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
@@ -659,6 +666,7 @@ export interface FileRoutesByTo {
   '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
@@ -745,6 +753,7 @@ export interface FileRoutesById {
   '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
@@ -832,6 +841,7 @@ export interface FileRouteTypes {
     | '/post-sitemap.xml'
     | '/pricing'
     | '/privacy'
+    | '/reset-password'
     | '/resources'
     | '/robots.txt'
     | '/search'
@@ -917,6 +927,7 @@ export interface FileRouteTypes {
     | '/post-sitemap.xml'
     | '/pricing'
     | '/privacy'
+    | '/reset-password'
     | '/resources'
     | '/robots.txt'
     | '/search'
@@ -1002,6 +1013,7 @@ export interface FileRouteTypes {
     | '/post-sitemap.xml'
     | '/pricing'
     | '/privacy'
+    | '/reset-password'
     | '/resources'
     | '/robots.txt'
     | '/search'
@@ -1089,6 +1101,7 @@ export interface RootRouteChildren {
   PostSitemapDotxmlRoute: typeof PostSitemapDotxmlRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
@@ -1349,6 +1362,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resources': {
@@ -1800,6 +1820,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostSitemapDotxmlRoute: PostSitemapDotxmlRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
