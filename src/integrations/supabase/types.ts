@@ -865,6 +865,10 @@ export type Database = {
           type_code: string
         }[]
       }
+      update_officials_count_for_slugs: {
+        Args: { slugs: string[] }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "client"
