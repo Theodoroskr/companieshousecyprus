@@ -456,7 +456,25 @@ export async function runSanctionsImport(
       return { importId, status: "failed", message: detail };
     }
 
-    const bytes = new Uint8Array(await response.arrayBuffer());
+    // Resumable read: an interrupted transfer continues with a Range request
+    // from the last received byte instead of re-downloading the whole feed.
+    const download = createResumableBody(response, urlUsed ?? source.source_url);
+    let bytes: Uint8Array;
+    try {
+      bytes = await collectStream(download.stream);
+    } catch (error) {
+      const detail = `Download interrupted: ${error instanceof Error ? error.message : "unknown error"}`;
+      await failImport(supabase, importId, detail, {
+        stage: "download",
+        finalHost,
+        urlUsed,
+        downloadAttempts,
+        resumeLog: download.resumeLog,
+        receivedBytes: download.receivedBytes(),
+        totalBytes: download.totalBytes,
+      });
+      return { importId, status: "failed", message: detail };
+    }
     const retrievedAt = new Date();
     const lastModifiedHeader = response.headers.get("last-modified");
     const sourceLastModified = lastModifiedHeader ? new Date(lastModifiedHeader).toISOString() : null;
