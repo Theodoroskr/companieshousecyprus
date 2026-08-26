@@ -2,10 +2,12 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecord } from "@/lib/sanctions/parse";
 import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
+import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
 export const UN_SOURCE_CODE = "UN_CONSOLIDATED";
+export const UK_SOURCE_CODE = "UKSL";
 
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
@@ -31,6 +33,17 @@ const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
     sanity: ({ persons, entities }) => {
       if (persons < 1) return "The staged UN dataset contains no individuals.";
       if (entities < 1) return "The staged UN dataset contains no entities.";
+      return null;
+    },
+  },
+  [UK_SOURCE_CODE]: {
+    validate: looksLikeUkSanctionsList,
+    iterate: iterateUkDesignations,
+    storagePrefix: "uk-sanctions",
+    minBytes: 500 * 1024,
+    sanity: ({ persons, entities }) => {
+      if (persons < 1) return "The staged UK dataset contains no individuals.";
+      if (entities < 1) return "The staged UK dataset contains no entities.";
       return null;
     },
   },
@@ -126,6 +139,7 @@ export type ImportOutcome = {
   removedCount?: number;
   personCount?: number;
   entityCount?: number;
+  shipCount?: number;
   failedRecordCount?: number;
   fileSizeBytes?: number;
   fileHash?: string;
@@ -190,6 +204,7 @@ export async function runSanctionsImport(
     }
 
     const contentType = response.headers.get("content-type") ?? "";
+    const etagHeader = response.headers.get("etag");
     // Redirected/CDN destinations sometimes label XML as octet-stream; the
     // structural XML validation below is the real gate. Only fail early on an
     // obviously non-XML content type such as text/html.
@@ -290,6 +305,7 @@ export async function runSanctionsImport(
     let parsed = 0;
     let persons = 0;
     let entities = 0;
+    let ships = 0;
     let duplicates = 0;
     let failedRecords = 0;
     let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
@@ -309,6 +325,7 @@ export async function runSanctionsImport(
       seen.add(record.source_record_id);
       parsed += 1;
       if (record.entity_type === "person") persons += 1;
+      else if (record.entity_type === "ship") ships += 1;
       else if (record.entity_type === "entity") entities += 1;
       batch.push({
         import_id: importId,
@@ -372,11 +389,18 @@ export async function runSanctionsImport(
         diagnostic_details: {
           finalHost,
           contentType,
+          etag: etagHeader,
           persons,
           entities,
+          ships,
           duplicatesIgnored: duplicates,
           failedRecords,
-          parser: sourceCode === UN_SOURCE_CODE ? "un-consolidated" : "eu-fsf-1.1",
+          parser:
+            sourceCode === UN_SOURCE_CODE
+              ? "un-consolidated"
+              : sourceCode === UK_SOURCE_CODE
+                ? "uk-sanctions-list"
+                : "eu-fsf-1.1",
         } as never,
       })
       .eq("id", importId);
@@ -391,6 +415,7 @@ export async function runSanctionsImport(
       removedCount: result?.removed ?? 0,
       personCount: persons,
       entityCount: entities,
+      shipCount: ships,
       failedRecordCount: failedRecords,
       fileSizeBytes: bytes.byteLength,
       fileHash,
@@ -426,6 +451,7 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
     { count: activeCount },
     { count: personCount },
     { count: entityCount },
+    { count: shipCount },
     { count: aliasCount },
     { count: identifierCount },
     { count: addressCount },
@@ -455,6 +481,12 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
       .eq("source_id", source.id)
       .eq("is_active", true)
       .eq("entity_type", "entity"),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .eq("entity_type", "ship"),
     supabase
       .from("sanctions_aliases")
       .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
@@ -536,6 +568,7 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
     activeCount: activeCount ?? 0,
     personCount: personCount ?? 0,
     entityCount: entityCount ?? 0,
+    shipCount: shipCount ?? 0,
     aliasCount: aliasCount ?? 0,
     identifierCount: identifierCount ?? 0,
     addressCount: addressCount ?? 0,

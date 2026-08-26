@@ -247,6 +247,7 @@ function SanctionsDataPage() {
                 <Stat label="Active records" value={data.activeCount.toLocaleString("en-GB")} />
                 <Stat label="Individuals" value={data.personCount.toLocaleString("en-GB")} />
                 <Stat label="Entities" value={data.entityCount.toLocaleString("en-GB")} />
+                {data.shipCount > 0 ? <Stat label="Ships" value={data.shipCount.toLocaleString("en-GB")} /> : null}
                 <Stat label="Aliases" value={data.aliasCount.toLocaleString("en-GB")} />
                 <Stat label="Identifiers" value={data.identifierCount.toLocaleString("en-GB")} />
                 <Stat label="Addresses" value={data.addressCount.toLocaleString("en-GB")} />
@@ -271,6 +272,14 @@ function SanctionsDataPage() {
               </div>
               <Stat label="Stable source URL" value={<code className="text-xs">{data.source.sourceUrl}</code>} />
               <Stat label="File hash (SHA-256)" value={<code className="text-xs">{latest?.file_hash_sha256 ?? "—"}</code>} />
+              <Stat
+                label="ETag"
+                value={
+                  <code className="text-xs">
+                    {(latest?.diagnostic_details as { etag?: string } | null)?.etag ?? "—"}
+                  </code>
+                }
+              />
               {data.lastAttempt?.error_message ? (
                 <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
                   Latest error: {data.lastAttempt.error_message}
@@ -286,7 +295,13 @@ function SanctionsDataPage() {
             <CardContent className="space-y-3">
               <div className="flex gap-2">
                 <Input
-                  placeholder={selectedSource === "UN_CONSOLIDATED" ? "e.g. QDi.001" : "e.g. 10038"}
+                  placeholder={
+                    selectedSource === "UN_CONSOLIDATED"
+                      ? "e.g. QDi.001"
+                      : selectedSource === "UKSL"
+                        ? "e.g. RUS0001"
+                        : "e.g. 10038"
+                  }
                   value={inspectId}
                   onChange={(event) => setInspectId(event.target.value)}
                   className="max-w-xs"
