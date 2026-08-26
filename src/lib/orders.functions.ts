@@ -19,6 +19,7 @@ export type OrderListItem = {
   order_items: {
     id: string;
     product_name: string;
+    product_slug?: string | null;
     company_name: string | null;
     company_number: string | null;
     fulfilment_status: string;
