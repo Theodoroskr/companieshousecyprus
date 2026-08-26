@@ -717,6 +717,500 @@ export type Database = {
         }
         Relationships: []
       }
+      sanctions_addresses: {
+        Row: {
+          city: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          full_address: string
+          id: string
+          postcode: string | null
+          region: string | null
+          sanctions_entry_id: string
+          street: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          full_address: string
+          id?: string
+          postcode?: string | null
+          region?: string | null
+          sanctions_entry_id: string
+          street?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          full_address?: string
+          id?: string
+          postcode?: string | null
+          region?: string | null
+          sanctions_entry_id?: string
+          street?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_addresses_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_aliases: {
+        Row: {
+          alias_name: string
+          alias_name_normalized: string
+          alias_type: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          name_language: string | null
+          sanctions_entry_id: string
+        }
+        Insert: {
+          alias_name: string
+          alias_name_normalized: string
+          alias_type?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          name_language?: string | null
+          sanctions_entry_id: string
+        }
+        Update: {
+          alias_name?: string
+          alias_name_normalized?: string
+          alias_type?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          name_language?: string | null
+          sanctions_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_aliases_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_entries: {
+        Row: {
+          active_from: string
+          active_to: string | null
+          created_at: string
+          designation_date: string | null
+          entity_type: string
+          first_seen_import_id: string | null
+          id: string
+          is_active: boolean
+          last_amended_date: string | null
+          last_seen_import_id: string | null
+          legal_basis: string | null
+          listing_reason: string | null
+          name_original_script: string | null
+          primary_name: string
+          primary_name_normalized: string
+          raw_record: Json
+          record_hash: string | null
+          sanctions_programme: string | null
+          source_id: string
+          source_record_id: string
+          updated_at: string
+        }
+        Insert: {
+          active_from?: string
+          active_to?: string | null
+          created_at?: string
+          designation_date?: string | null
+          entity_type?: string
+          first_seen_import_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_amended_date?: string | null
+          last_seen_import_id?: string | null
+          legal_basis?: string | null
+          listing_reason?: string | null
+          name_original_script?: string | null
+          primary_name: string
+          primary_name_normalized: string
+          raw_record?: Json
+          record_hash?: string | null
+          sanctions_programme?: string | null
+          source_id: string
+          source_record_id: string
+          updated_at?: string
+        }
+        Update: {
+          active_from?: string
+          active_to?: string | null
+          created_at?: string
+          designation_date?: string | null
+          entity_type?: string
+          first_seen_import_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_amended_date?: string | null
+          last_seen_import_id?: string | null
+          legal_basis?: string | null
+          listing_reason?: string | null
+          name_original_script?: string | null
+          primary_name?: string
+          primary_name_normalized?: string
+          raw_record?: Json
+          record_hash?: string | null
+          sanctions_programme?: string | null
+          source_id?: string
+          source_record_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_entries_first_seen_import_id_fkey"
+            columns: ["first_seen_import_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_imports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sanctions_entries_last_seen_import_id_fkey"
+            columns: ["last_seen_import_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_imports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sanctions_entries_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_identifiers: {
+        Row: {
+          created_at: string
+          expiry_date: string | null
+          id: string
+          identifier_type: string
+          identifier_value: string
+          issue_date: string | null
+          issuing_country: string | null
+          sanctions_entry_id: string
+        }
+        Insert: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          identifier_type: string
+          identifier_value: string
+          issue_date?: string | null
+          issuing_country?: string | null
+          sanctions_entry_id: string
+        }
+        Update: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          identifier_type?: string
+          identifier_value?: string
+          issue_date?: string | null
+          issuing_country?: string | null
+          sanctions_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_identifiers_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_import_changes: {
+        Row: {
+          change_type: string
+          detected_at: string
+          id: string
+          import_id: string
+          new_record: Json | null
+          previous_record: Json | null
+          source_record_id: string
+        }
+        Insert: {
+          change_type: string
+          detected_at?: string
+          id?: string
+          import_id: string
+          new_record?: Json | null
+          previous_record?: Json | null
+          source_record_id: string
+        }
+        Update: {
+          change_type?: string
+          detected_at?: string
+          id?: string
+          import_id?: string
+          new_record?: Json | null
+          previous_record?: Json | null
+          source_record_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_import_changes_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_imports: {
+        Row: {
+          added_count: number
+          completed_at: string | null
+          created_at: string
+          diagnostic_details: Json | null
+          error_message: string | null
+          file_hash_sha256: string | null
+          file_name: string | null
+          file_size_bytes: number | null
+          id: string
+          modified_count: number
+          record_count: number | null
+          removed_count: number
+          retrieved_at: string | null
+          source_id: string
+          source_last_modified: string | null
+          started_at: string
+          status: string
+          storage_path: string | null
+        }
+        Insert: {
+          added_count?: number
+          completed_at?: string | null
+          created_at?: string
+          diagnostic_details?: Json | null
+          error_message?: string | null
+          file_hash_sha256?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          modified_count?: number
+          record_count?: number | null
+          removed_count?: number
+          retrieved_at?: string | null
+          source_id: string
+          source_last_modified?: string | null
+          started_at?: string
+          status?: string
+          storage_path?: string | null
+        }
+        Update: {
+          added_count?: number
+          completed_at?: string | null
+          created_at?: string
+          diagnostic_details?: Json | null
+          error_message?: string | null
+          file_hash_sha256?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          modified_count?: number
+          record_count?: number | null
+          removed_count?: number
+          retrieved_at?: string | null
+          source_id?: string
+          source_last_modified?: string | null
+          started_at?: string
+          status?: string
+          storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_imports_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_person_details: {
+        Row: {
+          citizenships: Json
+          date_of_birth: Json
+          gender: string | null
+          nationalities: Json
+          place_of_birth: Json
+          sanctions_entry_id: string
+          titles: Json
+        }
+        Insert: {
+          citizenships?: Json
+          date_of_birth?: Json
+          gender?: string | null
+          nationalities?: Json
+          place_of_birth?: Json
+          sanctions_entry_id: string
+          titles?: Json
+        }
+        Update: {
+          citizenships?: Json
+          date_of_birth?: Json
+          gender?: string | null
+          nationalities?: Json
+          place_of_birth?: Json
+          sanctions_entry_id?: string
+          titles?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_person_details_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: true
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_relationships: {
+        Row: {
+          created_at: string
+          id: string
+          related_name: string
+          related_source_record_id: string | null
+          relationship_type: string
+          sanctions_entry_id: string
+          source_description: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          related_name: string
+          related_source_record_id?: string | null
+          relationship_type?: string
+          sanctions_entry_id: string
+          source_description?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          related_name?: string
+          related_source_record_id?: string | null
+          relationship_type?: string
+          sanctions_entry_id?: string
+          source_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_relationships_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_sources: {
+        Row: {
+          authority: string
+          created_at: string
+          expected_content_type: string
+          format_name: string
+          format_version: string
+          id: string
+          information_url: string | null
+          is_active: boolean
+          jurisdiction: string
+          source_code: string
+          source_name: string
+          source_url: string
+          update_frequency: string
+          updated_at: string
+        }
+        Insert: {
+          authority: string
+          created_at?: string
+          expected_content_type?: string
+          format_name: string
+          format_version: string
+          id?: string
+          information_url?: string | null
+          is_active?: boolean
+          jurisdiction: string
+          source_code: string
+          source_name: string
+          source_url: string
+          update_frequency?: string
+          updated_at?: string
+        }
+        Update: {
+          authority?: string
+          created_at?: string
+          expected_content_type?: string
+          format_name?: string
+          format_version?: string
+          id?: string
+          information_url?: string | null
+          is_active?: boolean
+          jurisdiction?: string
+          source_code?: string
+          source_name?: string
+          source_url?: string
+          update_frequency?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sanctions_staging: {
+        Row: {
+          created_at: string
+          id: number
+          import_id: string
+          payload: Json
+          record_hash: string
+          source_record_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          import_id: string
+          payload: Json
+          record_hash: string
+          source_record_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          import_id?: string
+          payload?: Json
+          record_hash?: string
+          source_record_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_staging_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sitemap_chunks: {
         Row: {
           chunk_index: number
@@ -864,6 +1358,18 @@ export type Database = {
         Args: { batch_size?: number }
         Returns: number
       }
+      sanctions_publish_import: {
+        Args: { _import_id: string }
+        Returns: {
+          active_total: number
+          added: number
+          modified: number
+          reactivated: number
+          removed: number
+        }[]
+      }
+      sanctions_try_lock: { Args: { _source_code: string }; Returns: boolean }
+      sanctions_unlock: { Args: { _source_code: string }; Returns: boolean }
       search_companies_page: {
         Args: {
           p_cap?: number
