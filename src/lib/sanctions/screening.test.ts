@@ -155,8 +155,9 @@ describe("token similarity sanity", () => {
   it("reversed name order keeps full token overlap", () => {
     expect(tokenJaccard("John Smith", "Smith John")).toBe(1);
   });
-  it("suffix difference barely changes similarity", () => {
-    expect(tokenJaccard("Acme Limited", "Acme Holdings Ltd")).toBe(0);
+  it("suffix difference keeps some token overlap", () => {
+    expect(tokenJaccard("Acme Limited", "Acme Holdings Ltd")).toBeGreaterThan(0);
+    expect(tokenJaccard("Acme Limited", "Acme Holdings Ltd")).toBeLessThan(0.5);
     expect(tokenJaccard("Acme", "Acme")).toBe(1);
   });
 });
