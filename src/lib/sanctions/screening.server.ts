@@ -317,12 +317,12 @@ export async function runScreening(
         .filter((i) => /reg|registration/i.test(i.identifier_type))
         .map((i) => i.identifier_value.replace(/[^A-Za-z0-9]/g, "").toUpperCase());
 
-      const expectedType = expectedEntryType;
       const entityTypeMatch: boolean | null = uncertainType ? null : true;
 
       const dobMatch: boolean | null = !isPerson || !input.dateOfBirth || !entryDobs.length ? null : entryDobs.some((d) => d === input.dateOfBirth);
 
-      const nationalityMatch: boolean | null = !input.nationality || !entryNationalities.length ? null : entryNationalities.some((n) => countriesCompatible(n, input.nationality) === true);
+      const nationalityMatch: boolean | null = !isPerson || !input.nationality || !entryNationalities.length ? null : entryNationalities.some((n) => countriesCompatible(n, input.nationality) === true);
+
       const jurisdictionMatch: boolean | null =
         input.subjectType !== "entity" || !input.jurisdiction
           ? countriesCompatible(input.jurisdiction, entryCountries[0])
