@@ -63,8 +63,8 @@ const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
     },
   },
   [OFAC_SOURCE_CODE]: {
-    validate: looksLikeOfacAdvanced,
-    iterate: iterateOfacRecords,
+    validate: ofacBufferedPathForbidden,
+    iterate: ofacBufferedPathForbidden,
     storagePrefix: "ofac-sdn",
     // The Advanced SDN export is ~126 MB; refuse anything implausibly small.
     minBytes: 20 * 1024 * 1024,
