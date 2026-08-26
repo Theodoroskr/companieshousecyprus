@@ -27,6 +27,14 @@ describe("assessConfidence", () => {
     expect(a.band).toBe("moderate");
     expect(a.caveats.join(" ")).toContain("identical legal name");
   });
+  it("is high when an exact name is corroborated by two or more attributes", () => {
+    const a = assessConfidence({
+      exactName: true,
+      matching: ["jurisdiction matches", "entity type matches"],
+    });
+    expect(a.band).toBe("high");
+    expect(a.caveats.join(" ")).not.toContain("identical legal name");
+  });
   it("is low with no identifying corroboration", () => {
     expect(assessConfidence({}).band).toBe("low");
   });
