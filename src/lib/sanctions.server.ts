@@ -13,6 +13,63 @@ export const UN_SOURCE_CODE = "UN_CONSOLIDATED";
 export const UK_SOURCE_CODE = "UKSL";
 export const OFAC_SOURCE_CODE = "OFAC_SDN";
 
+const SOURCE_FETCH_HEADERS = {
+  Accept: "application/xml",
+  "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0",
+} as const;
+
+/**
+ * Mirrors used when the primary host is unreachable. OFAC sits behind a CDN
+ * that intermittently fails the edge-to-origin TLS handshake (HTTP 525) — the
+ * legacy Treasury download path serves the identical Advanced XML file.
+ */
+const SOURCE_FALLBACK_URLS: Record<string, string[]> = {
+  [OFAC_SOURCE_CODE]: [
+    "https://sanctionslistservice.ofac.treas.gov/api/download/sdn_advanced.xml",
+    "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml",
+  ],
+};
+
+/** Transient edge/CDN failures worth retrying (includes Cloudflare 52x). */
+function isTransientStatus(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Downloads a sanctions source, retrying transient network/CDN failures with
+ * exponential backoff before falling back to any configured mirror. Returns
+ * the successful response plus the attempt log for import diagnostics.
+ */
+export async function fetchSanctionsSource(
+  sourceCode: string,
+  sourceUrl: string,
+  options: { attemptsPerUrl?: number } = {},
+): Promise<{ response: Response | null; urlUsed: string | null; attempts: Array<{ url: string; outcome: string }> }> {
+  const attemptsPerUrl = options.attemptsPerUrl ?? 3;
+  const urls = [sourceUrl, ...(SOURCE_FALLBACK_URLS[sourceCode] ?? []).filter((u) => u !== sourceUrl)];
+  const attempts: Array<{ url: string; outcome: string }> = [];
+
+  for (const url of urls) {
+    for (let attempt = 1; attempt <= attemptsPerUrl; attempt += 1) {
+      try {
+        const response = await fetch(url, { redirect: "follow", headers: { ...SOURCE_FETCH_HEADERS } });
+        if (response.status === 200 || !isTransientStatus(response.status)) {
+          attempts.push({ url, outcome: `HTTP ${response.status}` });
+          return { response, urlUsed: url, attempts };
+        }
+        attempts.push({ url, outcome: `HTTP ${response.status} (transient, retrying)` });
+        await response.body?.cancel().catch(() => undefined);
+      } catch (error) {
+        attempts.push({ url, outcome: error instanceof Error ? error.message : "network error" });
+      }
+      if (attempt < attemptsPerUrl) await sleep(1000 * 2 ** (attempt - 1));
+    }
+  }
+  return { response: null, urlUsed: null, attempts };
+}
+
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
   iterate: (xml: string) => Generator<SanctionsRecord>;
