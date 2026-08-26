@@ -13,6 +13,63 @@ export const UN_SOURCE_CODE = "UN_CONSOLIDATED";
 export const UK_SOURCE_CODE = "UKSL";
 export const OFAC_SOURCE_CODE = "OFAC_SDN";
 
+const SOURCE_FETCH_HEADERS = {
+  Accept: "application/xml",
+  "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0",
+} as const;
+
+/**
+ * Mirrors used when the primary host is unreachable. OFAC sits behind a CDN
+ * that intermittently fails the edge-to-origin TLS handshake (HTTP 525) — the
+ * legacy Treasury download path serves the identical Advanced XML file.
+ */
+const SOURCE_FALLBACK_URLS: Record<string, string[]> = {
+  [OFAC_SOURCE_CODE]: [
+    "https://sanctionslistservice.ofac.treas.gov/api/download/sdn_advanced.xml",
+    "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml",
+  ],
+};
+
+/** Transient edge/CDN failures worth retrying (includes Cloudflare 52x). */
+function isTransientStatus(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Downloads a sanctions source, retrying transient network/CDN failures with
+ * exponential backoff before falling back to any configured mirror. Returns
+ * the successful response plus the attempt log for import diagnostics.
+ */
+export async function fetchSanctionsSource(
+  sourceCode: string,
+  sourceUrl: string,
+  options: { attemptsPerUrl?: number } = {},
+): Promise<{ response: Response | null; urlUsed: string | null; attempts: Array<{ url: string; outcome: string }> }> {
+  const attemptsPerUrl = options.attemptsPerUrl ?? 3;
+  const urls = [sourceUrl, ...(SOURCE_FALLBACK_URLS[sourceCode] ?? []).filter((u) => u !== sourceUrl)];
+  const attempts: Array<{ url: string; outcome: string }> = [];
+
+  for (const url of urls) {
+    for (let attempt = 1; attempt <= attemptsPerUrl; attempt += 1) {
+      try {
+        const response = await fetch(url, { redirect: "follow", headers: { ...SOURCE_FETCH_HEADERS } });
+        if (response.status === 200 || !isTransientStatus(response.status)) {
+          attempts.push({ url, outcome: `HTTP ${response.status}` });
+          return { response, urlUsed: url, attempts };
+        }
+        attempts.push({ url, outcome: `HTTP ${response.status} (transient, retrying)` });
+        await response.body?.cancel().catch(() => undefined);
+      } catch (error) {
+        attempts.push({ url, outcome: error instanceof Error ? error.message : "network error" });
+      }
+      if (attempt < attemptsPerUrl) await sleep(1000 * 2 ** (attempt - 1));
+    }
+  }
+  return { response: null, urlUsed: null, attempts };
+}
+
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
   iterate: (xml: string) => Generator<SanctionsRecord>;
@@ -235,14 +292,22 @@ export async function runSanctionsImport(
     // short-lived signed Azure Blob URL — we only record the final host in
     // diagnostics, never as the configured source) ---------------------------
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
-    const response = await fetch(source.source_url, {
-      redirect: "follow",
-      headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
-    });
+    const { response, urlUsed, attempts: downloadAttempts } = await fetchSanctionsSource(sourceCode, source.source_url);
+    if (!response) {
+      const detail = "Source is unreachable (network/TLS failure after retries).";
+      await failImport(supabase, importId, detail, { stage: "download", downloadAttempts });
+      return { importId, status: "failed", message: detail };
+    }
     const finalHost = response.url ? new URL(response.url).host : null;
     if (response.status !== 200) {
       const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
-      await failImport(supabase, importId, detail, { stage: "download", status: response.status, finalHost });
+      await failImport(supabase, importId, detail, {
+        stage: "download",
+        status: response.status,
+        finalHost,
+        urlUsed,
+        downloadAttempts,
+      });
       return { importId, status: "failed", message: detail };
     }
 
@@ -578,14 +643,22 @@ export async function runOfacStreamingImport(
     // 1. open the stream --------------------------------------------------
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
     const downloadStartedAt = Date.now();
-    const response = await fetch(source.source_url, {
-      redirect: "follow",
-      headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
-    });
+    const { response, urlUsed, attempts: downloadAttempts } = await fetchSanctionsSource(sourceCode, source.source_url);
+    if (!response) {
+      const detail = "Source is unreachable (network/TLS failure after retries).";
+      await failImport(supabase, importId, detail, { stage: "download", downloadAttempts });
+      return { importId, status: "failed", message: detail };
+    }
     const finalHost = response.url ? new URL(response.url).host : null;
     if (response.status !== 200) {
       const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
-      await failImport(supabase, importId, detail, { stage: "download", status: response.status, finalHost });
+      await failImport(supabase, importId, detail, {
+        stage: "download",
+        status: response.status,
+        finalHost,
+        urlUsed,
+        downloadAttempts,
+      });
       return { importId, status: "failed", message: detail };
     }
     const contentType = response.headers.get("content-type") ?? "";
@@ -775,11 +848,10 @@ export async function runOfacStreamingImport(
     const archiveStartedAt = Date.now();
     let storagePath: string | null = null;
     try {
-      const archiveResponse = await fetch(source.source_url, {
-        redirect: "follow",
-        headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
+      const { response: archiveResponse } = await fetchSanctionsSource(source.source_code, source.source_url, {
+        attemptsPerUrl: 2,
       });
-      if (archiveResponse.ok && archiveResponse.body) {
+      if (archiveResponse?.ok && archiveResponse.body) {
         storagePath = storagePathFor(adapter.storagePrefix, fileHash, retrievedAt);
         const { error: uploadError } = await supabase.storage
           .from(SANCTIONS_BUCKET)
@@ -1150,12 +1222,12 @@ export async function testSanctionsConnection(sourceCode: string) {
   let status: number | null = null;
   let contentType: string | null = null;
   let finalHost: string | null = null;
+  let usedMirror = false;
 
   try {
-    const response = await fetch(source.source_url, {
-      redirect: "follow",
-      headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
-    });
+    const { response, urlUsed } = await fetchSanctionsSource(sourceCode, source.source_url);
+    if (!response) throw new Error("Source is unreachable (network/TLS failure after retries).");
+    usedMirror = urlUsed !== null && urlUsed !== source.source_url;
     status = response.status;
     finalHost = response.url ? new URL(response.url).host : null;
     contentType = response.headers.get("content-type");
@@ -1164,7 +1236,7 @@ export async function testSanctionsConnection(sourceCode: string) {
       detail = `HTTP ${status} ${response.statusText}`;
     } else if (/^\s*</.test(sample) && !/^\s*<(!DOCTYPE\s+html|html)\b/i.test(sample)) {
       ok = true;
-      detail = `OK — XML response from ${finalHost ?? "source"} (${Date.now() - startedAt} ms)`;
+      detail = `OK — XML response from ${finalHost ?? "source"}${usedMirror ? " (via mirror)" : ""} (${Date.now() - startedAt} ms)`;
     } else {
       detail = "Response is not XML (possible HTML error page)";
     }
