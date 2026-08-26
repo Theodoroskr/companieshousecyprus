@@ -471,6 +471,8 @@ export async function runSanctionsImport(
       personCount: persons,
       entityCount: entities,
       shipCount: ships,
+      aircraftCount: aircraft,
+      walletCount: wallets,
       failedRecordCount: failedRecords,
       fileSizeBytes: bytes.byteLength,
       fileHash,
