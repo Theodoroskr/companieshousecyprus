@@ -14,6 +14,11 @@
  * A SanctionsEntry references a party profile via ProfileID; everything else
  * is joined by numeric ID. Parsing is section-based string scanning (no DOM),
  * keeping memory proportional to the document text plus compact maps.
+ *
+ * Block-level helpers (parseLocationBlock, parseIdRegDocumentBlock,
+ * parseParty, buildOfacRecord) are exported so the streaming worker parser
+ * (parse-ofac-stream.ts) can reuse the exact same assembly logic without
+ * holding the whole document in memory.
  */
 
 import { decodeEntities, normalizeName } from "@/lib/sanctions/parse";
@@ -34,9 +39,9 @@ export type OfacParseReport = {
 
 const LATIN_SCRIPT_ID = "215";
 
-type Attrs = Record<string, string>;
+export type Attrs = Record<string, string>;
 
-function attrs(tag: string): Attrs {
+export function attrs(tag: string): Attrs {
   const out: Attrs = {};
   const re = /([\w-]+)="([^"]*)"/g;
   let m: RegExpExecArray | null;
@@ -51,7 +56,7 @@ function attrs(tag: string): Attrs {
 /** Parse a `<FooValues>` reference section into an ID -> label map.
  *  Each refset uses its own element tag (`<FeatureType ID=..>label</FeatureType>`,
  *  `<Value ID=..>label</Value>`, ...), so we match any ID-bearing element. */
-function parseRefSet(xml: string, name: string): Map<string, string> {
+export function parseRefSet(xml: string, name: string): Map<string, string> {
   const map = new Map<string, string>();
   const m = xml.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`));
   if (!m || m[1] === undefined) return map;
@@ -66,7 +71,7 @@ function parseRefSet(xml: string, name: string): Map<string, string> {
 }
 
 /** Yield all complete `<Tag ...>...</Tag>` blocks found in `text`. */
-function* blocks(text: string, tag: string): Generator<{ attrs: Attrs; body: string }> {
+export function* blocks(text: string, tag: string): Generator<{ attrs: Attrs; body: string }> {
   const re = new RegExp(`<${tag} ([^>]*)>([\\s\\S]*?)</${tag}>`, "g");
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
@@ -88,10 +93,34 @@ function sliceSection(xml: string, tag: string): string {
 // Locations
 // ---------------------------------------------------------------------------
 
-type LocationInfo = {
+export type LocationInfo = {
   parts: { type: string; value: string }[];
   country: string | null;
 };
+
+/** Parse a single `<Location ...>...</Location>` block. */
+export function parseLocationBlock(
+  loc: { attrs: Attrs; body: string },
+  locPartTypes: Map<string, string>,
+  countries: Map<string, string>,
+): { id: string; info: LocationInfo } | null {
+  const parts: { type: string; value: string }[] = [];
+  const partRe = /<LocationPart LocPartTypeID="(\d+)"[^>]*>[\s\S]*?<Value>([\s\S]*?)<\/Value>/g;
+  let p: RegExpExecArray | null;
+  while ((p = partRe.exec(loc.body))) {
+    const typeId = p[1];
+    const rawValue = p[2];
+    if (typeId === undefined || rawValue === undefined) continue;
+    const value = decodeEntities(rawValue.trim());
+    if (value) parts.push({ type: locPartTypes.get(typeId) ?? `type ${typeId}`, value });
+  }
+  const countryM = loc.body.match(/<LocationCountry CountryID="(\d+)"/);
+  const countryId = countryM?.[1];
+  const country = countryId !== undefined ? countries.get(countryId) ?? null : null;
+  const id = loc.attrs["ID"];
+  if (id === undefined) return null;
+  return { id, info: { parts, country } };
+}
 
 function parseLocations(
   xml: string,
@@ -101,21 +130,8 @@ function parseLocations(
   const section = sliceSection(xml, "Locations");
   const map = new Map<string, LocationInfo>();
   for (const loc of blocks(section, "Location")) {
-    const parts: { type: string; value: string }[] = [];
-    const partRe = /<LocationPart LocPartTypeID="(\d+)"[^>]*>[\s\S]*?<Value>([\s\S]*?)<\/Value>/g;
-    let p: RegExpExecArray | null;
-    while ((p = partRe.exec(loc.body))) {
-      const typeId = p[1];
-      const rawValue = p[2];
-      if (typeId === undefined || rawValue === undefined) continue;
-      const value = decodeEntities(rawValue.trim());
-      if (value) parts.push({ type: locPartTypes.get(typeId) ?? `type ${typeId}`, value });
-    }
-    const countryM = loc.body.match(/<LocationCountry CountryID="(\d+)"/);
-    const countryId = countryM?.[1];
-    const country = countryId !== undefined ? countries.get(countryId) ?? null : null;
-    const id = loc.attrs["ID"];
-    if (id !== undefined) map.set(id, { parts, country });
+    const parsed = parseLocationBlock(loc, locPartTypes, countries);
+    if (parsed) map.set(parsed.id, parsed.info);
   }
   return map;
 }
@@ -141,7 +157,7 @@ function locationSummary(info: LocationInfo | undefined): string | null {
 // IDRegDocuments (passports, national IDs, IMO numbers, MMSI, ...)
 // ---------------------------------------------------------------------------
 
-type IdDoc = {
+export type IdDoc = {
   identityId: string | null;
   typeLabel: string;
   number: string | null;
@@ -149,6 +165,30 @@ type IdDoc = {
   issuingAuthority: string | null;
   comment: string | null;
 };
+
+/** Parse a single `<IDRegDocument ...>...</IDRegDocument>` block. */
+export function parseIdRegDocumentBlock(
+  doc: { attrs: Attrs; body: string },
+  docTypes: Map<string, string>,
+  countries: Map<string, string>,
+): IdDoc | null {
+  const typeId = doc.attrs["IDRegDocTypeID"];
+  const typeLabel = (typeId !== undefined ? docTypes.get(typeId) : undefined) ?? `Document type ${typeId ?? "?"}`;
+  const num = doc.body.match(/<IDRegistrationNo>([\s\S]*?)<\/IDRegistrationNo>/);
+  const auth = doc.body.match(/<IssuingAuthority>([\s\S]*?)<\/IssuingAuthority>/);
+  const comment = doc.body.match(/<Comment>([\s\S]*?)<\/Comment>/);
+  const countryId = doc.attrs["IssuedBy-CountryID"];
+  const item: IdDoc = {
+    identityId: doc.attrs["IdentityID"] ?? null,
+    typeLabel,
+    number: num?.[1] !== undefined ? decodeEntities(num[1].trim()) || null : null,
+    issuingCountry: countryId !== undefined ? countries.get(countryId) ?? null : null,
+    issuingAuthority: auth?.[1] !== undefined ? decodeEntities(auth[1].trim()) || null : null,
+    comment: comment?.[1] !== undefined ? decodeEntities(comment[1].trim()) || null : null,
+  };
+  if (!item.identityId) return null;
+  return item;
+}
 
 function parseIdRegDocuments(
   xml: string,
@@ -158,21 +198,8 @@ function parseIdRegDocuments(
   const section = sliceSection(xml, "IDRegDocuments");
   const byIdentity = new Map<string, IdDoc[]>();
   for (const doc of blocks(section, "IDRegDocument")) {
-    const typeId = doc.attrs["IDRegDocTypeID"];
-    const typeLabel = (typeId !== undefined ? docTypes.get(typeId) : undefined) ?? `Document type ${typeId ?? "?"}`;
-    const num = doc.body.match(/<IDRegistrationNo>([\s\S]*?)<\/IDRegistrationNo>/);
-    const auth = doc.body.match(/<IssuingAuthority>([\s\S]*?)<\/IssuingAuthority>/);
-    const comment = doc.body.match(/<Comment>([\s\S]*?)<\/Comment>/);
-    const countryId = doc.attrs["IssuedBy-CountryID"];
-    const item: IdDoc = {
-      identityId: doc.attrs["IdentityID"] ?? null,
-      typeLabel,
-      number: num?.[1] !== undefined ? decodeEntities(num[1].trim()) || null : null,
-      issuingCountry: countryId !== undefined ? countries.get(countryId) ?? null : null,
-      issuingAuthority: auth?.[1] !== undefined ? decodeEntities(auth[1].trim()) || null : null,
-      comment: comment?.[1] !== undefined ? decodeEntities(comment[1].trim()) || null : null,
-    };
-    if (!item.identityId) continue;
+    const item = parseIdRegDocumentBlock(doc, docTypes, countries);
+    if (!item || !item.identityId) continue;
     const list = byIdentity.get(item.identityId) ?? [];
     list.push(item);
     byIdentity.set(item.identityId, list);
@@ -201,7 +228,7 @@ type PartyFeature = {
   comment: string | null;
 };
 
-type Party = {
+export type Party = {
   profileId: string;
   subtypeId: string;
   identityIds: string[];
@@ -213,7 +240,7 @@ type Party = {
 
 const PERSON_NAME_PART_TYPES = new Set(["1520", "1521", "1522"]); // last / first / middle name
 
-function parseParty(block: { attrs: Attrs; body: string }): Party | null {
+export function parseParty(block: { attrs: Attrs; body: string }): Party | null {
   const profileM = block.body.match(/<Profile ID="(\d+)" PartySubTypeID="(\d+)"/);
   const profileId = profileM?.[1];
   const subtypeId = profileM?.[2];
@@ -340,7 +367,330 @@ function featureDateToString(d: { year: string; month: string | null; day: strin
 }
 
 // ---------------------------------------------------------------------------
-// Assembly
+// Record assembly (shared by the in-memory parser and the streaming worker)
+// ---------------------------------------------------------------------------
+
+export type OfacAssemblyContext = {
+  aliasTypes: Map<string, string>;
+  featureTypes: Map<string, string>;
+  detailRefs: Map<string, string>;
+  countries: Map<string, string>;
+  legalBases: Map<string, string>;
+  locations: Map<string, LocationInfo>;
+  idDocsByIdentity: Map<string, IdDoc[]>;
+  parties: Map<string, Party>;
+  relationshipsByEntry: Map<string, { related: string; former: boolean }[]>;
+};
+
+export type OfacAssemblyStats = {
+  seenEntryIds: Set<string>;
+  duplicateEntryIds: number;
+  skippedNoIdentity: number;
+  partyTypeCounts: Record<string, number>;
+};
+
+export function createAssemblyStats(): OfacAssemblyStats {
+  return { seenEntryIds: new Set(), duplicateEntryIds: 0, skippedNoIdentity: 0, partyTypeCounts: {} };
+}
+
+/**
+ * Build one normalized SanctionsRecord from a `<SanctionsEntry>` block.
+ * Returns null when the entry has no usable identity or is a duplicate
+ * (both counted in `stats`).
+ */
+export function buildOfacRecord(
+  entry: { attrs: Attrs; body: string },
+  ctx: OfacAssemblyContext,
+  stats: OfacAssemblyStats,
+): SanctionsRecord | null {
+  const {
+    aliasTypes,
+    featureTypes,
+    detailRefs,
+    legalBases,
+    locations,
+    idDocsByIdentity,
+    parties,
+    relationshipsByEntry,
+  } = ctx;
+
+  const entryId = entry.attrs["ID"];
+  if (entryId === undefined) return null;
+  if (stats.seenEntryIds.has(entryId)) {
+    stats.duplicateEntryIds += 1;
+    return null;
+  }
+  stats.seenEntryIds.add(entryId);
+
+  const profileId = entry.attrs["ProfileID"];
+  const party = profileId !== undefined ? parties.get(profileId) : undefined;
+  if (!party || party.names.length === 0) {
+    stats.skippedNoIdentity += 1;
+    return null;
+  }
+
+  // ---- names / aliases ----
+  const primaryName = party.names.find((n) => n.isPrimary) ?? party.names[0];
+  if (!primaryName) {
+    stats.skippedNoIdentity += 1;
+    return null;
+  }
+  const aliases: SanctionsAlias[] = [];
+  for (const name of party.names) {
+    const typeLabel = aliasTypes.get(name.aliasTypeId) ?? "";
+    const aliasType = name.isPrimary
+      ? "primary"
+      : name.lowQuality
+        ? "weak"
+        : /^f\.?k\.?a/i.test(typeLabel)
+          ? "former"
+          : /^n\.?k\.?a/i.test(typeLabel)
+            ? "also known as"
+            : "alias";
+    aliases.push({
+      alias_name: name.text,
+      alias_name_normalized: normalizeName(name.text),
+      alias_type: aliasType,
+      name_language: name.isLatin ? "latin" : "original script",
+      is_primary: name.isPrimary,
+    });
+  }
+
+  // ---- features ----
+  const addresses: SanctionsAddress[] = [];
+  const identifiers: SanctionsIdentifier[] = [];
+  const wallets: { currency: string; address: string }[] = [];
+  const dobs: unknown[] = [];
+  const pobs: unknown[] = [];
+  const nationalities = new Set<string>();
+  const citizenships = new Set<string>();
+  const titles = new Set<string>();
+  const vesselDetails: Record<string, string> = {};
+  const aircraftDetails: Record<string, string> = {};
+  const websites: string[] = [];
+  const emails: string[] = [];
+  let gender: string | null = null;
+  let hasPersonSignal = false;
+
+  for (const feat of party.features) {
+    const typeLabel = featureTypes.get(feat.typeId) ?? "";
+    const detailValue =
+      feat.detailText ?? (feat.detailRefId !== null ? detailRefs.get(feat.detailRefId) ?? null : null);
+    switch (feat.typeId) {
+      case FT.birthdate: {
+        hasPersonSignal = true;
+        const s = featureDateToString(feat.date);
+        if (s) dobs.push({ date: s, approximate: true });
+        break;
+      }
+      case FT.pob: {
+        hasPersonSignal = true;
+        const place = locationSummary(feat.locationId !== null ? locations.get(feat.locationId) : undefined);
+        if (place) pobs.push({ place });
+        break;
+      }
+      case FT.nationality: {
+        hasPersonSignal = true;
+        const value = detailValue ?? locationSummary(feat.locationId !== null ? locations.get(feat.locationId) : undefined);
+        if (value) nationalities.add(value);
+        break;
+      }
+      case FT.citizenship: {
+        hasPersonSignal = true;
+        const value = detailValue ?? locationSummary(feat.locationId !== null ? locations.get(feat.locationId) : undefined);
+        if (value) citizenships.add(value);
+        break;
+      }
+      case FT.gender: {
+        hasPersonSignal = true;
+        if (detailValue) gender = gender ?? detailValue;
+        break;
+      }
+      case FT.title:
+        if (detailValue) titles.add(detailValue);
+        break;
+      case FT.location: {
+        const info = feat.locationId !== null ? locations.get(feat.locationId) : undefined;
+        if (info) addresses.push(locationToAddress(info));
+        break;
+      }
+      case FT.website:
+        if (detailValue) websites.push(detailValue);
+        break;
+      case FT.email:
+        if (detailValue) emails.push(detailValue);
+        break;
+      case FT.callSign:
+        if (detailValue) {
+          identifiers.push({ identifier_type: "call_sign", identifier_value: detailValue, issuing_country: null, issue_date: null, expiry_date: null });
+          vesselDetails["callSign"] = detailValue;
+        }
+        break;
+      case FT.vesselType:
+        if (detailValue) vesselDetails["vesselType"] = detailValue;
+        break;
+      case FT.vesselFlag:
+        if (detailValue) vesselDetails["flag"] = detailValue;
+        break;
+      case FT.vesselOwner:
+        if (detailValue) vesselDetails["owner"] = detailValue;
+        break;
+      case FT.tonnage:
+        if (detailValue) vesselDetails["tonnage"] = detailValue;
+        break;
+      case FT.grt:
+        if (detailValue) vesselDetails["grt"] = detailValue;
+        break;
+      case FT.aircraftSerial:
+        if (detailValue) aircraftDetails["serialNumber"] = detailValue;
+        break;
+      case FT.aircraftManufactureDate:
+        if (detailValue) aircraftDetails["manufactureDate"] = detailValue;
+        break;
+      case FT.aircraftModeS:
+        if (detailValue) aircraftDetails["modeS"] = detailValue;
+        break;
+      case FT.aircraftModel:
+        if (detailValue) aircraftDetails["model"] = detailValue;
+        break;
+      case FT.aircraftOperator:
+        if (detailValue) aircraftDetails["operator"] = detailValue;
+        break;
+      case FT.aircraftPrevTail:
+        if (detailValue) aircraftDetails["previousTailNumber"] = detailValue;
+        break;
+      case FT.aircraftMsn:
+        if (detailValue) aircraftDetails["msn"] = detailValue;
+        break;
+      case FT.aircraftTail:
+        if (detailValue) {
+          aircraftDetails["tailNumber"] = detailValue;
+          identifiers.push({ identifier_type: "aircraft_tail_number", identifier_value: detailValue, issuing_country: null, issue_date: null, expiry_date: null });
+        }
+        break;
+      default: {
+        if (typeLabel.startsWith("Digital Currency Address")) {
+          const currency = typeLabel.split("-").pop()?.trim() ?? "unknown";
+          if (detailValue) {
+            wallets.push({ currency, address: detailValue });
+            identifiers.push({
+              identifier_type: "digital_currency_address",
+              identifier_value: `${currency}:${detailValue}`,
+              issuing_country: null,
+              issue_date: null,
+              expiry_date: null,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // ---- registration documents ----
+  for (const identityId of party.identityIds) {
+    for (const doc of idDocsByIdentity.get(identityId) ?? []) {
+      const value = [doc.number, doc.comment].filter(Boolean).join(" ").trim();
+      if (!value) continue;
+      identifiers.push({
+        identifier_type: doc.typeLabel,
+        identifier_value: value,
+        issuing_country: doc.issuingCountry ?? doc.issuingAuthority,
+        issue_date: null,
+        expiry_date: null,
+      });
+    }
+  }
+
+  // ---- entity classification ----
+  // PartySubTypeID: 1 = Vessel, 2 = Aircraft. All other parties are persons
+  // or entities, distinguished by person-only signals (birth data, gender,
+  // citizenship) or person-style name parts (first/last/middle).
+  let entityType: string;
+  if (party.subtypeId === "1") entityType = "ship";
+  else if (party.subtypeId === "2") entityType = "aircraft";
+  else entityType = hasPersonSignal || party.hasPersonNameParts ? "person" : "entity";
+  stats.partyTypeCounts[entityType] = (stats.partyTypeCounts[entityType] ?? 0) + 1;
+
+  // ---- entry event + measures ----
+  const dateM = entry.body.match(
+    /<EntryEvent[^>]*LegalBasisID="(\d+)"[\s\S]*?<Date[^>]*>\s*<Year>(\d+)<\/Year>(?:\s*<Month>(\d+)<\/Month>)?(?:\s*<Day>(\d+)<\/Day>)?/,
+  );
+  const legalBasisId = dateM?.[1];
+  const legalBasis = legalBasisId !== undefined ? legalBases.get(legalBasisId) ?? null : null;
+  const designationDate =
+    dateM?.[2] !== undefined && dateM[3] !== undefined && dateM[4] !== undefined
+      ? `${dateM[2]}-${dateM[3].padStart(2, "0")}-${dateM[4].padStart(2, "0")}`
+      : null;
+
+  const programmes = new Set<string>();
+  const comments = new Set<string>();
+  for (const measure of blocks(entry.body, "SanctionsMeasure")) {
+    const cm = measure.body.match(/<Comment>([\s\S]*?)<\/Comment>/);
+    if (cm?.[1] !== undefined) {
+      const text = decodeEntities(cm[1].trim());
+      if (text) programmes.add(text);
+    }
+  }
+  const entryComment = entry.body.match(/<EntryEvent[^>]*>\s*<Comment>([\s\S]*?)<\/Comment>/);
+  if (entryComment?.[1] !== undefined) {
+    const text = decodeEntities(entryComment[1].trim());
+    if (text) comments.add(text);
+  }
+
+  // ---- relationships ----
+  const relationships = (relationshipsByEntry.get(entryId) ?? [])
+    .map((rel) => {
+      const relatedParty = parties.get(rel.related);
+      const relatedName = relatedParty?.names.find((n) => n.isPrimary)?.text ?? relatedParty?.names[0]?.text ?? "";
+      return {
+        related_source_record_id: rel.related || null,
+        related_name: relatedName,
+        relationship_type: rel.former ? "former_relationship" : "associated",
+        source_description: null,
+      };
+    })
+    .filter((r) => r.related_name);
+
+  const record: SanctionsRecord = {
+    source_record_id: entryId,
+    entity_type: entityType,
+    primary_name: primaryName.text,
+    primary_name_normalized: normalizeName(primaryName.text),
+    name_original_script: party.originalScriptName,
+    sanctions_programme: [...programmes].join("; ") || null,
+    legal_basis: legalBasis,
+    listing_reason: [...comments].join("; ") || null,
+    designation_date: designationDate,
+    last_amended_date: null,
+    aliases,
+    addresses,
+    identifiers,
+    relationships,
+    raw: {
+      profileId: party.profileId,
+      partySubtypeId: party.subtypeId,
+      wallets: wallets.length ? wallets : undefined,
+      vessel: Object.keys(vesselDetails).length ? vesselDetails : undefined,
+      aircraft: Object.keys(aircraftDetails).length ? aircraftDetails : undefined,
+      websites: websites.length ? websites : undefined,
+      emails: emails.length ? emails : undefined,
+    },
+  };
+  if (entityType === "person") {
+    record.person = {
+      date_of_birth: dobs,
+      place_of_birth: pobs,
+      nationalities: [...nationalities],
+      citizenships: [...citizenships],
+      gender,
+      titles: [...titles],
+    };
+  }
+  return record;
+}
+
+// ---------------------------------------------------------------------------
+// Whole-document assembly (in-memory; used by tests and small files)
 // ---------------------------------------------------------------------------
 
 export function parseOfac(xml: string): { records: SanctionsRecord[]; report: OfacParseReport } {
@@ -379,286 +729,22 @@ export function parseOfac(xml: string): { records: SanctionsRecord[]; report: Of
   }
 
   // --- entries ---
+  const ctx: OfacAssemblyContext = {
+    aliasTypes,
+    featureTypes,
+    detailRefs,
+    countries,
+    legalBases,
+    locations,
+    idDocsByIdentity,
+    parties,
+    relationshipsByEntry,
+  };
+  const stats = createAssemblyStats();
   const records: SanctionsRecord[] = [];
-  const seenEntryIds = new Set<string>();
-  const partyTypeCounts: Record<string, number> = {};
-  let duplicateEntryIds = 0;
-  let skippedNoIdentity = 0;
-
   for (const entry of blocks(sliceSection(xml, "SanctionsEntries"), "SanctionsEntry")) {
-    const entryId = entry.attrs["ID"];
-    if (entryId === undefined) continue;
-    if (seenEntryIds.has(entryId)) {
-      duplicateEntryIds += 1;
-      continue;
-    }
-    seenEntryIds.add(entryId);
-
-    const profileId = entry.attrs["ProfileID"];
-    const party = profileId !== undefined ? parties.get(profileId) : undefined;
-    if (!party || party.names.length === 0) {
-      skippedNoIdentity += 1;
-      continue;
-    }
-
-    // ---- names / aliases ----
-    const primaryName = party.names.find((n) => n.isPrimary) ?? party.names[0];
-    if (!primaryName) {
-      skippedNoIdentity += 1;
-      continue;
-    }
-    const aliases: SanctionsAlias[] = [];
-    for (const name of party.names) {
-      const typeLabel = aliasTypes.get(name.aliasTypeId) ?? "";
-      const aliasType = name.isPrimary
-        ? "primary"
-        : name.lowQuality
-          ? "weak"
-          : /^f\.?k\.?a/i.test(typeLabel)
-            ? "former"
-            : /^n\.?k\.?a/i.test(typeLabel)
-              ? "also known as"
-              : "alias";
-      aliases.push({
-        alias_name: name.text,
-        alias_name_normalized: normalizeName(name.text),
-        alias_type: aliasType,
-        name_language: name.isLatin ? "latin" : "original script",
-        is_primary: name.isPrimary,
-      });
-    }
-
-    // ---- features ----
-    const addresses: SanctionsAddress[] = [];
-    const identifiers: SanctionsIdentifier[] = [];
-    const wallets: { currency: string; address: string }[] = [];
-    const dobs: unknown[] = [];
-    const pobs: unknown[] = [];
-    const nationalities = new Set<string>();
-    const citizenships = new Set<string>();
-    const titles = new Set<string>();
-    const vesselDetails: Record<string, string> = {};
-    const aircraftDetails: Record<string, string> = {};
-    const websites: string[] = [];
-    const emails: string[] = [];
-    let gender: string | null = null;
-    let hasPersonSignal = false;
-
-    for (const feat of party.features) {
-      const typeLabel = featureTypes.get(feat.typeId) ?? "";
-      const detailValue =
-        feat.detailText ?? (feat.detailRefId !== null ? detailRefs.get(feat.detailRefId) ?? null : null);
-      switch (feat.typeId) {
-        case FT.birthdate: {
-          hasPersonSignal = true;
-          const s = featureDateToString(feat.date);
-          if (s) dobs.push({ date: s, approximate: true });
-          break;
-        }
-        case FT.pob: {
-          hasPersonSignal = true;
-          const place = locationSummary(feat.locationId !== null ? locations.get(feat.locationId) : undefined);
-          if (place) pobs.push({ place });
-          break;
-        }
-        case FT.nationality: {
-          hasPersonSignal = true;
-          const value = detailValue ?? locationSummary(feat.locationId !== null ? locations.get(feat.locationId) : undefined);
-          if (value) nationalities.add(value);
-          break;
-        }
-        case FT.citizenship: {
-          hasPersonSignal = true;
-          const value = detailValue ?? locationSummary(feat.locationId !== null ? locations.get(feat.locationId) : undefined);
-          if (value) citizenships.add(value);
-          break;
-        }
-        case FT.gender: {
-          hasPersonSignal = true;
-          if (detailValue) gender = gender ?? detailValue;
-          break;
-        }
-        case FT.title:
-          if (detailValue) titles.add(detailValue);
-          break;
-        case FT.location: {
-          const info = feat.locationId !== null ? locations.get(feat.locationId) : undefined;
-          if (info) addresses.push(locationToAddress(info));
-          break;
-        }
-        case FT.website:
-          if (detailValue) websites.push(detailValue);
-          break;
-        case FT.email:
-          if (detailValue) emails.push(detailValue);
-          break;
-        case FT.callSign:
-          if (detailValue) {
-            identifiers.push({ identifier_type: "call_sign", identifier_value: detailValue, issuing_country: null, issue_date: null, expiry_date: null });
-            vesselDetails["callSign"] = detailValue;
-          }
-          break;
-        case FT.vesselType:
-          if (detailValue) vesselDetails["vesselType"] = detailValue;
-          break;
-        case FT.vesselFlag:
-          if (detailValue) vesselDetails["flag"] = detailValue;
-          break;
-        case FT.vesselOwner:
-          if (detailValue) vesselDetails["owner"] = detailValue;
-          break;
-        case FT.tonnage:
-          if (detailValue) vesselDetails["tonnage"] = detailValue;
-          break;
-        case FT.grt:
-          if (detailValue) vesselDetails["grt"] = detailValue;
-          break;
-        case FT.aircraftSerial:
-          if (detailValue) aircraftDetails["serialNumber"] = detailValue;
-          break;
-        case FT.aircraftManufactureDate:
-          if (detailValue) aircraftDetails["manufactureDate"] = detailValue;
-          break;
-        case FT.aircraftModeS:
-          if (detailValue) aircraftDetails["modeS"] = detailValue;
-          break;
-        case FT.aircraftModel:
-          if (detailValue) aircraftDetails["model"] = detailValue;
-          break;
-        case FT.aircraftOperator:
-          if (detailValue) aircraftDetails["operator"] = detailValue;
-          break;
-        case FT.aircraftPrevTail:
-          if (detailValue) aircraftDetails["previousTailNumber"] = detailValue;
-          break;
-        case FT.aircraftMsn:
-          if (detailValue) aircraftDetails["msn"] = detailValue;
-          break;
-        case FT.aircraftTail:
-          if (detailValue) {
-            aircraftDetails["tailNumber"] = detailValue;
-            identifiers.push({ identifier_type: "aircraft_tail_number", identifier_value: detailValue, issuing_country: null, issue_date: null, expiry_date: null });
-          }
-          break;
-        default: {
-          if (typeLabel.startsWith("Digital Currency Address")) {
-            const currency = typeLabel.split("-").pop()?.trim() ?? "unknown";
-            if (detailValue) {
-              wallets.push({ currency, address: detailValue });
-              identifiers.push({
-                identifier_type: "digital_currency_address",
-                identifier_value: `${currency}:${detailValue}`,
-                issuing_country: null,
-                issue_date: null,
-                expiry_date: null,
-              });
-            }
-          }
-        }
-      }
-    }
-
-    // ---- registration documents ----
-    for (const identityId of party.identityIds) {
-      for (const doc of idDocsByIdentity.get(identityId) ?? []) {
-        const value = [doc.number, doc.comment].filter(Boolean).join(" ").trim();
-        if (!value) continue;
-        identifiers.push({
-          identifier_type: doc.typeLabel,
-          identifier_value: value,
-          issuing_country: doc.issuingCountry ?? doc.issuingAuthority,
-          issue_date: null,
-          expiry_date: null,
-        });
-      }
-    }
-
-    // ---- entity classification ----
-    // PartySubTypeID: 1 = Vessel, 2 = Aircraft. All other parties are persons
-    // or entities, distinguished by person-only signals (birth data, gender,
-    // citizenship) or person-style name parts (first/last/middle).
-    let entityType: string;
-    if (party.subtypeId === "1") entityType = "ship";
-    else if (party.subtypeId === "2") entityType = "aircraft";
-    else entityType = hasPersonSignal || party.hasPersonNameParts ? "person" : "entity";
-    partyTypeCounts[entityType] = (partyTypeCounts[entityType] ?? 0) + 1;
-
-    // ---- entry event + measures ----
-    const dateM = entry.body.match(
-      /<EntryEvent[^>]*LegalBasisID="(\d+)"[\s\S]*?<Date[^>]*>\s*<Year>(\d+)<\/Year>(?:\s*<Month>(\d+)<\/Month>)?(?:\s*<Day>(\d+)<\/Day>)?/,
-    );
-    const legalBasisId = dateM?.[1];
-    const legalBasis = legalBasisId !== undefined ? legalBases.get(legalBasisId) ?? null : null;
-    const designationDate =
-      dateM?.[2] !== undefined && dateM[3] !== undefined && dateM[4] !== undefined
-        ? `${dateM[2]}-${dateM[3].padStart(2, "0")}-${dateM[4].padStart(2, "0")}`
-        : null;
-
-    const programmes = new Set<string>();
-    const comments = new Set<string>();
-    for (const measure of blocks(entry.body, "SanctionsMeasure")) {
-      const cm = measure.body.match(/<Comment>([\s\S]*?)<\/Comment>/);
-      if (cm?.[1] !== undefined) {
-        const text = decodeEntities(cm[1].trim());
-        if (text) programmes.add(text);
-      }
-    }
-    const entryComment = entry.body.match(/<EntryEvent[^>]*>\s*<Comment>([\s\S]*?)<\/Comment>/);
-    if (entryComment?.[1] !== undefined) {
-      const text = decodeEntities(entryComment[1].trim());
-      if (text) comments.add(text);
-    }
-
-    // ---- relationships ----
-    const relationships = (relationshipsByEntry.get(entryId) ?? [])
-      .map((rel) => {
-        const relatedParty = parties.get(rel.related);
-        const relatedName = relatedParty?.names.find((n) => n.isPrimary)?.text ?? relatedParty?.names[0]?.text ?? "";
-        return {
-          related_source_record_id: rel.related || null,
-          related_name: relatedName,
-          relationship_type: rel.former ? "former_relationship" : "associated",
-          source_description: null,
-        };
-      })
-      .filter((r) => r.related_name);
-
-    const record: SanctionsRecord = {
-      source_record_id: entryId,
-      entity_type: entityType,
-      primary_name: primaryName.text,
-      primary_name_normalized: normalizeName(primaryName.text),
-      name_original_script: party.originalScriptName,
-      sanctions_programme: [...programmes].join("; ") || null,
-      legal_basis: legalBasis,
-      listing_reason: [...comments].join("; ") || null,
-      designation_date: designationDate,
-      last_amended_date: null,
-      aliases,
-      addresses,
-      identifiers,
-      relationships,
-      raw: {
-        profileId: party.profileId,
-        partySubtypeId: party.subtypeId,
-        wallets: wallets.length ? wallets : undefined,
-        vessel: Object.keys(vesselDetails).length ? vesselDetails : undefined,
-        aircraft: Object.keys(aircraftDetails).length ? aircraftDetails : undefined,
-        websites: websites.length ? websites : undefined,
-        emails: emails.length ? emails : undefined,
-      },
-    };
-    if (entityType === "person") {
-      record.person = {
-        date_of_birth: dobs,
-        place_of_birth: pobs,
-        nationalities: [...nationalities],
-        citizenships: [...citizenships],
-        gender,
-        titles: [...titles],
-      };
-    }
-    records.push(record);
+    const record = buildOfacRecord(entry, ctx, stats);
+    if (record) records.push(record);
   }
 
   return {
@@ -666,9 +752,9 @@ export function parseOfac(xml: string): { records: SanctionsRecord[]; report: Of
     report: {
       totalParties: parties.size,
       totalEntries: records.length,
-      skippedNoIdentity,
-      duplicateEntryIds,
-      partyTypeCounts,
+      skippedNoIdentity: stats.skippedNoIdentity,
+      duplicateEntryIds: stats.duplicateEntryIds,
+      partyTypeCounts: stats.partyTypeCounts,
     },
   };
 }

@@ -4,6 +4,8 @@ import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecor
 import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
 import { parseOfac } from "@/lib/sanctions/parse-ofac";
+import { OfacStreamParser } from "@/lib/sanctions/parse-ofac-stream";
+import { StreamingSha256 } from "@/lib/sanctions/sha256-stream";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
@@ -196,6 +198,8 @@ export async function runSanctionsImport(
   options: { sourceCode?: string; force?: boolean } = {},
 ): Promise<ImportOutcome> {
   const sourceCode = options.sourceCode ?? EU_SOURCE_CODE;
+  // OFAC's 126 MB feed always goes through the low-memory streaming worker.
+  if (sourceCode === OFAC_SOURCE_CODE) return runOfacStreamingImport(options.force ? { force: true } : {});
   const adapter = adapterFor(sourceCode);
   const supabase = adminClient();
   const startedAt = Date.now();
@@ -480,6 +484,327 @@ export async function runSanctionsImport(
       storagePath,
       durationMs: Date.now() - startedAt,
       ...(duplicates > 0 ? { message: `Import completed (${duplicates} duplicate source IDs ignored).` } : {}),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected import failure";
+    if (importId) {
+      const supabaseRetry = adminClient();
+      await supabaseRetry.from("sanctions_staging").delete().eq("import_id", importId);
+      await failImport(supabaseRetry, importId, message, { stage: "exception" });
+    }
+    return { importId, status: "failed", message, durationMs: Date.now() - startedAt };
+  } finally {
+    await (supabase.rpc as never as (fn: string, args: Record<string, unknown>) => Promise<unknown>)(
+      "sanctions_unlock",
+      { _source_code: sourceCode },
+    );
+  }
+}
+
+/**
+ * Dedicated OFAC worker: downloads and parses the ~126 MB Advanced XML as a
+ * stream, so peak memory stays within the standard function limits (the
+ * in-memory path in runSanctionsImport peaks near 1 GB RSS for this source).
+ *
+ * Streams the response body chunk-by-chunk through an incremental SHA-256 and
+ * the chunked OFAC parser, staging records in bounded batches. Reuses the
+ * same lock, staging table, sanity rules and atomic publication RPC as every
+ * other source, so the normalized schema and change history are identical.
+ */
+export async function runOfacStreamingImport(
+  options: { force?: boolean } = {},
+): Promise<ImportOutcome> {
+  const sourceCode = OFAC_SOURCE_CODE;
+  const adapter = adapterFor(sourceCode);
+  const supabase = adminClient();
+  const startedAt = Date.now();
+
+  const { data: locked, error: lockError } = await (supabase.rpc as never as (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: boolean | null; error: { message: string } | null }>)("sanctions_try_lock", {
+    _source_code: sourceCode,
+  });
+  if (lockError) throw new Error(lockError.message);
+  if (!locked) {
+    return { importId: null, status: "skipped", message: "Another import for this source is already running." };
+  }
+
+  let importId: string | null = null;
+  try {
+    const source = await getSource(supabase, sourceCode);
+    if (!source.is_active && !options.force) {
+      return { importId: null, status: "skipped", message: "Source is not active." };
+    }
+
+    const { data: created, error: createError } = await supabase
+      .from("sanctions_imports")
+      .insert({ source_id: source.id, status: "started" })
+      .select("id")
+      .single();
+    if (createError || !created) throw new Error(createError?.message ?? "Could not create import run");
+    importId = created.id;
+
+    // 1. open the stream --------------------------------------------------
+    await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
+    const response = await fetch(source.source_url, {
+      redirect: "follow",
+      headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
+    });
+    const finalHost = response.url ? new URL(response.url).host : null;
+    if (response.status !== 200) {
+      const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
+      await failImport(supabase, importId, detail, { stage: "download", status: response.status, finalHost });
+      return { importId, status: "failed", message: detail };
+    }
+    const contentType = response.headers.get("content-type") ?? "";
+    const etagHeader = response.headers.get("etag");
+    if (contentType && !/xml|octet-stream|text\/plain/i.test(contentType)) {
+      const detail = `Unexpected content type from source: ${contentType}`;
+      await failImport(supabase, importId, detail, { stage: "download", contentType, finalHost });
+      return { importId, status: "failed", message: detail };
+    }
+    if (!response.body) {
+      const detail = "Source response has no readable body stream.";
+      await failImport(supabase, importId, detail, { stage: "download", finalHost });
+      return { importId, status: "failed", message: detail };
+    }
+    const retrievedAt = new Date();
+    const lastModifiedHeader = response.headers.get("last-modified");
+    const sourceLastModified = lastModifiedHeader ? new Date(lastModifiedHeader).toISOString() : null;
+    const fileName =
+      /filename="([^"]+)"/.exec(response.headers.get("content-disposition") ?? "")?.[1] ??
+      `ofac-sdn-${retrievedAt.toISOString().slice(0, 10)}.xml`;
+
+    // 2. stream: hash + parse + stage, chunk by chunk ----------------------
+    await supabase.from("sanctions_imports").update({ status: "parsing" }).eq("id", importId);
+    const hasher = new StreamingSha256();
+    const parser = new OfacStreamParser();
+    const decoder = new TextDecoder("utf-8");
+    const parseStartedAt = Date.now();
+    const rssBefore = nodeRssMb();
+
+    let fileSizeBytes = 0;
+    let parsed = 0;
+    let persons = 0;
+    let entities = 0;
+    let ships = 0;
+    let aircraft = 0;
+    let wallets = 0;
+    let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
+    const flush = async () => {
+      if (batch.length === 0) return;
+      const { error } = await supabase.from("sanctions_staging").insert(batch as never);
+      if (error) throw new Error(`Staging insert failed: ${error.message}`);
+      batch = [];
+    };
+    const stageRecord = async (record: SanctionsRecord) => {
+      parsed += 1;
+      if (record.entity_type === "person") persons += 1;
+      else if (record.entity_type === "ship") ships += 1;
+      else if (record.entity_type === "aircraft") aircraft += 1;
+      else if (record.entity_type === "entity") entities += 1;
+      if (record.identifiers.some((i) => i.identifier_type === "digital_currency_address")) wallets += 1;
+      batch.push({
+        import_id: importId!,
+        source_record_id: record.source_record_id,
+        record_hash: shortHash(recordFingerprint(record)),
+        payload: record,
+      });
+      if (batch.length >= STAGING_BATCH) await flush();
+    };
+
+    const reader = response.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value || value.byteLength === 0) continue;
+      fileSizeBytes += value.byteLength;
+      hasher.update(value);
+      for (const record of parser.feed(decoder.decode(value, { stream: true }))) {
+        await stageRecord(record);
+      }
+    }
+    const tail = parser.finish();
+    for (const record of tail.records) await stageRecord(record);
+    await flush();
+    const parseDurationMs = Date.now() - parseStartedAt;
+    const rssAfter = nodeRssMb();
+
+    if (fileSizeBytes < adapter.minBytes) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      const detail = `Source file is too small (${fileSizeBytes} bytes); refusing to import.`;
+      await failImport(supabase, importId, detail, { stage: "validate", size: fileSizeBytes, finalHost });
+      return { importId, status: "failed", message: detail };
+    }
+
+    const fileHash = hasher.digestHex();
+
+    const { data: lastSuccess } = await supabase
+      .from("sanctions_imports")
+      .select("id, file_hash_sha256, record_count, storage_path")
+      .eq("source_id", source.id)
+      .eq("status", "completed")
+      .order("completed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!options.force && lastSuccess?.file_hash_sha256 === fileHash) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      await supabase
+        .from("sanctions_imports")
+        .update({
+          status: "unchanged",
+          retrieved_at: retrievedAt.toISOString(),
+          source_last_modified: sourceLastModified,
+          file_name: fileName,
+          file_hash_sha256: fileHash,
+          file_size_bytes: fileSizeBytes,
+          storage_path: lastSuccess.storage_path,
+          record_count: lastSuccess.record_count,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", importId);
+      return {
+        importId,
+        status: "unchanged",
+        message: "Source file is identical to the last successful import.",
+        fileHash,
+        fileSizeBytes,
+        sourceLastModified,
+        recordCount: lastSuccess.record_count ?? 0,
+        durationMs: Date.now() - startedAt,
+      };
+    }
+
+    // 3. archive the raw file privately -----------------------------------
+    // The bytes were streamed (never buffered), so re-fetch for the archive
+    // upload; Storage handles the streamed request body on its side.
+    let storagePath: string | null = null;
+    try {
+      const archiveResponse = await fetch(source.source_url, {
+        redirect: "follow",
+        headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
+      });
+      if (archiveResponse.ok && archiveResponse.body) {
+        storagePath = storagePathFor(adapter.storagePrefix, fileHash, retrievedAt);
+        const { error: uploadError } = await supabase.storage
+          .from(SANCTIONS_BUCKET)
+          .upload(storagePath, archiveResponse.body as never, {
+            contentType: "application/xml",
+            upsert: true,
+            duplex: "half",
+          } as never);
+        if (uploadError) {
+          storagePath = null;
+          console.warn("[ofac-worker] raw archive upload failed", uploadError.message);
+        }
+      }
+    } catch (archiveError) {
+      storagePath = null;
+      console.warn("[ofac-worker] raw archive fetch failed", archiveError);
+    }
+
+    await supabase
+      .from("sanctions_imports")
+      .update({
+        status: "staging",
+        retrieved_at: retrievedAt.toISOString(),
+        source_last_modified: sourceLastModified,
+        file_name: fileName,
+        file_hash_sha256: fileHash,
+        file_size_bytes: fileSizeBytes,
+        storage_path: storagePath,
+      })
+      .eq("id", importId);
+
+    // 4. sanity checks before publishing -----------------------------------
+    if (parsed === 0) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      const detail = "Parsed zero records from the source file; keeping the previous dataset.";
+      await failImport(supabase, importId, detail, { stage: "sanity", parsed, finalHost });
+      return { importId, status: "failed", message: detail };
+    }
+    const sanityError = adapter.sanity?.({ persons, entities, parsed }) ?? null;
+    if (sanityError) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      await failImport(supabase, importId, `${sanityError} Keeping the previous dataset.`, {
+        stage: "sanity",
+        parsed,
+        persons,
+        entities,
+        finalHost,
+      });
+      return { importId, status: "failed", message: sanityError };
+    }
+    const previousCount = lastSuccess?.record_count ?? 0;
+    if (previousCount > 0 && parsed < previousCount * (1 - MAX_RECORD_DROP)) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      const detail = `Record count fell from ${previousCount} to ${parsed} (more than 20%); keeping the previous dataset.`;
+      await failImport(supabase, importId, detail, { stage: "sanity", parsed, previousCount, finalHost });
+      return { importId, status: "failed", message: detail };
+    }
+
+    // 5. atomic publication -------------------------------------------------
+    const { data: published, error: publishError } = await (supabase.rpc as never as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{
+      data: { added: number; modified: number; removed: number; reactivated: number; active_total: number }[] | null;
+      error: { message: string } | null;
+    }>)("sanctions_publish_import", { _import_id: importId });
+
+    if (publishError) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      const detail = `Publication failed: ${publishError.message}`;
+      await failImport(supabase, importId, detail, { stage: "publish" });
+      return { importId, status: "failed", message: detail };
+    }
+
+    const result = Array.isArray(published) ? published[0] : published;
+    await supabase
+      .from("sanctions_imports")
+      .update({
+        diagnostic_details: {
+          finalHost,
+          contentType,
+          etag: etagHeader,
+          persons,
+          entities,
+          ships,
+          aircraft,
+          walletRecords: wallets,
+          duplicatesIgnored: tail.report.duplicateEntryIds,
+          skippedNoIdentity: tail.report.skippedNoIdentity,
+          totalParties: tail.report.totalParties,
+          parseDurationMs,
+          rssMbBefore: rssBefore,
+          rssMbAfter: rssAfter,
+          parser: "ofac-advanced-v3-stream",
+          rawArchived: storagePath !== null,
+        } as never,
+      })
+      .eq("id", importId);
+    return {
+      importId,
+      status: "completed",
+      message: "Import completed.",
+      parsedCount: parsed,
+      recordCount: result?.active_total ?? parsed,
+      addedCount: result?.added ?? 0,
+      modifiedCount: result?.modified ?? 0,
+      removedCount: result?.removed ?? 0,
+      personCount: persons,
+      entityCount: entities,
+      shipCount: ships,
+      aircraftCount: aircraft,
+      walletCount: wallets,
+      failedRecordCount: 0,
+      fileSizeBytes,
+      fileHash,
+      sourceLastModified,
+      storagePath,
+      durationMs: Date.now() - startedAt,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected import failure";

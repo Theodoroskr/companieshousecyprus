@@ -22,7 +22,8 @@ async function run(request: Request) {
 
   const { listActiveSourceCodes, runSanctionsImport } = await import("@/lib/sanctions.server");
   try {
-    const sources = await listActiveSourceCodes();
+    // OFAC is handled by its own scheduled streaming worker (126 MB feed).
+    const sources = (await listActiveSourceCodes()).filter((c) => c !== "OFAC_SDN");
     const results: Record<string, unknown> = {};
     let anyFailed = false;
     for (const sourceCode of sources) {
