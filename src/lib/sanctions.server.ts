@@ -5,6 +5,7 @@ import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
 import { OfacStreamParser } from "@/lib/sanctions/parse-ofac-stream";
 import { StreamingSha256 } from "@/lib/sanctions/sha256-stream";
+import { digestMismatchReport, extractOfficialDigest } from "@/lib/sanctions/digest";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
@@ -247,6 +248,9 @@ export async function runSanctionsImport(
 
     const contentType = response.headers.get("content-type") ?? "";
     const etagHeader = response.headers.get("etag");
+    // Source-published integrity digest (Digest / Repr-Digest / checksum
+    // headers), kept in history and enforced before publication.
+    const officialDigest = extractOfficialDigest(response.headers);
     // Redirected/CDN destinations sometimes label XML as octet-stream; the
     // structural XML validation below is the real gate. Only fail early on an
     // obviously non-XML content type such as text/html.
@@ -282,6 +286,27 @@ export async function runSanctionsImport(
 
     const fileHash = await sha256Hex(bytes);
 
+    // Integrity gate: if the source published a SHA-256 digest and our
+    // downloaded bytes do not match, fail loudly — never publish.
+    const digestMismatch = digestMismatchReport(fileHash, officialDigest);
+    if (digestMismatch) {
+      await supabase
+        .from("sanctions_imports")
+        .update({
+          official_digest_sha256: officialDigest!.sha256Hex,
+          official_digest_header: `${officialDigest!.header}: ${officialDigest!.raw}`,
+          digest_mismatch: true,
+        } as never)
+        .eq("id", importId);
+      await failImport(supabase, importId, digestMismatch, {
+        stage: "digest",
+        expected: officialDigest!.sha256Hex,
+        actual: fileHash,
+        finalHost,
+      });
+      return { importId, status: "failed", message: digestMismatch };
+    }
+
     const { data: lastSuccess } = await supabase
       .from("sanctions_imports")
       .select("id, file_hash_sha256, record_count, storage_path")
@@ -304,7 +329,10 @@ export async function runSanctionsImport(
           storage_path: lastSuccess.storage_path,
           record_count: lastSuccess.record_count,
           completed_at: new Date().toISOString(),
-        })
+          official_digest_sha256: officialDigest?.sha256Hex ?? null,
+          official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+          digest_mismatch: false,
+        } as never)
         .eq("id", importId);
       return {
         importId,
@@ -339,7 +367,10 @@ export async function runSanctionsImport(
         file_hash_sha256: fileHash,
         file_size_bytes: bytes.byteLength,
         storage_path: storagePath,
-      })
+        official_digest_sha256: officialDigest?.sha256Hex ?? null,
+        official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+        digest_mismatch: false,
+      } as never)
       .eq("id", importId);
 
     // 4. parse + stage ---------------------------------------------------
@@ -440,6 +471,7 @@ export async function runSanctionsImport(
           finalHost,
           contentType,
           etag: etagHeader,
+          officialDigest: officialDigest?.sha256Hex ?? null,
           persons,
           entities,
           ships,
@@ -557,6 +589,7 @@ export async function runOfacStreamingImport(
     }
     const contentType = response.headers.get("content-type") ?? "";
     const etagHeader = response.headers.get("etag");
+    const officialDigest = extractOfficialDigest(response.headers);
     if (contentType && !/xml|octet-stream|text\/plain/i.test(contentType)) {
       const detail = `Unexpected content type from source: ${contentType}`;
       await failImport(supabase, importId, detail, { stage: "download", contentType, finalHost });
@@ -638,6 +671,28 @@ export async function runOfacStreamingImport(
 
     const fileHash = hasher.digestHex();
 
+    // Integrity gate: if the source published a SHA-256 digest and our
+    // downloaded bytes do not match, fail loudly — never publish.
+    const digestMismatch = digestMismatchReport(fileHash, officialDigest);
+    if (digestMismatch) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      await supabase
+        .from("sanctions_imports")
+        .update({
+          official_digest_sha256: officialDigest!.sha256Hex,
+          official_digest_header: `${officialDigest!.header}: ${officialDigest!.raw}`,
+          digest_mismatch: true,
+        } as never)
+        .eq("id", importId);
+      await failImport(supabase, importId, digestMismatch, {
+        stage: "digest",
+        expected: officialDigest!.sha256Hex,
+        actual: fileHash,
+        finalHost,
+      });
+      return { importId, status: "failed", message: digestMismatch };
+    }
+
     const { data: lastSuccess } = await supabase
       .from("sanctions_imports")
       .select("id, file_hash_sha256, record_count, storage_path")
@@ -661,7 +716,10 @@ export async function runOfacStreamingImport(
           storage_path: lastSuccess.storage_path,
           record_count: lastSuccess.record_count,
           completed_at: new Date().toISOString(),
-        })
+          official_digest_sha256: officialDigest?.sha256Hex ?? null,
+          official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+          digest_mismatch: false,
+        } as never)
         .eq("id", importId);
       return {
         importId,
@@ -713,7 +771,10 @@ export async function runOfacStreamingImport(
         file_hash_sha256: fileHash,
         file_size_bytes: fileSizeBytes,
         storage_path: storagePath,
-      })
+        official_digest_sha256: officialDigest?.sha256Hex ?? null,
+        official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+        digest_mismatch: false,
+      } as never)
       .eq("id", importId);
 
     // 4. sanity checks before publishing -----------------------------------
@@ -767,6 +828,7 @@ export async function runOfacStreamingImport(
           finalHost,
           contentType,
           etag: etagHeader,
+          officialDigest: officialDigest?.sha256Hex ?? null,
           persons,
           entities,
           ships,
