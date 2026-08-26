@@ -577,6 +577,7 @@ export async function runOfacStreamingImport(
 
     // 1. open the stream --------------------------------------------------
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
+    const downloadStartedAt = Date.now();
     const response = await fetch(source.source_url, {
       redirect: "follow",
       headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
@@ -614,6 +615,24 @@ export async function runOfacStreamingImport(
     const decoder = new TextDecoder("utf-8");
     const parseStartedAt = Date.now();
     const rssBefore = nodeRssMb();
+
+    // Per-stage performance instrumentation (download/hash/stage/validate/publish)
+    // so admins can confirm the worker fits runtime limits before scheduling.
+    const perf = {
+      downloadMs: 0,
+      hashingMs: 0,
+      stagingMs: 0,
+      validationMs: 0,
+      publishMs: 0,
+      archiveMs: 0,
+      rssStartMb: rssBefore,
+      rssPeakMb: rssBefore,
+      rssEndMb: null as number | null,
+    };
+    const sampleRss = () => {
+      const now = nodeRssMb();
+      if (now !== null) perf.rssPeakMb = Math.max(perf.rssPeakMb ?? now, now);
+    };
 
     let fileSizeBytes = 0;
     let parsed = 0;
