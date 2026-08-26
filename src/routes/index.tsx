@@ -23,9 +23,33 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Companies House Cyprus — Free Cyprus Company Search";
+const TITLE = "Companies House Cyprus — Free Company Register Search";
 const DESCRIPTION =
-  "Free Cyprus company search on official Registrar data. Check status, directors and shareholders, then order certificates and reports with instant digital delivery.";
+  "Search any Cyprus company free in seconds: status, directors, shareholders and registered office from Registrar of Companies data. Order certificates and reports online, delivered digitally in 1–2 days.";
+
+const FAQS = [
+  {
+    q: "Is Companies House Cyprus the official Registrar?",
+    a: "No. We are an independent commercial service operated by Infocredit Group Limited (HE4404). We publish company information sourced from the Department of Registrar of Companies and Intellectual Property and sell certificates and reports on request.",
+  },
+  {
+    q: "Is searching Cyprus companies free?",
+    a: "Yes. Searching the register, viewing company status, registration date, type, registered office and officials is free and needs no account. You only pay when you order a certificate or a report.",
+  },
+  {
+    q: "How do I search by HE number?",
+    a: "Type the registry number in the search box, with or without the prefix — for example HE 252407, HE252407 or 252407. Company names in English or Greek also work, including transliterated spellings.",
+  },
+  {
+    q: "How fast are certificates delivered?",
+    a: "Company profiles are usually issued the same business day. Official certificates from the Registrar are typically delivered within one to two business days, by email and in your account.",
+  },
+  {
+    q: "How current is the company data?",
+    a: "The register copy is refreshed regularly from the Registrar's published datasets. Each company profile shows what we hold, and certificates are always ordered fresh from the Registrar.",
+  },
+];
+
 
 
 export const Route = createFileRoute("/")({
@@ -106,7 +130,20 @@ export const Route = createFileRoute("/")({
           },
         }),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.map((item) => ({
+            "@type": "Question",
+            name: item.q,
+            acceptedAnswer: { "@type": "Answer", text: item.a },
+          })),
+        }),
+      },
     ],
+
   }),
   component: HomePage,
 });
@@ -305,6 +342,55 @@ function HomePage() {
           </ul>
         </div>
       </section>
+
+      {/* How it works */}
+      <section className="border-y bg-sand">
+        <div className="mx-auto max-w-7xl px-4 py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">How it works</p>
+          <h2 className="mt-3 text-3xl font-bold text-foreground">From search to certified document in three steps</h2>
+          <ol className="mt-10 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: "1. Search the register",
+                body: "Enter a company name in English or Greek, or an HE number with or without the prefix. Results show status, type and district instantly — free, no account.",
+              },
+              {
+                title: "2. Open the company profile",
+                body: "See registration date, company age, registered office, officials and owners where we hold them, plus the documents available for that entity.",
+              },
+              {
+                title: "3. Order and receive",
+                body: "Add certificates or reports to your basket, pay online, and track delivery in your account. Documents arrive by email, typically in 1–2 business days.",
+              },
+            ].map((step) => (
+              <li key={step.title} className="rounded-xl border bg-card p-6 shadow-panel">
+                <h3 className="font-display text-lg font-semibold text-card-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto max-w-3xl px-4 py-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">FAQ</p>
+        <h2 className="mt-3 text-3xl font-bold text-foreground">Common questions about the Cyprus register</h2>
+        <dl className="mt-8 divide-y divide-border border-y">
+          {FAQS.map((item) => (
+            <div key={item.q} className="py-5">
+              <dt className="font-display font-semibold text-foreground">{item.q}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-6 text-sm text-muted-foreground">
+          More detail on coverage and sources on our{" "}
+          <Link to="/about" className="text-accent underline">about page</Link>, or see the{" "}
+          <Link to="/cyprus-companies-registry" className="text-accent underline">Cyprus companies registry guide</Link>.
+        </p>
+      </section>
+
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 pb-24">
