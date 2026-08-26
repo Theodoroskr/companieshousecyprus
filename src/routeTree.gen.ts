@@ -99,6 +99,7 @@ import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/
 import { Route as AuthenticatedAccountReportsItemIdRouteImport } from './routes/_authenticated/account.reports.$itemId'
 import { Route as AuthenticatedAccountScreeningItemIdRouteImport } from './routes/_authenticated/account.screening.$itemId'
 import { Route as AuthenticatedAdminReportsItemIdRouteImport } from './routes/_authenticated/admin.reports.$itemId'
+import { Route as AuthenticatedAdminScreeningReportItemIdRouteImport } from './routes/_authenticated/admin.screening-report.$itemId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
@@ -582,6 +583,12 @@ const AuthenticatedAdminReportsItemIdRoute =
     path: '/reports/$itemId',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminScreeningReportItemIdRoute =
+  AuthenticatedAdminScreeningReportItemIdRouteImport.update({
+    id: '/screening-report/$itemId',
+    path: '/screening-report/$itemId',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -685,6 +692,7 @@ export interface FileRoutesByFullPath {
   '/account/reports/$itemId': typeof AuthenticatedAccountReportsItemIdRoute
   '/account/screening/$itemId': typeof AuthenticatedAccountScreeningItemIdRoute
   '/admin/reports/$itemId': typeof AuthenticatedAdminReportsItemIdRoute
+  '/admin/screening-report/$itemId': typeof AuthenticatedAdminScreeningReportItemIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -777,6 +785,7 @@ export interface FileRoutesByTo {
   '/account/reports/$itemId': typeof AuthenticatedAccountReportsItemIdRoute
   '/account/screening/$itemId': typeof AuthenticatedAccountScreeningItemIdRoute
   '/admin/reports/$itemId': typeof AuthenticatedAdminReportsItemIdRoute
+  '/admin/screening-report/$itemId': typeof AuthenticatedAdminScreeningReportItemIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -872,6 +881,7 @@ export interface FileRoutesById {
   '/_authenticated/account/reports/$itemId': typeof AuthenticatedAccountReportsItemIdRoute
   '/_authenticated/account/screening/$itemId': typeof AuthenticatedAccountScreeningItemIdRoute
   '/_authenticated/admin/reports/$itemId': typeof AuthenticatedAdminReportsItemIdRoute
+  '/_authenticated/admin/screening-report/$itemId': typeof AuthenticatedAdminScreeningReportItemIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -967,6 +977,7 @@ export interface FileRouteTypes {
     | '/account/reports/$itemId'
     | '/account/screening/$itemId'
     | '/admin/reports/$itemId'
+    | '/admin/screening-report/$itemId'
     | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
@@ -1059,6 +1070,7 @@ export interface FileRouteTypes {
     | '/account/reports/$itemId'
     | '/account/screening/$itemId'
     | '/admin/reports/$itemId'
+    | '/admin/screening-report/$itemId'
     | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   id:
@@ -1153,6 +1165,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account/reports/$itemId'
     | '/_authenticated/account/screening/$itemId'
     | '/_authenticated/admin/reports/$itemId'
+    | '/_authenticated/admin/screening-report/$itemId'
     | '/api/public/payments/webhook'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
@@ -1869,6 +1882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReportsItemIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/screening-report/$itemId': {
+      id: '/_authenticated/admin/screening-report/$itemId'
+      path: '/screening-report/$itemId'
+      fullPath: '/admin/screening-report/$itemId'
+      preLoaderRoute: typeof AuthenticatedAdminScreeningReportItemIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1898,6 +1918,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminReportsItemIdRoute: typeof AuthenticatedAdminReportsItemIdRoute
+  AuthenticatedAdminScreeningReportItemIdRoute: typeof AuthenticatedAdminScreeningReportItemIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -1912,6 +1933,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminReportsItemIdRoute: AuthenticatedAdminReportsItemIdRoute,
+  AuthenticatedAdminScreeningReportItemIdRoute:
+    AuthenticatedAdminScreeningReportItemIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
