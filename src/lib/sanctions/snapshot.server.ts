@@ -115,7 +115,7 @@ export async function buildSanctionsSnapshot(
   }));
 
   const limitations: string[] = [
-    "Screening covers legal entities only: the company, its previous names and available corporate shareholders.",
+    "Screening covers only the legal entity that is the subject of this report.",
     "A potential match does not mean that the company is sanctioned; it requires further verification.",
     ...screening.notScreened.map((n) => `${n.subject}: ${n.reason}`),
     ...sources
