@@ -1228,6 +1228,33 @@ export async function listActiveSourceCodes(): Promise<string[]> {
  * destination responds with XML-ish content. Records the outcome on the
  * source row without touching any dataset.
  */
+/** Reads at most `maxBytes` from a response body, then cancels the stream. */
+async function readSample(response: Response, maxBytes: number): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (total < maxBytes) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        chunks.push(value);
+        total += value.byteLength;
+      }
+    }
+  } finally {
+    await reader.cancel().catch(() => undefined);
+  }
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(merged.slice(0, maxBytes));
+}
+
 export async function testSanctionsConnection(sourceCode: string) {
   const supabase = adminClient();
   const source = await getSource(supabase, sourceCode);
@@ -1246,7 +1273,9 @@ export async function testSanctionsConnection(sourceCode: string) {
     status = response.status;
     finalHost = response.url ? new URL(response.url).host : null;
     contentType = response.headers.get("content-type");
-    const sample = (await response.text()).slice(0, 4096);
+    // Read only the first chunk: OFAC's feed is 126 MB and buffering it here
+    // would exhaust the worker's memory during a simple connection test.
+    const sample = await readSample(response, 4096);
     if (status !== 200) {
       detail = `HTTP ${status} ${response.statusText}`;
     } else if (/^\s*</.test(sample) && !/^\s*<(!DOCTYPE\s+html|html)\b/i.test(sample)) {
