@@ -481,15 +481,15 @@ function CompanyPage() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 lg:grid-cols-[1.5fr_1fr]">
 
         <div className="space-y-8">
-          <section className="rounded-xl border bg-card p-6 shadow-panel">
-            <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-              <Building2 className="size-5 text-copper" /> Registry record
+          <section className="rounded-xl border bg-card p-4 shadow-panel sm:p-5">
+            <h2 className="flex items-center gap-2 font-display text-base font-semibold">
+              <Building2 className="size-4 text-copper" /> Registry record
             </h2>
             <TooltipProvider delayDuration={200}>
-              <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+              <dl className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
                 {facts.map((fact) => (
-                  <div key={fact.label} className="border-b pb-3">
-                    <dt className="flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground">
+                  <div key={fact.label} className="border-b pb-2">
+                    <dt className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
                       <span>{fact.label}</span>
                       {fact.description && (
                         <Tooltip>
@@ -499,7 +499,7 @@ function CompanyPage() {
                               aria-label={`${fact.label} help`}
                               className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground transition-colors hover:text-copper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
                             >
-                              <Info className="size-3.5" />
+                              <Info className="size-3" />
                             </button>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-[16rem]">
@@ -508,7 +508,7 @@ function CompanyPage() {
                         </Tooltip>
                       )}
                     </dt>
-                    <dd className="mt-1 font-medium" aria-label={`${fact.label}: ${fact.value}`}>
+                    <dd className="mt-0.5 text-sm font-medium" aria-label={`${fact.label}: ${fact.value}`}>
                       {fact.value}
                     </dd>
                   </div>
