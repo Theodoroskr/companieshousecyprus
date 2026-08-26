@@ -36,6 +36,18 @@ const SOURCE_LABEL: Record<string, { name: string; description: string }> = {
   },
 };
 
+const SOURCE_STATUS_TOOLTIP: Record<SourceStatusKey, string> = {
+  checked_no_candidate:
+    "No entity record in this official source matched the screened company name or registration details above the configured threshold.",
+  checked_candidate:
+    "At least one entity record in this official source shares identifying features with the screened company and requires further verification.",
+  checked_confirmed:
+    "A matching identifier or analyst confirmation supports a direct entity match in this official source.",
+  stale: "The data for this source is older than the configured freshness threshold.",
+  unavailable: "This official source could not be reached at screening time.",
+  updating: "This source is currently being refreshed.",
+};
+
 /**
  * Customer-facing Sanctions Risk Snapshot.
  * Entity records only — no natural person, and no personal identifier, is rendered.
@@ -120,25 +132,37 @@ export function SanctionsSnapshotView({
               <th className="py-1">Result</th>
             </tr>
           </thead>
-          <tbody>
-            {snapshot.sources.map((s) => {
-              const label = SOURCE_LABEL[s.sourceCode] ?? {
-                name: s.sourceCode.replace(/_/g, " ").toUpperCase(),
-                description: "Official sanctions list screened for this report.",
-              };
-              return (
-                <tr key={s.sourceCode} className="border-b last:border-0">
-                  <td className="py-1">
-                    <p className="font-medium uppercase">{label.name}</p>
-                    <p className="text-xs text-muted-foreground">{label.description}</p>
-                  </td>
-                  <td className="py-1 align-top">
-                    <SourceStatusBadge source={sourceStatus(s, candidates)} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
+          <TooltipProvider delayDuration={150}>
+            <tbody>
+              {snapshot.sources.map((s) => {
+                const label = SOURCE_LABEL[s.sourceCode] ?? {
+                  name: s.sourceCode.replace(/_/g, " ").toUpperCase(),
+                  description: "Official sanctions list screened for this report.",
+                };
+                const result = sourceStatus(s, candidates);
+                return (
+                  <tr key={s.sourceCode} className="border-b last:border-0">
+                    <td className="py-1">
+                      <p className="font-medium uppercase">{label.name}</p>
+                      <p className="text-xs text-muted-foreground">{label.description}</p>
+                    </td>
+                    <td className="py-1 align-top">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-block">
+                            <SourceStatusBadge source={result} />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p>{SOURCE_STATUS_TOOLTIP[result]}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </TooltipProvider>
         </table>
         <p className="text-xs text-muted-foreground">
           Matching rules version {snapshot.rulesVersion} · Scope {snapshot.scopeVersion}
