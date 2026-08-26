@@ -236,21 +236,28 @@ export async function runScreening(
       sanctions_entry_id: string; source_code: string; identifier_type: string;
       identifier_value: string; issuing_country: string | null;
     };
+    // Entity-type safeguard: only records of the subject's own class (plus
+    // records whose class is uncertain, which can never auto-confirm) may
+    // ever become candidates. Individuals, vessels and aircraft can therefore
+    // not surface in a company screening.
+    const allowedEntryTypes = [expectedEntryType, "unknown"];
     const nameRpc = (await supabase.rpc("screening_name_candidates", {
       p_names: [...nameVariants],
       p_sources: sources,
-      p_entity_types: undefined,
+      p_entity_types: allowedEntryTypes,
       p_min_sim: config.thresholds.min_name_similarity,
       p_limit: config.thresholds.max_candidates,
     } as never)) as { data: NameHit[] | null; error: { message: string } | null };
     if (nameRpc.error) throw new Error(nameRpc.error.message);
-    const nameHits = nameRpc.data ?? [];
+    const nameHits = (nameRpc.data ?? []).filter((h) => allowedEntryTypes.includes(h.entity_type));
 
     // Candidate generation — reliable identifiers
     const identifiers: { kind: string; value: string; country?: string | undefined }[] = [];
     if (input.registrationNumber) identifiers.push({ kind: "registration_number", value: input.registrationNumber, country: input.jurisdiction ?? undefined });
     if (input.lei) identifiers.push({ kind: "lei", value: input.lei });
-    if (input.identificationNumber) {
+    // Personal identifiers (passport / national ID) are never processed in the
+    // entity-only customer workflow.
+    if (isPerson && input.identificationNumber) {
       identifiers.push({ kind: "passport", value: input.identificationNumber, country: input.country ?? undefined });
       identifiers.push({ kind: "national_id", value: input.identificationNumber, country: input.country ?? undefined });
     }
@@ -258,46 +265,63 @@ export async function runScreening(
       ? await supabase.rpc("screening_identifier_candidates", { p_identifiers: identifiers, p_sources: sources })
       : { data: [], error: null };
     if (idErr) throw new Error(idErr.message);
+    const typedIdHits = ((idHits ?? []) as IdHit[]).filter((h) =>
+      allowedEntryTypes.includes(((h as unknown as { entity_type?: string }).entity_type ?? "unknown")),
+    );
 
     const idHitMap = new Map<string, { identifier_type: string; identifier_value: string }>();
-    for (const hit of idHits ?? []) idHitMap.set(hit.sanctions_entry_id as string, { identifier_type: hit.identifier_type, identifier_value: hit.identifier_value });
+    for (const hit of typedIdHits) idHitMap.set(hit.sanctions_entry_id, { identifier_type: hit.identifier_type, identifier_value: hit.identifier_value });
 
     const candidateIds = new Set<string>();
-    for (const h of nameHits ?? []) candidateIds.add(h.sanctions_entry_id as string);
-    for (const h of idHits ?? []) candidateIds.add(h.sanctions_entry_id as string);
+    for (const h of nameHits) candidateIds.add(h.sanctions_entry_id);
+    for (const h of typedIdHits) candidateIds.add(h.sanctions_entry_id);
 
     // Fetch entry context for scoring
+    const personSelect = isPerson ? ", sanctions_person_details(date_of_birth, nationalities, citizenships)" : "";
     const entryRows = candidateIds.size
       ? await supabase
           .from("sanctions_entries")
-          .select("id, entity_type, primary_name, sanctions_programme, source_record_id, sanctions_sources(source_code, authority, information_url), sanctions_person_details(date_of_birth, nationalities, citizenships), sanctions_identifiers(identifier_type, identifier_value, issuing_country), sanctions_addresses(country, full_address)")
+          .select(
+            `id, entity_type, primary_name, sanctions_programme, source_record_id, sanctions_sources(source_code, authority, information_url)${personSelect}, sanctions_identifiers(identifier_type, identifier_value, issuing_country), sanctions_addresses(country, full_address)`,
+          )
           .in("id", [...candidateIds])
       : { data: [] };
-    const entryMap = new Map((entryRows.data ?? []).map((e) => [e.id as string, e]));
+    const entryMap = new Map((entryRows.data ?? []).map((e) => [(e as { id: string }).id, e as Record<string, unknown>]));
 
     const nameHitMap = new Map<string, { sim: number; matched_name: string; matched_alias_type: string; name_used: string }>();
-    for (const h of nameHits ?? []) nameHitMap.set(h.sanctions_entry_id as string, { sim: Number(h.name_similarity), matched_name: h.matched_name, matched_alias_type: h.matched_alias_type, name_used: h.name_used });
+    for (const h of nameHits) nameHitMap.set(h.sanctions_entry_id, { sim: Number(h.name_similarity), matched_name: h.matched_name, matched_alias_type: h.matched_alias_type, name_used: h.name_used });
 
     type CandidateInsert = Record<string, unknown> & { system_classification: SystemClassification };
     const inserts: CandidateInsert[] = [];
+    let uncertainTypeCount = 0;
 
     for (const entryId of candidateIds) {
       const entry = entryMap.get(entryId);
       if (!entry) continue;
+      const entryType = (entry["entity_type"] as string | null) ?? "unknown";
+      // Second, independent safeguard against a mis-scoped candidate.
+      if (entryType !== expectedEntryType && entryType !== "unknown") continue;
+      const uncertainType = entryType !== expectedEntryType;
+      if (uncertainType) uncertainTypeCount += 1;
       const nameHit = nameHitMap.get(entryId);
       const idHit = idHitMap.get(entryId);
-      const person = Array.isArray(entry.sanctions_person_details) ? entry.sanctions_person_details[0] : entry.sanctions_person_details;
-      const entryDobs = extractDates(person?.date_of_birth ?? null);
-      const entryNationalities = extractStrings([person?.nationalities ?? null, person?.citizenships ?? null]);
-      const entryCountries = (entry.sanctions_addresses as { country: string | null }[] | null)?.map((a) => a.country).filter(Boolean) ?? [];
-      const entryRegIds = ((entry.sanctions_identifiers as { identifier_type: string; identifier_value: string }[] | null) ?? [])
+      const personRaw = entry["sanctions_person_details"];
+      const person = (Array.isArray(personRaw) ? personRaw[0] : personRaw) as
+        | { date_of_birth?: unknown; nationalities?: unknown; citizenships?: unknown }
+        | null
+        | undefined;
+      const entryDobs = isPerson ? extractDates(person?.date_of_birth ?? null) : [];
+      const entryNationalities = isPerson ? extractStrings([person?.nationalities ?? null, person?.citizenships ?? null]) : [];
+      const entryCountries = (entry["sanctions_addresses"] as { country: string | null }[] | null)?.map((a) => a.country).filter(Boolean) ?? [];
+      const entryRegIds = ((entry["sanctions_identifiers"] as { identifier_type: string; identifier_value: string }[] | null) ?? [])
         .filter((i) => /reg|registration/i.test(i.identifier_type))
         .map((i) => i.identifier_value.replace(/[^A-Za-z0-9]/g, "").toUpperCase());
 
-      const expectedType = input.subjectType === "individual" ? "person" : input.subjectType === "entity" ? "entity" : input.subjectType === "vessel" ? "ship" : "aircraft";
-      const entityTypeMatch: boolean | null = entry.entity_type === "unknown" ? null : entry.entity_type === expectedType;
+      const expectedType = expectedEntryType;
+      const entityTypeMatch: boolean | null = uncertainType ? null : true;
 
-      const dobMatch: boolean | null = !input.dateOfBirth || !entryDobs.length ? null : entryDobs.some((d) => d === input.dateOfBirth);
+      const dobMatch: boolean | null = !isPerson || !input.dateOfBirth || !entryDobs.length ? null : entryDobs.some((d) => d === input.dateOfBirth);
+
       const nationalityMatch: boolean | null = !input.nationality || !entryNationalities.length ? null : entryNationalities.some((n) => countriesCompatible(n, input.nationality) === true);
       const jurisdictionMatch: boolean | null =
         input.subjectType !== "entity" || !input.jurisdiction
