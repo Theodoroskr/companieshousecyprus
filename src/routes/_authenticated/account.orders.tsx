@@ -264,6 +264,13 @@ function MyOrdersPage() {
                                 </Link>
                               </Button>
                             ) : null}
+                            {item.product_slug === "sanctions-risk-snapshot" && item.fulfilment_status === "delivered" ? (
+                              <Button asChild size="sm">
+                                <Link to="/account/screening/$itemId" params={{ itemId: item.id }}>
+                                  <FileText className="mr-1.5 size-4" /> View screening
+                                </Link>
+                              </Button>
+                            ) : null}
                             {(item.order_documents?.length ?? 0) > 0
                               ? [...(item.order_documents ?? [])]
                                   .sort((a, b) => a.created_at.localeCompare(b.created_at))

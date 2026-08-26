@@ -346,6 +346,14 @@ function AdminOrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
+                      {item.product_slug === "sanctions-risk-snapshot" && (
+                        <Button asChild size="sm" variant={item.fulfilment_status === "awaiting_review" ? "default" : "outline"}>
+                          <Link to="/admin/screening-report/$itemId" params={{ itemId: item.id }}>
+                            <FileSearch className="size-4" />{" "}
+                            {item.fulfilment_status === "awaiting_review" ? "Review screening" : "View screening"}
+                          </Link>
+                        </Button>
+                      )}
                       {item.a4a_kind && item.fulfilment_status === "awaiting_review" && (
                         <Button asChild size="sm">
                           <Link to="/admin/reports/$itemId" params={{ itemId: item.id }}>
