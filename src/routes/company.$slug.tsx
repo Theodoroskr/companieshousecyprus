@@ -693,7 +693,6 @@ function CompanyPage() {
               </div>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">{COMPANY_PAGE_COPY.supporting}</p>
-            <p className="mt-2 text-xs text-muted-foreground">{SCOPE_LIMITATION_NOTICE}</p>
           </section>
 
           <RelatedCompanies slug={company.slug} />
