@@ -3,7 +3,6 @@ import type { Database } from "@/integrations/supabase/types";
 import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecord } from "@/lib/sanctions/parse";
 import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
-import { parseOfac } from "@/lib/sanctions/parse-ofac";
 import { OfacStreamParser } from "@/lib/sanctions/parse-ofac-stream";
 import { StreamingSha256 } from "@/lib/sanctions/sha256-stream";
 
