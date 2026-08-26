@@ -82,9 +82,19 @@ export const SCREENING_STATUS: Record<ScreeningStatusKey, ScreeningStatusStyle> 
     leftBorder: "border-l-4 border-l-screening-strong",
   },
   confirmed_entity_match: {
-    label: "Confirmed direct entity match",
+    label: "Confirmed by analyst",
     explanation:
-      "A reliable matching identifier, or an authorised analyst's confirmation, supports an entity match in the official sources checked.",
+      "An authorised analyst verified the candidate against the official source and confirmed it is the same legal entity.",
+    icon: "octagon-alert",
+    text: "text-screening-confirmed",
+    bg: "bg-screening-confirmed-bg",
+    border: "border-screening-confirmed/40",
+    leftBorder: "border-l-4 border-l-screening-confirmed",
+  },
+  auto_confirmed_entity_match: {
+    label: "Auto-confirmed — identifier verified",
+    explanation:
+      "An official identifier published by the authority matches the screened company, with no conflicting attributes, so no analyst review is required.",
     icon: "octagon-alert",
     text: "text-screening-confirmed",
     bg: "bg-screening-confirmed-bg",
