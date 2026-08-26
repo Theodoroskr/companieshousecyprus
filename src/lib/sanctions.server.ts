@@ -644,7 +644,9 @@ export async function runOfacStreamingImport(
     let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
     const flush = async () => {
       if (batch.length === 0) return;
+      const flushStartedAt = Date.now();
       const { error } = await supabase.from("sanctions_staging").insert(batch as never);
+      perf.stagingMs += Date.now() - flushStartedAt;
       if (error) throw new Error(`Staging insert failed: ${error.message}`);
       batch = [];
     };
@@ -665,21 +667,29 @@ export async function runOfacStreamingImport(
     };
 
     const reader = response.body.getReader();
+    let chunkIndex = 0;
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
       if (!value || value.byteLength === 0) continue;
       fileSizeBytes += value.byteLength;
+      const hashStartedAt = Date.now();
       hasher.update(value);
+      perf.hashingMs += Date.now() - hashStartedAt;
       for (const record of parser.feed(decoder.decode(value, { stream: true }))) {
         await stageRecord(record);
       }
+      chunkIndex += 1;
+      if (chunkIndex % 16 === 0) sampleRss();
     }
     const tail = parser.finish();
     for (const record of tail.records) await stageRecord(record);
     await flush();
     const parseDurationMs = Date.now() - parseStartedAt;
+    perf.downloadMs = Date.now() - downloadStartedAt;
     const rssAfter = nodeRssMb();
+    perf.rssEndMb = rssAfter;
+    sampleRss();
 
     if (fileSizeBytes < adapter.minBytes) {
       await supabase.from("sanctions_staging").delete().eq("import_id", importId);
