@@ -17,6 +17,12 @@ import {
   type SystemClassification,
 } from "@/lib/sanctions/screening-rules";
 import { companyNameVariants, normalizeNameForms, personNameVariants } from "@/lib/sanctions/normalize";
+import {
+  CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+  EXCLUDED_SUBJECT_CATEGORIES,
+  SCREENING_SCOPE_VERSION,
+  type SubjectRole,
+} from "@/lib/sanctions/screening-scope";
 
 export const SCREENING_SOURCES = ["EU_FSF", "UN_CONSOLIDATED", "UKSL", "OFAC_SDN"] as const;
 export type ScreeningSource = (typeof SCREENING_SOURCES)[number];
@@ -35,7 +41,12 @@ export type ScreeningSubjectInput = {
   identificationNumber?: string | null;
   country?: string | null;
   companyId?: string | null;
+  /** Which part of the corporate scope this run covers. */
+  role?: SubjectRole;
+  /** Parent (direct company) run when this is a previous-name or shareholder run. */
+  parentRequestId?: string | null;
 };
+
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
