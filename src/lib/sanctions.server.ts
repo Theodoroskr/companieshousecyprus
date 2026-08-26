@@ -716,7 +716,10 @@ export async function runOfacStreamingImport(
           storage_path: lastSuccess.storage_path,
           record_count: lastSuccess.record_count,
           completed_at: new Date().toISOString(),
-        })
+          official_digest_sha256: officialDigest?.sha256Hex ?? null,
+          official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+          digest_mismatch: false,
+        } as never)
         .eq("id", importId);
       return {
         importId,
@@ -768,7 +771,10 @@ export async function runOfacStreamingImport(
         file_hash_sha256: fileHash,
         file_size_bytes: fileSizeBytes,
         storage_path: storagePath,
-      })
+        official_digest_sha256: officialDigest?.sha256Hex ?? null,
+        official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+        digest_mismatch: false,
+      } as never)
       .eq("id", importId);
 
     // 4. sanity checks before publishing -----------------------------------
@@ -822,6 +828,7 @@ export async function runOfacStreamingImport(
           finalHost,
           contentType,
           etag: etagHeader,
+          officialDigest: officialDigest?.sha256Hex ?? null,
           persons,
           entities,
           ships,
