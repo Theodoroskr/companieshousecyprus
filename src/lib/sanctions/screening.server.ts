@@ -362,7 +362,6 @@ export async function runScreening(
         source_code: (entry["sanctions_sources"] as { source_code: string } | null)?.source_code ?? "unknown",
         name_used: nameHit?.name_used ?? "(identifier)",
         matched_name: nameHit?.matched_name ?? (entry["primary_name"] as string),
-
         matched_alias_type: nameHit?.matched_alias_type ?? null,
         name_similarity: sim,
         identifier_match: Boolean(idHit),
@@ -372,11 +371,13 @@ export async function runScreening(
         address_match: addressMatch,
         entity_type_match: entityTypeMatch,
         corroborating_attributes: scored.corroborating,
-        conflicting_attributes: scored.conflicting,
+        conflicting_attributes: uncertainType
+          ? [...scored.conflicting, "record type uncertain — analyst review required"]
+          : scored.conflicting,
         score_contributions: scored.contributions,
         match_score: scored.score,
         match_level: scored.matchLevel,
-        system_classification: scored.classification,
+        system_classification: classification,
       });
     }
 
@@ -404,9 +405,14 @@ export async function runScreening(
         classifications,
         sources_unavailable: unavailable,
         rules_version: config.rulesVersion,
+        scope_version: SCREENING_SCOPE_VERSION,
+        entity_only: !CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+        allowed_record_types: allowedEntryTypes,
+        uncertain_type_candidates: uncertainTypeCount,
         source_import_ids: importIds,
       },
     });
+
 
     return { requestId, reference, outcome, candidateCount: top.length, status: "completed" };
   } catch (err) {
