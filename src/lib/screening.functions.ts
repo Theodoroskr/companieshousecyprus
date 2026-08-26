@@ -25,10 +25,10 @@ export const runScreeningTest = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ subject: subjectSchema, sources: sourcesSchema }).parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runScreening } = await import("@/lib/sanctions/screening.server");
-    return runScreening(supabaseAdmin, data.subject, data.sources, "admin_test", context.userId);
+    return runScreening(supabaseAdmin, { ...data.subject, previousNames: data.subject.previousNames ?? [], aliases: data.subject.aliases ?? [] }, data.sources, "admin_test", context.userId);
   });
 
 export const runCompanyScreening = createServerFn({ method: "POST" })
@@ -38,7 +38,7 @@ export const runCompanyScreening = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { screenCyprusCompany } = await import("@/lib/sanctions/screening.server");
     return screenCyprusCompany(supabaseAdmin, data.slug, data.sources, context.userId, data.includeConnectedPersons);
@@ -49,7 +49,7 @@ export const fetchScreeningResult = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ requestId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { getScreeningResult } = await import("@/lib/sanctions/screening.server");
     return getScreeningResult(supabaseAdmin, data.requestId);
@@ -66,7 +66,7 @@ export const submitAnalystDecision = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { recordAnalystDecision } = await import("@/lib/sanctions/screening.server");
     return recordAnalystDecision(supabaseAdmin, data.candidateId, data.decision, data.rationale, context.userId);
@@ -76,7 +76,7 @@ export const fetchScreeningConfig = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin.from("screening_rules_config").select("*").eq("key", "default").maybeSingle();
     return data;
@@ -92,7 +92,7 @@ export const updateScreeningConfig = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: existing } = await supabaseAdmin.from("screening_rules_config").select("rules_version").eq("key", "default").maybeSingle();
     const nextVersion = `rules-v${(Number(existing?.rules_version?.replace(/\D/g, "")) || 1) + 1}`;
@@ -109,7 +109,7 @@ export const searchRegisterForScreening = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ q: z.string().min(2) }).parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const pattern = `%${data.q.replace(/[%_]/g, "")}%`;
     const { data: rows, error } = await supabaseAdmin
