@@ -27,6 +27,8 @@ export interface SendTemplateEmailOptions {
   replyTo?: string
   /** Send an office copy to info@companieshousecyprus.com. Used for document-ready emails only. */
   sendOfficeCopy?: boolean
+  /** Additional copy (BCC-style) recipients, each receiving an identical copy. */
+  extraCopies?: string[]
 }
 
 /**
@@ -71,6 +73,11 @@ export async function sendTemplateEmail(
 
   const shouldCopyOffice = options.sendOfficeCopy === true
 
+  const copyTargets = [
+    ...(shouldCopyOffice ? [OFFICE_COPY] : []),
+    ...(options.extraCopies ?? []),
+  ]
+
   try {
     await sendLovableEmail(
       {
@@ -89,24 +96,25 @@ export async function sendTemplateEmail(
     )
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
-      if (shouldCopyOffice) {
-        await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+      for (const copyTo of copyTargets) {
+        await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
       }
       return { sent: false, reason: 'recipient_suppressed' }
     }
     throw error
   }
 
-  if (shouldCopyOffice) {
-    await sendOfficeCopy({ apiKey, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+  for (const copyTo of copyTargets) {
+    await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
   }
 
   return { sent: true }
 }
 
-/** Office copy of every outgoing email. Never throws — a failed copy must not break the send. */
+/** Copy of an outgoing email to an office/BCC address. Never throws — a failed copy must not break the send. */
 async function sendOfficeCopy(args: {
   apiKey: string
+  to: string
   subject: string
   html: string
   text: string
@@ -116,7 +124,7 @@ async function sendOfficeCopy(args: {
   try {
     await sendLovableEmail(
       {
-        to: OFFICE_COPY,
+        to: args.to,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
         subject: `[copy] ${args.subject}`,
@@ -124,11 +132,11 @@ async function sendOfficeCopy(args: {
         text: args.text,
         purpose: 'transactional',
         label: `${args.templateName}-copy`,
-        idempotency_key: args.idempotencyKey ? `${args.idempotencyKey}-copy` : crypto.randomUUID(),
+        idempotency_key: args.idempotencyKey ? `${args.idempotencyKey}-copy-${args.to}` : crypto.randomUUID(),
       },
       { apiKey: args.apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
   } catch (error) {
-    console.error('Office copy email failed', args.templateName, error)
+    console.error('Office copy email failed', args.templateName, args.to, error)
   }
 }
