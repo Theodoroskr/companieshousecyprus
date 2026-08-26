@@ -198,6 +198,8 @@ export async function runSanctionsImport(
   options: { sourceCode?: string; force?: boolean } = {},
 ): Promise<ImportOutcome> {
   const sourceCode = options.sourceCode ?? EU_SOURCE_CODE;
+  // OFAC's 126 MB feed always goes through the low-memory streaming worker.
+  if (sourceCode === OFAC_SOURCE_CODE) return runOfacStreamingImport({ force: options.force });
   const adapter = adapterFor(sourceCode);
   const supabase = adminClient();
   const startedAt = Date.now();
