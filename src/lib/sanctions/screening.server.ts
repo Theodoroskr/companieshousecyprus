@@ -428,75 +428,208 @@ export async function runScreening(
   }
 }
 
+export type EntityRunSummary = {
+  requestId: string;
+  reference: string;
+  role: SubjectRole;
+  subjectName: string;
+  outcome: string;
+  candidateCount: number;
+};
+
 export type CompanyScreeningResult = {
+  scopeVersion: string;
+  entityOnly: true;
   companyRequest: ScreeningRunResult;
-  personRequests: { requestId: string; reference: string; name: string; relationship: string; outcome: string }[];
+  runs: EntityRunSummary[];
+  previousNamesScreened: string[];
+  corporateShareholdersScreened: string[];
+  notScreened: { subject: string; category: string; reason: string }[];
+  overallOutcome: EntityScreeningOutcome;
+  individualsExcludedNotice: string;
   ownershipNote: string;
 };
 
+/**
+ * Entity-only screening of a Cyprus company.
+ *
+ * Screens, as separate runs: the current legal name, each previous legal name
+ * we hold, and each corporate shareholder whose legal-entity status is
+ * explicitly established. No natural person is screened.
+ */
 export async function screenCyprusCompany(
   supabase: AdminClient,
   slug: string,
   sources: string[],
   userId: string | null,
-  includeConnectedPersons = true,
+  options: {
+    previousNames?: string[];
+    corporateShareholders?: { name: string; registrationNumber?: string | null; jurisdiction?: string | null; legalEntityConfirmed: boolean }[];
+    context?: "admin_test" | "company_profile" | "snapshot" | "monitoring" | "api";
+  } = {},
 ): Promise<CompanyScreeningResult> {
   const { data: company, error } = await supabase
     .from("companies")
-    .select("slug, name, reg_number, district_en, locality, address_full")
+    .select("slug, name, reg_number, official_no, district_en, locality, address_full")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !company) throw new Error(`Company not found: ${slug}`);
 
+  const context = options.context ?? "company_profile";
+  const address = company.address_full ?? ([company.locality, company.district_en].filter(Boolean).join(", ") || null);
+  const registrationNumber = company.official_no ?? (company.reg_number != null ? String(company.reg_number) : null);
+
+  const runs: EntityRunSummary[] = [];
+  const notScreened: CompanyScreeningResult["notScreened"] = [];
+
+  // 1 — direct company screening
   const companyRequest = await runScreening(
     supabase,
     {
       subjectType: "entity",
       name: company.name,
       jurisdiction: "Cyprus",
-      registrationNumber: company.reg_number != null ? String(company.reg_number) : null,
-      address: company.address_full ?? ([company.locality, company.district_en].filter(Boolean).join(", ") || null),
+      registrationNumber,
+      address,
       companyId: company.slug,
+      role: "direct_company",
     },
     sources,
-    "company_profile",
+    context,
     userId,
   );
+  runs.push({
+    requestId: companyRequest.requestId,
+    reference: companyRequest.reference,
+    role: "direct_company",
+    subjectName: company.name,
+    outcome: companyRequest.outcome,
+    candidateCount: companyRequest.candidateCount,
+  });
 
-  const personRequests: CompanyScreeningResult["personRequests"] = [];
-  if (includeConnectedPersons) {
-    const { data: officials } = await supabase
-      .from("officials")
-      .select("person_name, position_en")
-      .eq("slug", slug)
-      .limit(50);
-    for (const official of officials ?? []) {
-      const role = (official.position_en ?? "official").toLowerCase();
-      const relationship = /director/.test(role) ? "director" : /secretary/.test(role) ? "secretary" : "official";
-      const result = await runScreening(
-        supabase,
-        { subjectType: "individual", name: official.person_name, companyId: company.slug },
-        sources,
-        "company_profile",
-        userId,
-      );
-      await supabase.from("screening_audit_log").insert({
-        screening_request_id: result.requestId,
-        event_type: "relationship_recorded",
-        actor: userId,
-        event_data: { company_slug: slug, relationship, screened_name: official.person_name },
-      });
-      personRequests.push({ requestId: result.requestId, reference: result.reference, name: official.person_name, relationship, outcome: result.outcome });
-    }
+  // 2 — previous legal names, screened separately
+  const previousNames = [...new Set((options.previousNames ?? []).map((n) => n.trim()).filter(Boolean))].filter(
+    (n) => n.toLowerCase() !== company.name.toLowerCase(),
+  );
+  for (const previousName of previousNames) {
+    const run = await runScreening(
+      supabase,
+      {
+        subjectType: "entity",
+        name: previousName,
+        jurisdiction: "Cyprus",
+        registrationNumber,
+        address,
+        companyId: company.slug,
+        role: "previous_name",
+        parentRequestId: companyRequest.requestId,
+      },
+      sources,
+      context,
+      userId,
+    );
+    runs.push({
+      requestId: run.requestId,
+      reference: run.reference,
+      role: "previous_name",
+      subjectName: previousName,
+      outcome: run.outcome,
+      candidateCount: run.candidateCount,
+    });
   }
 
+  // 3 — corporate shareholders, screened separately and only where their
+  // legal-entity status is reliably established.
+  const corporateShareholdersScreened: string[] = [];
+  for (const shareholder of options.corporateShareholders ?? []) {
+    if (!shareholder.legalEntityConfirmed) {
+      notScreened.push({
+        subject: shareholder.name,
+        category: "corporate_shareholder",
+        reason: "Legal-entity status could not be established reliably from the information available.",
+      });
+      continue;
+    }
+    const run = await runScreening(
+      supabase,
+      {
+        subjectType: "entity",
+        name: shareholder.name,
+        jurisdiction: shareholder.jurisdiction ?? null,
+        registrationNumber: shareholder.registrationNumber ?? null,
+        companyId: company.slug,
+        role: "corporate_shareholder",
+        parentRequestId: companyRequest.requestId,
+      },
+      sources,
+      context,
+      userId,
+    );
+    corporateShareholdersScreened.push(shareholder.name);
+    runs.push({
+      requestId: run.requestId,
+      reference: run.reference,
+      role: "corporate_shareholder",
+      subjectName: shareholder.name,
+      outcome: run.outcome,
+      candidateCount: run.candidateCount,
+    });
+  }
+
+  if (!(options.corporateShareholders ?? []).length) {
+    notScreened.push({
+      subject: "Corporate shareholders",
+      category: "corporate_shareholder",
+      reason: "Shareholder data is not available in our registry copy, so no corporate shareholder could be screened.",
+    });
+  }
+
+  await supabase.from("screening_audit_log").insert({
+    screening_request_id: companyRequest.requestId,
+    event_type: "entity_scope_recorded",
+    actor: userId,
+    event_data: {
+      scope_version: SCREENING_SCOPE_VERSION,
+      entity_only: true,
+      company_slug: slug,
+      registration_number: registrationNumber,
+      previous_names_screened: previousNames,
+      corporate_shareholders_screened: corporateShareholdersScreened,
+      not_screened: notScreened,
+      excluded_categories: [...EXCLUDED_SUBJECT_CATEGORIES],
+      connected_individual_screening_enabled: CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+    },
+  });
+
+  await supabase
+    .from("screening_requests")
+    .update({ not_screened: notScreened })
+    .eq("id", companyRequest.requestId);
+
   return {
+    scopeVersion: SCREENING_SCOPE_VERSION,
+    entityOnly: true,
     companyRequest,
-    personRequests,
+    runs,
+    previousNamesScreened: previousNames,
+    corporateShareholdersScreened,
+    notScreened,
+    overallOutcome: aggregateEntityOutcome(runs.map((r) => r.outcome), notScreened.length > 0),
+    individualsExcludedNotice: INDIVIDUALS_EXCLUDED_NOTICE,
     ownershipNote:
-      "Shareholder and beneficial-owner data is not available in the registry copy. Ownership/control exposure cannot be determined automatically and requires analyst review where a connected person is a potential match.",
+      "Ownership and control exposure cannot be determined automatically. Only the company, its previous names and available corporate shareholders were screened.",
   };
 }
+
+/** Map engine outcomes of every entity run onto the four permitted customer outcomes. */
+export function aggregateEntityOutcome(outcomes: string[], hasUnscreenedSubjects: boolean): EntityScreeningOutcome {
+  if (outcomes.includes("confirmed_match_identified")) return "confirmed_entity_match_identified";
+  if (outcomes.includes("potential_match_identified")) return "potential_entity_match_identified";
+  if (outcomes.includes("screening_incomplete") || outcomes.includes("source_unavailable")) return "screening_incomplete";
+  if (hasUnscreenedSubjects) return "screening_incomplete";
+  return "no_entity_matches_identified";
+}
+
 
 export async function getScreeningResult(supabase: AdminClient, requestId: string) {
   const { data: request, error } = await supabase.from("screening_requests").select("*").eq("id", requestId).single();
