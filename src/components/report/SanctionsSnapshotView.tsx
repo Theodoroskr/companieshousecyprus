@@ -152,8 +152,13 @@ export function SanctionsSnapshotView({
 function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidate; subjectName: string }) {
   const status = candidateStatus(candidate);
   const style = SCREENING_STATUS[status];
+  const noteAnchor = `authority-note-${candidate.sourceCode}-${candidate.officialRecordId ?? candidate.matchedName}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
+  const authorityLabel = candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase();
   return (
     <li className={`rounded-md border p-3 text-sm ${style.bg} ${style.leftBorder}`}>
+
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className={`font-semibold ${style.text}`}>{candidate.recordName}</p>
         <ScreeningStatusBadge status={status} className="bg-background" />
