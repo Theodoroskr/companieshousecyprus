@@ -8,6 +8,8 @@ export type OrderListItem = {
   status: string;
   created_at: string;
   total_cents: number;
+  charged_total_cents?: number | null;
+  charged_currency?: string | null;
   full_name?: string | null;
   email?: string | null;
   firm?: string | null;

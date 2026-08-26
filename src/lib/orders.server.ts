@@ -139,7 +139,7 @@ export async function placeOrder(input: PlaceOrderInput) {
 }
 
 const ORDER_COLUMNS =
-  "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, created_at, updated_at, due_date, delivered_at";
+  "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, created_at, updated_at, due_date, delivered_at";
 const ITEM_COLUMNS =
   "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size, order_documents(id, name, size_bytes, content_type, created_at, path)";
 
@@ -651,13 +651,60 @@ export async function startPayment(reference: string, token: string, origin: str
 
 const PAID_STATES = new Set(["completed", "authorised", "authorized"]);
 
+
+/**
+ * Store the amounts Stripe actually charged (net, tax, total) so every screen
+ * and email shows the exact figure that left the customer's card, even when
+ * Stripe's tax engine applies a different rate than our own VAT estimate.
+ */
+export async function recordChargedTotals(
+  orderId: string,
+  amounts: {
+    subtotalCents?: number | null;
+    taxCents?: number | null;
+    totalCents?: number | null;
+    currency?: string | null;
+  },
+) {
+  const supabase = ordersClient();
+  const patch: {
+    charged_subtotal_cents?: number;
+    charged_tax_cents?: number;
+    charged_total_cents?: number;
+    charged_currency?: string;
+  } = {};
+  if (typeof amounts.subtotalCents === "number") patch.charged_subtotal_cents = amounts.subtotalCents;
+  if (typeof amounts.taxCents === "number") patch.charged_tax_cents = amounts.taxCents;
+  if (typeof amounts.totalCents === "number") patch.charged_total_cents = amounts.totalCents;
+  if (amounts.currency) patch.charged_currency = amounts.currency.toLowerCase();
+  if (Object.keys(patch).length === 0) return { ok: false as const };
+  await supabase.from("orders").update(patch).eq("id", orderId);
+
+  return { ok: true as const };
+}
+
+/** Same as recordChargedTotals but keyed by the human order reference (webhook path). */
+export async function recordChargedTotalsByReference(
+  reference: string,
+  amounts: Parameters<typeof recordChargedTotals>[1],
+) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("reference", reference.trim().toUpperCase())
+    .maybeSingle();
+  if (!order) return { ok: false as const };
+  return recordChargedTotals(order.id, amounts);
+}
+
 /** Mark an order paid and auto-fulfil every API4ALL item on it. */
 export async function markOrderPaid(orderId: string) {
   const supabase = ordersClient();
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, reference, access_token, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, paid_at",
+      "id, status, reference, access_token, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, paid_at",
     )
     .eq("id", orderId)
     .maybeSingle();

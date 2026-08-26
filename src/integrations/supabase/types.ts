@@ -646,6 +646,10 @@ export type Database = {
       orders: {
         Row: {
           access_token: string
+          charged_currency: string | null
+          charged_subtotal_cents: number | null
+          charged_tax_cents: number | null
+          charged_total_cents: number | null
           checkout_url: string | null
           created_at: string
           delivered_at: string | null
@@ -673,6 +677,10 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          charged_currency?: string | null
+          charged_subtotal_cents?: number | null
+          charged_tax_cents?: number | null
+          charged_total_cents?: number | null
           checkout_url?: string | null
           created_at?: string
           delivered_at?: string | null
@@ -700,6 +708,10 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          charged_currency?: string | null
+          charged_subtotal_cents?: number | null
+          charged_tax_cents?: number | null
+          charged_total_cents?: number | null
           checkout_url?: string | null
           created_at?: string
           delivered_at?: string | null

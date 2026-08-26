@@ -107,7 +107,7 @@ function MyOrdersPage() {
 
   const profile = orders.find((order: OrderListItem) => order.full_name || order.firm || order.phone);
   const paidOrders = orders.filter((order: OrderListItem) => order.status !== "awaiting_payment" && order.status !== "cancelled");
-  const totalSpent = paidOrders.reduce((sum: number, order: OrderListItem) => sum + (order.total_cents ?? 0), 0);
+  const totalSpent = paidOrders.reduce((sum: number, order: OrderListItem) => sum + (order.charged_total_cents ?? order.total_cents ?? 0), 0);
   const documentsReady = orders.reduce(
     (sum: number, order: OrderListItem) =>
       sum + (order.order_items ?? []).filter((item) => item.fulfilment_status === "delivered").length,
@@ -225,7 +225,7 @@ function MyOrdersPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.tone}`}>{status.label}</span>
-                    <span className="text-sm font-semibold">{euros(order.total_cents)}</span>
+                    <span className="text-sm font-semibold">{euros(order.charged_total_cents ?? order.total_cents)}</span>
                   </div>
                 </div>
 

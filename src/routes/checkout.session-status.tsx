@@ -17,6 +17,20 @@ export const Route = createFileRoute('/checkout/session-status')({
         try {
           const stripe = createStripeClient(env);
           const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+          // Belt-and-braces with the webhook: record the charged amounts as soon
+          // as the customer lands back on the return page.
+          const reference = session.metadata?.['order_reference'];
+          if (reference && session.payment_status !== 'unpaid') {
+            const { recordChargedTotalsByReference } = await import('@/lib/orders.server');
+            await recordChargedTotalsByReference(reference, {
+              subtotalCents: session.amount_subtotal ?? null,
+              taxCents: session.total_details?.amount_tax ?? null,
+              totalCents: session.amount_total ?? null,
+              currency: session.currency ?? null,
+            });
+          }
+
           return Response.json({ status: session.payment_status });
         } catch (error) {
           return Response.json({ error: getStripeErrorMessage(error) }, { status: 500 });
