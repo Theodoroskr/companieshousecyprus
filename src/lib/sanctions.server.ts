@@ -286,6 +286,27 @@ export async function runSanctionsImport(
 
     const fileHash = await sha256Hex(bytes);
 
+    // Integrity gate: if the source published a SHA-256 digest and our
+    // downloaded bytes do not match, fail loudly — never publish.
+    const digestMismatch = digestMismatchReport(fileHash, officialDigest);
+    if (digestMismatch) {
+      await supabase
+        .from("sanctions_imports")
+        .update({
+          official_digest_sha256: officialDigest!.sha256Hex,
+          official_digest_header: `${officialDigest!.header}: ${officialDigest!.raw}`,
+          digest_mismatch: true,
+        } as never)
+        .eq("id", importId);
+      await failImport(supabase, importId, digestMismatch, {
+        stage: "digest",
+        expected: officialDigest!.sha256Hex,
+        actual: fileHash,
+        finalHost,
+      });
+      return { importId, status: "failed", message: digestMismatch };
+    }
+
     const { data: lastSuccess } = await supabase
       .from("sanctions_imports")
       .select("id, file_hash_sha256, record_count, storage_path")
@@ -308,7 +329,10 @@ export async function runSanctionsImport(
           storage_path: lastSuccess.storage_path,
           record_count: lastSuccess.record_count,
           completed_at: new Date().toISOString(),
-        })
+          official_digest_sha256: officialDigest?.sha256Hex ?? null,
+          official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+          digest_mismatch: false,
+        } as never)
         .eq("id", importId);
       return {
         importId,
