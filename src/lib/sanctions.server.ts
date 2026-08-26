@@ -1,11 +1,47 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecord } from "@/lib/sanctions/parse";
+import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
+export const UN_SOURCE_CODE = "UN_CONSOLIDATED";
 
-const MIN_FILE_BYTES = 1024 * 1024; // 1 MiB
+type SourceAdapter = {
+  validate: (xml: string) => { ok: boolean; reason?: string };
+  iterate: (xml: string) => Generator<SanctionsRecord>;
+  storagePrefix: string;
+  minBytes: number;
+  /** Extra pre-publication validation on the staged dataset. Returns an error message or null. */
+  sanity?: (stats: { persons: number; entities: number; parsed: number }) => string | null;
+};
+
+const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
+  [EU_SOURCE_CODE]: {
+    validate: looksLikeFsf11,
+    iterate: iterateEntities,
+    storagePrefix: "eu-fsf",
+    minBytes: 1024 * 1024,
+  },
+  [UN_SOURCE_CODE]: {
+    validate: looksLikeUnConsolidated,
+    iterate: iterateUnRecords,
+    storagePrefix: "un-consolidated",
+    minBytes: 100 * 1024,
+    sanity: ({ persons, entities }) => {
+      if (persons < 1) return "The staged UN dataset contains no individuals.";
+      if (entities < 1) return "The staged UN dataset contains no entities.";
+      return null;
+    },
+  },
+};
+
+function adapterFor(sourceCode: string): SourceAdapter {
+  const adapter = SOURCE_ADAPTERS[sourceCode];
+  if (!adapter) throw new Error(`No importer adapter for source ${sourceCode}`);
+  return adapter;
+}
+
 const MAX_RECORD_DROP = 0.2; // 20%
 const STAGING_BATCH = 400;
 
@@ -49,11 +85,11 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function storagePathFor(hash: string, when: Date) {
+function storagePathFor(prefix: string, hash: string, when: Date) {
   const y = when.getUTCFullYear();
   const m = String(when.getUTCMonth() + 1).padStart(2, "0");
   const d = String(when.getUTCDate()).padStart(2, "0");
-  return `eu-fsf/${y}/${m}/${d}/${when.getTime()}-${hash.slice(0, 16)}.xml`;
+  return `${prefix}/${y}/${m}/${d}/${when.getTime()}-${hash.slice(0, 16)}.xml`;
 }
 
 async function getSource(supabase: AnyClient, sourceCode: string) {
@@ -88,6 +124,9 @@ export type ImportOutcome = {
   addedCount?: number;
   modifiedCount?: number;
   removedCount?: number;
+  personCount?: number;
+  entityCount?: number;
+  failedRecordCount?: number;
   fileSizeBytes?: number;
   fileHash?: string;
   sourceLastModified?: string | null;
@@ -103,6 +142,7 @@ export async function runSanctionsImport(
   options: { sourceCode?: string; force?: boolean } = {},
 ): Promise<ImportOutcome> {
   const sourceCode = options.sourceCode ?? EU_SOURCE_CODE;
+  const adapter = adapterFor(sourceCode);
   const supabase = adminClient();
   const startedAt = Date.now();
 
@@ -120,7 +160,9 @@ export async function runSanctionsImport(
   let importId: string | null = null;
   try {
     const source = await getSource(supabase, sourceCode);
-    if (!source.is_active) {
+    // Inactive sources are skipped by the scheduler; an admin may still force
+    // a manual run (used for the initial connection test + first import).
+    if (!source.is_active && !options.force) {
       return { importId: null, status: "skipped", message: "Source is not active." };
     }
 
@@ -132,21 +174,28 @@ export async function runSanctionsImport(
     if (createError || !created) throw new Error(createError?.message ?? "Could not create import run");
     importId = created.id;
 
-    // 1. download -------------------------------------------------------
+    // 1. download (follows redirects; e.g. the UN stable URL 302s to a
+    // short-lived signed Azure Blob URL — we only record the final host in
+    // diagnostics, never as the configured source) ---------------------------
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
     const response = await fetch(source.source_url, {
+      redirect: "follow",
       headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
     });
+    const finalHost = response.url ? new URL(response.url).host : null;
     if (response.status !== 200) {
       const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
-      await failImport(supabase, importId, detail, { stage: "download", status: response.status });
+      await failImport(supabase, importId, detail, { stage: "download", status: response.status, finalHost });
       return { importId, status: "failed", message: detail };
     }
 
     const contentType = response.headers.get("content-type") ?? "";
-    if (!/xml/i.test(contentType)) {
-      const detail = `Unexpected content type from source: ${contentType || "(none)"}`;
-      await failImport(supabase, importId, detail, { stage: "download", contentType });
+    // Redirected/CDN destinations sometimes label XML as octet-stream; the
+    // structural XML validation below is the real gate. Only fail early on an
+    // obviously non-XML content type such as text/html.
+    if (contentType && !/xml|octet-stream|text\/plain/i.test(contentType)) {
+      const detail = `Unexpected content type from source: ${contentType}`;
+      await failImport(supabase, importId, detail, { stage: "download", contentType, finalHost });
       return { importId, status: "failed", message: detail };
     }
 
@@ -158,19 +207,19 @@ export async function runSanctionsImport(
       /filename="([^"]+)"/.exec(response.headers.get("content-disposition") ?? "")?.[1] ??
       `${sourceCode.toLowerCase()}-${retrievedAt.toISOString().slice(0, 10)}.xml`;
 
-    if (bytes.byteLength < MIN_FILE_BYTES) {
+    if (bytes.byteLength < adapter.minBytes) {
       const detail = `Source file is too small (${bytes.byteLength} bytes); refusing to import.`;
-      await failImport(supabase, importId, detail, { stage: "validate", size: bytes.byteLength });
+      await failImport(supabase, importId, detail, { stage: "validate", size: bytes.byteLength, finalHost });
       return { importId, status: "failed", message: detail };
     }
 
     // 2. validate -------------------------------------------------------
     await supabase.from("sanctions_imports").update({ status: "validating" }).eq("id", importId);
     const xml = new TextDecoder("utf-8").decode(bytes);
-    const structure = looksLikeFsf11(xml);
+    const structure = adapter.validate(xml);
     if (!structure.ok) {
       const detail = `Source file failed validation: ${structure.reason}`;
-      await failImport(supabase, importId, detail, { stage: "validate", reason: structure.reason });
+      await failImport(supabase, importId, detail, { stage: "validate", reason: structure.reason, finalHost });
       return { importId, status: "failed", message: detail };
     }
 
@@ -213,7 +262,7 @@ export async function runSanctionsImport(
     }
 
     // 3. archive the raw file privately ---------------------------------
-    const storagePath = storagePathFor(fileHash, retrievedAt);
+    const storagePath = storagePathFor(adapter.storagePrefix, fileHash, retrievedAt);
     const { error: uploadError } = await supabase.storage
       .from(SANCTIONS_BUCKET)
       .upload(storagePath, bytes, { contentType: "application/xml", upsert: true });
@@ -239,7 +288,10 @@ export async function runSanctionsImport(
     // 4. parse + stage ---------------------------------------------------
     const seen = new Set<string>();
     let parsed = 0;
+    let persons = 0;
+    let entities = 0;
     let duplicates = 0;
+    let failedRecords = 0;
     let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
 
     const flush = async () => {
@@ -249,13 +301,15 @@ export async function runSanctionsImport(
       batch = [];
     };
 
-    for (const record of iterateEntities(xml)) {
+    for (const record of adapter.iterate(xml)) {
       if (seen.has(record.source_record_id)) {
         duplicates += 1;
         continue;
       }
       seen.add(record.source_record_id);
       parsed += 1;
+      if (record.entity_type === "person") persons += 1;
+      else if (record.entity_type === "entity") entities += 1;
       batch.push({
         import_id: importId,
         source_record_id: record.source_record_id,
@@ -272,14 +326,26 @@ export async function runSanctionsImport(
     if (parsed === 0) {
       await supabase.from("sanctions_staging").delete().eq("import_id", importId);
       const detail = "Parsed zero records from the source file; keeping the previous dataset.";
-      await failImport(supabase, importId, detail, { stage: "sanity", parsed });
+      await failImport(supabase, importId, detail, { stage: "sanity", parsed, finalHost });
       return { importId, status: "failed", message: detail };
+    }
+    const sanityError = adapter.sanity?.({ persons, entities, parsed }) ?? null;
+    if (sanityError) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      await failImport(supabase, importId, `${sanityError} Keeping the previous dataset.`, {
+        stage: "sanity",
+        parsed,
+        persons,
+        entities,
+        finalHost,
+      });
+      return { importId, status: "failed", message: sanityError };
     }
     const previousCount = lastSuccess?.record_count ?? 0;
     if (previousCount > 0 && parsed < previousCount * (1 - MAX_RECORD_DROP)) {
       await supabase.from("sanctions_staging").delete().eq("import_id", importId);
       const detail = `Record count fell from ${previousCount} to ${parsed} (more than 20%); keeping the previous dataset.`;
-      await failImport(supabase, importId, detail, { stage: "sanity", parsed, previousCount });
+      await failImport(supabase, importId, detail, { stage: "sanity", parsed, previousCount, finalHost });
       return { importId, status: "failed", message: detail };
     }
 
@@ -300,6 +366,20 @@ export async function runSanctionsImport(
     }
 
     const result = Array.isArray(published) ? published[0] : published;
+    await supabase
+      .from("sanctions_imports")
+      .update({
+        diagnostic_details: {
+          finalHost,
+          contentType,
+          persons,
+          entities,
+          duplicatesIgnored: duplicates,
+          failedRecords,
+          parser: sourceCode === UN_SOURCE_CODE ? "un-consolidated" : "eu-fsf-1.1",
+        } as never,
+      })
+      .eq("id", importId);
     return {
       importId,
       status: "completed",
@@ -309,6 +389,9 @@ export async function runSanctionsImport(
       addedCount: result?.added ?? 0,
       modifiedCount: result?.modified ?? 0,
       removedCount: result?.removed ?? 0,
+      personCount: persons,
+      entityCount: entities,
+      failedRecordCount: failedRecords,
       fileSizeBytes: bytes.byteLength,
       fileHash,
       sourceLastModified,
@@ -338,7 +421,15 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
   const supabase = adminClient();
   const source = await getSource(supabase, sourceCode);
 
-  const [{ data: imports }, { count: activeCount }] = await Promise.all([
+  const [
+    { data: imports },
+    { count: activeCount },
+    { count: personCount },
+    { count: entityCount },
+    { count: aliasCount },
+    { count: identifierCount },
+    { count: addressCount },
+  ] = await Promise.all([
     supabase
       .from("sanctions_imports")
       .select(
@@ -352,6 +443,33 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
       .select("id", { count: "exact", head: true })
       .eq("source_id", source.id)
       .eq("is_active", true),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .eq("entity_type", "person"),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .eq("entity_type", "entity"),
+    supabase
+      .from("sanctions_aliases")
+      .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
+      .eq("sanctions_entries.source_id", source.id)
+      .eq("sanctions_entries.is_active", true),
+    supabase
+      .from("sanctions_identifiers")
+      .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
+      .eq("sanctions_entries.source_id", source.id)
+      .eq("sanctions_entries.is_active", true),
+    supabase
+      .from("sanctions_addresses")
+      .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
+      .eq("sanctions_entries.source_id", source.id)
+      .eq("sanctions_entries.is_active", true),
   ]);
 
   const history = imports ?? [];
@@ -406,13 +524,21 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
       authority: source.authority,
       jurisdiction: source.jurisdiction,
       format: `${source.format_name} ${source.format_version}`,
+      sourceUrl: source.source_url,
       informationUrl: source.information_url,
       updateFrequency: source.update_frequency,
       isActive: source.is_active,
+      lastConnectionTestAt: (source as Record<string, unknown>)["last_connection_test_at"] as string | null,
+      lastConnectionTestOk: (source as Record<string, unknown>)["last_connection_test_ok"] as boolean | null,
     },
     feedStatus,
     warnings,
     activeCount: activeCount ?? 0,
+    personCount: personCount ?? 0,
+    entityCount: entityCount ?? 0,
+    aliasCount: aliasCount ?? 0,
+    identifierCount: identifierCount ?? 0,
+    addressCount: addressCount ?? 0,
     lastAttempt,
     lastSuccess,
     lastSettled,
@@ -452,4 +578,94 @@ export async function createRawFileDownloadUrl(storagePath: string) {
   const { data, error } = await supabase.storage.from(SANCTIONS_BUCKET).createSignedUrl(storagePath, 300);
   if (error || !data?.signedUrl) throw new Error(error?.message ?? "Could not create download link");
   return { url: data.signedUrl };
+}
+
+/** Every configured sanctions source (admin source switcher). */
+export async function listSanctionsSources() {
+  const supabase = adminClient();
+  const { data, error } = await supabase
+    .from("sanctions_sources")
+    .select("source_code, source_name, authority, jurisdiction, is_active, source_url, information_url")
+    .order("source_code");
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+/** Active source codes for the scheduler (cron runs only active sources). */
+export async function listActiveSourceCodes(): Promise<string[]> {
+  const supabase = adminClient();
+  const { data, error } = await supabase.from("sanctions_sources").select("source_code").eq("is_active", true);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.source_code);
+}
+
+/**
+ * Connection test: GET the stable source URL, follow redirects and verify the
+ * destination responds with XML-ish content. Records the outcome on the
+ * source row without touching any dataset.
+ */
+export async function testSanctionsConnection(sourceCode: string) {
+  const supabase = adminClient();
+  const source = await getSource(supabase, sourceCode);
+  const startedAt = Date.now();
+  let ok = false;
+  let detail: string;
+  let status: number | null = null;
+  let contentType: string | null = null;
+  let finalHost: string | null = null;
+
+  try {
+    const response = await fetch(source.source_url, {
+      redirect: "follow",
+      headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
+    });
+    status = response.status;
+    finalHost = response.url ? new URL(response.url).host : null;
+    contentType = response.headers.get("content-type");
+    const sample = (await response.text()).slice(0, 4096);
+    if (status !== 200) {
+      detail = `HTTP ${status} ${response.statusText}`;
+    } else if (/^\s*</.test(sample) && !/^\s*<(!DOCTYPE\s+html|html)\b/i.test(sample)) {
+      ok = true;
+      detail = `OK — XML response from ${finalHost ?? "source"} (${Date.now() - startedAt} ms)`;
+    } else {
+      detail = "Response is not XML (possible HTML error page)";
+    }
+  } catch (error) {
+    detail = error instanceof Error ? error.message : "Connection failed";
+  }
+
+  await supabase
+    .from("sanctions_sources")
+    .update({
+      last_connection_test_at: new Date().toISOString(),
+      last_connection_test_ok: ok,
+    } as never)
+    .eq("id", source.id);
+
+  return { ok, detail, status, contentType, finalHost, durationMs: Date.now() - startedAt };
+}
+
+/** Activate or pause scheduled imports for a source (super-admin only). */
+export async function setSanctionsSourceActive(sourceCode: string, active: boolean) {
+  const supabase = adminClient();
+  const source = await getSource(supabase, sourceCode);
+  const { error } = await supabase.from("sanctions_sources").update({ is_active: active } as never).eq("id", source.id);
+  if (error) throw new Error(error.message);
+  return { ok: true, isActive: active };
+}
+
+/** Fetch one stored entry (raw JSONB record) for admin inspection. */
+export async function readSanctionsEntryRaw(sourceCode: string, sourceRecordId: string) {
+  const supabase = adminClient();
+  const source = await getSource(supabase, sourceCode);
+  const { data, error } = await supabase
+    .from("sanctions_entries")
+    .select("source_record_id, entity_type, primary_name, sanctions_programme, is_active, updated_at, raw_record")
+    .eq("source_id", source.id)
+    .eq("source_record_id", sourceRecordId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error(`No stored record ${sourceRecordId} for ${sourceCode}`);
+  return data;
 }

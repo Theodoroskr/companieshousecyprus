@@ -76,7 +76,7 @@ export function normalizeName(value: string): string {
   return latin.replace(/[^A-Z0-9]+/g, " ").trim();
 }
 
-function decodeEntities(value: string): string {
+export function decodeEntities(value: string): string {
   return value
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
@@ -97,7 +97,7 @@ export function parseAttributes(tag: string): Record<string, string> {
 }
 
 /** All opening tags of `name` inside `xml`, as attribute maps. */
-function collect(xml: string, name: string): Record<string, string>[] {
+export function collect(xml: string, name: string): Record<string, string>[] {
   const re = new RegExp(`<${name}\\b([^>]*)/?>`, "g");
   const out: Record<string, string>[] = [];
   let m: RegExpExecArray | null;
@@ -105,12 +105,12 @@ function collect(xml: string, name: string): Record<string, string>[] {
   return out;
 }
 
-function textOf(xml: string, name: string): string | null {
+export function textOf(xml: string, name: string): string | null {
   const m = new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)</${name}>`).exec(xml);
   return m ? decodeEntities(m[1] ?? "").trim() || null : null;
 }
 
-function blank(value: string | undefined | null): string | null {
+export function blank(value: string | undefined | null): string | null {
   const trimmed = (value ?? "").trim();
   return trimmed.length ? trimmed : null;
 }

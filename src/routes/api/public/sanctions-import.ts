@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Scheduler-only endpoint: refreshes the EU Consolidated Financial Sanctions
- * List. Callers must present either the platform cron secret (Authorization:
- * Bearer …) or the project key in the `apikey` header, matching the pattern
- * used by the other scheduled jobs.
+ * Scheduler-only endpoint: refreshes every active sanctions source
+ * (EU FSF, UN Consolidated List, …). Callers must present either the
+ * platform cron secret (Authorization: Bearer …) or the project key in the
+ * `apikey` header, matching the pattern used by the other scheduled jobs.
  */
 function schedulerKeyMatches(request: Request): boolean {
   const expected = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
@@ -20,11 +20,18 @@ async function run(request: Request) {
     if (unauthorized) return unauthorized;
   }
 
-  const { runSanctionsImport } = await import("@/lib/sanctions.server");
+  const { listActiveSourceCodes, runSanctionsImport } = await import("@/lib/sanctions.server");
   try {
-    const result = await runSanctionsImport();
-    return Response.json(result, {
-      status: result.status === "failed" ? 500 : 200,
+    const sources = await listActiveSourceCodes();
+    const results: Record<string, unknown> = {};
+    let anyFailed = false;
+    for (const sourceCode of sources) {
+      const result = await runSanctionsImport({ sourceCode });
+      results[sourceCode] = result;
+      if (result.status === "failed") anyFailed = true;
+    }
+    return Response.json(results, {
+      status: anyFailed ? 500 : 200,
       headers: { "cache-control": "no-store" },
     });
   } catch (error) {

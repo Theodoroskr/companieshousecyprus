@@ -5,17 +5,22 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   getSanctionsChanges,
   getSanctionsDashboard,
+  getSanctionsEntryRaw,
   getSanctionsRawFileUrl,
+  listSanctionsSourcesFn,
   runSanctionsImportNow,
+  setSanctionsSourceActiveFn,
+  testSanctionsConnectionNow,
 } from "@/lib/sanctions.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/sanctions-data")({
   head: () => ({
     meta: [
-      { title: "EU sanctions data — Companies House Cyprus admin" },
+      { title: "Sanctions data — Companies House Cyprus admin" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -56,12 +61,21 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 
 function SanctionsDataPage() {
   const queryClient = useQueryClient();
+  const [sourceCode, setSourceCode] = useState<string | null>(null);
   const [changesFor, setChangesFor] = useState<string | null>(null);
   const [errorFor, setErrorFor] = useState<string | null>(null);
+  const [inspectId, setInspectId] = useState("");
+
+  const sources = useQuery({
+    queryKey: ["admin", "sanctions-sources"],
+    queryFn: () => listSanctionsSourcesFn(),
+  });
+
+  const selectedSource = sourceCode ?? sources.data?.[0]?.source_code ?? "EU_FSF";
 
   const dashboard = useQuery({
-    queryKey: ["admin", "sanctions-dashboard"],
-    queryFn: () => getSanctionsDashboard(),
+    queryKey: ["admin", "sanctions-dashboard", selectedSource],
+    queryFn: () => getSanctionsDashboard({ data: { sourceCode: selectedSource } }),
     refetchInterval: 60_000,
   });
 
@@ -71,8 +85,13 @@ function SanctionsDataPage() {
     enabled: Boolean(changesFor),
   });
 
+  const invalidate = () => {
+    void queryClient.invalidateQueries({ queryKey: ["admin", "sanctions-dashboard", selectedSource] });
+    void queryClient.invalidateQueries({ queryKey: ["admin", "sanctions-sources"] });
+  };
+
   const runNow = useMutation({
-    mutationFn: () => runSanctionsImportNow(),
+    mutationFn: () => runSanctionsImportNow({ data: { sourceCode: selectedSource, force: true } }),
     onSuccess: (result) => {
       if (result.status === "failed") toast.error(result.message);
       else if (result.status === "skipped") toast.info(result.message);
@@ -81,15 +100,40 @@ function SanctionsDataPage() {
         toast.success(
           `Import completed: ${result.recordCount ?? 0} active records (+${result.addedCount ?? 0} / ~${result.modifiedCount ?? 0} / -${result.removedCount ?? 0}).`,
         );
-      void queryClient.invalidateQueries({ queryKey: ["admin", "sanctions-dashboard"] });
+      invalidate();
     },
     onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Import failed"),
+  });
+
+  const testConnection = useMutation({
+    mutationFn: () => testSanctionsConnectionNow({ data: { sourceCode: selectedSource } }),
+    onSuccess: (result) => {
+      if (result.ok) toast.success(result.detail);
+      else toast.error(result.detail);
+      invalidate();
+    },
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Connection test failed"),
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: (active: boolean) => setSanctionsSourceActiveFn({ data: { sourceCode: selectedSource, active } }),
+    onSuccess: (result) => {
+      toast.success(result.isActive ? "Scheduled imports activated." : "Scheduled imports paused.");
+      invalidate();
+    },
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Could not update source"),
   });
 
   const download = useMutation({
     mutationFn: (storagePath: string) => getSanctionsRawFileUrl({ data: { storagePath } }),
     onSuccess: ({ url }) => window.open(url, "_blank", "noopener"),
     onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Could not create link"),
+  });
+
+  const inspect = useMutation({
+    mutationFn: (recordId: string) =>
+      getSanctionsEntryRaw({ data: { sourceCode: selectedSource, sourceRecordId: recordId.trim() } }),
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Record not found"),
   });
 
   const data = dashboard.data;
@@ -100,15 +144,22 @@ function SanctionsDataPage() {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">EU sanctions data</h1>
+          <h1 className="text-2xl font-semibold">Sanctions data</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ingestion and monitoring of the official EU Consolidated Financial Sanctions List. Not yet exposed to
+            Ingestion and monitoring of official sanctions lists (EU, UN Security Council). Not yet exposed to
             customers.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => runNow.mutate()} disabled={runNow.isPending}>
-            {runNow.isPending ? "Running…" : "Run update now"}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => testConnection.mutate()}
+            disabled={testConnection.isPending || !data}
+          >
+            {testConnection.isPending ? "Testing…" : "Test connection"}
+          </Button>
+          <Button onClick={() => runNow.mutate()} disabled={runNow.isPending || !data}>
+            {runNow.isPending ? "Running…" : "Run import now"}
           </Button>
           {data?.source.informationUrl ? (
             <Button variant="outline" asChild>
@@ -120,6 +171,30 @@ function SanctionsDataPage() {
         </div>
       </header>
 
+      {sources.data && sources.data.length > 1 ? (
+        <nav className="flex flex-wrap gap-2">
+          {sources.data.map((source) => (
+            <button
+              key={source.source_code}
+              type="button"
+              onClick={() => {
+                setSourceCode(source.source_code);
+                setChangesFor(null);
+                setErrorFor(null);
+              }}
+              className={`rounded-full border px-4 py-1.5 text-sm transition ${
+                selectedSource === source.source_code
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "bg-background hover:bg-muted"
+              }`}
+            >
+              {source.source_name}
+              {!source.is_active ? <span className="ml-1 opacity-70">(inactive)</span> : null}
+            </button>
+          ))}
+        </nav>
+      ) : null}
+
       {dashboard.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
       {dashboard.error ? (
         <p className="text-sm text-red-600">
@@ -130,24 +205,34 @@ function SanctionsDataPage() {
       {data ? (
         <>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
               <CardTitle className="text-base">
                 {data.source.name}
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
                   {data.source.authority} · {data.source.jurisdiction} · {data.source.format}
                 </span>
               </CardTitle>
-              <Badge
-                className={
-                  data.feedStatus === "healthy"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : data.feedStatus === "warning"
-                      ? "bg-amber-100 text-amber-900"
-                      : "bg-red-100 text-red-800"
-                }
-              >
-                {data.feedStatus === "healthy" ? "Healthy" : data.feedStatus === "warning" ? "Warning" : "Failed"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={
+                    data.feedStatus === "healthy"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : data.feedStatus === "warning"
+                        ? "bg-amber-100 text-amber-900"
+                        : "bg-red-100 text-red-800"
+                  }
+                >
+                  {data.feedStatus === "healthy" ? "Healthy" : data.feedStatus === "warning" ? "Warning" : "Failed"}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant={data.source.isActive ? "outline" : "default"}
+                  disabled={toggleActive.isPending}
+                  onClick={() => toggleActive.mutate(!data.source.isActive)}
+                >
+                  {data.source.isActive ? "Pause scheduled imports" : "Activate scheduled imports"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {data.warnings.length > 0 ? (
@@ -160,6 +245,11 @@ function SanctionsDataPage() {
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Stat label="Active records" value={data.activeCount.toLocaleString("en-GB")} />
+                <Stat label="Individuals" value={data.personCount.toLocaleString("en-GB")} />
+                <Stat label="Entities" value={data.entityCount.toLocaleString("en-GB")} />
+                <Stat label="Aliases" value={data.aliasCount.toLocaleString("en-GB")} />
+                <Stat label="Identifiers" value={data.identifierCount.toLocaleString("en-GB")} />
+                <Stat label="Addresses" value={data.addressCount.toLocaleString("en-GB")} />
                 <Stat label="Last attempted update" value={fmt(data.lastAttempt?.started_at)} />
                 <Stat label="Last successful update" value={fmt(data.lastSettled?.completed_at)} />
                 <Stat label="Next scheduled update" value={fmt(data.nextScheduledAt)} />
@@ -170,12 +260,49 @@ function SanctionsDataPage() {
                   label="Changes (last successful)"
                   value={`+${data.lastSuccess?.added_count ?? 0} / ~${data.lastSuccess?.modified_count ?? 0} / -${data.lastSuccess?.removed_count ?? 0}`}
                 />
+                <Stat
+                  label="Last connection test"
+                  value={
+                    data.source.lastConnectionTestAt
+                      ? `${fmt(data.source.lastConnectionTestAt)} ${data.source.lastConnectionTestOk ? "✓" : "✗"}`
+                      : "—"
+                  }
+                />
               </div>
+              <Stat label="Stable source URL" value={<code className="text-xs">{data.source.sourceUrl}</code>} />
               <Stat label="File hash (SHA-256)" value={<code className="text-xs">{latest?.file_hash_sha256 ?? "—"}</code>} />
               {data.lastAttempt?.error_message ? (
                 <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
                   Latest error: {data.lastAttempt.error_message}
                 </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Inspect a stored record</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder={selectedSource === "UN_CONSOLIDATED" ? "e.g. QDi.001" : "e.g. 10038"}
+                  value={inspectId}
+                  onChange={(event) => setInspectId(event.target.value)}
+                  className="max-w-xs"
+                />
+                <Button
+                  variant="outline"
+                  disabled={inspect.isPending || !inspectId.trim()}
+                  onClick={() => inspect.mutate(inspectId)}
+                >
+                  {inspect.isPending ? "Loading…" : "Inspect raw record"}
+                </Button>
+              </div>
+              {inspect.data ? (
+                <pre className="max-h-96 overflow-auto rounded-md bg-muted p-3 text-xs">
+                  {JSON.stringify(inspect.data, null, 2)}
+                </pre>
               ) : null}
             </CardContent>
           </Card>
