@@ -2,6 +2,7 @@ import type { SanctionsSnapshot, SnapshotCandidate } from "@/lib/sanctions/snaps
 import { SUBJECT_ROLE_LABEL } from "@/lib/sanctions/screening-scope";
 import { formatDate } from "@/lib/format";
 import { describeMeasure } from "@/lib/sanctions/measures";
+import { assessConfidence } from "@/lib/sanctions/confidence";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   SCREENING_STATUS,
@@ -64,7 +65,12 @@ export function SanctionsSnapshotView({
   const hasStrongCandidate = candidates.some((c) => candidateStatus(c) === "strong_entity_match");
   const analystReviewPending =
     snapshot.outcome !== "confirmed_entity_match_identified" &&
-    candidates.some((c) => !c.analystDecision && c.classification !== "rejected");
+    candidates.some(
+      (c) =>
+        !c.analystDecision &&
+        c.classification !== "rejected" &&
+        candidateStatus(c) !== "auto_confirmed_entity_match",
+    );
 
   const status = statusForOutcome(snapshot.outcome, { hasStrongCandidate });
   const style = SCREENING_STATUS[status];
@@ -219,6 +225,10 @@ function CandidateCard({
 }) {
   const status = candidateStatus(candidate);
   const style = SCREENING_STATUS[status];
+  const reviewPending =
+    !candidate.analystDecision &&
+    status !== "auto_confirmed_entity_match" &&
+    status !== "reviewed_not_confirmed";
   const availability =
     candidate.measuresAvailability ??
     (candidate.measures?.length || candidate.measuresNote || candidate.lastAmendedDate
@@ -234,8 +244,14 @@ function CandidateCard({
     <li className={`rounded-md border p-3 text-sm ${style.bg} ${style.leftBorder}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className={`font-semibold ${style.text}`}>{candidate.recordName}</p>
-        <ScreeningStatusBadge status={status} className="bg-background" />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <ScreeningStatusBadge status={status} className="bg-background" />
+          {reviewPending ? (
+            <ScreeningStatusBadge status="analyst_review_pending" className="bg-background" />
+          ) : null}
+        </div>
       </div>
+      <ConfidencePanel candidate={candidate} />
       <p className="mt-1 text-sm text-foreground">
         Relationship: name screened “{candidate.nameUsed}” for {subjectName} matched the listed
         record “{candidate.matchedName}”.
@@ -331,6 +347,11 @@ function CandidateCard({
             ? ` · ${formatDate(candidate.analystDecision.reviewedAt)}`
             : ""}
         </p>
+      ) : status === "auto_confirmed_entity_match" ? (
+        <p className="mt-1 text-xs text-foreground/80">
+          Identity was auto-confirmed on a verified official identifier; no analyst review is
+          required.
+        </p>
       ) : (
         <p className="mt-1 text-xs text-foreground/80">
           Identity determination is pending analyst review.
@@ -344,10 +365,68 @@ function CandidateCard({
   );
 }
 
+function ConfidencePanel({ candidate }: { candidate: SnapshotCandidate }) {
+  const assessment = assessConfidence({
+    identifierMatch: candidate.identifierMatch,
+    exactName: candidate.nameSimilarity != null && candidate.nameSimilarity >= 0.999,
+    matching: candidate.matching,
+    conflicting: candidate.conflicting,
+    analystDecision: candidate.analystDecision?.decision ?? null,
+  });
+  const tone =
+    assessment.band === "high"
+      ? "text-screening-confirmed"
+      : assessment.band === "moderate"
+        ? "text-screening-strong"
+        : assessment.band === "low"
+          ? "text-screening-potential"
+          : "text-screening-nomatch";
+  return (
+    <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Match confidence
+        </p>
+        <span className={`text-xs font-semibold ${tone}`}>{assessment.label}</span>
+      </div>
+      <p className="mt-1 text-xs text-foreground/90">{assessment.summary}</p>
+      {assessment.reasons.length ? (
+        <>
+          <p className="mt-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Why this is considered likely
+          </p>
+          <ul className="mt-0.5 list-disc pl-5 text-xs text-foreground/90">
+            {assessment.reasons.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {assessment.caveats.length ? (
+        <>
+          <p className="mt-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Why this remains uncertain
+          </p>
+          <ul className="mt-0.5 list-disc pl-5 text-xs text-foreground/90">
+            {assessment.caveats.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
+        Confidence is expressed in plain language from published identifiers and attributes; no
+        internal scoring is disclosed.
+      </p>
+    </div>
+  );
+}
+
 function candidateStatus(c: SnapshotCandidate): ScreeningStatusKey {
   return statusForClassification(c.classification, c.analystDecision?.decision, {
     exactName: c.nameSimilarity != null && c.nameSimilarity >= 0.999,
     hasConflicts: c.conflicting.length > 0,
+    identifierMatch: c.identifierMatch,
   });
 }
 

@@ -17,6 +17,7 @@ export type ScreeningStatusKey =
   | "potential_entity_match"
   | "strong_entity_match"
   | "confirmed_entity_match"
+  | "auto_confirmed_entity_match"
   | "screening_incomplete"
   | "source_unavailable"
   | "processing"
@@ -81,9 +82,19 @@ export const SCREENING_STATUS: Record<ScreeningStatusKey, ScreeningStatusStyle> 
     leftBorder: "border-l-4 border-l-screening-strong",
   },
   confirmed_entity_match: {
-    label: "Confirmed direct entity match",
+    label: "Confirmed by analyst",
     explanation:
-      "A reliable matching identifier, or an authorised analyst's confirmation, supports an entity match in the official sources checked.",
+      "An authorised analyst verified the candidate against the official source and confirmed it is the same legal entity.",
+    icon: "octagon-alert",
+    text: "text-screening-confirmed",
+    bg: "bg-screening-confirmed-bg",
+    border: "border-screening-confirmed/40",
+    leftBorder: "border-l-4 border-l-screening-confirmed",
+  },
+  auto_confirmed_entity_match: {
+    label: "Auto-confirmed — identifier verified",
+    explanation:
+      "An official identifier published by the authority matches the screened company, with no conflicting attributes, so no analyst review is required.",
     icon: "octagon-alert",
     text: "text-screening-confirmed",
     bg: "bg-screening-confirmed-bg",
@@ -128,8 +139,9 @@ export const SCREENING_STATUS: Record<ScreeningStatusKey, ScreeningStatusStyle> 
     leftBorder: "border-l-4 border-l-screening-review",
   },
   reviewed_not_confirmed: {
-    label: "Candidate reviewed — identity not confirmed",
-    explanation: "An analyst reviewed the candidate and could not confirm that it is the same legal entity.",
+    label: "Not a match — analyst reviewed",
+    explanation:
+      "An analyst reviewed the candidate against the official source and determined it is not the screened company.",
     icon: "circle-check",
     text: "text-screening-nomatch",
     bg: "bg-screening-nomatch-bg",
@@ -176,10 +188,14 @@ export const SOURCE_STATUS: Record<SourceStatusKey, { label: string; status: Scr
 export function statusForClassification(
   classification: string,
   analystDecision?: string | null,
-  signals?: { exactName?: boolean; hasConflicts?: boolean },
+  signals?: { exactName?: boolean; hasConflicts?: boolean; identifierMatch?: boolean },
 ): ScreeningStatusKey {
   if (analystDecision === "confirmed_match") return "confirmed_entity_match";
   if (analystDecision === "false_positive") return "reviewed_not_confirmed";
+  // Auto-confirmation: an official identifier matches and nothing conflicts,
+  // so no analyst determination is required.
+  if (signals?.identifierMatch && !signals.hasConflicts && classification !== "rejected")
+    return "auto_confirmed_entity_match";
   if (classification === "strong_candidate") return "strong_entity_match";
   if (
     signals?.exactName &&
