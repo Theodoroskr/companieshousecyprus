@@ -224,7 +224,11 @@ function OrderPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold">{euros(item.total_cents)}</p>
-                  <p className="text-xs capitalize text-muted-foreground">{item.fulfilment_status}</p>
+                  {order.status === "paid" && (
+                    <p className="text-xs text-muted-foreground">
+                      {FULFILMENT_LABELS[item.fulfilment_status] ?? item.fulfilment_status.replace(/_/g, " ")}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -240,11 +244,12 @@ function OrderPage() {
                   </span>
                 </div>
               )}
-              {item.fulfilment_status === "awaiting_review" && (
+              {order.status === "paid" && item.fulfilment_status === "awaiting_review" && (
                 <p className="mt-3 rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
                   The report has arrived and is being checked by our analysts before release.
                 </p>
               )}
+
               {(item.order_documents?.length ?? 0) > 0 && (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   {[...(item.order_documents ?? [])]
