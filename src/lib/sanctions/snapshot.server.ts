@@ -21,6 +21,7 @@ import {
   getScreeningResult,
 } from "@/lib/sanctions/screening.server";
 import type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
+import { buildCandidateAudit, identifierLabel, type MatchedIdentifier } from "@/lib/sanctions/audit-trail";
 import {
   extractMeasures,
   extractMeasuresNote,
@@ -52,13 +53,49 @@ export async function buildSanctionsSnapshot(
     context: "snapshot",
   });
 
+  const screenedRegNumber =
+    company.data.official_no ??
+    (company.data.reg_number != null ? String(company.data.reg_number) : null);
+  const normalisedReg = screenedRegNumber?.replace(/[^A-Za-z0-9]/g, "").toUpperCase() ?? null;
+
   const runs: SnapshotRun[] = [];
   for (const run of screening.runs) {
     const detail = await getScreeningResult(supabase, run.requestId);
     const candidates = detail.candidates
       // Entity-type safeguard, enforced again at presentation time.
       .filter((c) => CUSTOMER_VISIBLE_RECORD_TYPES.has((c.entity_type as string) ?? "unknown"))
-      .map((c): SnapshotCandidate => ({
+      .map((c): SnapshotCandidate => {
+        const recordIdentifiers =
+          ((c as {
+            record_identifiers?: {
+              identifier_type: string;
+              identifier_value: string;
+              issuing_country: string | null;
+            }[] | null;
+          }).record_identifiers ?? []);
+        const matchedIdentifiers: MatchedIdentifier[] = c.identifier_match
+          ? recordIdentifiers
+              .filter(
+                (id) =>
+                  !normalisedReg ||
+                  id.identifier_value.replace(/[^A-Za-z0-9]/g, "").toUpperCase() === normalisedReg,
+              )
+              .map((id) => ({
+                type: id.identifier_type,
+                label: identifierLabel(id.identifier_type),
+                value: id.identifier_value,
+                issuer: id.issuing_country ?? null,
+              }))
+          : [];
+        const analystDecision = c.decision
+          ? {
+              decision: c.decision.decision as string,
+              rationale: c.decision.rationale as string,
+              reviewedAt: (c.decision.reviewed_at as string) ?? null,
+              decisionSource: (c.decision.decision_source as string) ?? null,
+            }
+          : null;
+        return {
         sourceCode: c.source_code as string,
         authority: c.authority,
         officialRecordId: c.official_record_id,
@@ -80,15 +117,20 @@ export async function buildSanctionsSnapshot(
         matching: (c.corroborating as string[] | null) ?? [],
         conflicting: (c.conflicting as string[] | null) ?? [],
         classification: c.system_classification as string,
-        analystDecision: c.decision
-          ? {
-              decision: c.decision.decision as string,
-              rationale: c.decision.rationale as string,
-              reviewedAt: (c.decision.reviewed_at as string) ?? null,
-              decisionSource: (c.decision.decision_source as string) ?? null,
-            }
-          : null,
-      }));
+        analystDecision,
+        audit: buildCandidateAudit({
+          nameUsed: c.name_used as string,
+          matchedName: c.matched_name as string,
+          nameSimilarity: c.name_similarity as number | null,
+          identifierMatch: Boolean(c.identifier_match),
+          matching: (c.corroborating as string[] | null) ?? [],
+          conflicting: (c.conflicting as string[] | null) ?? [],
+          classification: c.system_classification as string,
+          matchedIdentifiers,
+          analystDecision,
+        }),
+        };
+      });
     runs.push({
       reference: run.reference,
       role: run.role,
