@@ -728,6 +728,10 @@ export async function getScreeningResult(supabase: AdminClient, requestId: strin
         matched_alias_type: c.matched_alias_type,
         name_similarity: c.name_similarity,
         identifier_match: c.identifier_match,
+        record_identifiers:
+          (entry?.["sanctions_identifiers"] as
+            | { identifier_type: string; identifier_value: string; issuing_country: string | null }[]
+            | null) ?? [],
         corroborating: c.corroborating_attributes,
         conflicting: c.conflicting_attributes,
         contributions: c.score_contributions,
