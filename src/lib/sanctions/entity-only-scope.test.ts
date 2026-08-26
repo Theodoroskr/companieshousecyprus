@@ -87,7 +87,7 @@ describe("Sanctions Risk Snapshot product", () => {
 
   it("states the entity-only limitation and never claims connected persons are checked", () => {
     const copy = product.description.join(" ");
-    expect(copy).toContain("does not screen directors");
+    expect(copy).toContain("Legal entities only. Directors, individual shareholders and other natural persons are not screened in this version.");
     expect(copy.toLowerCase()).not.toContain("connected person");
     expect(copy).toContain("previous names and available corporate shareholders");
   });
