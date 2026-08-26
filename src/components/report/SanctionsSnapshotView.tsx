@@ -1,10 +1,23 @@
-import type { SanctionsSnapshot } from "@/lib/sanctions/snapshot";
+import type { SanctionsSnapshot, SnapshotCandidate } from "@/lib/sanctions/snapshot";
 import { SUBJECT_ROLE_LABEL } from "@/lib/sanctions/screening-scope";
 import { formatDate } from "@/lib/format";
+import {
+  SCREENING_STATUS,
+  statusForClassification,
+  statusForOutcome,
+  type ScreeningStatusKey,
+  type SourceStatusKey,
+} from "@/lib/sanctions/status-system";
+import {
+  ScreeningStatusBadge,
+  ScreeningStatusBanner,
+  SourceStatusBadge,
+} from "@/components/screening/ScreeningStatus";
 
 /**
  * Customer-facing Sanctions Risk Snapshot.
  * Entity records only — no natural person, and no personal identifier, is rendered.
+ * Internal numeric match scores are never shown to the customer.
  */
 export function SanctionsSnapshotView({
   snapshot,
@@ -13,12 +26,14 @@ export function SanctionsSnapshotView({
   snapshot: SanctionsSnapshot;
   meta: { reference: string; productName: string };
 }) {
-  const outcomeTone =
-    snapshot.outcome === "confirmed_entity_match_identified"
-      ? "border-destructive/40 bg-destructive/10 text-destructive"
-      : snapshot.outcome === "potential_entity_match_identified"
-        ? "border-amber-400/50 bg-amber-50 text-amber-900"
-        : "border-border bg-muted/40 text-foreground";
+  const candidates = snapshot.runs.flatMap((r) => r.candidates);
+  const hasStrongCandidate = candidates.some((c) => candidateStatus(c) === "strong_entity_match");
+  const analystReviewPending =
+    snapshot.outcome !== "confirmed_entity_match_identified" &&
+    candidates.some((c) => !c.analystDecision && c.classification !== "rejected");
+
+  const status = statusForOutcome(snapshot.outcome, { hasStrongCandidate });
+  const style = SCREENING_STATUS[status];
 
   return (
     <article className="space-y-8 print:space-y-6">
@@ -33,10 +48,13 @@ export function SanctionsSnapshotView({
         </p>
       </header>
 
-      <section className={`rounded-lg border p-4 ${outcomeTone}`}>
-        <h2 className="text-base font-semibold">{snapshot.outcomeTitle}</h2>
-        <p className="mt-1 text-sm">{snapshot.outcomeStatement}</p>
-      </section>
+      <ScreeningStatusBanner
+        status={status}
+        title={status === "strong_entity_match" ? "Strong entity match identified" : snapshot.outcomeTitle}
+        statement={status === "strong_entity_match" ? style.explanation : snapshot.outcomeStatement}
+      >
+        {analystReviewPending ? <ScreeningStatusBadge status="analyst_review_pending" /> : null}
+      </ScreeningStatusBanner>
 
       <section className="space-y-2">
         <h2 className="text-base font-semibold">Subjects screened</h2>
@@ -71,6 +89,7 @@ export function SanctionsSnapshotView({
           <thead>
             <tr className="border-b text-left text-muted-foreground">
               <th className="py-1">Source</th>
+              <th className="py-1">Result</th>
               <th className="py-1">Source version (import)</th>
               <th className="py-1">Source file SHA-256</th>
             </tr>
@@ -78,7 +97,10 @@ export function SanctionsSnapshotView({
           <tbody>
             {snapshot.sources.map((s) => (
               <tr key={s.sourceCode} className="border-b last:border-0">
-                <td className="py-1">{s.sourceCode.replace(/_/g, " ")}</td>
+                <td className="py-1 uppercase">{s.sourceCode.replace(/_/g, " ")}</td>
+                <td className="py-1">
+                  <SourceStatusBadge source={sourceStatus(s, candidates)} />
+                </td>
                 <td className="py-1">{s.importId ?? "Not available at screening time"}</td>
                 <td className="py-1 font-mono text-xs break-all">{s.fileHash ?? "—"}</td>
               </tr>
@@ -99,31 +121,14 @@ export function SanctionsSnapshotView({
             </p>
             <p className="text-xs text-muted-foreground">Reference {run.reference}</p>
             {run.candidates.length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <ScreeningStatusBadge status="no_matches_identified" />
                 No entity records were returned above the configured threshold for this subject.
               </p>
             ) : (
               <ul className="mt-2 space-y-3">
                 {run.candidates.map((c, i) => (
-                  <li key={`${run.reference}-${i}`} className="rounded-md border p-3 text-sm">
-                    <p className="font-medium">{c.recordName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {c.sourceCode.replace(/_/g, " ")}
-                      {c.officialRecordId ? ` · record ${c.officialRecordId}` : ""}
-                      {c.programme ? ` · ${c.programme}` : ""}
-                      {c.designationDate ? ` · designated ${formatDate(c.designationDate)}` : ""}
-                    </p>
-                    <p className="mt-1 text-xs">
-                      Name used: {c.nameUsed} → matched {c.matchedName}
-                      {c.nameSimilarity != null ? ` (similarity ${(c.nameSimilarity * 100).toFixed(0)}%)` : ""} · score{" "}
-                      {c.matchScore} · {c.classification.replace(/_/g, " ")}
-                      {c.analystDecision ? ` · analyst: ${c.analystDecision.decision.replace(/_/g, " ")}` : ""}
-                    </p>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                      <AttrList title="Matching attributes" items={c.matching} />
-                      <AttrList title="Conflicting attributes" items={c.conflicting} />
-                    </div>
-                  </li>
+                  <CandidateCard key={`${run.reference}-${i}`} candidate={c} subjectName={run.subjectName} />
                 ))}
               </ul>
             )}
@@ -142,6 +147,63 @@ export function SanctionsSnapshotView({
       </section>
     </article>
   );
+}
+
+function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidate; subjectName: string }) {
+  const status = candidateStatus(candidate);
+  const style = SCREENING_STATUS[status];
+  return (
+    <li className={`rounded-md border p-3 text-sm ${style.bg} ${style.leftBorder}`}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <p className={`font-semibold ${style.text}`}>{candidate.recordName}</p>
+        <ScreeningStatusBadge status={status} className="bg-background" />
+      </div>
+      <p className="mt-1 text-sm text-foreground">
+        Relationship: name screened “{candidate.nameUsed}” for {subjectName} matched the listed record “
+        {candidate.matchedName}”.
+      </p>
+      <p className="mt-1 text-xs text-foreground/80">
+        {candidate.sourceCode.replace(/_/g, " ").toUpperCase()}
+        {candidate.officialRecordId ? ` · record ${candidate.officialRecordId}` : ""}
+        {candidate.programme ? ` · ${candidate.programme}` : ""}
+        {candidate.designationDate ? ` · designated ${formatDate(candidate.designationDate)}` : ""}
+      </p>
+      {candidate.analystDecision ? (
+        <p className="mt-1 text-xs text-foreground/80">
+          Analyst determination: {candidate.analystDecision.decision.replace(/_/g, " ")}
+          {candidate.analystDecision.reviewedAt ? ` · ${formatDate(candidate.analystDecision.reviewedAt)}` : ""}
+        </p>
+      ) : (
+        <p className="mt-1 text-xs text-foreground/80">
+          Identity determination is pending analyst review.
+        </p>
+      )}
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <AttrList title="Matching attributes" items={candidate.matching} />
+        <AttrList title="Conflicting attributes" items={candidate.conflicting} />
+      </div>
+    </li>
+  );
+}
+
+function candidateStatus(c: SnapshotCandidate): ScreeningStatusKey {
+  return statusForClassification(c.classification, c.analystDecision?.decision, {
+    exactName: c.nameSimilarity != null && c.nameSimilarity >= 0.999,
+    hasConflicts: c.conflicting.length > 0,
+  });
+}
+
+/** Per-source result derived from the candidates returned for that source. */
+function sourceStatus(
+  source: { sourceCode: string; importId: string | null },
+  candidates: SnapshotCandidate[],
+): SourceStatusKey {
+  if (!source.importId) return "unavailable";
+  const own = candidates.filter((c) => c.sourceCode === source.sourceCode);
+  if (own.some((c) => c.analystDecision?.decision === "confirmed_match")) return "checked_confirmed";
+  if (own.some((c) => candidateStatus(c) === "strong_entity_match")) return "checked_candidate";
+  if (own.some((c) => c.classification !== "rejected")) return "checked_candidate";
+  return "checked_no_candidate";
 }
 
 function Row({ label, value }: { label: string; value: string | null }) {
@@ -169,3 +231,5 @@ function AttrList({ title, items }: { title: string; items: string[] }) {
     </div>
   );
 }
+
+export type { ScreeningStatusKey };

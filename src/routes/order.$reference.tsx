@@ -6,6 +6,8 @@ import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldChe
 import { fetchOrder, orderDocumentUrl, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { formatPrice } from "@/lib/products";
+import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
+import { statusForFulfilment } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 
 
@@ -271,11 +273,17 @@ function OrderPage() {
                         : item.total_cents,
                     )}
                   </p>
-                  {order.status === "paid" && (
-                    <p className="text-xs text-muted-foreground">
-                      {FULFILMENT_LABELS[item.fulfilment_status] ?? item.fulfilment_status.replace(/_/g, " ")}
-                    </p>
-                  )}
+                  {order.status === "paid" &&
+                    (item.product_slug === "sanctions-risk-snapshot" ? (
+                      <ScreeningStatusBadge
+                        status={statusForFulfilment(item.fulfilment_status)}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {FULFILMENT_LABELS[item.fulfilment_status] ?? item.fulfilment_status.replace(/_/g, " ")}
+                      </p>
+                    ))}
                 </div>
               </div>
 

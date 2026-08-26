@@ -6,6 +6,8 @@ import { Building2, CheckCircle2, Clock, CreditCard, Download, FileText, Loader2
 import { listMyOrders, myDocumentUrl, type OrderListItem } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
+import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
+import { statusForFulfilment } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { useAccount } from "@/hooks/useAccount";
@@ -307,10 +309,14 @@ function MyOrdersPage() {
                                     </Button>
                                   )
                                 : null}
-                            <span className="flex items-center gap-1.5">
-                              <Icon className={`size-4 ${item.fulfilment_status === "processing" ? "animate-spin" : ""}`} />
-                              {meta.label}
-                            </span>
+                            {item.product_slug === "sanctions-risk-snapshot" ? (
+                              <ScreeningStatusBadge status={statusForFulfilment(item.fulfilment_status)} />
+                            ) : (
+                              <span className="flex items-center gap-1.5">
+                                <Icon className={`size-4 ${item.fulfilment_status === "processing" ? "animate-spin" : ""}`} />
+                                {meta.label}
+                              </span>
+                            )}
                           </span>
                         </li>
                       );
