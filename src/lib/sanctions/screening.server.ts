@@ -278,15 +278,15 @@ export async function runScreening(
 
     // Fetch entry context for scoring
     const personSelect = isPerson ? ", sanctions_person_details(date_of_birth, nationalities, citizenships)" : "";
+    const entrySelect = `id, entity_type, primary_name, sanctions_programme, source_record_id, sanctions_sources(source_code, authority, information_url)${personSelect}, sanctions_identifiers(identifier_type, identifier_value, issuing_country), sanctions_addresses(country, full_address)`;
     const entryRows = candidateIds.size
-      ? await supabase
+      ? ((await supabase
           .from("sanctions_entries")
-          .select(
-            `id, entity_type, primary_name, sanctions_programme, source_record_id, sanctions_sources(source_code, authority, information_url)${personSelect}, sanctions_identifiers(identifier_type, identifier_value, issuing_country), sanctions_addresses(country, full_address)`,
-          )
-          .in("id", [...candidateIds])
-      : { data: [] };
-    const entryMap = new Map((entryRows.data ?? []).map((e) => [(e as { id: string }).id, e as Record<string, unknown>]));
+          .select(entrySelect as never)
+          .in("id", [...candidateIds])) as unknown as { data: Record<string, unknown>[] | null })
+      : { data: [] as Record<string, unknown>[] };
+    const entryMap = new Map((entryRows.data ?? []).map((e) => [e["id"] as string, e]));
+
 
     const nameHitMap = new Map<string, { sim: number; matched_name: string; matched_alias_type: string; name_used: string }>();
     for (const h of nameHits) nameHitMap.set(h.sanctions_entry_id, { sim: Number(h.name_similarity), matched_name: h.matched_name, matched_alias_type: h.matched_alias_type, name_used: h.name_used });
