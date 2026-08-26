@@ -24,15 +24,25 @@ const SOURCE_FETCH_HEADERS = {
  * legacy Treasury download path serves the identical Advanced XML file.
  */
 const SOURCE_FALLBACK_URLS: Record<string, string[]> = {
+  // The PublicationPreview export intermittently answers 200 with an empty
+  // body; the download endpoints redirect to the signed S3 copy of the same
+  // Advanced XML file and are used as mirrors.
   [OFAC_SOURCE_CODE]: [
     "https://sanctionslistservice.ofac.treas.gov/api/download/sdn_advanced.xml",
     "https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xml",
+    "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ADVANCED_XML",
   ],
 };
 
 /** Transient edge/CDN failures worth retrying (includes Cloudflare 52x). */
 function isTransientStatus(status: number): boolean {
   return status === 408 || status === 429 || status >= 500;
+}
+
+/** 200 responses that carry no payload at all (seen on OFAC's preview export). */
+function emptyBody(response: Response): boolean {
+  const length = response.headers.get("content-length");
+  return length !== null && Number(length) === 0;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -55,7 +65,12 @@ export async function fetchSanctionsSource(
     for (let attempt = 1; attempt <= attemptsPerUrl; attempt += 1) {
       try {
         const response = await fetch(url, { redirect: "follow", headers: { ...SOURCE_FETCH_HEADERS } });
-        if (response.status === 200 || !isTransientStatus(response.status)) {
+        if (response.status === 200 && emptyBody(response)) {
+          // Some OFAC endpoints answer 200 with a zero-length body — treat it
+          // as a failed attempt so the next mirror is tried.
+          attempts.push({ url, outcome: "HTTP 200 with empty body (retrying)" });
+          await response.body?.cancel().catch(() => undefined);
+        } else if (response.status === 200 || !isTransientStatus(response.status)) {
           attempts.push({ url, outcome: `HTTP ${response.status}` });
           return { response, urlUsed: url, attempts };
         }
