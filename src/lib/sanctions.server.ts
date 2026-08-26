@@ -640,6 +640,8 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
     personCount: personCount ?? 0,
     entityCount: entityCount ?? 0,
     shipCount: shipCount ?? 0,
+    aircraftCount: aircraftCount ?? 0,
+    walletCount: walletCount ?? 0,
     aliasCount: aliasCount ?? 0,
     identifierCount: identifierCount ?? 0,
     addressCount: addressCount ?? 0,
