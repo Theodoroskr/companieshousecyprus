@@ -259,12 +259,18 @@ function OrderPage() {
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {euros(item.document_price_cents)}
-                    {item.service_fee_cents > 0 ? ` + ${euros(item.service_fee_cents)} service fee` : ""} +{" "}
-                    {euros(item.vat_cents)} VAT
+                    {item.service_fee_cents > 0 ? ` + ${euros(item.service_fee_cents)} service fee` : ""}
+                    {totals.charged ? " (excl. tax)" : ` + ${euros(item.vat_cents)} VAT`}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{euros(item.total_cents)}</p>
+                  <p className="font-semibold">
+                    {euros(
+                      totals.charged
+                        ? item.total_cents - item.vat_cents
+                        : item.total_cents,
+                    )}
+                  </p>
                   {order.status === "paid" && (
                     <p className="text-xs text-muted-foreground">
                       {FULFILMENT_LABELS[item.fulfilment_status] ?? item.fulfilment_status.replace(/_/g, " ")}
