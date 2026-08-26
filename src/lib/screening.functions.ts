@@ -27,8 +27,23 @@ export const runScreeningTest = createServerFn({ method: "POST" })
     const { assertAdmin } = await import("@/lib/admin.server");
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { runScreening } = await import("@/lib/sanctions/screening.server");
-    return runScreening(supabaseAdmin, { ...data.subject, previousNames: data.subject.previousNames ?? [], aliases: data.subject.aliases ?? [] }, data.sources, "admin_test", context.userId);
+    const { runScreening, type ScreeningSubjectInput } = await import("@/lib/sanctions/screening.server");
+    const subject: ScreeningSubjectInput = {
+      subjectType: data.subject.subjectType,
+      name: data.subject.name,
+      previousNames: data.subject.previousNames ?? [],
+      aliases: data.subject.aliases ?? [],
+      jurisdiction: data.subject.jurisdiction ?? null,
+      registrationNumber: data.subject.registrationNumber ?? null,
+      lei: data.subject.lei ?? null,
+      dateOfBirth: data.subject.dateOfBirth ?? null,
+      nationality: data.subject.nationality ?? null,
+      address: data.subject.address ?? null,
+      identificationNumber: data.subject.identificationNumber ?? null,
+      country: data.subject.country ?? null,
+      companyId: data.subject.companyId ?? null,
+    };
+    return runScreening(supabaseAdmin, subject, data.sources, "admin_test", context.userId);
   });
 
 export const runCompanyScreening = createServerFn({ method: "POST" })
