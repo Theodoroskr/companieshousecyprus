@@ -43,6 +43,7 @@ export async function sendOrderConfirmationEmail(order: OrderEmailOrder, items: 
     await sendTemplateEmail("order-confirmation", order.email, {
       idempotencyKey: `order-confirmation-${order.reference}`,
       sendOfficeCopy: true,
+      extraCopies: ["accounts@infocreditgroup.com"],
       templateData: {
         fullName: order.full_name ?? undefined,
         reference: order.reference,
