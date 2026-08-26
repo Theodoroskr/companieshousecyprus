@@ -131,6 +131,18 @@ function storagePathFor(prefix: string, hash: string, when: Date) {
   return `${prefix}/${y}/${m}/${d}/${when.getTime()}-${hash.slice(0, 16)}.xml`;
 }
 
+/** Peak RSS in MB when running under Node (preview/dev); null in workerd. */
+function nodeRssMb(): number | null {
+  try {
+    if (typeof process !== "undefined" && typeof process.memoryUsage === "function") {
+      return Math.round(process.memoryUsage().rss / 1048576);
+    }
+  } catch {
+    // not a Node-like runtime
+  }
+  return null;
+}
+
 async function getSource(supabase: AnyClient, sourceCode: string) {
   const { data, error } = await supabase
     .from("sanctions_sources")
