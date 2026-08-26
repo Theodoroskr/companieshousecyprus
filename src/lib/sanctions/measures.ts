@@ -19,6 +19,8 @@ const MEASURE_KEYS = [
 
 const NOTE_KEYS = ["other_information", "additional_information", "remarks"];
 
+const AMENDMENT_KEYS = ["last_amended_date", "last_amended", "amended_date", "last_modified_date"];
+
 function pickRaw(rawRecord: unknown): Record<string, unknown> | null {
   if (!rawRecord || typeof rawRecord !== "object") return null;
   const outer = rawRecord as Record<string, unknown>;
@@ -51,6 +53,43 @@ export function extractMeasuresNote(rawRecord: unknown): string | null {
     if (typeof value === "string" && value.trim()) return value.trim();
   }
   return null;
+}
+
+export type MeasureAvailability = "present" | "not_published" | "record_missing";
+
+/**
+ * Whether the source record actually carries measure/amendment data.
+ *
+ * - "present" — at least one measure, note or amendment date was found.
+ * - "not_published" — the raw record exists, but none of the expected authority
+ *   fields are populated. This is a source-data gap, not an extraction failure.
+ * - "record_missing" — no raw record could be loaded, so we cannot tell whether
+ *   the authority published measures. Treat as an extraction/import issue.
+ */
+export function measureAvailability(rawRecord: unknown): MeasureAvailability {
+  const raw = pickRaw(rawRecord);
+  if (!raw) return "record_missing";
+
+  for (const key of MEASURE_KEYS) {
+    const value = raw[key];
+    if (Array.isArray(value)) {
+      if (value.some((v) => typeof v === "string" && v.trim())) return "present";
+    } else if (typeof value === "string" && value.trim()) {
+      return "present";
+    }
+  }
+
+  for (const key of NOTE_KEYS) {
+    const value = raw[key];
+    if (typeof value === "string" && value.trim()) return "present";
+  }
+
+  for (const key of AMENDMENT_KEYS) {
+    const value = raw[key];
+    if (typeof value === "string" && value.trim()) return "present";
+  }
+
+  return "not_published";
 }
 
 /**
