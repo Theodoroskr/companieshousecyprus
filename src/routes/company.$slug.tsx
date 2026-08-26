@@ -9,7 +9,7 @@ import { PRODUCTS, formatPrice } from "@/lib/products";
 import { COMPANY_PAGE_COPY } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
-import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
+import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
@@ -289,8 +289,7 @@ function CompanyPage() {
   const statusDate = formatDate(company.status_date);
   const age = companyAge(company.registration_date);
 
-  const addressEl = company.address_full;
-  const addressEn = latinAddress(company.address_full);
+  const addressDisplay = resolveAddressDisplay(company);
 
   const facts: { label: string; value: string; description?: string }[] = [
     { label: "Registration number", value: displayOfficialNo(company) },
@@ -524,16 +523,20 @@ function CompanyPage() {
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
               <MapPin className="size-5 text-copper" /> Registered office
             </h2>
-            {addressEl ? (
+            {addressDisplay ? (
               <div className="mt-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">English (transliterated)</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {addressDisplay.primaryLabel}
+                </p>
                 <address lang="en" className="mt-1 not-italic leading-relaxed">
-                  {addressEn ?? addressEl}
+                  {addressDisplay.primary}
                 </address>
-                {addressEn && addressEn !== addressEl && (
+                {addressDisplay.secondary && (
                   <p lang="el" className="mt-3 border-t pt-3 text-sm text-muted-foreground">
-                    <span className="text-xs uppercase tracking-wide">Greek (official): </span>
-                    {addressEl}
+                    <span className="text-xs uppercase tracking-wide">
+                      {addressDisplay.secondaryLabel}:{" "}
+                    </span>
+                    {addressDisplay.secondary}
                   </p>
                 )}
               </div>

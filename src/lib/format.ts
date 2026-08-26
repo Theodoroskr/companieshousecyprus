@@ -84,12 +84,82 @@ export function greekToLatin(input?: string | null): string | null {
   return out;
 }
 
+/** Tidy a raw registry address: collapse whitespace and empty comma segments. */
+export function cleanAddress(address?: string | null): string | null {
+  if (!address) return null;
+  const parts = address
+    .replace(/\s+/g, " ")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0 && /[\p{L}\p{N}]/u.test(p));
+  // Drop consecutive duplicates (registry data often repeats locality/district).
+  const deduped = parts.filter(
+    (p, i) => i === 0 || p.toLocaleUpperCase() !== parts[i - 1]!.toLocaleUpperCase(),
+  );
+  const joined = deduped.join(", ").trim();
+  return joined.length >= 3 ? joined : null;
+}
+
 /** Build the Latin-script version of a Greek registered-office address. */
 export function latinAddress(address?: string | null): string | null {
-  const latin = greekToLatin(address);
+  const latin = greekToLatin(cleanAddress(address));
   if (!latin) return null;
   return latin.replace(/Kypros/i, "Cyprus");
 }
+
+export type AddressDisplay = {
+  /** Best available address form, always Latin script when transliteration is possible. */
+  primary: string;
+  primaryLabel: string;
+  /** Original Greek line, only when it genuinely differs from the primary line. */
+  secondary: string | null;
+  secondaryLabel: string;
+  source: "registry" | "components";
+};
+
+/**
+ * Resolve the address to display, with a robust fallback chain:
+ * full registry address -> cleaned components -> null. The Greek original is
+ * only shown as a secondary line when it differs from the primary form, so a
+ * non-Greek or already-Latin address never renders twice.
+ */
+export function resolveAddressDisplay(company: {
+  address_full?: string | null;
+  building?: string | null;
+  street?: string | null;
+  locality?: string | null;
+  postcode?: string | null;
+  district_el?: string | null;
+  district_en?: string | null;
+}): AddressDisplay | null {
+  const full = cleanAddress(company.address_full);
+  const composed = cleanAddress(
+    [
+      company.street,
+      company.building,
+      company.locality,
+      company.postcode,
+      company.district_en ?? company.district_el,
+    ]
+      .filter(Boolean)
+      .join(", "),
+  );
+
+  const original = full ?? composed;
+  if (!original) return null;
+
+  const latin = latinAddress(original) ?? original;
+  const differs = latin.toLocaleUpperCase() !== original.toLocaleUpperCase();
+
+  return {
+    primary: latin,
+    primaryLabel: differs ? "English (transliterated)" : "Registered address",
+    secondary: differs ? original : null,
+    secondaryLabel: "Greek (official)",
+    source: full ? "registry" : "components",
+  };
+}
+
 
 export function companyAge(value?: string | null): { years: number; months: number; label: string } | null {
   if (!value) return null;

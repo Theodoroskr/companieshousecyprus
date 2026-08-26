@@ -3,6 +3,7 @@ import { SUBJECT_ROLE_LABEL } from "@/lib/sanctions/screening-scope";
 import { formatDate } from "@/lib/format";
 import { describeMeasure } from "@/lib/sanctions/measures";
 import { assessConfidence } from "@/lib/sanctions/confidence";
+import { buildCandidateAudit, type AuditFieldResult } from "@/lib/sanctions/audit-trail";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   SCREENING_STATUS,
@@ -361,7 +362,84 @@ function CandidateCard({
         <AttrList title="Matching attributes" items={candidate.matching} />
         <AttrList title="Conflicting attributes" items={candidate.conflicting} />
       </div>
+      <AuditTrailPanel candidate={candidate} />
     </li>
+  );
+}
+
+const AUDIT_RESULT_STYLE: Record<AuditFieldResult, { label: string; className: string }> = {
+  match: { label: "Match", className: "text-emerald-700 dark:text-emerald-400" },
+  conflict: { label: "Conflict", className: "text-red-700 dark:text-red-400" },
+  not_compared: { label: "Not compared", className: "text-muted-foreground" },
+};
+
+/** Explainable audit trail: identifier matched, fields checked, review outcome. */
+function AuditTrailPanel({ candidate }: { candidate: SnapshotCandidate }) {
+  const audit =
+    candidate.audit ??
+    buildCandidateAudit({
+      nameUsed: candidate.nameUsed,
+      matchedName: candidate.matchedName,
+      nameSimilarity: candidate.nameSimilarity,
+      identifierMatch: candidate.identifierMatch,
+      matching: candidate.matching,
+      conflicting: candidate.conflicting,
+      classification: candidate.classification,
+      analystDecision: candidate.analystDecision,
+    });
+  return (
+    <details className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+      <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        Audit trail — what was checked and how this was decided
+      </summary>
+      <div className="mt-2 space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-foreground">Identifier used</p>
+          {audit.matchedIdentifiers.length ? (
+            <ul className="mt-1 space-y-0.5 text-xs text-foreground/80">
+              {audit.matchedIdentifiers.map((id) => (
+                <li key={`${id.type}-${id.value}`}>
+                  {id.label}: <span className="font-mono">{id.value}</span>
+                  {id.issuer ? ` · issued in ${id.issuer}` : ""} — matched exactly.
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">
+              No official identifier match was used for this candidate.
+            </p>
+          )}
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-foreground">Fields checked</p>
+          <ul className="mt-1 space-y-1">
+            {audit.fieldsChecked.map((field) => {
+              const style = AUDIT_RESULT_STYLE[field.result];
+              return (
+                <li key={field.field} className="text-xs leading-relaxed">
+                  <span className="font-medium text-foreground">{field.label}</span>{" "}
+                  <span className={style.className}>· {style.label}</span>
+                  <span className="block text-foreground/80">{field.detail}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-foreground">
+            {audit.reviewOutcome.reviewSkipped
+              ? "Why analyst review was skipped"
+              : "Why analyst review applies"}
+          </p>
+          <p className="mt-1 text-xs text-foreground/80">{audit.reviewOutcome.summary}</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-foreground/80">
+            {audit.reviewOutcome.reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </details>
   );
 }
 
