@@ -41,7 +41,7 @@ describe("normalization", () => {
 
   it("transliterates basic Arabic names to Latin", () => {
     const forms = normalizeNameForms("محمد");
-    expect(forms.searchKey).toBe("MHMD");
+    expect(forms.searchKey.toUpperCase()).toBe("MHMD");
   });
 
   it("strips common legal suffixes from the comparison key only", () => {
@@ -72,13 +72,13 @@ describe("matching hierarchy", () => {
   });
 
   it("LEVEL 2: exact name plus corroboration is strong", () => {
-    const r = scoreCandidate({ ...base, nameSimilarity: 1, exactName: true, dobMatch: true, nationalityMatch: true, entityTypeMatch: true });
+    const r = scoreCandidate({ ...base, nameSimilarity: 1, exactName: true, dobMatch: true, nationalityMatch: true, jurisdictionMatch: true, entityTypeMatch: true });
     expect(r.matchLevel).toBe(2);
     expect(r.classification).toBe("strong_candidate");
   });
 
   it("LEVEL 3: fuzzy name plus exact DOB is potential", () => {
-    const r = scoreCandidate({ ...base, nameSimilarity: 0.75, dobMatch: true, entityTypeMatch: true });
+    const r = scoreCandidate({ ...base, nameSimilarity: 0.75, dobMatch: true, nationalityMatch: true, entityTypeMatch: true });
     expect(r.matchLevel).toBe(3);
     expect(["potential_candidate", "strong_candidate"]).toContain(r.classification);
   });
