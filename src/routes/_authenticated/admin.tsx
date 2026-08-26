@@ -7,6 +7,7 @@ const ADMIN_LINKS = [
 
   { to: "/admin/import", label: "Imports" },
   { to: "/admin/sanctions-data", label: "Sanctions data" },
+  { to: "/admin/screening", label: "Screening test" },
   { to: "/admin/api4all", label: "API4ALL" },
   { to: "/admin/users", label: "Users" },
   { to: "/admin/usage", label: "Usage" },
