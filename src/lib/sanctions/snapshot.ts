@@ -25,8 +25,6 @@ export type SnapshotCandidate = {
   identifierMatch: boolean;
   matching: string[];
   conflicting: string[];
-  matchScore: number;
-  matchLevel: number | null;
   classification: string;
   analystDecision: { decision: string; rationale: string; reviewedAt: string | null } | null;
 };
