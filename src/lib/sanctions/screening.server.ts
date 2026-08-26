@@ -20,9 +20,12 @@ import { companyNameVariants, normalizeNameForms, personNameVariants } from "@/l
 import {
   CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
   EXCLUDED_SUBJECT_CATEGORIES,
+  INDIVIDUALS_EXCLUDED_NOTICE,
   SCREENING_SCOPE_VERSION,
+  type EntityScreeningOutcome,
   type SubjectRole,
 } from "@/lib/sanctions/screening-scope";
+
 
 export const SCREENING_SOURCES = ["EU_FSF", "UN_CONSOLIDATED", "UKSL", "OFAC_SDN"] as const;
 export type ScreeningSource = (typeof SCREENING_SOURCES)[number];
