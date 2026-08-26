@@ -70,6 +70,7 @@ export async function sendPaymentReceiptEmail(order: OrderEmailOrder) {
     const paid = order.paid_at ? new Date(order.paid_at) : new Date();
     await sendTemplateEmail("payment-receipt", order.email, {
       idempotencyKey: `payment-receipt-${order.reference}`,
+      sendOfficeCopy: true,
       templateData: {
         fullName: order.full_name ?? undefined,
         reference: order.reference,
