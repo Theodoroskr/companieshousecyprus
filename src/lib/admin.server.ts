@@ -271,7 +271,7 @@ export async function readUserUsage(filters: UsageFilters) {
   let query = supabase
     .from("orders")
     .select(
-      "id, email, user_id, status, total_cents, created_at, order_items(company_name, company_number, product_name, fulfilment_status)",
+      "id, email, user_id, status, total_cents, charged_total_cents, created_at, order_items(company_name, company_number, product_name, fulfilment_status)",
     )
     .order("created_at", { ascending: false })
     .limit(2000);
@@ -339,7 +339,7 @@ export async function readUserUsage(filters: UsageFilters) {
     row.orders += 1;
     if (order.status === "paid" || order.status === "completed") {
       row.paid += 1;
-      row.revenueCents += order.total_cents ?? 0;
+      row.revenueCents += order.charged_total_cents ?? order.total_cents ?? 0;
     }
     if (order.status === "awaiting_payment") row.awaitingPayment += 1;
 
