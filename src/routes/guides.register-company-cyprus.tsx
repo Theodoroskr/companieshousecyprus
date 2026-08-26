@@ -46,9 +46,9 @@ import {
   SpecialistIntroductionForm,
 } from "@/components/guides/guide-lead-forms";
 
-const TITLE = "How to Register a Company in Cyprus: 2026 Guide";
+const TITLE = "Cyprus Company Formation & Registration Guide 2026";
 const DESCRIPTION =
-  "Learn how to register a company in Cyprus, including requirements, documents, costs, timelines and ongoing obligations. Request an introduction to a Cyprus company-formation specialist.";
+  "Learn Cyprus company formation and registration in 2026: requirements, documents, costs, timelines and ongoing obligations. Connect with a Cyprus company-formation specialist.";
 const CANONICAL = "https://companieshousecyprus.com/guides/register-company-cyprus/";
 
 export const Route = createFileRoute("/guides/register-company-cyprus")({
