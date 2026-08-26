@@ -68,9 +68,50 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Screening status system (customer + analyst + PDF). Colour never carries
+     meaning alone: always paired with a written label and an icon. */
+  --color-screening-nomatch: var(--screening-nomatch);
+  --color-screening-nomatch-bg: var(--screening-nomatch-bg);
+  --color-screening-potential: var(--screening-potential);
+  --color-screening-potential-bg: var(--screening-potential-bg);
+  --color-screening-strong: var(--screening-strong);
+  --color-screening-strong-bg: var(--screening-strong-bg);
+  --color-screening-confirmed: var(--screening-confirmed);
+  --color-screening-confirmed-bg: var(--screening-confirmed-bg);
+  --color-screening-incomplete: var(--screening-incomplete);
+  --color-screening-incomplete-bg: var(--screening-incomplete-bg);
+  --color-screening-unavailable: var(--screening-unavailable);
+  --color-screening-unavailable-bg: var(--screening-unavailable-bg);
+  --color-screening-processing: var(--screening-processing);
+  --color-screening-processing-bg: var(--screening-processing-bg);
+  --color-screening-review: var(--screening-review);
+  --color-screening-review-bg: var(--screening-review-bg);
+  --color-screening-withdrawn: var(--screening-withdrawn);
+  --color-screening-withdrawn-bg: var(--screening-withdrawn-bg);
 }
 
 :root {
+  /* Screening status palette (fixed across light/dark: statuses are printed
+     and must stay identical on report artefacts). */
+  --screening-nomatch: oklch(0.5109 0.0861 186.39);
+  --screening-nomatch-bg: oklch(0.9836 0.0142 180.72);
+  --screening-potential: oklch(0.5553 0.1455 49.00);
+  --screening-potential-bg: oklch(0.9869 0.0214 95.28);
+  --screening-strong: oklch(0.5534 0.1739 38.40);
+  --screening-strong-bg: oklch(0.9796 0.0158 73.68);
+  --screening-confirmed: oklch(0.5054 0.1905 27.52);
+  --screening-confirmed-bg: oklch(0.9705 0.0129 17.38);
+  --screening-incomplete: oklch(0.4455 0.0374 257.28);
+  --screening-incomplete-bg: oklch(0.9842 0.0034 247.86);
+  --screening-unavailable: oklch(0.4461 0.0263 256.80);
+  --screening-unavailable-bg: oklch(0.9670 0.0029 264.54);
+  --screening-processing: oklch(0.4882 0.2172 264.38);
+  --screening-processing-bg: oklch(0.9705 0.0142 254.60);
+  --screening-review: oklch(0.4907 0.2412 292.58);
+  --screening-review-bg: oklch(0.9691 0.0161 293.76);
+  --screening-withdrawn: oklch(0.3729 0.0306 259.73);
+  --screening-withdrawn-bg: oklch(0.9670 0.0029 264.54);
   --radius: 0.5rem;
 
   /* Navy Trust: deep navy with crisp white and a steel-blue accent */
