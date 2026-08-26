@@ -87,6 +87,10 @@ export function assessConfidence(signals: ConfidenceSignals): ConfidenceAssessme
   let band: ConfidenceBand;
   if (signals.analystDecision === "confirmed_match") band = "high";
   else if (signals.identifierMatch && conflicting.length === 0) band = "high";
+  // An exact legal-name match corroborated by at least two independent
+  // attributes (e.g. jurisdiction and entity type) with no conflicts is
+  // treated as high confidence even without a published identifier.
+  else if (signals.exactName && conflicting.length === 0 && matching.length >= 2) band = "high";
   else if (signals.exactName && conflicting.length === 0) band = "moderate";
   else if (signals.exactName || signals.identifierMatch || matching.length > 0) band = "moderate";
   else band = "low";

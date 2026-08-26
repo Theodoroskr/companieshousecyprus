@@ -525,19 +525,17 @@ function CompanyPage() {
               <MapPin className="size-5 text-copper" /> Registered office
             </h2>
             {addressEl ? (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Greek (official)</p>
-                  <address lang="el" className="mt-1 not-italic leading-relaxed">
+              <div className="mt-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">English (transliterated)</p>
+                <address lang="en" className="mt-1 not-italic leading-relaxed">
+                  {addressEn ?? addressEl}
+                </address>
+                {addressEn && addressEn !== addressEl && (
+                  <p lang="el" className="mt-3 border-t pt-3 text-sm text-muted-foreground">
+                    <span className="text-xs uppercase tracking-wide">Greek (official): </span>
                     {addressEl}
-                  </address>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">English (transliterated)</p>
-                  <address lang="en" className="mt-1 not-italic leading-relaxed">
-                    {addressEn}
-                  </address>
-                </div>
+                  </p>
+                )}
               </div>
             ) : (
               <p className="mt-4 text-muted-foreground">No registered office address on record.</p>
