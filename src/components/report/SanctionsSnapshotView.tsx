@@ -16,6 +16,28 @@ import {
   SourceStatusBadge,
 } from "@/components/screening/ScreeningStatus";
 
+const SOURCE_LABEL: Record<
+  string,
+  { name: string; description: string }
+> = {
+  eu_fsf: {
+    name: "EU Financial Sanctions File",
+    description: "Consolidated EU financial sanctions list maintained by the European Commission.",
+  },
+  un_consolidated: {
+    name: "UN Consolidated List",
+    description: "United Nations Security Council consolidated sanctions list.",
+  },
+  uksl: {
+    name: "UK Sanctions List",
+    description: "UK government sanctions list maintained by the Office of Financial Sanctions Implementation (OFSI).",
+  },
+  ofac_sdn: {
+    name: "OFAC SDN List",
+    description: "US Treasury Specially Designated Nationals and Blocked Persons list.",
+  },
+};
+
 /**
  * Customer-facing Sanctions Risk Snapshot.
  * Entity records only — no natural person, and no personal identifier, is rendered.
