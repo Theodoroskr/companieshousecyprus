@@ -8,7 +8,6 @@ import {
   INDIVIDUALS_EXCLUDED_NOTICE,
   OUTCOME_STATEMENT,
   OUTCOME_TITLE,
-  SCOPE_LIMITATION_NOTICE,
   COMPANY_PAGE_COPY,
 } from "@/lib/sanctions/screening-scope";
 import { aggregateEntityOutcome } from "@/lib/sanctions/screening.server";
