@@ -748,6 +748,13 @@ export async function runOfacStreamingImport(
           official_digest_sha256: officialDigest?.sha256Hex ?? null,
           official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
           digest_mismatch: false,
+          diagnostic_details: {
+            finalHost,
+            contentType,
+            etag: etagHeader,
+            perf,
+            parser: "ofac-advanced-v3-stream",
+          } as never,
         } as never)
         .eq("id", importId);
       return {
