@@ -557,7 +557,7 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
       .select("id", { count: "exact", head: true })
       .eq("source_id", source.id)
       .eq("is_active", true)
-      .contains("raw_record", { wallets: [{}] }),
+      .contains("raw_record", { raw: { wallets: [{}] } }),
     supabase
       .from("sanctions_aliases")
       .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
