@@ -42,6 +42,7 @@ export async function sendOrderConfirmationEmail(order: OrderEmailOrder, items: 
   try {
     await sendTemplateEmail("order-confirmation", order.email, {
       idempotencyKey: `order-confirmation-${order.reference}`,
+      sendOfficeCopy: true,
       templateData: {
         fullName: order.full_name ?? undefined,
         reference: order.reference,
