@@ -178,6 +178,8 @@ export type ImportOutcome = {
   personCount?: number;
   entityCount?: number;
   shipCount?: number;
+  aircraftCount?: number;
+  walletCount?: number;
   failedRecordCount?: number;
   fileSizeBytes?: number;
   fileHash?: string;
