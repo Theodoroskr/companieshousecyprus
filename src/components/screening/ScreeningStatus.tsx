@@ -33,7 +33,7 @@ const ICONS: Record<ScreeningIconKey, LucideIcon> = {
   "circle-minus": CircleMinus,
 };
 
-export function ScreeningStatusIcon({ status, className }: { status: ScreeningStatusKey; className?: string }) {
+export function ScreeningStatusIcon({ status, className }: { status: ScreeningStatusKey; className?: string | undefined }) {
   const Icon = ICONS[SCREENING_STATUS[status].icon];
   return <Icon aria-hidden className={cn("size-4 shrink-0", className)} />;
 }
@@ -48,8 +48,8 @@ export function ScreeningStatusBadge({
   className,
 }: {
   status: ScreeningStatusKey;
-  label?: string;
-  className?: string;
+  label?: string | undefined;
+  className?: string | undefined;
 }) {
   const s = SCREENING_STATUS[status];
   return (
@@ -81,10 +81,10 @@ export function ScreeningStatusBanner({
   className,
 }: {
   status: ScreeningStatusKey;
-  title?: string;
-  statement?: string;
+  title?: string | undefined;
+  statement?: string | undefined;
   children?: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   const s = SCREENING_STATUS[status];
   return (
@@ -105,7 +105,7 @@ export function ScreeningStatusBanner({
 }
 
 /** Status badge for the "Official sources checked" table. Rows stay neutral. */
-export function SourceStatusBadge({ source, className }: { source: SourceStatusKey; className?: string }) {
+export function SourceStatusBadge({ source, className }: { source: SourceStatusKey; className?: string | undefined }) {
   const { label, status } = SOURCE_STATUS[source];
   return <ScreeningStatusBadge status={status} label={label} className={className} />;
 }
