@@ -19,6 +19,7 @@ export type OrderListItem = {
   order_items: {
     id: string;
     product_name: string;
+    product_slug?: string | null;
     company_name: string | null;
     company_number: string | null;
     fulfilment_status: string;
@@ -326,4 +327,49 @@ export const myReport = createServerFn({ method: "POST" })
     const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
     const { reportForOwner } = await import("@/lib/orders.server");
     return reportForOwner(data.itemId.trim(), context.userId, email);
+  });
+
+/* ------------------------------------------------------------------ */
+/* Sanctions Risk Snapshot (entity-only screening product)             */
+/* ------------------------------------------------------------------ */
+
+/** Admin: stored snapshot for review before release. */
+export const adminReviewSnapshot = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { snapshotForReview } = await import("@/lib/orders.server");
+    return snapshotForReview(data.itemId.trim());
+  });
+
+/** Admin: rerun the entity-only screening for a snapshot line. */
+export const adminRerunSnapshot = createServerFn({ method: "POST" })
+  .inputValidator((data: { itemId: string }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    const { fulfilSanctionsSnapshotItem } = await import("@/lib/orders.server");
+    return fulfilSanctionsSnapshotItem(data.itemId.trim());
+  });
+
+/** Client portal: my released sanctions snapshot. */
+export const mySnapshot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { itemId: string }) => {
+    if (!data.itemId?.trim()) throw new Error("Missing order item");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
+    const { snapshotForOwner } = await import("@/lib/orders.server");
+    return snapshotForOwner(data.itemId.trim(), context.userId, email);
   });

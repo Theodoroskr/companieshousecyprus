@@ -3,17 +3,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const subjectSchema = z.object({
-  subjectType: z.enum(["individual", "entity", "vessel", "aircraft"]),
+  // Entity-only launch scope: customer and admin screening never accepts a natural person.
+  subjectType: z.literal("entity").default("entity"),
   name: z.string().min(2),
   previousNames: z.array(z.string()).optional(),
   aliases: z.array(z.string()).optional(),
   jurisdiction: z.string().nullish(),
   registrationNumber: z.string().nullish(),
   lei: z.string().nullish(),
-  dateOfBirth: z.string().nullish(),
-  nationality: z.string().nullish(),
   address: z.string().nullish(),
-  identificationNumber: z.string().nullish(),
   country: z.string().nullish(),
   companyId: z.string().nullish(),
 });
@@ -37,10 +35,10 @@ export const runScreeningTest = createServerFn({ method: "POST" })
       jurisdiction: data.subject.jurisdiction ?? null,
       registrationNumber: data.subject.registrationNumber ?? null,
       lei: data.subject.lei ?? null,
-      dateOfBirth: data.subject.dateOfBirth ?? null,
-      nationality: data.subject.nationality ?? null,
+      dateOfBirth: null,
+      nationality: null,
       address: data.subject.address ?? null,
-      identificationNumber: data.subject.identificationNumber ?? null,
+      identificationNumber: null,
       country: data.subject.country ?? null,
       companyId: data.subject.companyId ?? null,
     };
@@ -50,15 +48,40 @@ export const runScreeningTest = createServerFn({ method: "POST" })
 export const runCompanyScreening = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ slug: z.string().min(1), sources: sourcesSchema, includeConnectedPersons: z.boolean().default(true) }).parse(input),
+    z
+      .object({
+        slug: z.string().min(1),
+        sources: sourcesSchema,
+        previousNames: z.array(z.string().min(2)).optional(),
+        corporateShareholders: z
+          .array(
+            z.object({
+              name: z.string().min(2),
+              registrationNumber: z.string().nullish(),
+              jurisdiction: z.string().nullish(),
+              legalEntityConfirmed: z.boolean(),
+            }),
+          )
+          .optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { screenCyprusCompany } = await import("@/lib/sanctions/screening.server");
-    return screenCyprusCompany(supabaseAdmin, data.slug, data.sources, context.userId, data.includeConnectedPersons);
+    return screenCyprusCompany(supabaseAdmin, data.slug, data.sources, context.userId, {
+      previousNames: data.previousNames ?? [],
+      corporateShareholders: (data.corporateShareholders ?? []).map((s) => ({
+        name: s.name,
+        registrationNumber: s.registrationNumber ?? null,
+        jurisdiction: s.jurisdiction ?? null,
+        legalEntityConfirmed: s.legalEntityConfirmed,
+      })),
+    });
   });
+
 
 export const fetchScreeningResult = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

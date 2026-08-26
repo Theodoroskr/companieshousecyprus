@@ -17,6 +17,15 @@ import {
   type SystemClassification,
 } from "@/lib/sanctions/screening-rules";
 import { companyNameVariants, normalizeNameForms, personNameVariants } from "@/lib/sanctions/normalize";
+import {
+  CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+  EXCLUDED_SUBJECT_CATEGORIES,
+  INDIVIDUALS_EXCLUDED_NOTICE,
+  SCREENING_SCOPE_VERSION,
+  type EntityScreeningOutcome,
+  type SubjectRole,
+} from "@/lib/sanctions/screening-scope";
+
 
 export const SCREENING_SOURCES = ["EU_FSF", "UN_CONSOLIDATED", "UKSL", "OFAC_SDN"] as const;
 export type ScreeningSource = (typeof SCREENING_SOURCES)[number];
@@ -35,7 +44,12 @@ export type ScreeningSubjectInput = {
   identificationNumber?: string | null;
   country?: string | null;
   companyId?: string | null;
+  /** Which part of the corporate scope this run covers. */
+  role?: SubjectRole;
+  /** Parent (direct company) run when this is a previous-name or shareholder run. */
+  parentRequestId?: string | null;
 };
+
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
@@ -133,7 +147,22 @@ export async function runScreening(
   context: "admin_test" | "company_profile" | "snapshot" | "monitoring" | "api",
   userId: string | null,
 ): Promise<ScreeningRunResult> {
+  if (input.subjectType === "individual" && !CONNECTED_INDIVIDUAL_SCREENING_ENABLED) {
+    throw new Error(
+      "Individual screening is disabled (connected_individual_screening_enabled = false). This release screens legal entities only.",
+    );
+  }
+  const isPerson = input.subjectType === "individual";
+  const expectedEntryType =
+    input.subjectType === "individual"
+      ? "person"
+      : input.subjectType === "entity"
+        ? "entity"
+        : input.subjectType === "vessel"
+          ? "ship"
+          : "aircraft";
   const config = await loadConfig(supabase);
+
   const forms = normalizeNameForms(input.name);
   const nameVariants = new Set<string>();
   const addVariants = (name: string) => {
@@ -160,16 +189,25 @@ export async function runScreening(
       jurisdiction: input.jurisdiction ?? null,
       registration_number: input.registrationNumber ?? null,
       lei: input.lei ?? null,
-      date_of_birth: input.dateOfBirth ?? null,
-      nationality: input.nationality ?? null,
+      date_of_birth: isPerson ? (input.dateOfBirth ?? null) : null,
+      nationality: isPerson ? (input.nationality ?? null) : null,
       address: input.address ?? null,
       company_id: input.companyId ?? null,
       previous_names: input.previousNames ?? [],
       subject_aliases: input.aliases ?? [],
       sources_requested: sources,
       source_import_ids: importIds,
+      source_file_hashes: Object.fromEntries(
+        Object.entries(importIds).map(([code, meta]) => [code, meta.fileHash]),
+      ),
+      scope_version: SCREENING_SCOPE_VERSION,
+      entity_only: !CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+      excluded_categories: [...EXCLUDED_SUBJECT_CATEGORIES],
+      subject_role: input.role ?? "direct_company",
+      parent_request_id: input.parentRequestId ?? null,
       rules_version: config.rulesVersion,
       status: "processing",
+
     })
     .select("id")
     .single();
@@ -201,21 +239,28 @@ export async function runScreening(
       sanctions_entry_id: string; source_code: string; identifier_type: string;
       identifier_value: string; issuing_country: string | null;
     };
+    // Entity-type safeguard: only records of the subject's own class (plus
+    // records whose class is uncertain, which can never auto-confirm) may
+    // ever become candidates. Individuals, vessels and aircraft can therefore
+    // not surface in a company screening.
+    const allowedEntryTypes = [expectedEntryType, "unknown"];
     const nameRpc = (await supabase.rpc("screening_name_candidates", {
       p_names: [...nameVariants],
       p_sources: sources,
-      p_entity_types: undefined,
+      p_entity_types: allowedEntryTypes,
       p_min_sim: config.thresholds.min_name_similarity,
       p_limit: config.thresholds.max_candidates,
     } as never)) as { data: NameHit[] | null; error: { message: string } | null };
     if (nameRpc.error) throw new Error(nameRpc.error.message);
-    const nameHits = nameRpc.data ?? [];
+    const nameHits = (nameRpc.data ?? []).filter((h) => allowedEntryTypes.includes(h.entity_type));
 
     // Candidate generation — reliable identifiers
     const identifiers: { kind: string; value: string; country?: string | undefined }[] = [];
     if (input.registrationNumber) identifiers.push({ kind: "registration_number", value: input.registrationNumber, country: input.jurisdiction ?? undefined });
     if (input.lei) identifiers.push({ kind: "lei", value: input.lei });
-    if (input.identificationNumber) {
+    // Personal identifiers (passport / national ID) are never processed in the
+    // entity-only customer workflow.
+    if (isPerson && input.identificationNumber) {
       identifiers.push({ kind: "passport", value: input.identificationNumber, country: input.country ?? undefined });
       identifiers.push({ kind: "national_id", value: input.identificationNumber, country: input.country ?? undefined });
     }
@@ -223,47 +268,64 @@ export async function runScreening(
       ? await supabase.rpc("screening_identifier_candidates", { p_identifiers: identifiers, p_sources: sources })
       : { data: [], error: null };
     if (idErr) throw new Error(idErr.message);
+    const typedIdHits = ((idHits ?? []) as IdHit[]).filter((h) =>
+      allowedEntryTypes.includes(((h as unknown as { entity_type?: string }).entity_type ?? "unknown")),
+    );
 
     const idHitMap = new Map<string, { identifier_type: string; identifier_value: string }>();
-    for (const hit of idHits ?? []) idHitMap.set(hit.sanctions_entry_id as string, { identifier_type: hit.identifier_type, identifier_value: hit.identifier_value });
+    for (const hit of typedIdHits) idHitMap.set(hit.sanctions_entry_id, { identifier_type: hit.identifier_type, identifier_value: hit.identifier_value });
 
     const candidateIds = new Set<string>();
-    for (const h of nameHits ?? []) candidateIds.add(h.sanctions_entry_id as string);
-    for (const h of idHits ?? []) candidateIds.add(h.sanctions_entry_id as string);
+    for (const h of nameHits) candidateIds.add(h.sanctions_entry_id);
+    for (const h of typedIdHits) candidateIds.add(h.sanctions_entry_id);
 
     // Fetch entry context for scoring
+    const personSelect = isPerson ? ", sanctions_person_details(date_of_birth, nationalities, citizenships)" : "";
+    const entrySelect = `id, entity_type, primary_name, sanctions_programme, source_record_id, sanctions_sources(source_code, authority, information_url)${personSelect}, sanctions_identifiers(identifier_type, identifier_value, issuing_country), sanctions_addresses(country, full_address)`;
     const entryRows = candidateIds.size
-      ? await supabase
+      ? ((await supabase
           .from("sanctions_entries")
-          .select("id, entity_type, primary_name, sanctions_programme, source_record_id, sanctions_sources(source_code, authority, information_url), sanctions_person_details(date_of_birth, nationalities, citizenships), sanctions_identifiers(identifier_type, identifier_value, issuing_country), sanctions_addresses(country, full_address)")
-          .in("id", [...candidateIds])
-      : { data: [] };
-    const entryMap = new Map((entryRows.data ?? []).map((e) => [e.id as string, e]));
+          .select(entrySelect as never)
+          .in("id", [...candidateIds])) as unknown as { data: Record<string, unknown>[] | null })
+      : { data: [] as Record<string, unknown>[] };
+    const entryMap = new Map((entryRows.data ?? []).map((e) => [e["id"] as string, e]));
+
 
     const nameHitMap = new Map<string, { sim: number; matched_name: string; matched_alias_type: string; name_used: string }>();
-    for (const h of nameHits ?? []) nameHitMap.set(h.sanctions_entry_id as string, { sim: Number(h.name_similarity), matched_name: h.matched_name, matched_alias_type: h.matched_alias_type, name_used: h.name_used });
+    for (const h of nameHits) nameHitMap.set(h.sanctions_entry_id, { sim: Number(h.name_similarity), matched_name: h.matched_name, matched_alias_type: h.matched_alias_type, name_used: h.name_used });
 
     type CandidateInsert = Record<string, unknown> & { system_classification: SystemClassification };
     const inserts: CandidateInsert[] = [];
+    let uncertainTypeCount = 0;
 
     for (const entryId of candidateIds) {
       const entry = entryMap.get(entryId);
       if (!entry) continue;
+      const entryType = (entry["entity_type"] as string | null) ?? "unknown";
+      // Second, independent safeguard against a mis-scoped candidate.
+      if (entryType !== expectedEntryType && entryType !== "unknown") continue;
+      const uncertainType = entryType !== expectedEntryType;
+      if (uncertainType) uncertainTypeCount += 1;
       const nameHit = nameHitMap.get(entryId);
       const idHit = idHitMap.get(entryId);
-      const person = Array.isArray(entry.sanctions_person_details) ? entry.sanctions_person_details[0] : entry.sanctions_person_details;
-      const entryDobs = extractDates(person?.date_of_birth ?? null);
-      const entryNationalities = extractStrings([person?.nationalities ?? null, person?.citizenships ?? null]);
-      const entryCountries = (entry.sanctions_addresses as { country: string | null }[] | null)?.map((a) => a.country).filter(Boolean) ?? [];
-      const entryRegIds = ((entry.sanctions_identifiers as { identifier_type: string; identifier_value: string }[] | null) ?? [])
+      const personRaw = entry["sanctions_person_details"];
+      const person = (Array.isArray(personRaw) ? personRaw[0] : personRaw) as
+        | { date_of_birth?: unknown; nationalities?: unknown; citizenships?: unknown }
+        | null
+        | undefined;
+      const entryDobs = isPerson ? extractDates(person?.date_of_birth ?? null) : [];
+      const entryNationalities = isPerson ? extractStrings([person?.nationalities ?? null, person?.citizenships ?? null]) : [];
+      const entryCountries = (entry["sanctions_addresses"] as { country: string | null }[] | null)?.map((a) => a.country).filter(Boolean) ?? [];
+      const entryRegIds = ((entry["sanctions_identifiers"] as { identifier_type: string; identifier_value: string }[] | null) ?? [])
         .filter((i) => /reg|registration/i.test(i.identifier_type))
         .map((i) => i.identifier_value.replace(/[^A-Za-z0-9]/g, "").toUpperCase());
 
-      const expectedType = input.subjectType === "individual" ? "person" : input.subjectType === "entity" ? "entity" : input.subjectType === "vessel" ? "ship" : "aircraft";
-      const entityTypeMatch: boolean | null = entry.entity_type === "unknown" ? null : entry.entity_type === expectedType;
+      const entityTypeMatch: boolean | null = uncertainType ? null : true;
 
-      const dobMatch: boolean | null = !input.dateOfBirth || !entryDobs.length ? null : entryDobs.some((d) => d === input.dateOfBirth);
-      const nationalityMatch: boolean | null = !input.nationality || !entryNationalities.length ? null : entryNationalities.some((n) => countriesCompatible(n, input.nationality) === true);
+      const dobMatch: boolean | null = !isPerson || !input.dateOfBirth || !entryDobs.length ? null : entryDobs.some((d) => d === input.dateOfBirth);
+
+      const nationalityMatch: boolean | null = !isPerson || !input.nationality || !entryNationalities.length ? null : entryNationalities.some((n) => countriesCompatible(n, input.nationality) === true);
+
       const jurisdictionMatch: boolean | null =
         input.subjectType !== "entity" || !input.jurisdiction
           ? countriesCompatible(input.jurisdiction, entryCountries[0])
@@ -293,13 +355,16 @@ export async function runScreening(
       if (!idHit && sim < config.thresholds.min_name_similarity) continue;
       const scored = scoreCandidate(facts, config.weights, config.thresholds);
       if (scored.classification === "rejected") continue;
+      // Uncertain record type may never auto-confirm — it goes to analyst review.
+      const classification: SystemClassification =
+        uncertainType && scored.classification === "strong_candidate" ? "potential_candidate" : scored.classification;
 
       inserts.push({
         screening_request_id: requestId,
         sanctions_entry_id: entryId,
-        source_code: (entry.sanctions_sources as { source_code: string } | null)?.source_code ?? "unknown",
+        source_code: (entry["sanctions_sources"] as { source_code: string } | null)?.source_code ?? "unknown",
         name_used: nameHit?.name_used ?? "(identifier)",
-        matched_name: nameHit?.matched_name ?? (entry.primary_name as string),
+        matched_name: nameHit?.matched_name ?? (entry["primary_name"] as string),
         matched_alias_type: nameHit?.matched_alias_type ?? null,
         name_similarity: sim,
         identifier_match: Boolean(idHit),
@@ -309,11 +374,13 @@ export async function runScreening(
         address_match: addressMatch,
         entity_type_match: entityTypeMatch,
         corroborating_attributes: scored.corroborating,
-        conflicting_attributes: scored.conflicting,
+        conflicting_attributes: uncertainType
+          ? [...scored.conflicting, "record type uncertain — analyst review required"]
+          : scored.conflicting,
         score_contributions: scored.contributions,
         match_score: scored.score,
         match_level: scored.matchLevel,
-        system_classification: scored.classification,
+        system_classification: classification,
       });
     }
 
@@ -341,9 +408,14 @@ export async function runScreening(
         classifications,
         sources_unavailable: unavailable,
         rules_version: config.rulesVersion,
+        scope_version: SCREENING_SCOPE_VERSION,
+        entity_only: !CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+        allowed_record_types: allowedEntryTypes,
+        uncertain_type_candidates: uncertainTypeCount,
         source_import_ids: importIds,
       },
     });
+
 
     return { requestId, reference, outcome, candidateCount: top.length, status: "completed" };
   } catch (err) {
@@ -359,75 +431,208 @@ export async function runScreening(
   }
 }
 
+export type EntityRunSummary = {
+  requestId: string;
+  reference: string;
+  role: SubjectRole;
+  subjectName: string;
+  outcome: string;
+  candidateCount: number;
+};
+
 export type CompanyScreeningResult = {
+  scopeVersion: string;
+  entityOnly: true;
   companyRequest: ScreeningRunResult;
-  personRequests: { requestId: string; reference: string; name: string; relationship: string; outcome: string }[];
+  runs: EntityRunSummary[];
+  previousNamesScreened: string[];
+  corporateShareholdersScreened: string[];
+  notScreened: { subject: string; category: string; reason: string }[];
+  overallOutcome: EntityScreeningOutcome;
+  individualsExcludedNotice: string;
   ownershipNote: string;
 };
 
+/**
+ * Entity-only screening of a Cyprus company.
+ *
+ * Screens, as separate runs: the current legal name, each previous legal name
+ * we hold, and each corporate shareholder whose legal-entity status is
+ * explicitly established. No natural person is screened.
+ */
 export async function screenCyprusCompany(
   supabase: AdminClient,
   slug: string,
   sources: string[],
   userId: string | null,
-  includeConnectedPersons = true,
+  options: {
+    previousNames?: string[];
+    corporateShareholders?: { name: string; registrationNumber?: string | null; jurisdiction?: string | null; legalEntityConfirmed: boolean }[];
+    context?: "admin_test" | "company_profile" | "snapshot" | "monitoring" | "api";
+  } = {},
 ): Promise<CompanyScreeningResult> {
   const { data: company, error } = await supabase
     .from("companies")
-    .select("slug, name, reg_number, district_en, locality, address_full")
+    .select("slug, name, reg_number, official_no, district_en, locality, address_full")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !company) throw new Error(`Company not found: ${slug}`);
 
+  const context = options.context ?? "company_profile";
+  const address = company.address_full ?? ([company.locality, company.district_en].filter(Boolean).join(", ") || null);
+  const registrationNumber = company.official_no ?? (company.reg_number != null ? String(company.reg_number) : null);
+
+  const runs: EntityRunSummary[] = [];
+  const notScreened: CompanyScreeningResult["notScreened"] = [];
+
+  // 1 — direct company screening
   const companyRequest = await runScreening(
     supabase,
     {
       subjectType: "entity",
       name: company.name,
       jurisdiction: "Cyprus",
-      registrationNumber: company.reg_number != null ? String(company.reg_number) : null,
-      address: company.address_full ?? ([company.locality, company.district_en].filter(Boolean).join(", ") || null),
+      registrationNumber,
+      address,
       companyId: company.slug,
+      role: "direct_company",
     },
     sources,
-    "company_profile",
+    context,
     userId,
   );
+  runs.push({
+    requestId: companyRequest.requestId,
+    reference: companyRequest.reference,
+    role: "direct_company",
+    subjectName: company.name,
+    outcome: companyRequest.outcome,
+    candidateCount: companyRequest.candidateCount,
+  });
 
-  const personRequests: CompanyScreeningResult["personRequests"] = [];
-  if (includeConnectedPersons) {
-    const { data: officials } = await supabase
-      .from("officials")
-      .select("person_name, position_en")
-      .eq("slug", slug)
-      .limit(50);
-    for (const official of officials ?? []) {
-      const role = (official.position_en ?? "official").toLowerCase();
-      const relationship = /director/.test(role) ? "director" : /secretary/.test(role) ? "secretary" : "official";
-      const result = await runScreening(
-        supabase,
-        { subjectType: "individual", name: official.person_name, companyId: company.slug },
-        sources,
-        "company_profile",
-        userId,
-      );
-      await supabase.from("screening_audit_log").insert({
-        screening_request_id: result.requestId,
-        event_type: "relationship_recorded",
-        actor: userId,
-        event_data: { company_slug: slug, relationship, screened_name: official.person_name },
-      });
-      personRequests.push({ requestId: result.requestId, reference: result.reference, name: official.person_name, relationship, outcome: result.outcome });
-    }
+  // 2 — previous legal names, screened separately
+  const previousNames = [...new Set((options.previousNames ?? []).map((n) => n.trim()).filter(Boolean))].filter(
+    (n) => n.toLowerCase() !== company.name.toLowerCase(),
+  );
+  for (const previousName of previousNames) {
+    const run = await runScreening(
+      supabase,
+      {
+        subjectType: "entity",
+        name: previousName,
+        jurisdiction: "Cyprus",
+        registrationNumber,
+        address,
+        companyId: company.slug,
+        role: "previous_name",
+        parentRequestId: companyRequest.requestId,
+      },
+      sources,
+      context,
+      userId,
+    );
+    runs.push({
+      requestId: run.requestId,
+      reference: run.reference,
+      role: "previous_name",
+      subjectName: previousName,
+      outcome: run.outcome,
+      candidateCount: run.candidateCount,
+    });
   }
 
+  // 3 — corporate shareholders, screened separately and only where their
+  // legal-entity status is reliably established.
+  const corporateShareholdersScreened: string[] = [];
+  for (const shareholder of options.corporateShareholders ?? []) {
+    if (!shareholder.legalEntityConfirmed) {
+      notScreened.push({
+        subject: shareholder.name,
+        category: "corporate_shareholder",
+        reason: "Legal-entity status could not be established reliably from the information available.",
+      });
+      continue;
+    }
+    const run = await runScreening(
+      supabase,
+      {
+        subjectType: "entity",
+        name: shareholder.name,
+        jurisdiction: shareholder.jurisdiction ?? null,
+        registrationNumber: shareholder.registrationNumber ?? null,
+        companyId: company.slug,
+        role: "corporate_shareholder",
+        parentRequestId: companyRequest.requestId,
+      },
+      sources,
+      context,
+      userId,
+    );
+    corporateShareholdersScreened.push(shareholder.name);
+    runs.push({
+      requestId: run.requestId,
+      reference: run.reference,
+      role: "corporate_shareholder",
+      subjectName: shareholder.name,
+      outcome: run.outcome,
+      candidateCount: run.candidateCount,
+    });
+  }
+
+  if (!(options.corporateShareholders ?? []).length) {
+    notScreened.push({
+      subject: "Corporate shareholders",
+      category: "corporate_shareholder",
+      reason: "Shareholder data is not available in our registry copy, so no corporate shareholder could be screened.",
+    });
+  }
+
+  await supabase.from("screening_audit_log").insert({
+    screening_request_id: companyRequest.requestId,
+    event_type: "entity_scope_recorded",
+    actor: userId,
+    event_data: {
+      scope_version: SCREENING_SCOPE_VERSION,
+      entity_only: true,
+      company_slug: slug,
+      registration_number: registrationNumber,
+      previous_names_screened: previousNames,
+      corporate_shareholders_screened: corporateShareholdersScreened,
+      not_screened: notScreened,
+      excluded_categories: [...EXCLUDED_SUBJECT_CATEGORIES],
+      connected_individual_screening_enabled: CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+    },
+  });
+
+  await supabase
+    .from("screening_requests")
+    .update({ not_screened: notScreened })
+    .eq("id", companyRequest.requestId);
+
   return {
+    scopeVersion: SCREENING_SCOPE_VERSION,
+    entityOnly: true,
     companyRequest,
-    personRequests,
+    runs,
+    previousNamesScreened: previousNames,
+    corporateShareholdersScreened,
+    notScreened,
+    overallOutcome: aggregateEntityOutcome(runs.map((r) => r.outcome), notScreened.length > 0),
+    individualsExcludedNotice: INDIVIDUALS_EXCLUDED_NOTICE,
     ownershipNote:
-      "Shareholder and beneficial-owner data is not available in the registry copy. Ownership/control exposure cannot be determined automatically and requires analyst review where a connected person is a potential match.",
+      "Ownership and control exposure cannot be determined automatically. Only the company, its previous names and available corporate shareholders were screened.",
   };
 }
+
+/** Map engine outcomes of every entity run onto the four permitted customer outcomes. */
+export function aggregateEntityOutcome(outcomes: string[], hasUnscreenedSubjects: boolean): EntityScreeningOutcome {
+  if (outcomes.includes("confirmed_match_identified")) return "confirmed_entity_match_identified";
+  if (outcomes.includes("potential_match_identified")) return "potential_entity_match_identified";
+  if (outcomes.includes("screening_incomplete") || outcomes.includes("source_unavailable")) return "screening_incomplete";
+  if (hasUnscreenedSubjects) return "screening_incomplete";
+  return "no_entity_matches_identified";
+}
+
 
 export async function getScreeningResult(supabase: AdminClient, requestId: string) {
   const { data: request, error } = await supabase.from("screening_requests").select("*").eq("id", requestId).single();

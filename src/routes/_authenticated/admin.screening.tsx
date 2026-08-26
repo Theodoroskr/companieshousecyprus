@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { INDIVIDUALS_EXCLUDED_NOTICE } from "@/lib/sanctions/screening-scope";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/admin/screening")({
 const ALL_SOURCES = ["EU_FSF", "UN_CONSOLIDATED", "UKSL", "OFAC_SDN"] as const;
 type Source = (typeof ALL_SOURCES)[number];
 
-type Mode = "register" | "company" | "individual";
+type Mode = "register" | "company";
 
 const OUTCOME_LABELS: Record<string, { label: string; tone: string }> = {
   confirmed_match_identified: { label: "Confirmed match identified", tone: "bg-red-100 text-red-900 border-red-300" },
@@ -51,7 +52,13 @@ function ScreeningWorkbench() {
   const [mode, setMode] = useState<Mode>("register");
   const [sources, setSources] = useState<Source[]>([...ALL_SOURCES]);
   const [requestId, setRequestId] = useState<string | null>(null);
-  const [companyRun, setCompanyRun] = useState<{ reference: string; personRequests: { reference: string; name: string; relationship: string; outcome: string }[]; ownershipNote: string } | null>(null);
+  const [companyRun, setCompanyRun] = useState<{
+    reference: string;
+    runs: { reference: string; subjectName: string; role: string; outcome: string }[];
+    notScreened: { subject: string; category: string; reason: string }[];
+    overallOutcome: string;
+    ownershipNote: string;
+  } | null>(null);
 
   // register-company picker
   const [registerQuery, setRegisterQuery] = useState("");
@@ -72,25 +79,28 @@ function ScreeningWorkbench() {
     mutationFn: async () => {
       const split = (v: string) => v.split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
       if (mode === "register") {
-        const result = await runCompanyScreening({ data: { slug, sources, includeConnectedPersons: true } });
-        setCompanyRun({ reference: result.companyRequest.reference, personRequests: result.personRequests.map((p) => ({ reference: p.reference, name: p.name, relationship: p.relationship, outcome: p.outcome })), ownershipNote: result.ownershipNote });
+        const result = await runCompanyScreening({ data: { slug, sources } });
+        setCompanyRun({
+          reference: result.companyRequest.reference,
+          runs: result.runs.map((r) => ({ reference: r.reference, subjectName: r.subjectName, role: r.role, outcome: r.outcome })),
+          notScreened: result.notScreened,
+          overallOutcome: result.overallOutcome,
+          ownershipNote: result.ownershipNote,
+        });
         return result.companyRequest;
       }
       setCompanyRun(null);
       return runScreeningTest({
         data: {
           subject: {
-            subjectType: mode === "individual" ? "individual" : "entity",
+            subjectType: "entity",
             name: form.name,
             previousNames: split(form.previousNames),
             aliases: split(form.aliases),
             jurisdiction: form.jurisdiction || null,
             registrationNumber: form.registrationNumber || null,
             lei: form.lei || null,
-            dateOfBirth: form.dateOfBirth || null,
-            nationality: form.nationality || null,
             country: form.country || null,
-            identificationNumber: form.identificationNumber || null,
             address: form.address || null,
           },
           sources,
@@ -135,7 +145,7 @@ function ScreeningWorkbench() {
         <CardHeader><CardTitle className="text-base">Subject</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            {([["register", "Cyprus register company"], ["company", "Manual company"], ["individual", "Individual"]] as const).map(([m, label]) => (
+            {([["register", "Cyprus register company"], ["company", "Manual company"]] as const).map(([m, label]) => (
               <Button key={m} variant={mode === m ? "default" : "outline"} size="sm" onClick={() => setMode(m)}>{label}</Button>
             ))}
           </div>
@@ -166,26 +176,15 @@ function ScreeningWorkbench() {
                   {registerSearch.data?.length === 0 ? <li className="px-3 py-2 text-muted-foreground">No matches</li> : null}
                 </ul>
               ) : null}
-              {slug ? <p className="text-sm text-muted-foreground">Selected: <code>{slug}</code> — the company name, registration number and all known directors/officials will be screened.</p> : null}
+              {slug ? <p className="text-sm text-muted-foreground">Selected: <code>{slug}</code> — the current legal name, registration number and jurisdiction will be screened. Individuals are not screened in this release.</p> : null}
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input placeholder={mode === "individual" ? "Full name *" : "Company name *"} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Input placeholder={mode === "individual" ? "Aliases (separate with ;)" : "Previous names (separate with ;)"} value={mode === "individual" ? form.aliases : form.previousNames} onChange={(e) => setForm(mode === "individual" ? { ...form, aliases: e.target.value } : { ...form, previousNames: e.target.value })} />
-              {mode === "company" ? (
-                <>
-                  <Input placeholder="Jurisdiction (e.g. Cyprus)" value={form.jurisdiction} onChange={(e) => setForm({ ...form, jurisdiction: e.target.value })} />
-                  <Input placeholder="Registration number" value={form.registrationNumber} onChange={(e) => setForm({ ...form, registrationNumber: e.target.value })} />
-                  <Input placeholder="LEI" value={form.lei} onChange={(e) => setForm({ ...form, lei: e.target.value })} />
-                </>
-              ) : (
-                <>
-                  <Input placeholder="Date of birth (YYYY-MM-DD)" value={form.dateOfBirth} onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })} />
-                  <Input placeholder="Nationality" value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} />
-                  <Input placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
-                  <Input placeholder="Passport / ID number" value={form.identificationNumber} onChange={(e) => setForm({ ...form, identificationNumber: e.target.value })} />
-                </>
-              )}
+              <Input placeholder={"Company name *"} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Input placeholder="Previous names (separate with ;)" value={form.previousNames} onChange={(e) => setForm({ ...form, previousNames: e.target.value })} />
+              <Input placeholder="Jurisdiction (e.g. Cyprus)" value={form.jurisdiction} onChange={(e) => setForm({ ...form, jurisdiction: e.target.value })} />
+              <Input placeholder="Registration number" value={form.registrationNumber} onChange={(e) => setForm({ ...form, registrationNumber: e.target.value })} />
+              <Input placeholder="LEI" value={form.lei} onChange={(e) => setForm({ ...form, lei: e.target.value })} />
               <Input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="sm:col-span-2" />
             </div>
           )}
@@ -199,20 +198,32 @@ function ScreeningWorkbench() {
 
       {companyRun ? (
         <Card>
-          <CardHeader><CardTitle className="text-base">Connected-party screening</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Entity-only screening scope</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>Company screening reference: <code>{companyRun.reference}</code></p>
+            <p className="flex items-center gap-2">Overall outcome: <OutcomeBadge outcome={companyRun.overallOutcome} /></p>
             <ul className="space-y-1">
-              {companyRun.personRequests.map((p) => (
-                <li key={p.reference} className="flex items-center gap-2">
-                  <code className="text-xs">{p.reference}</code>
-                  <span>{p.name}</span>
-                  <Badge variant="outline">{p.relationship}</Badge>
-                  <OutcomeBadge outcome={p.outcome} />
+              {companyRun.runs.map((r) => (
+                <li key={r.reference} className="flex flex-wrap items-center gap-2">
+                  <code className="text-xs">{r.reference}</code>
+                  <span>{r.subjectName}</span>
+                  <Badge variant="outline">{r.role.replace(/_/g, " ")}</Badge>
+                  <OutcomeBadge outcome={r.outcome} />
                 </li>
               ))}
             </ul>
+            {companyRun.notScreened.length ? (
+              <div className="rounded-md border p-2">
+                <p className="font-medium">Not screened</p>
+                <ul className="list-disc pl-5 text-muted-foreground">
+                  {companyRun.notScreened.map((n) => (
+                    <li key={`${n.category}-${n.subject}`}>{n.subject} — {n.reason}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-900">{companyRun.ownershipNote}</p>
+            <p className="rounded-md border p-2 text-muted-foreground">{INDIVIDUALS_EXCLUDED_NOTICE}</p>
           </CardContent>
         </Card>
       ) : null}

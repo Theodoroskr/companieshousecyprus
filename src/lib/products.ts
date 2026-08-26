@@ -192,6 +192,30 @@ export const PRODUCTS: Product[] = [
   },
 
   {
+    slug: "sanctions-risk-snapshot",
+    name: "Sanctions Risk Snapshot",
+    eyebrow: "Screening",
+    headline: "Entity screening against official sanctions sources",
+    tagline: "A timestamped, explainable screening of a Cyprus company against official EU, UN, UK and US entity records.",
+    price: 29,
+    delivery: "Same day",
+    category: "report",
+    description: [
+      "A timestamped screening of a Cyprus company against entity records contained in official EU, UN, UK and US sanctions sources, with explainable results and a downloadable report.",
+      "The screening covers the company, its previous names and available corporate shareholders.",
+      "This version does not screen directors, individual shareholders, beneficial owners or other natural persons connected to the company.",
+    ],
+    includes: [
+      { title: "Current legal name", detail: "Screened against entity records in every selected official source." },
+      { title: "Previous company names", detail: "Screened as separate runs where held in our records." },
+      { title: "Registration number, jurisdiction and LEI", detail: "Used as reliable identifiers where available." },
+      { title: "Corporate shareholders", detail: "Screened separately where their legal-entity status is established." },
+      { title: "Explainable results", detail: "Matching and conflicting attributes for every candidate — no black box." },
+      { title: "Downloadable report", detail: "Sources checked, source versions and screening timestamp on the document." },
+    ],
+    typicalUse: "Counterparty onboarding, payment screening files, tender and banking documentation.",
+  },
+  {
     slug: "cyprus-company-profile",
     name: "Cyprus Company Profile (Structure Report)",
     eyebrow: "Intelligence report",
