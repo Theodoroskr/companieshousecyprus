@@ -189,7 +189,7 @@ RETURNS TABLE(
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public
 AS $fn$
 BEGIN
-  PERFORM set_config('pg_trgm.similarity_threshold', least(greatest(p_min_sim, 0.05), 0.9), true);
+  PERFORM set_config('pg_trgm.similarity_threshold', least(greatest(p_min_sim, 0.05), 0.9)::text, true);
   RETURN QUERY
   WITH input_names AS (
     SELECT DISTINCT trim(n) AS q FROM unnest(p_names) AS n WHERE nullif(trim(n), '') IS NOT NULL
@@ -197,10 +197,10 @@ BEGIN
   entry_hits AS (
     SELECT e.id AS entry_id, s.source_code, e.entity_type, e.primary_name,
            e.primary_name_normalized AS matched_name, 'primary'::text AS matched_alias_type,
-           max(similarity(e.primary_name_normalized, n.q)) AS sim,
-           (array_agg(n.q ORDER BY similarity(e.primary_name_normalized, n.q) DESC))[1] AS name_used
+           max(extensions.similarity(e.primary_name_normalized, n.q)) AS sim,
+           (array_agg(n.q ORDER BY extensions.similarity(e.primary_name_normalized, n.q) DESC))[1] AS name_used
     FROM input_names n
-    JOIN public.sanctions_entries e ON e.primary_name_normalized % n.q AND e.is_active
+    JOIN public.sanctions_entries e ON e.primary_name_normalized OPERATOR(extensions.%) n.q AND e.is_active
     JOIN public.sanctions_sources s ON s.id = e.source_id
     WHERE (p_sources IS NULL OR s.source_code = ANY (p_sources))
       AND (p_entity_types IS NULL OR e.entity_type = ANY (p_entity_types))
@@ -210,10 +210,10 @@ BEGIN
     SELECT e.id AS entry_id, s.source_code, e.entity_type, e.primary_name,
            a.alias_name_normalized AS matched_name,
            CASE WHEN a.is_primary THEN 'primary' ELSE a.alias_type END AS matched_alias_type,
-           max(similarity(a.alias_name_normalized, n.q)) * 0.97 AS sim,
-           (array_agg(n.q ORDER BY similarity(a.alias_name_normalized, n.q) DESC))[1] AS name_used
+           max(extensions.similarity(a.alias_name_normalized, n.q)) * 0.97 AS sim,
+           (array_agg(n.q ORDER BY extensions.similarity(a.alias_name_normalized, n.q) DESC))[1] AS name_used
     FROM input_names n
-    JOIN public.sanctions_aliases a ON a.alias_name_normalized % n.q
+    JOIN public.sanctions_aliases a ON a.alias_name_normalized OPERATOR(extensions.%) n.q
     JOIN public.sanctions_entries e ON e.id = a.sanctions_entry_id AND e.is_active
     JOIN public.sanctions_sources s ON s.id = e.source_id
     WHERE (p_sources IS NULL OR s.source_code = ANY (p_sources))
