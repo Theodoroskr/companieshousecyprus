@@ -449,6 +449,7 @@ export async function runScreening(
       event_data: {
         outcome,
         candidate_count: top.length,
+        auto_confirmed_candidates: autoConfirmedCount,
         classifications,
         sources_unavailable: unavailable,
         rules_version: config.rulesVersion,
