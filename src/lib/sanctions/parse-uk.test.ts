@@ -177,9 +177,9 @@ describe("parseDesignation — entity", () => {
   });
   it("captures registration numbers, phones, emails and websites", () => {
     expect(record.identifiers.some((i) => i.identifier_type === "registration" && i.identifier_value === "BR-99-XY")).toBe(true);
-    expect(record.raw.phone_numbers).toEqual(["+93-202-104748"]);
-    expect(record.raw.email_addresses).toEqual(["helmand_exchange_msp@yahoo.com"]);
-    expect(record.raw.websites).toEqual(["http://example.org"]);
+    expect(record.raw["phone_numbers"]).toEqual(["+93-202-104748"]);
+    expect(record.raw["email_addresses"]).toEqual(["helmand_exchange_msp@yahoo.com"]);
+    expect(record.raw["websites"]).toEqual(["http://example.org"]);
   });
   it("captures parent companies and subsidiaries as relationships", () => {
     const types = record.relationships.map((r) => r.relationship_type);
@@ -201,11 +201,11 @@ describe("parseDesignation — ship", () => {
     expect(record.identifiers.some((i) => i.identifier_type === "imo" && i.identifier_value === "IMO9562233")).toBe(true);
   });
   it("preserves vessel details and owner/operators", () => {
-    const ship = record.raw.ship as Record<string, string[]>;
-    expect(ship.current_flag).toEqual(["Comoros"]);
-    expect(ship.previous_flags).toEqual(["India"]);
-    expect(ship.ship_types).toEqual(["Bulk Carrier"]);
-    expect(ship.year_built).toEqual(["2011"]);
+    const ship = record.raw["ship"] as Record<string, string[]>;
+    expect(ship["current_flag"]).toEqual(["Comoros"]);
+    expect(ship["previous_flags"]).toEqual(["India"]);
+    expect(ship["ship_types"]).toEqual(["Bulk Carrier"]);
+    expect(ship["year_built"]).toEqual(["2011"]);
     expect(record.relationships.some((r) => r.relationship_type === "owner_operator")).toBe(true);
   });
 });
