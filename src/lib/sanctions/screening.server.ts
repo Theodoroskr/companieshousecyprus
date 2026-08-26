@@ -317,10 +317,10 @@ export async function runScreening(
       });
     }
 
-    inserts.sort((a, b) => (b.match_score as number) - (a.match_score as number));
+    inserts.sort((a, b) => (b["match_score"] as number) - (a["match_score"] as number));
     const top = inserts.slice(0, config.thresholds.max_candidates);
     if (top.length) {
-      const { error: candErr } = await supabase.from("screening_candidates").insert(top);
+      const { error: candErr } = await supabase.from("screening_candidates").insert(top as never);
       if (candErr) throw new Error(candErr.message);
     }
 
@@ -386,7 +386,7 @@ export async function screenCyprusCompany(
       name: company.name,
       jurisdiction: "Cyprus",
       registrationNumber: company.reg_number != null ? String(company.reg_number) : null,
-      address: company.address_full ?? [company.locality, company.district_en].filter(Boolean).join(", ") || null,
+      address: company.address_full ?? ([company.locality, company.district_en].filter(Boolean).join(", ") || null),
       companyId: company.slug,
     },
     sources,
@@ -455,21 +455,21 @@ export async function getScreeningResult(supabase: AdminClient, requestId: strin
   return {
     request,
     candidates: (candidates ?? []).map((c) => {
-      const entry = c.sanctions_entries as Record<string, unknown> | null;
-      const source = (entry?.sanctions_sources ?? null) as Record<string, unknown> | null;
+      const entry = (c as Record<string, unknown>)["sanctions_entries"] as Record<string, unknown> | null;
+      const source = (entry?.["sanctions_sources"] ?? null) as Record<string, unknown> | null;
       const latestDecision = (decisions ?? []).find((d) => d.screening_candidate_id === c.id);
       return {
         id: c.id,
         source_code: c.source_code,
-        authority: (source?.authority as string) ?? null,
-        source_name: (source?.source_name as string) ?? null,
-        source_link: (source?.information_url as string) ?? null,
-        official_record_id: (entry?.source_record_id as string) ?? null,
-        primary_name: (entry?.primary_name as string) ?? null,
-        entity_type: (entry?.entity_type as string) ?? null,
-        programme: (entry?.sanctions_programme as string) ?? null,
-        legal_basis: (entry?.legal_basis as string) ?? null,
-        designation_date: (entry?.designation_date as string) ?? null,
+        authority: (source?.["authority"] as string) ?? null,
+        source_name: (source?.["source_name"] as string) ?? null,
+        source_link: (source?.["information_url"] as string) ?? null,
+        official_record_id: (entry?.["source_record_id"] as string) ?? null,
+        primary_name: (entry?.["primary_name"] as string) ?? null,
+        entity_type: (entry?.["entity_type"] as string) ?? null,
+        programme: (entry?.["sanctions_programme"] as string) ?? null,
+        legal_basis: (entry?.["legal_basis"] as string) ?? null,
+        designation_date: (entry?.["designation_date"] as string) ?? null,
         name_used: c.name_used,
         matched_name: c.matched_name,
         matched_alias_type: c.matched_alias_type,
