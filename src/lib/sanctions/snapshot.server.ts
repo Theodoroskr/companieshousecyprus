@@ -17,7 +17,7 @@ import {
 } from "@/lib/sanctions/screening-scope";
 import { SCREENING_SOURCES, screenCyprusCompany, getScreeningResult } from "@/lib/sanctions/screening.server";
 import type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
-import { extractMeasures, extractMeasuresNote } from "@/lib/sanctions/measures";
+import { extractMeasures, extractMeasuresNote, measureAvailability } from "@/lib/sanctions/measures";
 
 export type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
 
