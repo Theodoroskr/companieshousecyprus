@@ -180,7 +180,7 @@ function ScreeningWorkbench() {
                   {registerSearch.data?.length === 0 ? <li className="px-3 py-2 text-muted-foreground">No matches</li> : null}
                 </ul>
               ) : null}
-              {slug ? <p className="text-sm text-muted-foreground">Selected: <code>{slug}</code> — the current legal name, registration number and jurisdiction will be screened. Individuals are not screened in this release.</p> : null}
+              {slug ? <p className="text-sm text-muted-foreground">Selected: <code>{slug}</code> — the current legal name, registration number and jurisdiction will be screened. Legal entities only. Directors, individual shareholders and other natural persons are not screened in this version.</p> : null}
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">

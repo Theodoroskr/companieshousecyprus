@@ -204,7 +204,7 @@ export const PRODUCTS: Product[] = [
       "This product screens a Cyprus company against the official sanctions lists published by the European Union (EU FSF), the United Nations Security Council, the United Kingdom (UKSL) and the United States (OFAC SDN).",
       "We screen the company's current legal name, its previous names and available corporate shareholders (legal entities only). Each source is checked separately and the report shows the result per source, so you can see exactly what was checked, when, and what was found.",
       "Where a candidate appears, the report shows why it was flagged: which attributes match (name, registration number, jurisdiction, LEI) and which do not, with a confidence band and a plain-language rationale — no hidden scores, no black box.",
-      "This version screens legal entities only. It does not screen directors, individual shareholders, beneficial owners or other natural persons connected to the company.",
+      "Legal entities only. Directors, individual shareholders and other natural persons are not screened in this version.",
     ],
     includes: [
       { title: "Four official sources", detail: "EU FSF, UN Consolidated, UKSL and OFAC SDN — each checked and reported separately." },
