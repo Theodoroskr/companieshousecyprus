@@ -1220,6 +1220,364 @@ export type Database = {
           },
         ]
       }
+      sanctions_subject_records: {
+        Row: {
+          confidence_score: number | null
+          correlation_evidence: Json
+          correlation_method: string | null
+          created_at: string
+          id: string
+          relationship_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sanctions_entry_id: string
+          sanctions_subject_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          correlation_evidence?: Json
+          correlation_method?: string | null
+          created_at?: string
+          id?: string
+          relationship_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sanctions_entry_id: string
+          sanctions_subject_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          correlation_evidence?: Json
+          correlation_method?: string | null
+          created_at?: string
+          id?: string
+          relationship_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sanctions_entry_id?: string
+          sanctions_subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_subject_records_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sanctions_subject_records_sanctions_subject_id_fkey"
+            columns: ["sanctions_subject_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_subjects: {
+        Row: {
+          canonical_name: string
+          canonical_name_normalized: string
+          created_at: string
+          id: string
+          review_status: string
+          subject_type: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_name: string
+          canonical_name_normalized: string
+          created_at?: string
+          id?: string
+          review_status?: string
+          subject_type: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_name?: string
+          canonical_name_normalized?: string
+          created_at?: string
+          id?: string
+          review_status?: string
+          subject_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      screening_audit_log: {
+        Row: {
+          actor: string | null
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: number
+          screening_candidate_id: string | null
+          screening_request_id: string | null
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: never
+          screening_candidate_id?: string | null
+          screening_request_id?: string | null
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: never
+          screening_candidate_id?: string | null
+          screening_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screening_audit_log_screening_request_id_fkey"
+            columns: ["screening_request_id"]
+            isOneToOne: false
+            referencedRelation: "screening_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      screening_candidates: {
+        Row: {
+          address_match: boolean | null
+          conflicting_attributes: Json
+          corroborating_attributes: Json
+          created_at: string
+          date_of_birth_match: boolean | null
+          entity_type_match: boolean | null
+          id: string
+          identifier_match: boolean
+          jurisdiction_match: boolean | null
+          match_level: number | null
+          match_score: number
+          matched_alias_type: string | null
+          matched_name: string
+          name_similarity: number | null
+          name_used: string
+          nationality_match: boolean | null
+          sanctions_entry_id: string
+          score_contributions: Json
+          screening_request_id: string
+          source_code: string
+          system_classification: string
+        }
+        Insert: {
+          address_match?: boolean | null
+          conflicting_attributes?: Json
+          corroborating_attributes?: Json
+          created_at?: string
+          date_of_birth_match?: boolean | null
+          entity_type_match?: boolean | null
+          id?: string
+          identifier_match?: boolean
+          jurisdiction_match?: boolean | null
+          match_level?: number | null
+          match_score?: number
+          matched_alias_type?: string | null
+          matched_name: string
+          name_similarity?: number | null
+          name_used: string
+          nationality_match?: boolean | null
+          sanctions_entry_id: string
+          score_contributions?: Json
+          screening_request_id: string
+          source_code: string
+          system_classification: string
+        }
+        Update: {
+          address_match?: boolean | null
+          conflicting_attributes?: Json
+          corroborating_attributes?: Json
+          created_at?: string
+          date_of_birth_match?: boolean | null
+          entity_type_match?: boolean | null
+          id?: string
+          identifier_match?: boolean
+          jurisdiction_match?: boolean | null
+          match_level?: number | null
+          match_score?: number
+          matched_alias_type?: string | null
+          matched_name?: string
+          name_similarity?: number | null
+          name_used?: string
+          nationality_match?: boolean | null
+          sanctions_entry_id?: string
+          score_contributions?: Json
+          screening_request_id?: string
+          source_code?: string
+          system_classification?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screening_candidates_sanctions_entry_id_fkey"
+            columns: ["sanctions_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "screening_candidates_screening_request_id_fkey"
+            columns: ["screening_request_id"]
+            isOneToOne: false
+            referencedRelation: "screening_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      screening_decisions: {
+        Row: {
+          created_at: string
+          decision: string
+          decision_source: string
+          id: string
+          rationale: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          screening_candidate_id: string
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          decision_source: string
+          id?: string
+          rationale: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screening_candidate_id: string
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          decision_source?: string
+          id?: string
+          rationale?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screening_candidate_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screening_decisions_screening_candidate_id_fkey"
+            columns: ["screening_candidate_id"]
+            isOneToOne: false
+            referencedRelation: "screening_candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      screening_requests: {
+        Row: {
+          address: string | null
+          company_id: string | null
+          completed_at: string | null
+          date_of_birth: string | null
+          error_message: string | null
+          id: string
+          jurisdiction: string | null
+          lei: string | null
+          nationality: string | null
+          normalized_name: string
+          outcome: string | null
+          previous_names: Json
+          registration_number: string | null
+          requested_at: string
+          requested_by: string | null
+          rules_version: string
+          screening_reference: string
+          source_context: string
+          source_import_ids: Json
+          sources_requested: Json
+          status: string
+          subject_aliases: Json
+          subject_name: string
+          subject_type: string
+        }
+        Insert: {
+          address?: string | null
+          company_id?: string | null
+          completed_at?: string | null
+          date_of_birth?: string | null
+          error_message?: string | null
+          id?: string
+          jurisdiction?: string | null
+          lei?: string | null
+          nationality?: string | null
+          normalized_name: string
+          outcome?: string | null
+          previous_names?: Json
+          registration_number?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          rules_version: string
+          screening_reference: string
+          source_context?: string
+          source_import_ids?: Json
+          sources_requested?: Json
+          status?: string
+          subject_aliases?: Json
+          subject_name: string
+          subject_type: string
+        }
+        Update: {
+          address?: string | null
+          company_id?: string | null
+          completed_at?: string | null
+          date_of_birth?: string | null
+          error_message?: string | null
+          id?: string
+          jurisdiction?: string | null
+          lei?: string | null
+          nationality?: string | null
+          normalized_name?: string
+          outcome?: string | null
+          previous_names?: Json
+          registration_number?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          rules_version?: string
+          screening_reference?: string
+          source_context?: string
+          source_import_ids?: Json
+          sources_requested?: Json
+          status?: string
+          subject_aliases?: Json
+          subject_name?: string
+          subject_type?: string
+        }
+        Relationships: []
+      }
+      screening_rules_config: {
+        Row: {
+          key: string
+          rules_version: string
+          thresholds: Json
+          updated_at: string
+          updated_by: string | null
+          weights: Json
+        }
+        Insert: {
+          key: string
+          rules_version: string
+          thresholds: Json
+          updated_at?: string
+          updated_by?: string | null
+          weights: Json
+        }
+        Update: {
+          key?: string
+          rules_version?: string
+          thresholds?: Json
+          updated_at?: string
+          updated_by?: string | null
+          weights?: Json
+        }
+        Relationships: []
+      }
       sitemap_chunks: {
         Row: {
           chunk_index: number
@@ -1379,6 +1737,37 @@ export type Database = {
       }
       sanctions_try_lock: { Args: { _source_code: string }; Returns: boolean }
       sanctions_unlock: { Args: { _source_code: string }; Returns: boolean }
+      screening_identifier_candidates: {
+        Args: { p_identifiers: Json; p_sources?: string[] }
+        Returns: {
+          entity_type: string
+          identifier_type: string
+          identifier_value: string
+          issuing_country: string
+          primary_name: string
+          sanctions_entry_id: string
+          source_code: string
+        }[]
+      }
+      screening_name_candidates: {
+        Args: {
+          p_entity_types?: string[]
+          p_limit?: number
+          p_min_sim?: number
+          p_names: string[]
+          p_sources?: string[]
+        }
+        Returns: {
+          entity_type: string
+          matched_alias_type: string
+          matched_name: string
+          name_similarity: number
+          name_used: string
+          primary_name: string
+          sanctions_entry_id: string
+          source_code: string
+        }[]
+      }
       search_companies_page: {
         Args: {
           p_cap?: number
