@@ -87,6 +87,7 @@ import { Route as ApiPublicCanonicalHealthRouteImport } from './routes/api/publi
 import { Route as ApiPublicChangeFeedRouteImport } from './routes/api/public/change-feed'
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
 import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/indexnow'
+import { Route as ApiPublicOfacWorkerRouteImport } from './routes/api/public/ofac-worker'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as ApiPublicSanctionsImportRouteImport } from './routes/api/public/sanctions-import'
@@ -515,6 +516,11 @@ const ApiPublicIndexnowRoute = ApiPublicIndexnowRouteImport.update({
   path: '/api/public/indexnow',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOfacWorkerRoute = ApiPublicOfacWorkerRouteImport.update({
+  id: '/api/public/ofac-worker',
+  path: '/api/public/ofac-worker',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOrderRemindersRoute = ApiPublicOrderRemindersRouteImport.update({
   id: '/api/public/order-reminders',
   path: '/api/public/order-reminders',
@@ -659,6 +665,7 @@ export interface FileRoutesByFullPath {
   '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
+  '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
@@ -749,6 +756,7 @@ export interface FileRoutesByTo {
   '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
+  '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
@@ -842,6 +850,7 @@ export interface FileRoutesById {
   '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
+  '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
@@ -935,6 +944,7 @@ export interface FileRouteTypes {
     | '/api/public/change-feed'
     | '/api/public/company-lookup'
     | '/api/public/indexnow'
+    | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/api/public/sanctions-import'
@@ -1025,6 +1035,7 @@ export interface FileRouteTypes {
     | '/api/public/change-feed'
     | '/api/public/company-lookup'
     | '/api/public/indexnow'
+    | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/api/public/sanctions-import'
@@ -1117,6 +1128,7 @@ export interface FileRouteTypes {
     | '/api/public/change-feed'
     | '/api/public/company-lookup'
     | '/api/public/indexnow'
+    | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
     | '/api/public/sanctions-import'
@@ -1199,6 +1211,7 @@ export interface RootRouteChildren {
   ApiPublicChangeFeedRoute: typeof ApiPublicChangeFeedRoute
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
   ApiPublicIndexnowRoute: typeof ApiPublicIndexnowRoute
+  ApiPublicOfacWorkerRoute: typeof ApiPublicOfacWorkerRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   ApiPublicSanctionsImportRoute: typeof ApiPublicSanctionsImportRoute
@@ -1759,6 +1772,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIndexnowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ofac-worker': {
+      id: '/api/public/ofac-worker'
+      path: '/api/public/ofac-worker'
+      fullPath: '/api/public/ofac-worker'
+      preLoaderRoute: typeof ApiPublicOfacWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/order-reminders': {
       id: '/api/public/order-reminders'
       path: '/api/public/order-reminders'
@@ -1961,6 +1981,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicChangeFeedRoute: ApiPublicChangeFeedRoute,
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
   ApiPublicIndexnowRoute: ApiPublicIndexnowRoute,
+  ApiPublicOfacWorkerRoute: ApiPublicOfacWorkerRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   ApiPublicSanctionsImportRoute: ApiPublicSanctionsImportRoute,
