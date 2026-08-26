@@ -85,6 +85,122 @@ export async function fetchSanctionsSource(
   return { response: null, urlUsed: null, attempts };
 }
 
+export type ResumeEvent = { offset: number; outcome: string };
+
+/**
+ * Wraps a download body in a stream that survives mid-transfer interruptions:
+ * when the connection drops (or the body ends short of Content-Length) it
+ * re-requests the *remaining* bytes with a `Range: bytes=<received>-` header
+ * instead of restarting the whole file. `If-Range` (ETag or Last-Modified)
+ * guarantees the server only resumes when the file has not changed; anything
+ * other than a 206 aborts the download so we never splice two versions.
+ */
+export function createResumableBody(
+  response: Response,
+  requestUrl: string,
+  options: { maxResumes?: number } = {},
+): {
+  stream: ReadableStream<Uint8Array>;
+  resumeLog: ResumeEvent[];
+  totalBytes: number | null;
+  receivedBytes: () => number;
+} {
+  const maxResumes = options.maxResumes ?? 5;
+  const resumeLog: ResumeEvent[] = [];
+  // Resume against the final (post-redirect) URL — signed CDN/S3 copies keep
+  // working, while the configured URL would 302 to a fresh object.
+  const resumeUrl = response.url || requestUrl;
+  const lengthHeader = response.headers.get("content-length");
+  const totalBytes = lengthHeader !== null && Number.isFinite(Number(lengthHeader)) ? Number(lengthHeader) : null;
+  const supportsRange = /bytes/i.test(response.headers.get("accept-ranges") ?? "") || totalBytes !== null;
+  const etag = response.headers.get("etag");
+  const lastModified = response.headers.get("last-modified");
+
+  let reader = response.body?.getReader() ?? null;
+  let received = 0;
+  let resumes = 0;
+
+  async function resume(reason: string): Promise<boolean> {
+    if (!supportsRange || received === 0 || resumes >= maxResumes) return false;
+    resumes += 1;
+    await sleep(1000 * 2 ** (resumes - 1));
+    const headers: Record<string, string> = { ...SOURCE_FETCH_HEADERS, Range: `bytes=${received}-` };
+    const validator = etag ?? lastModified;
+    if (validator) headers["If-Range"] = validator;
+    try {
+      const next = await fetch(resumeUrl, { redirect: "follow", headers });
+      if (next.status !== 206 || !next.body) {
+        await next.body?.cancel().catch(() => undefined);
+        resumeLog.push({ offset: received, outcome: `resume rejected: HTTP ${next.status} (${reason})` });
+        return false;
+      }
+      reader = next.body.getReader();
+      resumeLog.push({ offset: received, outcome: `resumed from byte ${received} after ${reason}` });
+      return true;
+    } catch (error) {
+      resumeLog.push({ offset: received, outcome: error instanceof Error ? error.message : "resume failed" });
+      return false;
+    }
+  }
+
+  const stream = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      for (;;) {
+        if (!reader) {
+          controller.error(new Error("Source response has no readable body stream."));
+          return;
+        }
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            if (totalBytes !== null && received < totalBytes) {
+              const reason = `truncated at ${received}/${totalBytes} bytes`;
+              if (await resume(reason)) continue;
+              controller.error(new Error(`Download ${reason}; could not resume.`));
+              return;
+            }
+            controller.close();
+            return;
+          }
+          received += value.byteLength;
+          controller.enqueue(value);
+          return;
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "network error";
+          if (await resume(reason)) continue;
+          controller.error(error);
+          return;
+        }
+      }
+    },
+    cancel(reason) {
+      reader?.cancel(reason).catch(() => undefined);
+    },
+  });
+
+  return { stream, resumeLog, totalBytes, receivedBytes: () => received };
+}
+
+/** Reads a whole resumable stream into memory (buffered import paths only). */
+export async function collectStream(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    size += value.byteLength;
+  }
+  const out = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return out;
+}
+
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
   iterate: (xml: string) => Generator<SanctionsRecord>;
