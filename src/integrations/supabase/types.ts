@@ -563,6 +563,7 @@ export type Database = {
           product_slug: string
           quantity: number
           report_json: Json | null
+          screening_request_id: string | null
           service_fee_cents: number
           total_cents: number
           vat_cents: number
@@ -591,6 +592,7 @@ export type Database = {
           product_slug: string
           quantity?: number
           report_json?: Json | null
+          screening_request_id?: string | null
           service_fee_cents?: number
           total_cents?: number
           vat_cents?: number
@@ -619,6 +621,7 @@ export type Database = {
           product_slug?: string
           quantity?: number
           report_json?: Json | null
+          screening_request_id?: string | null
           service_fee_cents?: number
           total_cents?: number
           vat_cents?: number
@@ -629,6 +632,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_screening_request_id_fkey"
+            columns: ["screening_request_id"]
+            isOneToOne: false
+            referencedRelation: "screening_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -1485,25 +1495,32 @@ export type Database = {
           company_id: string | null
           completed_at: string | null
           date_of_birth: string | null
+          entity_only: boolean
           error_message: string | null
+          excluded_categories: Json
           id: string
           jurisdiction: string | null
           lei: string | null
           nationality: string | null
           normalized_name: string
+          not_screened: Json
           outcome: string | null
+          parent_request_id: string | null
           previous_names: Json
           registration_number: string | null
           requested_at: string
           requested_by: string | null
           rules_version: string
+          scope_version: string
           screening_reference: string
           source_context: string
+          source_file_hashes: Json
           source_import_ids: Json
           sources_requested: Json
           status: string
           subject_aliases: Json
           subject_name: string
+          subject_role: string
           subject_type: string
         }
         Insert: {
@@ -1511,25 +1528,32 @@ export type Database = {
           company_id?: string | null
           completed_at?: string | null
           date_of_birth?: string | null
+          entity_only?: boolean
           error_message?: string | null
+          excluded_categories?: Json
           id?: string
           jurisdiction?: string | null
           lei?: string | null
           nationality?: string | null
           normalized_name: string
+          not_screened?: Json
           outcome?: string | null
+          parent_request_id?: string | null
           previous_names?: Json
           registration_number?: string | null
           requested_at?: string
           requested_by?: string | null
           rules_version: string
+          scope_version?: string
           screening_reference: string
           source_context?: string
+          source_file_hashes?: Json
           source_import_ids?: Json
           sources_requested?: Json
           status?: string
           subject_aliases?: Json
           subject_name: string
+          subject_role?: string
           subject_type: string
         }
         Update: {
@@ -1537,28 +1561,43 @@ export type Database = {
           company_id?: string | null
           completed_at?: string | null
           date_of_birth?: string | null
+          entity_only?: boolean
           error_message?: string | null
+          excluded_categories?: Json
           id?: string
           jurisdiction?: string | null
           lei?: string | null
           nationality?: string | null
           normalized_name?: string
+          not_screened?: Json
           outcome?: string | null
+          parent_request_id?: string | null
           previous_names?: Json
           registration_number?: string | null
           requested_at?: string
           requested_by?: string | null
           rules_version?: string
+          scope_version?: string
           screening_reference?: string
           source_context?: string
+          source_file_hashes?: Json
           source_import_ids?: Json
           sources_requested?: Json
           status?: string
           subject_aliases?: Json
           subject_name?: string
+          subject_role?: string
           subject_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "screening_requests_parent_request_id_fkey"
+            columns: ["parent_request_id"]
+            isOneToOne: false
+            referencedRelation: "screening_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       screening_rules_config: {
         Row: {
