@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, RefreshCw, Send } from "lucide-react";
 import { adminReleaseReport, adminReviewSnapshot, adminRerunSnapshot } from "@/lib/orders.functions";
 import { SanctionsSnapshotView } from "@/components/report/SanctionsSnapshotView";
+import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
+import { statusForFulfilment } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Review sanctions screening — Companies House Cyprus";
@@ -64,8 +66,10 @@ function AdminSnapshotReview() {
       ) : query.data?.snapshot ? (
         <>
           <p className="mb-4 text-sm text-muted-foreground">
-            Order {query.data.meta.reference} · {query.data.meta.customer ?? "—"} · status{" "}
-            {query.data.meta.fulfilmentStatus}
+            Order {query.data.meta.reference} · {query.data.meta.customer ?? "—"}
+          </p>
+          <p className="mb-4">
+            <ScreeningStatusBadge status={statusForFulfilment(query.data.meta.fulfilmentStatus)} />
           </p>
           <SanctionsSnapshotView
             snapshot={query.data.snapshot}
