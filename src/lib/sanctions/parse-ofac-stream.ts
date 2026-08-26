@@ -83,7 +83,6 @@ export class OfacStreamParser {
     this.pump(trailing);
     if (!this.sawRoot) throw new Error("Not an OFAC Advanced XML document (missing <Sanctions> root)");
     if (!this.rootClosed) throw new Error("Document is truncated (missing </Sanctions> closing tag)");
-    if (trailing.length > 0) this.totalEntries += 0; // pump already counted them
     return {
       totalParties: this.parties.size,
       totalEntries: this.totalEntries,
