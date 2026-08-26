@@ -352,6 +352,16 @@ function SanctionsDataPage() {
             </CardContent>
           </Card>
 
+          {(() => {
+            const withPerf = data.history.find(
+              (row) =>
+                (row.diagnostic_details as { perf?: WorkerPerf } | null)?.perf &&
+                typeof (row.diagnostic_details as { perf?: WorkerPerf } | null)?.perf?.downloadMs === "number",
+            );
+            const perf = (withPerf?.diagnostic_details as { perf?: WorkerPerf } | null)?.perf;
+            return perf ? <WorkerPerformanceCard perf={perf} startedAt={withPerf?.started_at} /> : null;
+          })()}
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Inspect a stored record</CardTitle>
