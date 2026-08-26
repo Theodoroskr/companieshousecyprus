@@ -77,13 +77,16 @@ export class OfacStreamParser {
     return out;
   }
 
-  /** Signal end of input. Throws if the document is incomplete. */
-  finish(): OfacParseReport {
+  /** Signal end of input; returns any records completed by the final bytes.
+   *  Throws if the document is incomplete. */
+  finish(): { records: SanctionsRecord[]; report: OfacParseReport } {
     const trailing: SanctionsRecord[] = [];
     this.pump(trailing);
     if (!this.sawRoot) throw new Error("Not an OFAC Advanced XML document (missing <Sanctions> root)");
     if (!this.rootClosed) throw new Error("Document is truncated (missing </Sanctions> closing tag)");
     return {
+      records: trailing,
+      report: {
       totalParties: this.parties.size,
       totalEntries: this.totalEntries,
       skippedNoIdentity: this.stats.skippedNoIdentity,
