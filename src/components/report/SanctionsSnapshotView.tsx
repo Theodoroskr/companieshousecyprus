@@ -168,6 +168,28 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
         {candidate.programme ? ` · ${candidate.programme}` : ""}
         {candidate.designationDate ? ` · designated ${formatDate(candidate.designationDate)}` : ""}
       </p>
+      {candidate.listingReason ? (
+        <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Reason for listing, as published by the authority
+          </p>
+          <blockquote className="mt-1 whitespace-pre-line text-xs leading-relaxed text-foreground">
+            {candidate.listingReason}
+          </blockquote>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Quoted verbatim from {candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase()}. It describes
+            the listed record, not our identity determination.
+            {candidate.sourceLink ? (
+              <>
+                {" "}
+                <a className="underline" href={candidate.sourceLink} rel="noopener noreferrer" target="_blank">
+                  Official source
+                </a>
+              </>
+            ) : null}
+          </p>
+        </div>
+      ) : null}
       {candidate.analystDecision ? (
         <p className="mt-1 text-xs text-foreground/80">
           Analyst determination: {candidate.analystDecision.decision.replace(/_/g, " ")}
