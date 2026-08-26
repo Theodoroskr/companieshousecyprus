@@ -22,16 +22,15 @@ type SourceAdapter = {
   sanity?: (stats: { persons: number; entities: number; parsed: number }) => string | null;
 };
 
-function looksLikeOfacAdvanced(xml: string): { ok: boolean; reason?: string } {
-  if (!xml.includes("<Sanctions")) return { ok: false, reason: "missing <Sanctions> root element" };
-  if (!xml.includes("<DistinctParties>")) return { ok: false, reason: "missing <DistinctParties> section" };
-  if (!xml.includes("<SanctionsEntries>")) return { ok: false, reason: "missing <SanctionsEntries> section" };
-  if (!/<\/Sanctions>\s*$/.test(xml.slice(-500))) return { ok: false, reason: "document is truncated (no closing </Sanctions>)" };
-  return { ok: true };
-}
-
-function* iterateOfacRecords(xml: string): Generator<SanctionsRecord> {
-  yield* parseOfac(xml).records;
+// OFAC's 126 MB Advanced XML must never be buffered: the generic
+// validate/iterate hooks would hold the whole document in memory, which
+// exceeds the production worker limit. runSanctionsImport delegates OFAC to
+// runOfacStreamingImport (chunked SAX-style parser) before the adapter hooks
+// are reachable; these stubs hard-fail if that invariant is ever broken.
+function ofacBufferedPathForbidden(): never {
+  throw new Error(
+    "OFAC must be imported via runOfacStreamingImport (streaming parser); the buffered path exceeds the worker memory limit.",
+  );
 }
 
 const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
