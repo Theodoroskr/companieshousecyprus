@@ -48,16 +48,18 @@ function attrs(tag: string): Attrs {
   return out;
 }
 
-/** Parse a `<FooValues>` reference section into an ID -> label map. */
+/** Parse a `<FooValues>` reference section into an ID -> label map.
+ *  Each refset uses its own element tag (`<FeatureType ID=..>label</FeatureType>`,
+ *  `<Value ID=..>label</Value>`, ...), so we match any ID-bearing element. */
 function parseRefSet(xml: string, name: string): Map<string, string> {
   const map = new Map<string, string>();
   const m = xml.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`));
   if (!m || m[1] === undefined) return map;
-  const re = /<Value ID="(\d+)"[^>]*>([\s\S]*?)<\/Value>/g;
+  const re = /<(\w+) ID="(\d+)"[^>]*>([^<]+)<\/\1>/g;
   let v: RegExpExecArray | null;
   while ((v = re.exec(m[1]))) {
-    const id = v[1];
-    const label = v[2];
+    const id = v[2];
+    const label = v[3];
     if (id !== undefined && label !== undefined) map.set(id, decodeEntities(label.trim()));
   }
   return map;
