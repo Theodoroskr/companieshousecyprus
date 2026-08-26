@@ -1,5 +1,6 @@
 /** Shared, browser-safe types for the entity-only Sanctions Risk Snapshot. */
 import type { EntityScreeningOutcome, SubjectRole } from "@/lib/sanctions/screening-scope";
+import type { MeasureAvailability } from "@/lib/sanctions/measures";
 
 export type SnapshotCandidate = {
   sourceCode: string;
@@ -19,6 +20,8 @@ export type SnapshotCandidate = {
   measures: string[];
   /** Free-text note published with the measures, when available. */
   measuresNote: string | null;
+  /** Whether the source record actually carries measure/amendment data. */
+  measuresAvailability: MeasureAvailability;
   nameUsed: string;
   matchedName: string;
   nameSimilarity: number | null;
