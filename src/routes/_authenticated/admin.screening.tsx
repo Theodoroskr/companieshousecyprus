@@ -281,7 +281,7 @@ function ResultView({ data, onDecision, decisionPending }: { data: ResultData; o
 
 type Candidate = ResultData["candidates"][number];
 
-function CandidateCard({ candidate: c, onDecision, pending }: { candidate: Candidate; onDecision: ResultView extends never ? never : (input: { candidateId: string; decision: (typeof DECISIONS)[number][0]; rationale: string }) => void; pending: boolean }) {
+function CandidateCard({ candidate: c, onDecision, pending }: { candidate: Candidate; onDecision: (input: { candidateId: string; decision: (typeof DECISIONS)[number][0]; rationale: string }) => void; pending: boolean }) {
   const [rationale, setRationale] = useState("");
   const [open, setOpen] = useState(false);
   return (
