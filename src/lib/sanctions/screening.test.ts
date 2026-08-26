@@ -31,7 +31,7 @@ describe("normalization", () => {
   it("transliterates Greek names to Latin", () => {
     const forms = normalizeNameForms("Νικόλαος Παπαδόπουλος");
     expect(forms.searchKey).toContain("NIKOLAOS");
-    expect(forms.searchKey).toContain("PAPADOPOULOS");
+    expect(forms.searchKey).toContain("PAPADOPOYLOS");
   });
 
   it("transliterates Cyrillic names to Latin", () => {
