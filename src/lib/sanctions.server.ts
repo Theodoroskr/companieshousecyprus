@@ -3,7 +3,6 @@ import type { Database } from "@/integrations/supabase/types";
 import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecord } from "@/lib/sanctions/parse";
 import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
-import { parseOfac } from "@/lib/sanctions/parse-ofac";
 import { OfacStreamParser } from "@/lib/sanctions/parse-ofac-stream";
 import { StreamingSha256 } from "@/lib/sanctions/sha256-stream";
 
@@ -22,16 +21,15 @@ type SourceAdapter = {
   sanity?: (stats: { persons: number; entities: number; parsed: number }) => string | null;
 };
 
-function looksLikeOfacAdvanced(xml: string): { ok: boolean; reason?: string } {
-  if (!xml.includes("<Sanctions")) return { ok: false, reason: "missing <Sanctions> root element" };
-  if (!xml.includes("<DistinctParties>")) return { ok: false, reason: "missing <DistinctParties> section" };
-  if (!xml.includes("<SanctionsEntries>")) return { ok: false, reason: "missing <SanctionsEntries> section" };
-  if (!/<\/Sanctions>\s*$/.test(xml.slice(-500))) return { ok: false, reason: "document is truncated (no closing </Sanctions>)" };
-  return { ok: true };
-}
-
-function* iterateOfacRecords(xml: string): Generator<SanctionsRecord> {
-  yield* parseOfac(xml).records;
+// OFAC's 126 MB Advanced XML must never be buffered: the generic
+// validate/iterate hooks would hold the whole document in memory, which
+// exceeds the production worker limit. runSanctionsImport delegates OFAC to
+// runOfacStreamingImport (chunked SAX-style parser) before the adapter hooks
+// are reachable; these stubs hard-fail if that invariant is ever broken.
+function ofacBufferedPathForbidden(): never {
+  throw new Error(
+    "OFAC must be imported via runOfacStreamingImport (streaming parser); the buffered path exceeds the worker memory limit.",
+  );
 }
 
 const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
@@ -64,8 +62,8 @@ const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
     },
   },
   [OFAC_SOURCE_CODE]: {
-    validate: looksLikeOfacAdvanced,
-    iterate: iterateOfacRecords,
+    validate: ofacBufferedPathForbidden,
+    iterate: ofacBufferedPathForbidden,
     storagePrefix: "ofac-sdn",
     // The Advanced SDN export is ~126 MB; refuse anything implausibly small.
     minBytes: 20 * 1024 * 1024,
