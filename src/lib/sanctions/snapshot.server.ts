@@ -58,6 +58,8 @@ export async function buildSanctionsSnapshot(
           recordType: c.entity_type,
           programme: c.programme,
           legalBasis: c.legal_basis,
+          listingReason: (c as { listing_reason?: string | null }).listing_reason ?? null,
+          sourceLink: c.source_link ?? null,
           designationDate: c.designation_date,
           nameUsed: c.name_used as string,
           matchedName: c.matched_name as string,

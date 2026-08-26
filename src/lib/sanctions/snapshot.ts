@@ -9,6 +9,9 @@ export type SnapshotCandidate = {
   recordType: string | null;
   programme: string | null;
   legalBasis: string | null;
+  /** Statement of reasons exactly as published by the designating authority. */
+  listingReason: string | null;
+  sourceLink: string | null;
   designationDate: string | null;
   nameUsed: string;
   matchedName: string;

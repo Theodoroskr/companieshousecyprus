@@ -640,7 +640,7 @@ export async function getScreeningResult(supabase: AdminClient, requestId: strin
 
   const { data: candidates } = await supabase
     .from("screening_candidates")
-    .select("*, sanctions_entries(primary_name, entity_type, sanctions_programme, source_record_id, legal_basis, designation_date, sanctions_sources(source_code, source_name, authority, information_url))")
+    .select("*, sanctions_entries(primary_name, entity_type, sanctions_programme, source_record_id, legal_basis, listing_reason, designation_date, sanctions_sources(source_code, source_name, authority, information_url))")
     .eq("screening_request_id", requestId)
     .order("match_score", { ascending: false });
 
@@ -674,6 +674,7 @@ export async function getScreeningResult(supabase: AdminClient, requestId: strin
         entity_type: (entry?.["entity_type"] as string) ?? null,
         programme: (entry?.["sanctions_programme"] as string) ?? null,
         legal_basis: (entry?.["legal_basis"] as string) ?? null,
+        listing_reason: (entry?.["listing_reason"] as string) ?? null,
         designation_date: (entry?.["designation_date"] as string) ?? null,
         name_used: c.name_used,
         matched_name: c.matched_name,
