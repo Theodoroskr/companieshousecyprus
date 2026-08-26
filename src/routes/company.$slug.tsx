@@ -6,7 +6,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
 import { PRODUCTS, formatPrice } from "@/lib/products";
-import { COMPANY_PAGE_COPY, SCOPE_LIMITATION_NOTICE } from "@/lib/sanctions/screening-scope";
+import { COMPANY_PAGE_COPY } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
