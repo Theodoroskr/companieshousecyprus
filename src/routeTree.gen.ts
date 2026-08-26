@@ -77,6 +77,7 @@ import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminSanctionsDataRouteImport } from './routes/_authenticated/admin.sanctions-data'
+import { Route as AuthenticatedAdminScreeningRouteImport } from './routes/_authenticated/admin.screening'
 import { Route as AuthenticatedAdminSitemapRouteImport } from './routes/_authenticated/admin.sitemap'
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
@@ -461,6 +462,12 @@ const AuthenticatedAdminSanctionsDataRoute =
     path: '/sanctions-data',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminScreeningRoute =
+  AuthenticatedAdminScreeningRouteImport.update({
+    id: '/screening',
+    path: '/screening',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSitemapRoute =
   AuthenticatedAdminSitemapRouteImport.update({
     id: '/sitemap',
@@ -642,6 +649,7 @@ export interface FileRoutesByFullPath {
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
+  '/admin/screening': typeof AuthenticatedAdminScreeningRoute
   '/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -731,6 +739,7 @@ export interface FileRoutesByTo {
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
+  '/admin/screening': typeof AuthenticatedAdminScreeningRoute
   '/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -823,6 +832,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
+  '/_authenticated/admin/screening': typeof AuthenticatedAdminScreeningRoute
   '/_authenticated/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -915,6 +925,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/orders'
     | '/admin/sanctions-data'
+    | '/admin/screening'
     | '/admin/sitemap'
     | '/admin/usage'
     | '/admin/users'
@@ -1004,6 +1015,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/orders'
     | '/admin/sanctions-data'
+    | '/admin/screening'
     | '/admin/sitemap'
     | '/admin/usage'
     | '/admin/users'
@@ -1095,6 +1107,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/sanctions-data'
+    | '/_authenticated/admin/screening'
     | '/_authenticated/admin/sitemap'
     | '/_authenticated/admin/usage'
     | '/_authenticated/admin/users'
@@ -1676,6 +1689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSanctionsDataRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/screening': {
+      id: '/_authenticated/admin/screening'
+      path: '/screening'
+      fullPath: '/admin/screening'
+      preLoaderRoute: typeof AuthenticatedAdminScreeningRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/sitemap': {
       id: '/_authenticated/admin/sitemap'
       path: '/sitemap'
@@ -1832,6 +1852,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminSanctionsDataRoute: typeof AuthenticatedAdminSanctionsDataRoute
+  AuthenticatedAdminScreeningRoute: typeof AuthenticatedAdminScreeningRoute
   AuthenticatedAdminSitemapRoute: typeof AuthenticatedAdminSitemapRoute
   AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
@@ -1845,6 +1866,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminSanctionsDataRoute: AuthenticatedAdminSanctionsDataRoute,
+  AuthenticatedAdminScreeningRoute: AuthenticatedAdminScreeningRoute,
   AuthenticatedAdminSitemapRoute: AuthenticatedAdminSitemapRoute,
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
