@@ -91,7 +91,7 @@ export const SCOPE_SUBJECT_PHRASE = "the company, its previous names and availab
 export const COMPANY_PAGE_COPY = {
   title: "Sanctions screening",
   description:
-    "Screen this company, its previous names and available corporate shareholders against entity records in official EU, UN, UK and US sanctions sources.",
+    "We check this company's legal name, previous names and recorded corporate shareholders against the official sanctions lists published by the EU, UN, UK and US — and report the result per source, with the attributes that matched or conflicted.",
   button: "Run sanctions screening — €29",
-  supporting: "Company and legal-entity screening only. Individuals are not included in this version.",
+  supporting: "Legal entities only. Directors, individual shareholders and other natural persons are not screened in this version.",
 } as const;
