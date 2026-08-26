@@ -199,7 +199,7 @@ export async function runScreening(
       ),
       scope_version: SCREENING_SCOPE_VERSION,
       entity_only: !CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
-      excluded_categories: EXCLUDED_SUBJECT_CATEGORIES,
+      excluded_categories: [...EXCLUDED_SUBJECT_CATEGORIES],
       subject_role: input.role ?? "direct_company",
       parent_request_id: input.parentRequestId ?? null,
       rules_version: config.rulesVersion,
