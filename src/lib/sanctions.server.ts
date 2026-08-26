@@ -978,6 +978,7 @@ export async function runOfacStreamingImport(
             contentType,
             etag: etagHeader,
             perf,
+            resumeLog: download.resumeLog,
             parser: "ofac-advanced-v3-stream",
           } as never,
         } as never)
@@ -1110,6 +1111,7 @@ export async function runOfacStreamingImport(
           rssMbBefore: rssBefore,
           rssMbAfter: rssAfter,
           perf,
+          resumeLog: download.resumeLog,
           parser: "ofac-advanced-v3-stream",
           rawArchived: storagePath !== null,
         } as never,
