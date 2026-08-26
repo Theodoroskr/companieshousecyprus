@@ -174,10 +174,11 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
         {candidate.designationDate ? ` · designated ${formatDate(candidate.designationDate)}` : ""}
       </p>
       {candidate.listingReason ? (
-        <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+        <div id={noteAnchor} className="mt-2 scroll-mt-24 rounded-md border border-border/60 bg-background/70 p-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Reason for listing, as published by the authority
           </p>
+
           <blockquote className="mt-1 whitespace-pre-line text-xs leading-relaxed text-foreground">
             {candidate.listingReason}
           </blockquote>
