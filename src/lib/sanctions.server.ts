@@ -836,8 +836,10 @@ export async function runOfacStreamingImport(
       await failImport(supabase, importId, detail, { stage: "sanity", parsed, previousCount, finalHost });
       return { importId, status: "failed", message: detail };
     }
+    perf.validationMs = Date.now() - validationStartedAt;
 
     // 5. atomic publication -------------------------------------------------
+    const publishStartedAt = Date.now();
     const { data: published, error: publishError } = await (supabase.rpc as never as (
       fn: string,
       args: Record<string, unknown>,
@@ -852,6 +854,9 @@ export async function runOfacStreamingImport(
       await failImport(supabase, importId, detail, { stage: "publish" });
       return { importId, status: "failed", message: detail };
     }
+
+    perf.publishMs = Date.now() - publishStartedAt;
+    sampleRss();
 
     const result = Array.isArray(published) ? published[0] : published;
     await supabase
@@ -873,6 +878,7 @@ export async function runOfacStreamingImport(
           parseDurationMs,
           rssMbBefore: rssBefore,
           rssMbAfter: rssAfter,
+          perf,
           parser: "ofac-advanced-v3-stream",
           rawArchived: storagePath !== null,
         } as never,
