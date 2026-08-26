@@ -30,6 +30,37 @@ export const Route = createFileRoute("/order/$reference")({
 
 const euros = (cents: number) => formatPrice(cents / 100);
 
+const money = (cents: number, currency?: string | null) =>
+  currency && currency.toLowerCase() !== "eur"
+    ? new Intl.NumberFormat("en-GB", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100)
+    : euros(cents);
+
+/**
+ * Once Stripe has charged the card, its figures are authoritative — Stripe
+ * calculates tax at the buyer's location, which can differ from our own VAT
+ * estimate. Before payment we show our estimate and label it as such.
+ */
+function displayedTotals(order: {
+  subtotal_cents: number;
+  service_fee_cents: number;
+  vat_cents: number;
+  total_cents: number;
+  charged_subtotal_cents?: number | null;
+  charged_tax_cents?: number | null;
+  charged_total_cents?: number | null;
+  charged_currency?: string | null;
+}) {
+  const charged = typeof order.charged_total_cents === "number";
+  return {
+    charged,
+    currency: charged ? order.charged_currency ?? "eur" : "eur",
+    subtotal: charged ? order.charged_subtotal_cents ?? order.subtotal_cents : order.subtotal_cents,
+    serviceFee: order.service_fee_cents,
+    tax: charged ? order.charged_tax_cents ?? 0 : order.vat_cents,
+    total: charged ? (order.charged_total_cents as number) : order.total_cents,
+  };
+}
+
 const FULFILMENT_LABELS: Record<string, string> = {
   pending: "In production",
   processing: "In production",
@@ -177,7 +208,7 @@ function OrderPage() {
                 <CreditCard className="size-4 text-copper" /> Pay securely to start production
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Complete payment for {euros(order.total_cents)}. Documents are retrieved automatically once the payment clears.
+                Complete payment for {euros(order.total_cents)} (tax confirmed at checkout). Documents are retrieved automatically once the payment clears.
               </p>
               {payError && <p className="mt-3 text-sm text-destructive">{payError}</p>}
               <Button
@@ -301,22 +332,27 @@ function OrderPage() {
         <dl className="mt-8 space-y-2 border-t pt-4 text-sm">
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Subtotal</dt>
-            <dd>{euros(order.subtotal_cents)}</dd>
+            <dd>{money(totals.subtotal, totals.currency)}</dd>
           </div>
-          {order.service_fee_cents > 0 && (
+          {totals.serviceFee > 0 && !totals.charged && (
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Service fee</dt>
-              <dd>{euros(order.service_fee_cents)}</dd>
+              <dd>{euros(totals.serviceFee)}</dd>
             </div>
           )}
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">VAT (19%)</dt>
-            <dd>{euros(order.vat_cents)}</dd>
+            <dt className="text-muted-foreground">{totals.charged ? "Tax" : "VAT (19%, estimated)"}</dt>
+            <dd>{money(totals.tax, totals.currency)}</dd>
           </div>
           <div className="flex justify-between border-t pt-2 text-base font-semibold">
-            <dt>Total</dt>
-            <dd>{euros(order.total_cents)}</dd>
+            <dt>{totals.charged ? "Total charged" : "Estimated total"}</dt>
+            <dd>{money(totals.total, totals.currency)}</dd>
           </div>
+          <p className="pt-1 text-xs text-muted-foreground">
+            {totals.charged
+              ? "This is the exact amount charged to your payment method."
+              : "Tax is confirmed at checkout based on your billing country, so the final total may differ slightly."}
+          </p>
         </dl>
 
         <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
