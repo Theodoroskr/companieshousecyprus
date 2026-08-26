@@ -1,6 +1,8 @@
 import type { SanctionsSnapshot, SnapshotCandidate } from "@/lib/sanctions/snapshot";
 import { SUBJECT_ROLE_LABEL } from "@/lib/sanctions/screening-scope";
 import { formatDate } from "@/lib/format";
+import { describeMeasure } from "@/lib/sanctions/measures";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   SCREENING_STATUS,
   statusForClassification,
@@ -152,8 +154,13 @@ export function SanctionsSnapshotView({
 function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidate; subjectName: string }) {
   const status = candidateStatus(candidate);
   const style = SCREENING_STATUS[status];
+  const noteAnchor = `authority-note-${candidate.sourceCode}-${candidate.officialRecordId ?? candidate.matchedName}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
+  const authorityLabel = candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase();
   return (
     <li className={`rounded-md border p-3 text-sm ${style.bg} ${style.leftBorder}`}>
+
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className={`font-semibold ${style.text}`}>{candidate.recordName}</p>
         <ScreeningStatusBadge status={status} className="bg-background" />
@@ -169,10 +176,11 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
         {candidate.designationDate ? ` · designated ${formatDate(candidate.designationDate)}` : ""}
       </p>
       {candidate.listingReason ? (
-        <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+        <div id={noteAnchor} className="mt-2 scroll-mt-24 rounded-md border border-border/60 bg-background/70 p-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Reason for listing, as published by the authority
           </p>
+
           <blockquote className="mt-1 whitespace-pre-line text-xs leading-relaxed text-foreground">
             {candidate.listingReason}
           </blockquote>
@@ -196,14 +204,21 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
             Measures published by the authority
           </p>
           {candidate.measures?.length ? (
-            <ul className="mt-1 flex flex-wrap gap-1.5">
-              {candidate.measures.map((m) => (
-                <li key={m} className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">
-                  {m}
-                </li>
-              ))}
-            </ul>
+            <TooltipProvider delayDuration={150}>
+              <ul className="mt-1 flex flex-wrap gap-1.5">
+                {candidate.measures.map((m) => (
+                  <MeasureChip
+                    key={m}
+                    measure={m}
+                    authorityLabel={authorityLabel}
+                    noteAnchor={candidate.listingReason ? noteAnchor : null}
+                    sourceLink={candidate.sourceLink ?? null}
+                  />
+                ))}
+              </ul>
+            </TooltipProvider>
           ) : (
+
             <p className="mt-1 text-xs text-muted-foreground">
               The source does not publish a structured list of measures for this record.
             </p>
@@ -284,3 +299,54 @@ function AttrList({ title, items }: { title: string; items: string[] }) {
 }
 
 export type { ScreeningStatusKey };
+
+function MeasureChip({
+  measure,
+  authorityLabel,
+  noteAnchor,
+  sourceLink,
+}: {
+  measure: string;
+  authorityLabel: string;
+  noteAnchor: string | null;
+  sourceLink: string | null;
+}) {
+  const explanation = describeMeasure(measure);
+  const chip = (
+    <li
+      tabIndex={0}
+      className="cursor-help rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground underline decoration-dotted underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {measure}
+    </li>
+  );
+  if (!explanation) {
+    return (
+      <li className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">{measure}</li>
+    );
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{chip}</TooltipTrigger>
+      <TooltipContent className="max-w-xs space-y-1.5 bg-popover p-3 text-popover-foreground shadow-md" side="top">
+        <p className="text-xs leading-relaxed">{explanation}</p>
+        <p className="text-[11px] opacity-80">
+          Published by {authorityLabel} for the listed record.{" "}
+          {noteAnchor ? (
+            <a className="underline" href={`#${noteAnchor}`}>
+              Read the authority note
+            </a>
+          ) : null}
+          {sourceLink ? (
+            <>
+              {noteAnchor ? " · " : ""}
+              <a className="underline" href={sourceLink} rel="noopener noreferrer" target="_blank">
+                Official source
+              </a>
+            </>
+          ) : null}
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
