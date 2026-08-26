@@ -85,6 +85,7 @@ export async function buildSanctionsSnapshot(
               decision: c.decision.decision as string,
               rationale: c.decision.rationale as string,
               reviewedAt: (c.decision.reviewed_at as string) ?? null,
+              decisionSource: (c.decision.decision_source as string) ?? null,
             }
           : null,
       }));

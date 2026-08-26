@@ -11,6 +11,9 @@
  *   customer result page, PDF report, customer account, admin order view,
  *   the analyst workbench and the verification page.
  */
+import { AUTO_CONFIRM_DECISION_SOURCE } from "@/lib/sanctions/screening-rules";
+
+
 
 export type ScreeningStatusKey =
   | "no_matches_identified"
@@ -188,14 +191,23 @@ export const SOURCE_STATUS: Record<SourceStatusKey, { label: string; status: Scr
 export function statusForClassification(
   classification: string,
   analystDecision?: string | null,
-  signals?: { exactName?: boolean; hasConflicts?: boolean; identifierMatch?: boolean },
+  signals?: {
+    exactName?: boolean;
+    hasConflicts?: boolean;
+    identifierMatch?: boolean;
+    /** "analyst" for a human determination, "system_identifier" for the auto-confirmation rule. */
+    decisionSource?: string | null;
+  },
 ): ScreeningStatusKey {
-  if (analystDecision === "confirmed_match") return "confirmed_entity_match";
+  const autoDecision = signals?.decisionSource === AUTO_CONFIRM_DECISION_SOURCE;
+  if (analystDecision === "confirmed_match")
+    return autoDecision ? "auto_confirmed_entity_match" : "confirmed_entity_match";
   if (analystDecision === "false_positive") return "reviewed_not_confirmed";
   // Auto-confirmation: an official identifier matches and nothing conflicts,
   // so no analyst determination is required.
   if (signals?.identifierMatch && !signals.hasConflicts && classification !== "rejected")
     return "auto_confirmed_entity_match";
+
   if (classification === "strong_candidate") return "strong_entity_match";
   if (
     signals?.exactName &&

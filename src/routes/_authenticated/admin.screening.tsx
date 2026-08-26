@@ -313,6 +313,7 @@ function CandidateCard({ candidate: c, onDecision, pending }: { candidate: Candi
             exactName: Number(c.name_similarity) >= 0.999,
             hasConflicts: (c.conflicting as string[]).length > 0,
             identifierMatch: Boolean(c.identifier_match),
+            decisionSource: c.decision?.decision_source ?? null,
           })}
           label={CLASS_LABELS[c.system_classification] ?? c.system_classification}
         />

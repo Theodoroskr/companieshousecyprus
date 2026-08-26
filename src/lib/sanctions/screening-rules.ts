@@ -180,3 +180,42 @@ export function screeningOutcome(
   if (sourcesUnavailable.length && live.every((c) => c === "weak_candidate")) return "screening_incomplete";
   return "potential_match_identified";
 }
+
+/**
+ * Auto-confirmation (identifier rule).
+ *
+ * A candidate is confirmed WITHOUT analyst review only when an official
+ * identifier published by the authority (registration number, LEI or
+ * equivalent) matches the screened entity exactly and nothing recorded on the
+ * listed record contradicts the screened entity. Name similarity alone can
+ * never auto-confirm.
+ */
+export const AUTO_CONFIRM_DECISION_SOURCE = "system_identifier";
+
+export function qualifiesForAutoConfirmation(
+  facts: CandidateFacts,
+  result: Pick<ScoreResult, "conflicting" | "matchLevel">,
+): boolean {
+  if (!facts.identifierMatch) return false;
+  if (facts.identifierConflict) return false;
+  if (result.matchLevel !== 1) return false;
+  if (result.conflicting.length > 0) return false;
+  if (facts.dobMatch === false) return false;
+  if (facts.entityTypeMatch === false) return false;
+  if (facts.jurisdictionMatch === false) return false;
+  if (facts.nationalityMatch === false) return false;
+  return true;
+}
+
+export function autoConfirmationRationale(facts: CandidateFacts, corroborating: string[] = []): string {
+  const extra = corroborating.filter((c) => c !== "exact reliable identifier match");
+  return [
+    "Auto-confirmed under the identifier rule: an official identifier published by the authority matches the screened entity exactly,",
+    "and no attribute on the listed record conflicts with the screened entity.",
+    facts.exactName ? "The listed legal name is also equivalent after normalisation." : "",
+    extra.length ? `Corroborating attributes: ${extra.join("; ")}.` : "",
+    "No analyst review was required for this determination.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}

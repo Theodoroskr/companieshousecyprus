@@ -7,10 +7,14 @@
  */
 import {
   DEFAULT_THRESHOLDS,
+  AUTO_CONFIRM_DECISION_SOURCE,
+  autoConfirmationRationale,
   DEFAULT_WEIGHTS,
+  qualifiesForAutoConfirmation,
   RULES_VERSION,
   scoreCandidate,
   screeningOutcome,
+
   type CandidateFacts,
   type ScreeningThresholds,
   type ScreeningWeights,
@@ -359,7 +363,13 @@ export async function runScreening(
       const classification: SystemClassification =
         uncertainType && scored.classification === "strong_candidate" ? "potential_candidate" : scored.classification;
 
+      const autoConfirm =
+        !uncertainType && qualifiesForAutoConfirmation(facts, scored)
+          ? autoConfirmationRationale(facts, scored.corroborating)
+          : null;
+
       inserts.push({
+        __auto_confirm_rationale: autoConfirm,
         screening_request_id: requestId,
         sanctions_entry_id: entryId,
         source_code: (entry["sanctions_sources"] as { source_code: string } | null)?.source_code ?? "unknown",
@@ -386,13 +396,47 @@ export async function runScreening(
 
     inserts.sort((a, b) => (b["match_score"] as number) - (a["match_score"] as number));
     const top = inserts.slice(0, config.thresholds.max_candidates);
+    let autoConfirmedCount = 0;
     if (top.length) {
-      const { error: candErr } = await supabase.from("screening_candidates").insert(top as never);
+      const rows = top.map(({ __auto_confirm_rationale: _drop, ...rest }) => rest);
+      const { data: insertedRows, error: candErr } = await supabase
+        .from("screening_candidates")
+        .insert(rows as never)
+        .select("id");
       if (candErr) throw new Error(candErr.message);
+
+      // Auto-confirmation rule: identifier-verified candidates are decided by
+      // the system and never enter the analyst queue.
+      const decisions = (insertedRows ?? [])
+        .map((row, index) => ({ id: (row as { id: string }).id, rationale: top[index]?.["__auto_confirm_rationale"] as string | null }))
+        .filter((d): d is { id: string; rationale: string } => Boolean(d.rationale))
+        .map((d) => ({
+          screening_candidate_id: d.id,
+          decision: "confirmed_match",
+          decision_source: AUTO_CONFIRM_DECISION_SOURCE,
+          rationale: d.rationale,
+          reviewed_by: null,
+          reviewed_at: new Date().toISOString(),
+        }));
+      if (decisions.length) {
+        const { error: decErr } = await supabase.from("screening_decisions").insert(decisions as never);
+        if (decErr) throw new Error(decErr.message);
+        autoConfirmedCount = decisions.length;
+        await supabase.from("screening_audit_log").insert(
+          decisions.map((d) => ({
+            screening_request_id: requestId,
+            screening_candidate_id: d.screening_candidate_id,
+            event_type: "auto_confirmed_identifier_match",
+            actor: userId,
+            event_data: { decision: d.decision, decision_source: d.decision_source, rationale: d.rationale },
+          })) as never,
+        );
+      }
     }
 
     const classifications = top.map((c) => c.system_classification);
-    const outcome = screeningOutcome(classifications, false, unavailable);
+    const outcome = screeningOutcome(classifications, autoConfirmedCount > 0, unavailable);
+
     await supabase
       .from("screening_requests")
       .update({ status: "completed", completed_at: new Date().toISOString(), outcome })
@@ -405,6 +449,7 @@ export async function runScreening(
       event_data: {
         outcome,
         candidate_count: top.length,
+        auto_confirmed_candidates: autoConfirmedCount,
         classifications,
         sources_unavailable: unavailable,
         rules_version: config.rulesVersion,
