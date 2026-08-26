@@ -13,6 +13,12 @@ export type SnapshotCandidate = {
   listingReason: string | null;
   sourceLink: string | null;
   designationDate: string | null;
+  /** Date the authority last amended the listed record. */
+  lastAmendedDate: string | null;
+  /** Restrictive measures published by the authority for the listed record. */
+  measures: string[];
+  /** Free-text note published with the measures, when available. */
+  measuresNote: string | null;
   nameUsed: string;
   matchedName: string;
   nameSimilarity: number | null;
