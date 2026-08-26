@@ -7,10 +7,14 @@
  */
 import {
   DEFAULT_THRESHOLDS,
+  AUTO_CONFIRM_DECISION_SOURCE,
+  autoConfirmationRationale,
   DEFAULT_WEIGHTS,
+  qualifiesForAutoConfirmation,
   RULES_VERSION,
   scoreCandidate,
   screeningOutcome,
+
   type CandidateFacts,
   type ScreeningThresholds,
   type ScreeningWeights,
