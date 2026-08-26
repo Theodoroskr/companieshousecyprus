@@ -19,6 +19,7 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CategorySitemapDotxmlRouteImport } from './routes/category-sitemap[.]xml'
 import { Route as CertificationsRouteImport } from './routes/certifications'
 import { Route as CompaniesSitemapDotxmlRouteImport } from './routes/companies-sitemap[.]xml'
+import { Route as CompanySetUpRouteImport } from './routes/company-set-up'
 import { Route as CompanySitemapDotxmlRouteImport } from './routes/company-sitemap[.]xml'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CyprusCompaniesRegistryRouteImport } from './routes/cyprus-companies-registry'
@@ -143,6 +144,11 @@ const CertificationsRoute = CertificationsRouteImport.update({
 const CompaniesSitemapDotxmlRoute = CompaniesSitemapDotxmlRouteImport.update({
   id: '/companies-sitemap.xml',
   path: '/companies-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanySetUpRoute = CompanySetUpRouteImport.update({
+  id: '/company-set-up',
+  path: '/company-set-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompanySitemapDotxmlRoute = CompanySitemapDotxmlRouteImport.update({
@@ -565,6 +571,7 @@ export interface FileRoutesByFullPath {
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/certifications': typeof CertificationsRoute
   '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
+  '/company-set-up': typeof CompanySetUpRoute
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
@@ -652,6 +659,7 @@ export interface FileRoutesByTo {
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/certifications': typeof CertificationsRoute
   '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
+  '/company-set-up': typeof CompanySetUpRoute
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
@@ -740,6 +748,7 @@ export interface FileRoutesById {
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/certifications': typeof CertificationsRoute
   '/companies-sitemap.xml': typeof CompaniesSitemapDotxmlRoute
+  '/company-set-up': typeof CompanySetUpRoute
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
@@ -829,6 +838,7 @@ export interface FileRouteTypes {
     | '/category-sitemap.xml'
     | '/certifications'
     | '/companies-sitemap.xml'
+    | '/company-set-up'
     | '/company-sitemap.xml'
     | '/contact'
     | '/cyprus-companies-registry'
@@ -916,6 +926,7 @@ export interface FileRouteTypes {
     | '/category-sitemap.xml'
     | '/certifications'
     | '/companies-sitemap.xml'
+    | '/company-set-up'
     | '/company-sitemap.xml'
     | '/contact'
     | '/cyprus-companies-registry'
@@ -1003,6 +1014,7 @@ export interface FileRouteTypes {
     | '/category-sitemap.xml'
     | '/certifications'
     | '/companies-sitemap.xml'
+    | '/company-set-up'
     | '/company-sitemap.xml'
     | '/contact'
     | '/cyprus-companies-registry'
@@ -1092,6 +1104,7 @@ export interface RootRouteChildren {
   CategorySitemapDotxmlRoute: typeof CategorySitemapDotxmlRoute
   CertificationsRoute: typeof CertificationsRoute
   CompaniesSitemapDotxmlRoute: typeof CompaniesSitemapDotxmlRoute
+  CompanySetUpRoute: typeof CompanySetUpRoute
   CompanySitemapDotxmlRoute: typeof CompanySitemapDotxmlRoute
   ContactRoute: typeof ContactRoute
   CyprusCompaniesRegistryRoute: typeof CyprusCompaniesRegistryRoute
@@ -1228,6 +1241,13 @@ declare module '@tanstack/react-router' {
       path: '/companies-sitemap.xml'
       fullPath: '/companies-sitemap.xml'
       preLoaderRoute: typeof CompaniesSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/company-set-up': {
+      id: '/company-set-up'
+      path: '/company-set-up'
+      fullPath: '/company-set-up'
+      preLoaderRoute: typeof CompanySetUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/company-sitemap.xml': {
@@ -1819,6 +1839,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategorySitemapDotxmlRoute: CategorySitemapDotxmlRoute,
   CertificationsRoute: CertificationsRoute,
   CompaniesSitemapDotxmlRoute: CompaniesSitemapDotxmlRoute,
+  CompanySetUpRoute: CompanySetUpRoute,
   CompanySitemapDotxmlRoute: CompanySitemapDotxmlRoute,
   ContactRoute: ContactRoute,
   CyprusCompaniesRegistryRoute: CyprusCompaniesRegistryRoute,
