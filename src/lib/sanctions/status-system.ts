@@ -11,6 +11,9 @@
  *   customer result page, PDF report, customer account, admin order view,
  *   the analyst workbench and the verification page.
  */
+import { AUTO_CONFIRM_DECISION_SOURCE } from "@/lib/sanctions/screening-rules";
+
+
 
 export type ScreeningStatusKey =
   | "no_matches_identified"
