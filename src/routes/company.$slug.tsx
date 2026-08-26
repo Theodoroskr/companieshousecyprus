@@ -5,6 +5,7 @@ import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { COMPANY_PAGE_COPY, SCOPE_LIMITATION_NOTICE } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress, maskName } from "@/lib/format";
@@ -110,6 +111,7 @@ const ORDERABLE = [
   "cyprus-credit-report",
   "kyb-due-diligence-pack",
   "due-diligence-report",
+  "sanctions-risk-snapshot",
 ];
 
 export const Route = createFileRoute("/company/$slug")({
@@ -662,6 +664,25 @@ function CompanyPage() {
                 </div>
               </div>
             )}
+          </section>
+
+          <section id="sanctions-screening" className="rounded-xl border bg-card p-6">
+            <h2 className="font-display text-xl font-semibold">{COMPANY_PAGE_COPY.title}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{COMPANY_PAGE_COPY.description}</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <AddToCartButton
+                productSlug="sanctions-risk-snapshot"
+                companySlug={company.slug}
+                companyName={company.name}
+                companyNumber={displayOfficialNo(company)}
+                label={COMPANY_PAGE_COPY.button}
+              />
+              <Button asChild variant="outline">
+                <Link to="/cart">Go to basket &amp; pay</Link>
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">{COMPANY_PAGE_COPY.supporting}</p>
+            <p className="mt-2 text-xs text-muted-foreground">{SCOPE_LIMITATION_NOTICE}</p>
           </section>
 
           <RelatedCompanies slug={company.slug} />
