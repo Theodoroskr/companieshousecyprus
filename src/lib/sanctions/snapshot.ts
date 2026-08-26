@@ -1,6 +1,7 @@
 /** Shared, browser-safe types for the entity-only Sanctions Risk Snapshot. */
 import type { EntityScreeningOutcome, SubjectRole } from "@/lib/sanctions/screening-scope";
 import type { MeasureAvailability } from "@/lib/sanctions/measures";
+import type { CandidateAudit } from "@/lib/sanctions/audit-trail";
 
 export type SnapshotCandidate = {
   sourceCode: string;
@@ -36,6 +37,8 @@ export type SnapshotCandidate = {
     /** "analyst" for a human determination, "system_identifier" for the auto-confirmation rule. */
     decisionSource?: string | null;
   } | null;
+  /** Explainable audit trail: identifier matched, fields checked, review outcome. */
+  audit?: CandidateAudit;
 
 };
 
