@@ -190,6 +190,35 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
           </p>
         </div>
       ) : null}
+      {candidate.measures?.length || candidate.measuresNote || candidate.lastAmendedDate ? (
+        <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Measures published by the authority
+          </p>
+          {candidate.measures?.length ? (
+            <ul className="mt-1 flex flex-wrap gap-1.5">
+              {candidate.measures.map((m) => (
+                <li key={m} className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">
+                  {m}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">
+              The source does not publish a structured list of measures for this record.
+            </p>
+          )}
+          {candidate.measuresNote ? (
+            <p className="mt-1.5 text-xs leading-relaxed text-foreground/80">{candidate.measuresNote}</p>
+          ) : null}
+          <p className="mt-1.5 text-[11px] text-muted-foreground">
+            {candidate.lastAmendedDate
+              ? `Record last amended by the authority on ${formatDate(candidate.lastAmendedDate)}.`
+              : "The source does not publish an amendment date for this record."}{" "}
+            Measures apply to the listed record, not to our identity determination.
+          </p>
+        </div>
+      ) : null}
       {candidate.analystDecision ? (
         <p className="mt-1 text-xs text-foreground/80">
           Analyst determination: {candidate.analystDecision.decision.replace(/_/g, " ")}
