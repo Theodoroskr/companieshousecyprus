@@ -1,6 +1,8 @@
 import type { SanctionsSnapshot, SnapshotCandidate } from "@/lib/sanctions/snapshot";
 import { SUBJECT_ROLE_LABEL } from "@/lib/sanctions/screening-scope";
 import { formatDate } from "@/lib/format";
+import { describeMeasure } from "@/lib/sanctions/measures";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   SCREENING_STATUS,
   statusForClassification,
@@ -297,3 +299,54 @@ function AttrList({ title, items }: { title: string; items: string[] }) {
 }
 
 export type { ScreeningStatusKey };
+
+function MeasureChip({
+  measure,
+  authorityLabel,
+  noteAnchor,
+  sourceLink,
+}: {
+  measure: string;
+  authorityLabel: string;
+  noteAnchor: string | null;
+  sourceLink: string | null;
+}) {
+  const explanation = describeMeasure(measure);
+  const chip = (
+    <li
+      tabIndex={0}
+      className="cursor-help rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground underline decoration-dotted underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {measure}
+    </li>
+  );
+  if (!explanation) {
+    return (
+      <li className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">{measure}</li>
+    );
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{chip}</TooltipTrigger>
+      <TooltipContent className="max-w-xs space-y-1.5 bg-popover p-3 text-popover-foreground shadow-md" side="top">
+        <p className="text-xs leading-relaxed">{explanation}</p>
+        <p className="text-[11px] opacity-80">
+          Published by {authorityLabel} for the listed record.{" "}
+          {noteAnchor ? (
+            <a className="underline" href={`#${noteAnchor}`}>
+              Read the authority note
+            </a>
+          ) : null}
+          {sourceLink ? (
+            <>
+              {noteAnchor ? " · " : ""}
+              <a className="underline" href={sourceLink} rel="noopener noreferrer" target="_blank">
+                Official source
+              </a>
+            </>
+          ) : null}
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
