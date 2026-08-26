@@ -76,6 +76,7 @@ import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as AuthenticatedAdminSanctionsDataRouteImport } from './routes/_authenticated/admin.sanctions-data'
 import { Route as AuthenticatedAdminSitemapRouteImport } from './routes/_authenticated/admin.sitemap'
 import { Route as AuthenticatedAdminUsageRouteImport } from './routes/_authenticated/admin.usage'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
@@ -87,6 +88,7 @@ import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/
 import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/indexnow'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
+import { Route as ApiPublicSanctionsImportRouteImport } from './routes/api/public/sanctions-import'
 import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
 import { Route as ApiPublicSitemapMonitorRouteImport } from './routes/api/public/sitemap-monitor'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
@@ -453,6 +455,12 @@ const AuthenticatedAdminOrdersRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSanctionsDataRoute =
+  AuthenticatedAdminSanctionsDataRouteImport.update({
+    id: '/sanctions-data',
+    path: '/sanctions-data',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSitemapRoute =
   AuthenticatedAdminSitemapRouteImport.update({
     id: '/sitemap',
@@ -510,6 +518,12 @@ const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
   path: '/api/public/revolut-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSanctionsImportRoute =
+  ApiPublicSanctionsImportRouteImport.update({
+    id: '/api/public/sanctions-import',
+    path: '/api/public/sanctions-import',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSitemapHealthRoute = ApiPublicSitemapHealthRouteImport.update({
   id: '/api/public/sitemap-health',
   path: '/api/public/sitemap-health',
@@ -627,6 +641,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
   '/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -638,6 +653,7 @@ export interface FileRoutesByFullPath {
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -714,6 +730,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
   '/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -725,6 +742,7 @@ export interface FileRoutesByTo {
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -804,6 +822,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
   '/_authenticated/admin/sitemap': typeof AuthenticatedAdminSitemapRoute
   '/_authenticated/admin/usage': typeof AuthenticatedAdminUsageRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -815,6 +834,7 @@ export interface FileRoutesById {
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
+  '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
@@ -894,6 +914,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/import'
     | '/admin/orders'
+    | '/admin/sanctions-data'
     | '/admin/sitemap'
     | '/admin/usage'
     | '/admin/users'
@@ -905,6 +926,7 @@ export interface FileRouteTypes {
     | '/api/public/indexnow'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
     | '/companies/a-z/$letter'
@@ -981,6 +1003,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/import'
     | '/admin/orders'
+    | '/admin/sanctions-data'
     | '/admin/sitemap'
     | '/admin/usage'
     | '/admin/users'
@@ -992,6 +1015,7 @@ export interface FileRouteTypes {
     | '/api/public/indexnow'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
     | '/companies/a-z/$letter'
@@ -1070,6 +1094,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/emails'
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/admin/sanctions-data'
     | '/_authenticated/admin/sitemap'
     | '/_authenticated/admin/usage'
     | '/_authenticated/admin/users'
@@ -1081,6 +1106,7 @@ export interface FileRouteTypes {
     | '/api/public/indexnow'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
+    | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
     | '/companies/a-z/$letter'
@@ -1162,6 +1188,7 @@ export interface RootRouteChildren {
   ApiPublicIndexnowRoute: typeof ApiPublicIndexnowRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
+  ApiPublicSanctionsImportRoute: typeof ApiPublicSanctionsImportRoute
   ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
   ApiPublicSitemapMonitorRoute: typeof ApiPublicSitemapMonitorRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
@@ -1642,6 +1669,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/sanctions-data': {
+      id: '/_authenticated/admin/sanctions-data'
+      path: '/sanctions-data'
+      fullPath: '/admin/sanctions-data'
+      preLoaderRoute: typeof AuthenticatedAdminSanctionsDataRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/sitemap': {
       id: '/_authenticated/admin/sitemap'
       path: '/sitemap'
@@ -1719,6 +1753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRevolutWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sanctions-import': {
+      id: '/api/public/sanctions-import'
+      path: '/api/public/sanctions-import'
+      fullPath: '/api/public/sanctions-import'
+      preLoaderRoute: typeof ApiPublicSanctionsImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sitemap-health': {
       id: '/api/public/sitemap-health'
       path: '/api/public/sitemap-health'
@@ -1790,6 +1831,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminSanctionsDataRoute: typeof AuthenticatedAdminSanctionsDataRoute
   AuthenticatedAdminSitemapRoute: typeof AuthenticatedAdminSitemapRoute
   AuthenticatedAdminUsageRoute: typeof AuthenticatedAdminUsageRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
@@ -1802,6 +1844,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminSanctionsDataRoute: AuthenticatedAdminSanctionsDataRoute,
   AuthenticatedAdminSitemapRoute: AuthenticatedAdminSitemapRoute,
   AuthenticatedAdminUsageRoute: AuthenticatedAdminUsageRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
@@ -1898,6 +1941,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicIndexnowRoute: ApiPublicIndexnowRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
+  ApiPublicSanctionsImportRoute: ApiPublicSanctionsImportRoute,
   ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
   ApiPublicSitemapMonitorRoute: ApiPublicSitemapMonitorRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
