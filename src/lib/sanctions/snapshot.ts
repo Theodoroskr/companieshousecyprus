@@ -1,0 +1,59 @@
+/** Shared, browser-safe types for the entity-only Sanctions Risk Snapshot. */
+import type { EntityScreeningOutcome, SubjectRole } from "@/lib/sanctions/screening-scope";
+
+export type SnapshotCandidate = {
+  sourceCode: string;
+  authority: string | null;
+  officialRecordId: string | null;
+  recordName: string;
+  recordType: string | null;
+  programme: string | null;
+  legalBasis: string | null;
+  designationDate: string | null;
+  nameUsed: string;
+  matchedName: string;
+  nameSimilarity: number | null;
+  identifierMatch: boolean;
+  matching: string[];
+  conflicting: string[];
+  matchScore: number;
+  matchLevel: number | null;
+  classification: string;
+  analystDecision: { decision: string; rationale: string; reviewedAt: string | null } | null;
+};
+
+export type SnapshotRun = {
+  reference: string;
+  role: SubjectRole;
+  subjectName: string;
+  outcome: string;
+  candidates: SnapshotCandidate[];
+};
+
+export type SanctionsSnapshot = {
+  kind: "sanctions_snapshot";
+  scopeVersion: string;
+  entityOnly: true;
+  connectedIndividualScreeningEnabled: false;
+  excludedCategories: string[];
+  screenedAt: string;
+  company: {
+    slug: string;
+    currentLegalName: string;
+    registrationNumber: string | null;
+    jurisdiction: string;
+    registeredAddress: string | null;
+  };
+  previousNamesScreened: string[];
+  corporateShareholdersScreened: string[];
+  notScreened: { subject: string; category: string; reason: string }[];
+  sources: { sourceCode: string; importId: string | null; fileHash: string | null }[];
+  rulesVersion: string;
+  runs: SnapshotRun[];
+  outcome: EntityScreeningOutcome;
+  outcomeTitle: string;
+  outcomeStatement: string;
+  limitations: string[];
+  individualsExcludedNotice: string;
+};
+

@@ -1,4 +1,4 @@
-import type { SanctionsSnapshot } from "@/lib/sanctions/snapshot.server";
+import type { SanctionsSnapshot } from "@/lib/sanctions/snapshot";
 import { SUBJECT_ROLE_LABEL } from "@/lib/sanctions/screening-scope";
 import { formatDate } from "@/lib/format";
 

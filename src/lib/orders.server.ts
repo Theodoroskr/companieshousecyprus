@@ -442,7 +442,7 @@ export async function snapshotForReview(itemId: string) {
   if (!item || item.product_slug !== SANCTIONS_SNAPSHOT_SLUG) throw new Error("Snapshot not found");
   const { data: order } = await supabase.from("orders").select("reference, full_name, email").eq("id", item.order_id).maybeSingle();
   return {
-    snapshot: (item.report_json ?? null) as import("@/lib/sanctions/snapshot.server").SanctionsSnapshot | null,
+    snapshot: (item.report_json ?? null) as import("@/lib/sanctions/snapshot").SanctionsSnapshot | null,
     meta: {
       itemId: item.id,
       reference: order?.reference ?? "—",
@@ -473,7 +473,7 @@ export async function snapshotForOwner(itemId: string, userId: string, email: st
   if (item.fulfilment_status !== "delivered") throw new Error("This screening is still being finalised by our team.");
   if (!item.report_json) throw new Error("Snapshot not found");
   return {
-    snapshot: item.report_json as unknown as import("@/lib/sanctions/snapshot.server").SanctionsSnapshot,
+    snapshot: item.report_json as unknown as import("@/lib/sanctions/snapshot").SanctionsSnapshot,
     meta: {
       itemId: item.id,
       reference: owner.reference,

@@ -16,64 +16,11 @@ import {
   type SubjectRole,
 } from "@/lib/sanctions/screening-scope";
 import { SCREENING_SOURCES, screenCyprusCompany, getScreeningResult } from "@/lib/sanctions/screening.server";
+import type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
+
+export type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
 
 type AdminClient = Parameters<typeof screenCyprusCompany>[0];
-
-export type SnapshotCandidate = {
-  sourceCode: string;
-  authority: string | null;
-  officialRecordId: string | null;
-  recordName: string;
-  recordType: string | null;
-  programme: string | null;
-  legalBasis: string | null;
-  designationDate: string | null;
-  nameUsed: string;
-  matchedName: string;
-  nameSimilarity: number | null;
-  identifierMatch: boolean;
-  matching: string[];
-  conflicting: string[];
-  matchScore: number;
-  matchLevel: number | null;
-  classification: string;
-  analystDecision: { decision: string; rationale: string; reviewedAt: string | null } | null;
-};
-
-export type SnapshotRun = {
-  reference: string;
-  role: SubjectRole;
-  subjectName: string;
-  outcome: string;
-  candidates: SnapshotCandidate[];
-};
-
-export type SanctionsSnapshot = {
-  kind: "sanctions_snapshot";
-  scopeVersion: string;
-  entityOnly: true;
-  connectedIndividualScreeningEnabled: false;
-  excludedCategories: string[];
-  screenedAt: string;
-  company: {
-    slug: string;
-    currentLegalName: string;
-    registrationNumber: string | null;
-    jurisdiction: string;
-    registeredAddress: string | null;
-  };
-  previousNamesScreened: string[];
-  corporateShareholdersScreened: string[];
-  notScreened: { subject: string; category: string; reason: string }[];
-  sources: { sourceCode: string; importId: string | null; fileHash: string | null }[];
-  rulesVersion: string;
-  runs: SnapshotRun[];
-  outcome: EntityScreeningOutcome;
-  outcomeTitle: string;
-  outcomeStatement: string;
-  limitations: string[];
-  individualsExcludedNotice: string;
-};
 
 /** Records of these classes can never be presented as company matches. */
 const CUSTOMER_VISIBLE_RECORD_TYPES = new Set(["entity", "unknown"]);
