@@ -139,8 +139,9 @@ export const SCREENING_STATUS: Record<ScreeningStatusKey, ScreeningStatusStyle> 
     leftBorder: "border-l-4 border-l-screening-review",
   },
   reviewed_not_confirmed: {
-    label: "Candidate reviewed — identity not confirmed",
-    explanation: "An analyst reviewed the candidate and could not confirm that it is the same legal entity.",
+    label: "Not a match — analyst reviewed",
+    explanation:
+      "An analyst reviewed the candidate against the official source and determined it is not the screened company.",
     icon: "circle-check",
     text: "text-screening-nomatch",
     bg: "bg-screening-nomatch-bg",
