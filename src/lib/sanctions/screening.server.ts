@@ -352,13 +352,17 @@ export async function runScreening(
       if (!idHit && sim < config.thresholds.min_name_similarity) continue;
       const scored = scoreCandidate(facts, config.weights, config.thresholds);
       if (scored.classification === "rejected") continue;
+      // Uncertain record type may never auto-confirm — it goes to analyst review.
+      const classification: SystemClassification =
+        uncertainType && scored.classification === "strong_candidate" ? "potential_candidate" : scored.classification;
 
       inserts.push({
         screening_request_id: requestId,
         sanctions_entry_id: entryId,
-        source_code: (entry.sanctions_sources as { source_code: string } | null)?.source_code ?? "unknown",
+        source_code: (entry["sanctions_sources"] as { source_code: string } | null)?.source_code ?? "unknown",
         name_used: nameHit?.name_used ?? "(identifier)",
-        matched_name: nameHit?.matched_name ?? (entry.primary_name as string),
+        matched_name: nameHit?.matched_name ?? (entry["primary_name"] as string),
+
         matched_alias_type: nameHit?.matched_alias_type ?? null,
         name_similarity: sim,
         identifier_match: Boolean(idHit),
