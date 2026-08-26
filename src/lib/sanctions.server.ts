@@ -589,6 +589,7 @@ export async function runOfacStreamingImport(
     }
     const contentType = response.headers.get("content-type") ?? "";
     const etagHeader = response.headers.get("etag");
+    const officialDigest = extractOfficialDigest(response.headers);
     if (contentType && !/xml|octet-stream|text\/plain/i.test(contentType)) {
       const detail = `Unexpected content type from source: ${contentType}`;
       await failImport(supabase, importId, detail, { stage: "download", contentType, finalHost });
@@ -669,6 +670,28 @@ export async function runOfacStreamingImport(
     }
 
     const fileHash = hasher.digestHex();
+
+    // Integrity gate: if the source published a SHA-256 digest and our
+    // downloaded bytes do not match, fail loudly — never publish.
+    const digestMismatch = digestMismatchReport(fileHash, officialDigest);
+    if (digestMismatch) {
+      await supabase.from("sanctions_staging").delete().eq("import_id", importId);
+      await supabase
+        .from("sanctions_imports")
+        .update({
+          official_digest_sha256: officialDigest!.sha256Hex,
+          official_digest_header: `${officialDigest!.header}: ${officialDigest!.raw}`,
+          digest_mismatch: true,
+        } as never)
+        .eq("id", importId);
+      await failImport(supabase, importId, digestMismatch, {
+        stage: "digest",
+        expected: officialDigest!.sha256Hex,
+        actual: fileHash,
+        finalHost,
+      });
+      return { importId, status: "failed", message: digestMismatch };
+    }
 
     const { data: lastSuccess } = await supabase
       .from("sanctions_imports")
