@@ -114,6 +114,9 @@ export function SiteHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <Link to="/company-set-up" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+            Set up a company
+          </Link>
           <Link to="/pricing" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground">
             Pricing
           </Link>
@@ -227,6 +230,9 @@ export function SiteHeader() {
             ))}
             <div className="my-1 border-t" />
 
+            <Link to="/company-set-up" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
+              Set up a company
+            </Link>
             <Link to="/pricing" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-muted">
               Pricing
             </Link>

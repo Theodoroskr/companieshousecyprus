@@ -65,6 +65,14 @@ export function SiteFooter() {
             </li>
             <li>
               <Link
+                to="/company-set-up"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Set up a Cyprus company
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/guides/register-company-cyprus"
                 className="text-muted-foreground hover:text-foreground"
               >
