@@ -188,10 +188,14 @@ export const SOURCE_STATUS: Record<SourceStatusKey, { label: string; status: Scr
 export function statusForClassification(
   classification: string,
   analystDecision?: string | null,
-  signals?: { exactName?: boolean; hasConflicts?: boolean },
+  signals?: { exactName?: boolean; hasConflicts?: boolean; identifierMatch?: boolean },
 ): ScreeningStatusKey {
   if (analystDecision === "confirmed_match") return "confirmed_entity_match";
   if (analystDecision === "false_positive") return "reviewed_not_confirmed";
+  // Auto-confirmation: an official identifier matches and nothing conflicts,
+  // so no analyst determination is required.
+  if (signals?.identifierMatch && !signals.hasConflicts && classification !== "rejected")
+    return "auto_confirmed_entity_match";
   if (classification === "strong_candidate") return "strong_entity_match";
   if (
     signals?.exactName &&
