@@ -79,7 +79,7 @@ export function assessConfidence(signals: ConfidenceSignals): ConfidenceAssessme
     caveats.push(
       "No official identifier (registration number or equivalent) is published for the listed record, so identity cannot be settled on identifiers alone.",
     );
-  if (signals.exactName && !signals.identifierMatch)
+  if (signals.exactName && !signals.identifierMatch && matching.length < 2)
     caveats.push(
       "Companies in different jurisdictions can share an identical legal name, so an exact name alone is not conclusive.",
     );
