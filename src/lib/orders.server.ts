@@ -667,13 +667,19 @@ export async function recordChargedTotals(
   },
 ) {
   const supabase = ordersClient();
-  const patch: Record<string, unknown> = {};
-  if (typeof amounts.subtotalCents === "number") patch["charged_subtotal_cents"] = amounts.subtotalCents;
-  if (typeof amounts.taxCents === "number") patch["charged_tax_cents"] = amounts.taxCents;
-  if (typeof amounts.totalCents === "number") patch["charged_total_cents"] = amounts.totalCents;
-  if (amounts.currency) patch["charged_currency"] = amounts.currency.toLowerCase();
+  const patch: {
+    charged_subtotal_cents?: number;
+    charged_tax_cents?: number;
+    charged_total_cents?: number;
+    charged_currency?: string;
+  } = {};
+  if (typeof amounts.subtotalCents === "number") patch.charged_subtotal_cents = amounts.subtotalCents;
+  if (typeof amounts.taxCents === "number") patch.charged_tax_cents = amounts.taxCents;
+  if (typeof amounts.totalCents === "number") patch.charged_total_cents = amounts.totalCents;
+  if (amounts.currency) patch.charged_currency = amounts.currency.toLowerCase();
   if (Object.keys(patch).length === 0) return { ok: false as const };
   await supabase.from("orders").update(patch).eq("id", orderId);
+
   return { ok: true as const };
 }
 
