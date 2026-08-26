@@ -138,6 +138,7 @@ function HomePage() {
   const { data } = useSuspenseQuery(homeQueryOptions());
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const entityCount = data.count === null ? "Cyprus register" : `${data.count.toLocaleString()} entities`;
 
   return (
     <div>
@@ -150,7 +151,7 @@ function HomePage() {
         <div className="relative mx-auto max-w-4xl px-4 py-20 text-center lg:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
             <span className="size-1.5 rounded-full bg-accent" />
-            Official Registrar data · {data.count.toLocaleString()} entities
+            Official Registrar data · {entityCount}
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
@@ -194,7 +195,7 @@ function HomePage() {
 
           <dl className="mx-auto mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4 border-t border-primary-foreground/15 pt-8">
             {[
-              [data.count.toLocaleString(), "Companies indexed"],
+              [data.count === null ? "Register-wide" : data.count.toLocaleString(), "Companies indexed"],
               ["6", "Districts"],
               ["1–2 days", "Certificate delivery"],
               ["100%", "Registrar sourced"],

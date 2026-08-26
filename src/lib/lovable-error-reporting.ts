@@ -25,8 +25,9 @@ declare global {
 
 export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
+  const normalizedError = normalizeError(error);
   window.__lovableEvents?.captureException?.(
-    error,
+    normalizedError,
     {
       source: "react_error_boundary",
       route: window.location.pathname,
@@ -43,16 +44,24 @@ export function reportLovableError(error: unknown, context: Record<string, unkno
   // which is present only inside the editor preview.
   // Loaders and server fns commonly throw a raw Response; String(it) is the
   // opaque "[object Response]", so pull out the status and URL instead.
-  const message =
-    error instanceof Response
-      ? `Response ${error.status}${error.url ? ` at ${error.url}` : ""}`
-      : error instanceof Error
-        ? error.message
-        : String(error);
-  const stack = error instanceof Error ? error.stack : undefined;
+  const message = normalizedError.message;
+  const stack = normalizedError.stack;
   window.__lovableReportRuntimeError?.({
     message,
     ...(stack !== undefined && { stack }),
     filename: window.location.pathname,
   });
+}
+
+function normalizeError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  if (error instanceof Response) {
+    return new Error(`Response ${error.status}${error.url ? ` at ${error.url}` : ""}`);
+  }
+  if (typeof error === "string") return new Error(error);
+  try {
+    return new Error(JSON.stringify(error) || "Unknown application error");
+  } catch {
+    return new Error("Unknown application error");
+  }
 }
