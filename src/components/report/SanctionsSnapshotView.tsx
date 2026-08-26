@@ -16,10 +16,7 @@ import {
   SourceStatusBadge,
 } from "@/components/screening/ScreeningStatus";
 
-const SOURCE_LABEL: Record<
-  string,
-  { name: string; description: string }
-> = {
+const SOURCE_LABEL: Record<string, { name: string; description: string }> = {
   eu_fsf: {
     name: "EU Financial Sanctions File",
     description: "Consolidated EU financial sanctions list maintained by the European Commission.",
@@ -30,7 +27,8 @@ const SOURCE_LABEL: Record<
   },
   uksl: {
     name: "UK Sanctions List",
-    description: "UK government sanctions list maintained by the Office of Financial Sanctions Implementation (OFSI).",
+    description:
+      "UK government sanctions list maintained by the Office of Financial Sanctions Implementation (OFSI).",
   },
   ofac_sdn: {
     name: "OFAC SDN List",
