@@ -21,7 +21,7 @@ export type SnapshotCandidate = {
   /** Free-text note published with the measures, when available. */
   measuresNote: string | null;
   /** Whether the source record actually carries measure/amendment data. */
-  measuresAvailability: MeasureAvailability;
+  measuresAvailability?: MeasureAvailability;
   nameUsed: string;
   matchedName: string;
   nameSimilarity: number | null;
