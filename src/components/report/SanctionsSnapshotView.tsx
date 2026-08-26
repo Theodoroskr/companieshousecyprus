@@ -16,6 +16,26 @@ import {
   SourceStatusBadge,
 } from "@/components/screening/ScreeningStatus";
 
+const SOURCE_LABEL: Record<string, { name: string; description: string }> = {
+  eu_fsf: {
+    name: "EU Financial Sanctions File",
+    description: "Consolidated EU financial sanctions list maintained by the European Commission.",
+  },
+  un_consolidated: {
+    name: "UN Consolidated List",
+    description: "United Nations Security Council consolidated sanctions list.",
+  },
+  uksl: {
+    name: "UK Sanctions List",
+    description:
+      "UK government sanctions list maintained by the Office of Financial Sanctions Implementation (OFSI).",
+  },
+  ofac_sdn: {
+    name: "OFAC SDN List",
+    description: "US Treasury Specially Designated Nationals and Blocked Persons list.",
+  },
+};
+
 /**
  * Customer-facing Sanctions Risk Snapshot.
  * Entity records only — no natural person, and no personal identifier, is rendered.
@@ -93,27 +113,31 @@ export function SanctionsSnapshotView({
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-base font-semibold">Official sources checked</h2>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
               <th className="py-1">Source</th>
               <th className="py-1">Result</th>
-              <th className="py-1">Source version (import)</th>
-              <th className="py-1">Source file SHA-256</th>
             </tr>
           </thead>
           <tbody>
-            {snapshot.sources.map((s) => (
-              <tr key={s.sourceCode} className="border-b last:border-0">
-                <td className="py-1 uppercase">{s.sourceCode.replace(/_/g, " ")}</td>
-                <td className="py-1">
-                  <SourceStatusBadge source={sourceStatus(s, candidates)} />
-                </td>
-                <td className="py-1">{s.importId ?? "Not available at screening time"}</td>
-                <td className="py-1 font-mono text-xs break-all">{s.fileHash ?? "—"}</td>
-              </tr>
-            ))}
+            {snapshot.sources.map((s) => {
+              const label = SOURCE_LABEL[s.sourceCode] ?? {
+                name: s.sourceCode.replace(/_/g, " ").toUpperCase(),
+                description: "Official sanctions list screened for this report.",
+              };
+              return (
+                <tr key={s.sourceCode} className="border-b last:border-0">
+                  <td className="py-1">
+                    <p className="font-medium uppercase">{label.name}</p>
+                    <p className="text-xs text-muted-foreground">{label.description}</p>
+                  </td>
+                  <td className="py-1 align-top">
+                    <SourceStatusBadge source={sourceStatus(s, candidates)} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         <p className="text-xs text-muted-foreground">
