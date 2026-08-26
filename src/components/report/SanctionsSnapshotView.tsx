@@ -427,6 +427,7 @@ function candidateStatus(c: SnapshotCandidate): ScreeningStatusKey {
     exactName: c.nameSimilarity != null && c.nameSimilarity >= 0.999,
     hasConflicts: c.conflicting.length > 0,
     identifierMatch: c.identifierMatch,
+    decisionSource: c.analystDecision?.decisionSource ?? null,
   });
 }
 
