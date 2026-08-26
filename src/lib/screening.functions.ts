@@ -50,15 +50,40 @@ export const runScreeningTest = createServerFn({ method: "POST" })
 export const runCompanyScreening = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ slug: z.string().min(1), sources: sourcesSchema, includeConnectedPersons: z.boolean().default(true) }).parse(input),
+    z
+      .object({
+        slug: z.string().min(1),
+        sources: sourcesSchema,
+        previousNames: z.array(z.string().min(2)).optional(),
+        corporateShareholders: z
+          .array(
+            z.object({
+              name: z.string().min(2),
+              registrationNumber: z.string().nullish(),
+              jurisdiction: z.string().nullish(),
+              legalEntityConfirmed: z.boolean(),
+            }),
+          )
+          .optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/admin.server");
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { screenCyprusCompany } = await import("@/lib/sanctions/screening.server");
-    return screenCyprusCompany(supabaseAdmin, data.slug, data.sources, context.userId, data.includeConnectedPersons);
+    return screenCyprusCompany(supabaseAdmin, data.slug, data.sources, context.userId, {
+      previousNames: data.previousNames ?? [],
+      corporateShareholders: (data.corporateShareholders ?? []).map((s) => ({
+        name: s.name,
+        registrationNumber: s.registrationNumber ?? null,
+        jurisdiction: s.jurisdiction ?? null,
+        legalEntityConfirmed: s.legalEntityConfirmed,
+      })),
+    });
   });
+
 
 export const fetchScreeningResult = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
