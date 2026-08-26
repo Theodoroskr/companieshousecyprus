@@ -68,7 +68,7 @@ export type MeasureAvailability = "present" | "not_published" | "record_missing"
  */
 export function measureAvailability(rawRecord: unknown): MeasureAvailability {
   const raw = pickRaw(rawRecord);
-  if (!raw) return "record_missing";
+  if (!raw || Object.keys(raw).length === 0) return "record_missing";
 
   for (const key of MEASURE_KEYS) {
     const value = raw[key];
