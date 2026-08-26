@@ -984,12 +984,15 @@ export type Database = {
           completed_at: string | null
           created_at: string
           diagnostic_details: Json | null
+          digest_mismatch: boolean
           error_message: string | null
           file_hash_sha256: string | null
           file_name: string | null
           file_size_bytes: number | null
           id: string
           modified_count: number
+          official_digest_header: string | null
+          official_digest_sha256: string | null
           record_count: number | null
           removed_count: number
           retrieved_at: string | null
@@ -1004,12 +1007,15 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           diagnostic_details?: Json | null
+          digest_mismatch?: boolean
           error_message?: string | null
           file_hash_sha256?: string | null
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
           modified_count?: number
+          official_digest_header?: string | null
+          official_digest_sha256?: string | null
           record_count?: number | null
           removed_count?: number
           retrieved_at?: string | null
@@ -1024,12 +1030,15 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           diagnostic_details?: Json | null
+          digest_mismatch?: boolean
           error_message?: string | null
           file_hash_sha256?: string | null
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
           modified_count?: number
+          official_digest_header?: string | null
+          official_digest_sha256?: string | null
           record_count?: number | null
           removed_count?: number
           retrieved_at?: string | null
