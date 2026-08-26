@@ -197,7 +197,7 @@ BEGIN
   entry_hits AS (
     SELECT e.id AS entry_id, s.source_code, e.entity_type, e.primary_name,
            e.primary_name_normalized AS matched_name, 'primary'::text AS matched_alias_type,
-           max(extensions.similarity(e.primary_name_normalized, n.q)) AS sim,
+           max(extensions.similarity(e.primary_name_normalized, n.q))::real AS sim,
            (array_agg(n.q ORDER BY extensions.similarity(e.primary_name_normalized, n.q) DESC))[1] AS name_used
     FROM input_names n
     JOIN public.sanctions_entries e ON e.primary_name_normalized OPERATOR(extensions.%) n.q AND e.is_active
@@ -210,7 +210,7 @@ BEGIN
     SELECT e.id AS entry_id, s.source_code, e.entity_type, e.primary_name,
            a.alias_name_normalized AS matched_name,
            CASE WHEN a.is_primary THEN 'primary' ELSE a.alias_type END AS matched_alias_type,
-           max(extensions.similarity(a.alias_name_normalized, n.q)) * 0.97 AS sim,
+           (max(extensions.similarity(a.alias_name_normalized, n.q)) * 0.97)::real AS sim,
            (array_agg(n.q ORDER BY extensions.similarity(a.alias_name_normalized, n.q) DESC))[1] AS name_used
     FROM input_names n
     JOIN public.sanctions_aliases a ON a.alias_name_normalized OPERATOR(extensions.%) n.q
