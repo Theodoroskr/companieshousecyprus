@@ -1133,9 +1133,12 @@ export type Database = {
           format_name: string
           format_version: string
           id: string
+          import_locked_at: string | null
           information_url: string | null
           is_active: boolean
           jurisdiction: string
+          last_connection_test_at: string | null
+          last_connection_test_ok: boolean | null
           source_code: string
           source_name: string
           source_url: string
@@ -1149,9 +1152,12 @@ export type Database = {
           format_name: string
           format_version: string
           id?: string
+          import_locked_at?: string | null
           information_url?: string | null
           is_active?: boolean
           jurisdiction: string
+          last_connection_test_at?: string | null
+          last_connection_test_ok?: boolean | null
           source_code: string
           source_name: string
           source_url: string
@@ -1165,9 +1171,12 @@ export type Database = {
           format_name?: string
           format_version?: string
           id?: string
+          import_locked_at?: string | null
           information_url?: string | null
           is_active?: boolean
           jurisdiction?: string
+          last_connection_test_at?: string | null
+          last_connection_test_ok?: boolean | null
           source_code?: string
           source_name?: string
           source_url?: string
