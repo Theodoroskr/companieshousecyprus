@@ -132,25 +132,37 @@ export function SanctionsSnapshotView({
               <th className="py-1">Result</th>
             </tr>
           </thead>
-          <tbody>
-            {snapshot.sources.map((s) => {
-              const label = SOURCE_LABEL[s.sourceCode] ?? {
-                name: s.sourceCode.replace(/_/g, " ").toUpperCase(),
-                description: "Official sanctions list screened for this report.",
-              };
-              return (
-                <tr key={s.sourceCode} className="border-b last:border-0">
-                  <td className="py-1">
-                    <p className="font-medium uppercase">{label.name}</p>
-                    <p className="text-xs text-muted-foreground">{label.description}</p>
-                  </td>
-                  <td className="py-1 align-top">
-                    <SourceStatusBadge source={sourceStatus(s, candidates)} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
+          <TooltipProvider delayDuration={150}>
+            <tbody>
+              {snapshot.sources.map((s) => {
+                const label = SOURCE_LABEL[s.sourceCode] ?? {
+                  name: s.sourceCode.replace(/_/g, " ").toUpperCase(),
+                  description: "Official sanctions list screened for this report.",
+                };
+                const result = sourceStatus(s, candidates);
+                return (
+                  <tr key={s.sourceCode} className="border-b last:border-0">
+                    <td className="py-1">
+                      <p className="font-medium uppercase">{label.name}</p>
+                      <p className="text-xs text-muted-foreground">{label.description}</p>
+                    </td>
+                    <td className="py-1 align-top">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-block">
+                            <SourceStatusBadge source={result} />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p>{SOURCE_STATUS_TOOLTIP[result]}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </TooltipProvider>
         </table>
         <p className="text-xs text-muted-foreground">
           Matching rules version {snapshot.rulesVersion} · Scope {snapshot.scopeVersion}
