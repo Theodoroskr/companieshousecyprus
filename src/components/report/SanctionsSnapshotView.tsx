@@ -198,42 +198,49 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
           </p>
         </div>
       ) : null}
-      {candidate.measures?.length || candidate.measuresNote || candidate.lastAmendedDate ? (
-        <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Measures published by the authority
+      <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Measures published by the authority
+        </p>
+        {candidate.measuresAvailability === "record_missing" ? (
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            Record details could not be retrieved from the source data; measures and amendment date are unavailable.
           </p>
-          {candidate.measures?.length ? (
-            <TooltipProvider delayDuration={150}>
-              <ul className="mt-1 flex flex-wrap gap-1.5">
-                {candidate.measures.map((m) => (
-                  <MeasureChip
-                    key={m}
-                    measure={m}
-                    authorityLabel={authorityLabel}
-                    noteAnchor={candidate.listingReason ? noteAnchor : null}
-                    sourceLink={candidate.sourceLink ?? null}
-                  />
-                ))}
-              </ul>
-            </TooltipProvider>
-          ) : (
-
-            <p className="mt-1 text-xs text-muted-foreground">
-              The source does not publish a structured list of measures for this record.
-            </p>
-          )}
-          {candidate.measuresNote ? (
-            <p className="mt-1.5 text-xs leading-relaxed text-foreground/80">{candidate.measuresNote}</p>
-          ) : null}
-          <p className="mt-1.5 text-[11px] text-muted-foreground">
-            {candidate.lastAmendedDate
-              ? `Record last amended by the authority on ${formatDate(candidate.lastAmendedDate)}.`
+        ) : candidate.measuresAvailability === "not_published" ? (
+          <p className="mt-1 text-xs text-muted-foreground">
+            The authority has not published measures or an amendment date for this record.
+          </p>
+        ) : candidate.measures?.length ? (
+          <TooltipProvider delayDuration={150}>
+            <ul className="mt-1 flex flex-wrap gap-1.5">
+              {candidate.measures.map((m) => (
+                <MeasureChip
+                  key={m}
+                  measure={m}
+                  authorityLabel={authorityLabel}
+                  noteAnchor={candidate.listingReason ? noteAnchor : null}
+                  sourceLink={candidate.sourceLink ?? null}
+                />
+              ))}
+            </ul>
+          </TooltipProvider>
+        ) : (
+          <p className="mt-1 text-xs text-muted-foreground">
+            The source does not publish a structured list of measures for this record.
+          </p>
+        )}
+        {candidate.measuresNote ? (
+          <p className="mt-1.5 text-xs leading-relaxed text-foreground/80">{candidate.measuresNote}</p>
+        ) : null}
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          {candidate.lastAmendedDate
+            ? `Record last amended by the authority on ${formatDate(candidate.lastAmendedDate)}.`
+            : candidate.measuresAvailability === "not_published"
+              ? "No amendment date has been published by the authority for this record."
               : "The source does not publish an amendment date for this record."}{" "}
-            Measures apply to the listed record, not to our identity determination.
-          </p>
-        </div>
-      ) : null}
+          Measures apply to the listed record, not to our identity determination.
+        </p>
+      </div>
       {candidate.analystDecision ? (
         <p className="mt-1 text-xs text-foreground/80">
           Analyst determination: {candidate.analystDecision.decision.replace(/_/g, " ")}
