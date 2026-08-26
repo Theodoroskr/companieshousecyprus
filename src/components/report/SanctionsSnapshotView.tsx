@@ -17,19 +17,19 @@ import {
 } from "@/components/screening/ScreeningStatus";
 
 const SOURCE_LABEL: Record<string, { name: string; description: string }> = {
-  eu_fsf: {
+  EU_FSF: {
     name: "EU Consolidated Financial Sanctions List (FSF)",
     description: "Maintained by the European Commission.",
   },
-  un_consolidated: {
+  UN_CONSOLIDATED: {
     name: "UN Security Council Consolidated List",
     description: "Maintained by the United Nations Security Council.",
   },
-  uksl: {
+  UKSL: {
     name: "UK Sanctions List",
     description: "Maintained by the Office of Financial Sanctions Implementation (OFSI).",
   },
-  ofac_sdn: {
+  OFAC_SDN: {
     name: "OFAC SDN List",
     description:
       "US Treasury Specially Designated Nationals and Blocked Persons (SDN) List — maintained by the Office of Foreign Assets Control (OFAC).",
