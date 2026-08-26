@@ -55,7 +55,6 @@ describe("outcomes", () => {
       ...Object.values(OUTCOME_TITLE),
       ...Object.values(OUTCOME_STATEMENT),
       INDIVIDUALS_EXCLUDED_NOTICE,
-      SCOPE_LIMITATION_NOTICE,
       ...Object.values(COMPANY_PAGE_COPY),
     ]
       .join(" ")
