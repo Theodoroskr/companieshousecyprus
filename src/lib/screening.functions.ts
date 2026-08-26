@@ -27,7 +27,8 @@ export const runScreeningTest = createServerFn({ method: "POST" })
     const { assertAdmin } = await import("@/lib/admin.server");
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { runScreening, type ScreeningSubjectInput } = await import("@/lib/sanctions/screening.server");
+    const { runScreening } = await import("@/lib/sanctions/screening.server");
+    type ScreeningSubjectInput = Parameters<typeof runScreening>[1];
     const subject: ScreeningSubjectInput = {
       subjectType: data.subject.subjectType,
       name: data.subject.name,
