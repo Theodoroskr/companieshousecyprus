@@ -441,14 +441,21 @@ export async function runSanctionsImport(
           persons,
           entities,
           ships,
+          aircraft,
+          walletRecords: wallets,
           duplicatesIgnored: duplicates,
           failedRecords,
+          parseDurationMs,
+          rssMbBefore: rssBefore,
+          rssMbAfter: rssAfter,
           parser:
             sourceCode === UN_SOURCE_CODE
               ? "un-consolidated"
               : sourceCode === UK_SOURCE_CODE
                 ? "uk-sanctions-list"
-                : "eu-fsf-1.1",
+                : sourceCode === OFAC_SOURCE_CODE
+                  ? "ofac-advanced-v3"
+                  : "eu-fsf-1.1",
         } as never,
       })
       .eq("id", importId);
