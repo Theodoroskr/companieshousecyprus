@@ -509,6 +509,8 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
     { count: personCount },
     { count: entityCount },
     { count: shipCount },
+    { count: aircraftCount },
+    { count: walletCount },
     { count: aliasCount },
     { count: identifierCount },
     { count: addressCount },
@@ -544,6 +546,18 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
       .eq("source_id", source.id)
       .eq("is_active", true)
       .eq("entity_type", "ship"),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .eq("entity_type", "aircraft"),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .contains("raw_record", { wallets: [{}] }),
     supabase
       .from("sanctions_aliases")
       .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
