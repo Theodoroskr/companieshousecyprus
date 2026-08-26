@@ -765,6 +765,7 @@ export async function runOfacStreamingImport(
     // 3. archive the raw file privately -----------------------------------
     // The bytes were streamed (never buffered), so re-fetch for the archive
     // upload; Storage handles the streamed request body on its side.
+    const archiveStartedAt = Date.now();
     let storagePath: string | null = null;
     try {
       const archiveResponse = await fetch(source.source_url, {
@@ -789,6 +790,8 @@ export async function runOfacStreamingImport(
       storagePath = null;
       console.warn("[ofac-worker] raw archive fetch failed", archiveError);
     }
+    perf.archiveMs = Date.now() - archiveStartedAt;
+    sampleRss();
 
     await supabase
       .from("sanctions_imports")
@@ -807,6 +810,7 @@ export async function runOfacStreamingImport(
       .eq("id", importId);
 
     // 4. sanity checks before publishing -----------------------------------
+    const validationStartedAt = Date.now();
     if (parsed === 0) {
       await supabase.from("sanctions_staging").delete().eq("import_id", importId);
       const detail = "Parsed zero records from the source file; keeping the previous dataset.";
