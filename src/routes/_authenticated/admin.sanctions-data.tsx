@@ -295,7 +295,13 @@ function SanctionsDataPage() {
             <CardContent className="space-y-3">
               <div className="flex gap-2">
                 <Input
-                  placeholder={selectedSource === "UN_CONSOLIDATED" ? "e.g. QDi.001" : "e.g. 10038"}
+                  placeholder={
+                    selectedSource === "UN_CONSOLIDATED"
+                      ? "e.g. QDi.001"
+                      : selectedSource === "UKSL"
+                        ? "e.g. RUS0001"
+                        : "e.g. 10038"
+                  }
                   value={inspectId}
                   onChange={(event) => setInspectId(event.target.value)}
                   className="max-w-xs"
