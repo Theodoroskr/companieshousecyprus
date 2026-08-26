@@ -83,7 +83,6 @@ export const submitCompanySetupEnquiry = createServerFn({ method: "POST" })
       country: data.country,
       businessActivity: data.businessActivity,
       ...(data.shareholderCount ? { shareholderCount: data.shareholderCount } : {}),
-      corporateShareholders: undefined,
       ...(data.corporateShareholders
         ? { corporateShareholder: data.corporateShareholders === "yes" }
         : {}),
