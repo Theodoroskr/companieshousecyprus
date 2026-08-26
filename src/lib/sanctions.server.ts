@@ -3,11 +3,13 @@ import type { Database } from "@/integrations/supabase/types";
 import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecord } from "@/lib/sanctions/parse";
 import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
+import { parseOfac } from "@/lib/sanctions/parse-ofac";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
 export const UN_SOURCE_CODE = "UN_CONSOLIDATED";
 export const UK_SOURCE_CODE = "UKSL";
+export const OFAC_SOURCE_CODE = "OFAC_SDN";
 
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
@@ -17,6 +19,18 @@ type SourceAdapter = {
   /** Extra pre-publication validation on the staged dataset. Returns an error message or null. */
   sanity?: (stats: { persons: number; entities: number; parsed: number }) => string | null;
 };
+
+function looksLikeOfacAdvanced(xml: string): { ok: boolean; reason?: string } {
+  if (!xml.includes("<Sanctions")) return { ok: false, reason: "missing <Sanctions> root element" };
+  if (!xml.includes("<DistinctParties>")) return { ok: false, reason: "missing <DistinctParties> section" };
+  if (!xml.includes("<SanctionsEntries>")) return { ok: false, reason: "missing <SanctionsEntries> section" };
+  if (!/<\/Sanctions>\s*$/.test(xml.slice(-500))) return { ok: false, reason: "document is truncated (no closing </Sanctions>)" };
+  return { ok: true };
+}
+
+function* iterateOfacRecords(xml: string): Generator<SanctionsRecord> {
+  yield* parseOfac(xml).records;
+}
 
 const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
   [EU_SOURCE_CODE]: {
@@ -44,6 +58,18 @@ const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
     sanity: ({ persons, entities }) => {
       if (persons < 1) return "The staged UK dataset contains no individuals.";
       if (entities < 1) return "The staged UK dataset contains no entities.";
+      return null;
+    },
+  },
+  [OFAC_SOURCE_CODE]: {
+    validate: looksLikeOfacAdvanced,
+    iterate: iterateOfacRecords,
+    storagePrefix: "ofac-sdn",
+    // The Advanced SDN export is ~126 MB; refuse anything implausibly small.
+    minBytes: 20 * 1024 * 1024,
+    sanity: ({ persons, entities }) => {
+      if (persons < 1) return "The staged OFAC dataset contains no individuals.";
+      if (entities < 1) return "The staged OFAC dataset contains no entities.";
       return null;
     },
   },
