@@ -4,6 +4,7 @@ import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, Recei
 import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
+import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { COMPANY_PAGE_COPY, SCOPE_LIMITATION_NOTICE } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
@@ -680,6 +681,18 @@ function CompanyPage() {
               <Button asChild variant="outline">
                 <Link to="/cart">Go to basket &amp; pay</Link>
               </Button>
+            </div>
+            <div className="mt-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Possible outcomes
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <ScreeningStatusBadge status="no_matches_identified" />
+                <ScreeningStatusBadge status="potential_entity_match" />
+                <ScreeningStatusBadge status="strong_entity_match" />
+                <ScreeningStatusBadge status="confirmed_entity_match" />
+                <ScreeningStatusBadge status="screening_incomplete" />
+              </div>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">{COMPANY_PAGE_COPY.supporting}</p>
             <p className="mt-2 text-xs text-muted-foreground">{SCOPE_LIMITATION_NOTICE}</p>
