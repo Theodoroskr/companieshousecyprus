@@ -81,7 +81,7 @@ export const FORBIDDEN_OUTCOME_WORDS = [
 ] as const;
 
 export const INDIVIDUALS_EXCLUDED_NOTICE =
-  "No natural persons were screened as part of this report. Directors, individual shareholders, beneficial owners, secretaries and other natural persons are outside the scope of this version.";
+  "Legal entities only. Directors, individual shareholders and other natural persons are not screened in this version.";
 
 export const SCOPE_SUBJECT_PHRASE = "the company, its previous names and available corporate shareholders.";
 
