@@ -248,6 +248,15 @@ function SanctionsDataPage() {
                 <Stat label="Individuals" value={data.personCount.toLocaleString("en-GB")} />
                 <Stat label="Entities" value={data.entityCount.toLocaleString("en-GB")} />
                 {data.shipCount > 0 ? <Stat label="Ships" value={data.shipCount.toLocaleString("en-GB")} /> : null}
+                {(data as { aircraftCount?: number }).aircraftCount ? (
+                  <Stat label="Aircraft" value={((data as { aircraftCount?: number }).aircraftCount ?? 0).toLocaleString("en-GB")} />
+                ) : null}
+                {(data as { walletCount?: number }).walletCount ? (
+                  <Stat
+                    label="Crypto wallets"
+                    value={((data as { walletCount?: number }).walletCount ?? 0).toLocaleString("en-GB")}
+                  />
+                ) : null}
                 <Stat label="Aliases" value={data.aliasCount.toLocaleString("en-GB")} />
                 <Stat label="Identifiers" value={data.identifierCount.toLocaleString("en-GB")} />
                 <Stat label="Addresses" value={data.addressCount.toLocaleString("en-GB")} />
