@@ -65,6 +65,7 @@ export async function buildSanctionsSnapshot(
           lastAmendedDate: (c as { last_amended_date?: string | null }).last_amended_date ?? null,
           measures: extractMeasures((c as { raw_record?: unknown }).raw_record),
           measuresNote: extractMeasuresNote((c as { raw_record?: unknown }).raw_record),
+          measuresAvailability: measureAvailability((c as { raw_record?: unknown }).raw_record),
           nameUsed: c.name_used as string,
           matchedName: c.matched_name as string,
           nameSimilarity: c.name_similarity as number | null,
