@@ -16,6 +16,9 @@ export type OrderEmailOrder = {
   service_fee_cents?: number | null;
   vat_cents?: number | null;
   total_cents?: number | null;
+  charged_subtotal_cents?: number | null;
+  charged_tax_cents?: number | null;
+  charged_total_cents?: number | null;
   paid_at?: string | null;
 };
 
@@ -28,11 +31,14 @@ export type OrderEmailItem = {
 };
 
 function totals(order: OrderEmailOrder) {
+  // Once the payment clears, Stripe's figures are authoritative: they are what
+  // the customer was actually charged.
+  const charged = typeof order.charged_total_cents === "number";
   return {
-    subtotal: euro(order.subtotal_cents),
+    subtotal: euro(charged ? order.charged_subtotal_cents : order.subtotal_cents),
     serviceFee: euro(order.service_fee_cents),
-    vat: euro(order.vat_cents),
-    total: euro(order.total_cents),
+    vat: euro(charged ? order.charged_tax_cents : order.vat_cents),
+    total: euro(charged ? order.charged_total_cents : order.total_cents),
   };
 }
 

@@ -29,6 +29,16 @@ async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
     .maybeSingle();
   if (!order) return;
 
+  // Persist what Stripe actually charged so the order page matches the card
+  // statement even when Stripe's tax engine differs from our VAT estimate.
+  const { recordChargedTotals } = await import('@/lib/orders.server');
+  await recordChargedTotals(order.id, {
+    subtotalCents: session.amount_subtotal ?? null,
+    taxCents: session.total_details?.amount_tax ?? null,
+    totalCents: session.amount_total ?? null,
+    currency: session.currency ?? null,
+  });
+
   // Delayed-notification methods (SEPA, Bacs, boleto, OXXO) fire this when the
   // payment is SUBMITTED, not when money arrives. Only fulfill when paid or no
   // payment required (free trials, 100% promo, zero-total).
@@ -50,7 +60,13 @@ async function handleAsyncPaymentSucceeded(session: any) {
     .maybeSingle();
   if (!order || order.status === 'paid' || order.status === 'delivered') return;
 
-  const { markOrderPaid } = await import('@/lib/orders.server');
+  const { markOrderPaid, recordChargedTotals } = await import('@/lib/orders.server');
+  await recordChargedTotals(order.id, {
+    subtotalCents: session.amount_subtotal ?? null,
+    taxCents: session.total_details?.amount_tax ?? null,
+    totalCents: session.amount_total ?? null,
+    currency: session.currency ?? null,
+  });
   await markOrderPaid(order.id);
 }
 
