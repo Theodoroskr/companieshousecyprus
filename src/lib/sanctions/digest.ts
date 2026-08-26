@@ -19,7 +19,7 @@ export interface OfficialDigest {
   raw: string;
 }
 
-const HEX64 = /^[0-9a-f]{64}$/;
+const HEX64 = /^[0-9a-f]{64}$/i;
 
 function base64ToHex(value: string): string | null {
   try {
