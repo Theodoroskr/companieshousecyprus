@@ -577,6 +577,7 @@ export async function runOfacStreamingImport(
 
     // 1. open the stream --------------------------------------------------
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
+    const downloadStartedAt = Date.now();
     const response = await fetch(source.source_url, {
       redirect: "follow",
       headers: { Accept: "application/xml", "User-Agent": "CompaniesHouseCyprus-SanctionsImporter/1.0" },
@@ -615,6 +616,24 @@ export async function runOfacStreamingImport(
     const parseStartedAt = Date.now();
     const rssBefore = nodeRssMb();
 
+    // Per-stage performance instrumentation (download/hash/stage/validate/publish)
+    // so admins can confirm the worker fits runtime limits before scheduling.
+    const perf = {
+      downloadMs: 0,
+      hashingMs: 0,
+      stagingMs: 0,
+      validationMs: 0,
+      publishMs: 0,
+      archiveMs: 0,
+      rssStartMb: rssBefore,
+      rssPeakMb: rssBefore,
+      rssEndMb: null as number | null,
+    };
+    const sampleRss = () => {
+      const now = nodeRssMb();
+      if (now !== null) perf.rssPeakMb = Math.max(perf.rssPeakMb ?? now, now);
+    };
+
     let fileSizeBytes = 0;
     let parsed = 0;
     let persons = 0;
@@ -625,7 +644,9 @@ export async function runOfacStreamingImport(
     let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
     const flush = async () => {
       if (batch.length === 0) return;
+      const flushStartedAt = Date.now();
       const { error } = await supabase.from("sanctions_staging").insert(batch as never);
+      perf.stagingMs += Date.now() - flushStartedAt;
       if (error) throw new Error(`Staging insert failed: ${error.message}`);
       batch = [];
     };
@@ -646,21 +667,29 @@ export async function runOfacStreamingImport(
     };
 
     const reader = response.body.getReader();
+    let chunkIndex = 0;
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
       if (!value || value.byteLength === 0) continue;
       fileSizeBytes += value.byteLength;
+      const hashStartedAt = Date.now();
       hasher.update(value);
+      perf.hashingMs += Date.now() - hashStartedAt;
       for (const record of parser.feed(decoder.decode(value, { stream: true }))) {
         await stageRecord(record);
       }
+      chunkIndex += 1;
+      if (chunkIndex % 16 === 0) sampleRss();
     }
     const tail = parser.finish();
     for (const record of tail.records) await stageRecord(record);
     await flush();
     const parseDurationMs = Date.now() - parseStartedAt;
+    perf.downloadMs = Date.now() - downloadStartedAt;
     const rssAfter = nodeRssMb();
+    perf.rssEndMb = rssAfter;
+    sampleRss();
 
     if (fileSizeBytes < adapter.minBytes) {
       await supabase.from("sanctions_staging").delete().eq("import_id", importId);
@@ -719,6 +748,13 @@ export async function runOfacStreamingImport(
           official_digest_sha256: officialDigest?.sha256Hex ?? null,
           official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
           digest_mismatch: false,
+          diagnostic_details: {
+            finalHost,
+            contentType,
+            etag: etagHeader,
+            perf,
+            parser: "ofac-advanced-v3-stream",
+          } as never,
         } as never)
         .eq("id", importId);
       return {
@@ -736,6 +772,7 @@ export async function runOfacStreamingImport(
     // 3. archive the raw file privately -----------------------------------
     // The bytes were streamed (never buffered), so re-fetch for the archive
     // upload; Storage handles the streamed request body on its side.
+    const archiveStartedAt = Date.now();
     let storagePath: string | null = null;
     try {
       const archiveResponse = await fetch(source.source_url, {
@@ -760,6 +797,8 @@ export async function runOfacStreamingImport(
       storagePath = null;
       console.warn("[ofac-worker] raw archive fetch failed", archiveError);
     }
+    perf.archiveMs = Date.now() - archiveStartedAt;
+    sampleRss();
 
     await supabase
       .from("sanctions_imports")
@@ -778,6 +817,7 @@ export async function runOfacStreamingImport(
       .eq("id", importId);
 
     // 4. sanity checks before publishing -----------------------------------
+    const validationStartedAt = Date.now();
     if (parsed === 0) {
       await supabase.from("sanctions_staging").delete().eq("import_id", importId);
       const detail = "Parsed zero records from the source file; keeping the previous dataset.";
@@ -803,8 +843,10 @@ export async function runOfacStreamingImport(
       await failImport(supabase, importId, detail, { stage: "sanity", parsed, previousCount, finalHost });
       return { importId, status: "failed", message: detail };
     }
+    perf.validationMs = Date.now() - validationStartedAt;
 
     // 5. atomic publication -------------------------------------------------
+    const publishStartedAt = Date.now();
     const { data: published, error: publishError } = await (supabase.rpc as never as (
       fn: string,
       args: Record<string, unknown>,
@@ -819,6 +861,9 @@ export async function runOfacStreamingImport(
       await failImport(supabase, importId, detail, { stage: "publish" });
       return { importId, status: "failed", message: detail };
     }
+
+    perf.publishMs = Date.now() - publishStartedAt;
+    sampleRss();
 
     const result = Array.isArray(published) ? published[0] : published;
     await supabase
@@ -840,6 +885,7 @@ export async function runOfacStreamingImport(
           parseDurationMs,
           rssMbBefore: rssBefore,
           rssMbAfter: rssAfter,
+          perf,
           parser: "ofac-advanced-v3-stream",
           rawArchived: storagePath !== null,
         } as never,

@@ -50,6 +50,61 @@ const STATUS_TONE: Record<string, string> = {
   failed: "bg-red-100 text-red-800",
 };
 
+interface WorkerPerf {
+  downloadMs?: number;
+  hashingMs?: number;
+  stagingMs?: number;
+  validationMs?: number;
+  publishMs?: number;
+  archiveMs?: number;
+  rssStartMb?: number | null;
+  rssPeakMb?: number | null;
+  rssEndMb?: number | null;
+}
+
+function fmtMb(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  return `${Math.round(value)} MB`;
+}
+
+function WorkerPerformanceCard({ perf, startedAt }: { perf: WorkerPerf; startedAt: string | null | undefined }) {
+  const stageTotal =
+    (perf.downloadMs ?? 0) + (perf.validationMs ?? 0) + (perf.archiveMs ?? 0) + (perf.publishMs ?? 0);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">
+          Streaming worker performance
+          <span className="ml-2 text-sm font-normal text-muted-foreground">
+            last run {fmt(startedAt)} — use this to confirm runtime suitability before activating the schedule
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Stat label="Peak memory (RSS)" value={fmtMb(perf.rssPeakMb)} />
+          <Stat label="Memory at start" value={fmtMb(perf.rssStartMb)} />
+          <Stat label="Memory at end" value={fmtMb(perf.rssEndMb)} />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <Stat label="Download + parse" value={fmtDuration(perf.downloadMs)} />
+          <Stat label="Hashing (SHA-256)" value={fmtDuration(perf.hashingMs)} />
+          <Stat label="Staging inserts" value={fmtDuration(perf.stagingMs)} />
+          <Stat label="Validation" value={fmtDuration(perf.validationMs)} />
+          <Stat label="Raw archive" value={fmtDuration(perf.archiveMs)} />
+          <Stat label="Publish" value={fmtDuration(perf.publishMs)} />
+        </div>
+        {stageTotal > 0 ? (
+          <p className="text-xs text-muted-foreground">
+            Hashing and staging are measured within the download stream (incremental, chunk by chunk); the remaining
+            stream time is XML parsing and network I/O. Total staged work ≈ {fmtDuration(stageTotal)}.
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-lg border bg-card px-3 py-2">
@@ -296,6 +351,16 @@ function SanctionsDataPage() {
               ) : null}
             </CardContent>
           </Card>
+
+          {(() => {
+            const withPerf = data.history.find(
+              (row) =>
+                (row.diagnostic_details as { perf?: WorkerPerf } | null)?.perf &&
+                typeof (row.diagnostic_details as { perf?: WorkerPerf } | null)?.perf?.downloadMs === "number",
+            );
+            const perf = (withPerf?.diagnostic_details as { perf?: WorkerPerf } | null)?.perf;
+            return perf ? <WorkerPerformanceCard perf={perf} startedAt={withPerf?.started_at} /> : null;
+          })()}
 
           <Card>
             <CardHeader>
