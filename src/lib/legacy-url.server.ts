@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizeCompanySlug } from "@/lib/slug";
+import { normaliseCompanyKey } from "@/lib/registrar-mapping";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -31,16 +32,20 @@ function client() {
 /** Resolve a legacy registry token to a live company slug, if one exists. */
 export async function resolveLegacyCompanySlug(token: string | null): Promise<string | null> {
   if (!token) return null;
-  const slug = normalizeCompanySlug(token);
-  if (!slug) return null;
+  const direct = normalizeCompanySlug(token);
+  // Legacy URLs carry public prefixes (HE/EE/AE/BN); stored keys use the
+  // internal type codes (C/B/O/N), so try the mapped key as well.
+  const mapped = normaliseCompanyKey("", direct)?.slug ?? null;
+  const candidates = Array.from(new Set([direct, mapped].filter((v): v is string => Boolean(v))));
+  if (candidates.length === 0) return null;
   try {
     const supabase = client();
     const { data } = await supabase
       .from("companies")
       .select("slug")
-      .eq("slug", slug)
-      .maybeSingle();
-    return data?.slug ?? null;
+      .in("slug", candidates)
+      .limit(1);
+    return data?.[0]?.slug ?? null;
   } catch (error) {
     console.error("legacy slug resolution failed", error);
     return null;
