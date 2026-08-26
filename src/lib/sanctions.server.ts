@@ -888,7 +888,10 @@ export async function runOfacStreamingImport(
       if (batch.length >= STAGING_BATCH) await flush();
     };
 
-    const reader = response.body.getReader();
+    // Resumable read: a dropped connection mid-way through the 126 MB feed
+    // continues with `Range: bytes=<received>-` rather than starting over.
+    const download = createResumableBody(response, urlUsed ?? source.source_url);
+    const reader = download.stream.getReader();
     let chunkIndex = 0;
     for (;;) {
       const { done, value } = await reader.read();
