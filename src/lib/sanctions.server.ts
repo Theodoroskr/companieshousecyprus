@@ -5,6 +5,7 @@ import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
 import { OfacStreamParser } from "@/lib/sanctions/parse-ofac-stream";
 import { StreamingSha256 } from "@/lib/sanctions/sha256-stream";
+import { digestMismatchReport, extractOfficialDigest } from "@/lib/sanctions/digest";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
@@ -247,6 +248,9 @@ export async function runSanctionsImport(
 
     const contentType = response.headers.get("content-type") ?? "";
     const etagHeader = response.headers.get("etag");
+    // Source-published integrity digest (Digest / Repr-Digest / checksum
+    // headers), kept in history and enforced before publication.
+    const officialDigest = extractOfficialDigest(response.headers);
     // Redirected/CDN destinations sometimes label XML as octet-stream; the
     // structural XML validation below is the real gate. Only fail early on an
     // obviously non-XML content type such as text/html.
