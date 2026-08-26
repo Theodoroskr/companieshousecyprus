@@ -389,6 +389,8 @@ export async function releaseOrderItemReport(itemId: string, notify = true) {
   return { ok: true as const, notified: order ? notify : false };
 }
 
+import { AUTO_CONFIRM_DECISION_SOURCE } from "@/lib/sanctions/screening-rules";
+
 export const SANCTIONS_SNAPSHOT_SLUG = "sanctions-risk-snapshot";
 
 /**
@@ -420,16 +422,35 @@ export async function fulfilSanctionsSnapshotItem(itemId: string) {
   try {
     const { buildSanctionsSnapshot } = await import("@/lib/sanctions/snapshot.server");
     const snapshot = await buildSanctionsSnapshot(supabase as never, item.company_slug, null);
+
+    // Auto-confirmation rule: when every live candidate has already been
+    // decided by the identifier rule (official identifier matched exactly, no
+    // conflicting attributes), no analyst review is required and the report is
+    // released to the customer immediately.
+    const liveCandidates = snapshot.runs
+      .flatMap((r) => r.candidates)
+      .filter((c) => c.classification !== "rejected");
+    const autoConfirmed = liveCandidates.filter(
+      (c) => c.analystDecision?.decisionSource === AUTO_CONFIRM_DECISION_SOURCE,
+    );
+    const pendingReview = liveCandidates.filter((c) => !c.analystDecision);
+    const bypassReview = autoConfirmed.length > 0 && pendingReview.length === 0;
+
     await supabase
       .from("order_items")
       .update({
         report_json: snapshot as never,
-        fulfilment_status: "awaiting_review",
-        fulfilment_message: "Sanctions screening completed — awaiting analyst review before release.",
+        fulfilment_status: bypassReview ? "processing" : "awaiting_review",
+        fulfilment_message: bypassReview
+          ? "Sanctions screening completed — match auto-confirmed on an official identifier."
+          : "Sanctions screening completed — awaiting analyst review before release.",
         delivered_at: null,
       })
       .eq("id", item.id);
-    return { ok: true as const, outcome: snapshot.outcome };
+
+    if (bypassReview) await releaseOrderItemReport(item.id, true);
+
+    return { ok: true as const, outcome: snapshot.outcome, autoConfirmed: bypassReview };
   } catch (screeningError) {
     return fail(screeningError instanceof Error ? screeningError.message : "Screening failed");
   }
