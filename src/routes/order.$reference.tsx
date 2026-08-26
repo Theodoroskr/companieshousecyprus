@@ -30,6 +30,15 @@ export const Route = createFileRoute("/order/$reference")({
 
 const euros = (cents: number) => formatPrice(cents / 100);
 
+const FULFILMENT_LABELS: Record<string, string> = {
+  pending: "In production",
+  processing: "In production",
+  awaiting_review: "Awaiting analyst review",
+  delivered: "Delivered",
+  failed: "Needs attention",
+};
+
+
 const STATUS_COPY: Record<string, string> = {
   awaiting_payment: "Awaiting payment confirmation",
   paid: "Payment received — in production",
