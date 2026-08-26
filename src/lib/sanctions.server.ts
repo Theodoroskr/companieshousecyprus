@@ -367,7 +367,10 @@ export async function runSanctionsImport(
         file_hash_sha256: fileHash,
         file_size_bytes: bytes.byteLength,
         storage_path: storagePath,
-      })
+        official_digest_sha256: officialDigest?.sha256Hex ?? null,
+        official_digest_header: officialDigest ? `${officialDigest.header}: ${officialDigest.raw}` : null,
+        digest_mismatch: false,
+      } as never)
       .eq("id", importId);
 
     // 4. parse + stage ---------------------------------------------------
@@ -468,6 +471,7 @@ export async function runSanctionsImport(
           finalHost,
           contentType,
           etag: etagHeader,
+          officialDigest: officialDigest?.sha256Hex ?? null,
           persons,
           entities,
           ships,
