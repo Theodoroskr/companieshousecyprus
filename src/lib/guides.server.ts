@@ -65,6 +65,10 @@ function timeframeLabel(value: string) {
 
 export interface StoreLeadInput {
   leadType: "guide_download" | "specialist_introduction";
+  /** Overrides the default consent bookkeeping (used by the company set-up page). */
+  consentVersion?: string;
+  consentText?: string;
+  leadLabel?: string;
   formSource: string;
   fullName: string;
   email: string;
@@ -89,7 +93,8 @@ export async function storeGuideLead(input: StoreLeadInput) {
   await assertNotRateLimited(input.email);
 
   const isDownload = input.leadType === "guide_download";
-  const consentVersion = isDownload ? CONSENT_VERSION_DOWNLOAD : CONSENT_VERSION_INTRODUCTION;
+  const consentVersion =
+    input.consentVersion ?? (isDownload ? CONSENT_VERSION_DOWNLOAD : CONSENT_VERSION_INTRODUCTION);
 
   const row: LeadInsert = {
     lead_type: input.leadType,
@@ -120,7 +125,8 @@ export async function storeGuideLead(input: StoreLeadInput) {
   const { data, error } = await db.from("guide_leads").insert(row).select("id").single();
   if (error) throw new Error(error.message);
 
-  const consentText = isDownload ? CONSENT_TEXT_DOWNLOAD : CONSENT_TEXT_INTRODUCTION;
+  const consentText =
+    input.consentText ?? (isDownload ? CONSENT_TEXT_DOWNLOAD : CONSENT_TEXT_INTRODUCTION);
   const receivedAt = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Nicosia",
     day: "2-digit",
@@ -131,7 +137,8 @@ export async function storeGuideLead(input: StoreLeadInput) {
   }).format(new Date());
 
   const notifyData = {
-    leadType: isDownload ? "Guide download" : "Specialist introduction request",
+    leadType:
+      input.leadLabel ?? (isDownload ? "Guide download" : "Specialist introduction request"),
     fullName: input.fullName,
     email: input.email,
     telephone: input.telephone ?? "",
