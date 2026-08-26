@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import { mySnapshot } from "@/lib/orders.functions";
 import { SanctionsSnapshotView } from "@/components/report/SanctionsSnapshotView";
+import { SnapshotReportShell } from "@/components/report/SnapshotReportShell";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Your sanctions screening — Companies House Cyprus";
@@ -31,31 +32,27 @@ function ClientSnapshotPage() {
   const query = useQuery({ queryKey: ["my-snapshot", itemId], queryFn: () => load({ data: { itemId } }) });
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/account/orders">
-            <ArrowLeft className="size-4" /> Back to my orders
-          </Link>
-        </Button>
-        {query.data ? (
+    <SnapshotReportShell
+      backTo="/account/orders"
+      backLabel="Back to my orders"
+      loadingLabel="Loading your screening…"
+      isLoading={query.isLoading}
+      error={
+        query.isError
+          ? query.error instanceof Error
+            ? query.error.message
+            : "This screening is not available yet."
+          : null
+      }
+      actions={
+        query.data ? (
           <Button size="sm" onClick={() => window.print()}>
             <Printer className="size-4" /> Save as PDF
           </Button>
-        ) : null}
-      </div>
-
-      {query.isLoading ? (
-        <p className="flex items-center gap-2 rounded-xl border bg-card p-8 text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Loading your screening…
-        </p>
-      ) : query.isError ? (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-sm text-destructive">
-          {query.error instanceof Error ? query.error.message : "This screening is not available yet."}
-        </p>
-      ) : query.data ? (
-        <SanctionsSnapshotView snapshot={query.data.snapshot} meta={query.data.meta} />
-      ) : null}
-    </div>
+        ) : null
+      }
+    >
+      {query.data ? <SanctionsSnapshotView snapshot={query.data.snapshot} meta={query.data.meta} /> : null}
+    </SnapshotReportShell>
   );
 }
