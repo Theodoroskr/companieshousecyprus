@@ -8,7 +8,6 @@ import {
   INDIVIDUALS_EXCLUDED_NOTICE,
   OUTCOME_STATEMENT,
   OUTCOME_TITLE,
-  SCOPE_LIMITATION_NOTICE,
   COMPANY_PAGE_COPY,
 } from "@/lib/sanctions/screening-scope";
 import { aggregateEntityOutcome } from "@/lib/sanctions/screening.server";
@@ -56,7 +55,6 @@ describe("outcomes", () => {
       ...Object.values(OUTCOME_TITLE),
       ...Object.values(OUTCOME_STATEMENT),
       INDIVIDUALS_EXCLUDED_NOTICE,
-      SCOPE_LIMITATION_NOTICE,
       ...Object.values(COMPANY_PAGE_COPY),
     ]
       .join(" ")
