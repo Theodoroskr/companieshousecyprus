@@ -385,6 +385,106 @@ export async function releaseOrderItemReport(itemId: string, notify = true) {
   return { ok: true as const, notified: order ? notify : false };
 }
 
+export const SANCTIONS_SNAPSHOT_SLUG = "sanctions-risk-snapshot";
+
+/**
+ * Run the entity-only Sanctions Risk Snapshot for one order item and store the
+ * customer payload. Individuals are never screened (see screening-scope).
+ */
+export async function fulfilSanctionsSnapshotItem(itemId: string) {
+  const supabase = ordersClient();
+  const { data: item, error } = await supabase
+    .from("order_items")
+    .select("id, order_id, product_slug, company_slug, company_name, company_number, fulfilment_status")
+    .eq("id", itemId)
+    .single();
+  if (error || !item) throw new Error(error?.message ?? "Order item not found");
+  if (item.product_slug !== SANCTIONS_SNAPSHOT_SLUG) throw new Error("This line is not a sanctions snapshot");
+
+  const fail = async (message: string) => {
+    await supabase
+      .from("order_items")
+      .update({ fulfilment_status: "failed", fulfilment_message: message.slice(0, 900) })
+      .eq("id", item.id);
+    return { ok: false as const, message };
+  };
+
+  if (!item.company_slug) {
+    return fail("No Cyprus register company was linked to this line — our team will confirm the company and rerun the screening.");
+  }
+
+  try {
+    const { buildSanctionsSnapshot } = await import("@/lib/sanctions/snapshot.server");
+    const snapshot = await buildSanctionsSnapshot(supabase as never, item.company_slug, null);
+    await supabase
+      .from("order_items")
+      .update({
+        report_json: snapshot as never,
+        fulfilment_status: "awaiting_review",
+        fulfilment_message: "Sanctions screening completed — awaiting analyst review before release.",
+        delivered_at: null,
+      })
+      .eq("id", item.id);
+    return { ok: true as const, outcome: snapshot.outcome };
+  } catch (screeningError) {
+    return fail(screeningError instanceof Error ? screeningError.message : "Screening failed");
+  }
+}
+
+/** Admin: stored snapshot for review, whatever the fulfilment state. */
+export async function snapshotForReview(itemId: string) {
+  const supabase = ordersClient();
+  const { data: item } = await supabase
+    .from("order_items")
+    .select("id, order_id, product_name, product_slug, company_name, company_number, fulfilment_status, delivered_at, report_json")
+    .eq("id", itemId)
+    .maybeSingle();
+  if (!item || item.product_slug !== SANCTIONS_SNAPSHOT_SLUG) throw new Error("Snapshot not found");
+  const { data: order } = await supabase.from("orders").select("reference, full_name, email").eq("id", item.order_id).maybeSingle();
+  return {
+    snapshot: (item.report_json ?? null) as unknown,
+    meta: {
+      itemId: item.id,
+      reference: order?.reference ?? "—",
+      customer: order?.full_name ?? null,
+      email: order?.email ?? null,
+      productName: item.product_name,
+      companyName: item.company_name,
+      companyNumber: item.company_number,
+      fulfilmentStatus: item.fulfilment_status,
+      deliveredAt: item.delivered_at,
+    },
+  };
+}
+
+/** Client portal: stored snapshot for an item the caller owns, once released. */
+export async function snapshotForOwner(itemId: string, userId: string, email: string) {
+  const supabase = ordersClient();
+  const { data: item } = await supabase
+    .from("order_items")
+    .select("id, product_name, product_slug, company_name, company_number, fulfilment_status, delivered_at, report_json, orders!inner(reference, user_id, email)")
+    .eq("id", itemId)
+    .maybeSingle();
+  const owner = (item as { orders?: { reference: string; user_id: string | null; email: string | null } } | null)?.orders;
+  if (!item || !owner || item.product_slug !== SANCTIONS_SNAPSHOT_SLUG) throw new Error("Snapshot not found");
+  const mine =
+    (owner.user_id && owner.user_id === userId) || (owner.email ?? "").toLowerCase() === email.trim().toLowerCase();
+  if (!mine) throw new Error("Snapshot not found");
+  if (item.fulfilment_status !== "delivered") throw new Error("This screening is still being finalised by our team.");
+  if (!item.report_json) throw new Error("Snapshot not found");
+  return {
+    snapshot: item.report_json as unknown,
+    meta: {
+      itemId: item.id,
+      reference: owner.reference,
+      productName: item.product_name,
+      companyName: item.company_name,
+      companyNumber: item.company_number,
+      deliveredAt: item.delivered_at,
+    },
+  };
+}
+
 /** Pull the report from API4ALL for one order item and store it. */
 export async function fulfilOrderItem(itemId: string) {
   const supabase = ordersClient();
@@ -587,8 +687,17 @@ export async function markOrderPaid(orderId: string) {
     .eq("order_id", orderId);
 
   for (const item of items ?? []) {
+    if (item.fulfilment_status === "delivered") continue;
+    if (item.product_slug === SANCTIONS_SNAPSHOT_SLUG) {
+      try {
+        await fulfilSanctionsSnapshotItem(item.id);
+      } catch {
+        /* screening failures are recorded on the item itself */
+      }
+      continue;
+    }
     const kind = item.a4a_kind ?? A4A_PRODUCT_KIND[item.product_slug];
-    if (!kind || item.fulfilment_status === "delivered") continue;
+    if (!kind) continue;
     try {
       await fulfilOrderItem(item.id);
     } catch {
