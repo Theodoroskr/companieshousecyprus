@@ -87,11 +87,12 @@ export class OfacStreamParser {
     return {
       records: trailing,
       report: {
-      totalParties: this.parties.size,
-      totalEntries: this.totalEntries,
-      skippedNoIdentity: this.stats.skippedNoIdentity,
-      duplicateEntryIds: this.stats.duplicateEntryIds,
-      partyTypeCounts: this.stats.partyTypeCounts,
+        totalParties: this.parties.size,
+        totalEntries: this.totalEntries,
+        skippedNoIdentity: this.stats.skippedNoIdentity,
+        duplicateEntryIds: this.stats.duplicateEntryIds,
+        partyTypeCounts: this.stats.partyTypeCounts,
+      },
     };
   }
 
