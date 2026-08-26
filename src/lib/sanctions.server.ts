@@ -3,11 +3,13 @@ import type { Database } from "@/integrations/supabase/types";
 import { iterateEntities, looksLikeFsf11, recordFingerprint, type SanctionsRecord } from "@/lib/sanctions/parse";
 import { iterateUnRecords, looksLikeUnConsolidated } from "@/lib/sanctions/parse-un";
 import { iterateUkDesignations, looksLikeUkSanctionsList } from "@/lib/sanctions/parse-uk";
+import { parseOfac } from "@/lib/sanctions/parse-ofac";
 
 export const SANCTIONS_BUCKET = "sanctions-raw";
 export const EU_SOURCE_CODE = "EU_FSF";
 export const UN_SOURCE_CODE = "UN_CONSOLIDATED";
 export const UK_SOURCE_CODE = "UKSL";
+export const OFAC_SOURCE_CODE = "OFAC_SDN";
 
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
@@ -17,6 +19,18 @@ type SourceAdapter = {
   /** Extra pre-publication validation on the staged dataset. Returns an error message or null. */
   sanity?: (stats: { persons: number; entities: number; parsed: number }) => string | null;
 };
+
+function looksLikeOfacAdvanced(xml: string): { ok: boolean; reason?: string } {
+  if (!xml.includes("<Sanctions")) return { ok: false, reason: "missing <Sanctions> root element" };
+  if (!xml.includes("<DistinctParties>")) return { ok: false, reason: "missing <DistinctParties> section" };
+  if (!xml.includes("<SanctionsEntries>")) return { ok: false, reason: "missing <SanctionsEntries> section" };
+  if (!/<\/Sanctions>\s*$/.test(xml.slice(-500))) return { ok: false, reason: "document is truncated (no closing </Sanctions>)" };
+  return { ok: true };
+}
+
+function* iterateOfacRecords(xml: string): Generator<SanctionsRecord> {
+  yield* parseOfac(xml).records;
+}
 
 const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
   [EU_SOURCE_CODE]: {
@@ -44,6 +58,18 @@ const SOURCE_ADAPTERS: Record<string, SourceAdapter> = {
     sanity: ({ persons, entities }) => {
       if (persons < 1) return "The staged UK dataset contains no individuals.";
       if (entities < 1) return "The staged UK dataset contains no entities.";
+      return null;
+    },
+  },
+  [OFAC_SOURCE_CODE]: {
+    validate: looksLikeOfacAdvanced,
+    iterate: iterateOfacRecords,
+    storagePrefix: "ofac-sdn",
+    // The Advanced SDN export is ~126 MB; refuse anything implausibly small.
+    minBytes: 20 * 1024 * 1024,
+    sanity: ({ persons, entities }) => {
+      if (persons < 1) return "The staged OFAC dataset contains no individuals.";
+      if (entities < 1) return "The staged OFAC dataset contains no entities.";
       return null;
     },
   },
@@ -105,6 +131,18 @@ function storagePathFor(prefix: string, hash: string, when: Date) {
   return `${prefix}/${y}/${m}/${d}/${when.getTime()}-${hash.slice(0, 16)}.xml`;
 }
 
+/** Peak RSS in MB when running under Node (preview/dev); null in workerd. */
+function nodeRssMb(): number | null {
+  try {
+    if (typeof process !== "undefined" && typeof process.memoryUsage === "function") {
+      return Math.round(process.memoryUsage().rss / 1048576);
+    }
+  } catch {
+    // not a Node-like runtime
+  }
+  return null;
+}
+
 async function getSource(supabase: AnyClient, sourceCode: string) {
   const { data, error } = await supabase
     .from("sanctions_sources")
@@ -140,6 +178,8 @@ export type ImportOutcome = {
   personCount?: number;
   entityCount?: number;
   shipCount?: number;
+  aircraftCount?: number;
+  walletCount?: number;
   failedRecordCount?: number;
   fileSizeBytes?: number;
   fileHash?: string;
@@ -306,9 +346,13 @@ export async function runSanctionsImport(
     let persons = 0;
     let entities = 0;
     let ships = 0;
+    let aircraft = 0;
+    let wallets = 0;
     let duplicates = 0;
     let failedRecords = 0;
     let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
+    const parseStartedAt = Date.now();
+    const rssBefore = nodeRssMb();
 
     const flush = async () => {
       if (batch.length === 0) return;
@@ -326,7 +370,9 @@ export async function runSanctionsImport(
       parsed += 1;
       if (record.entity_type === "person") persons += 1;
       else if (record.entity_type === "ship") ships += 1;
+      else if (record.entity_type === "aircraft") aircraft += 1;
       else if (record.entity_type === "entity") entities += 1;
+      if (record.identifiers.some((i) => i.identifier_type === "digital_currency_address")) wallets += 1;
       batch.push({
         import_id: importId,
         source_record_id: record.source_record_id,
@@ -336,6 +382,8 @@ export async function runSanctionsImport(
       if (batch.length >= STAGING_BATCH) await flush();
     }
     await flush();
+    const parseDurationMs = Date.now() - parseStartedAt;
+    const rssAfter = nodeRssMb();
 
     await supabase.from("sanctions_imports").update({ status: "staging" }).eq("id", importId);
 
@@ -393,14 +441,21 @@ export async function runSanctionsImport(
           persons,
           entities,
           ships,
+          aircraft,
+          walletRecords: wallets,
           duplicatesIgnored: duplicates,
           failedRecords,
+          parseDurationMs,
+          rssMbBefore: rssBefore,
+          rssMbAfter: rssAfter,
           parser:
             sourceCode === UN_SOURCE_CODE
               ? "un-consolidated"
               : sourceCode === UK_SOURCE_CODE
                 ? "uk-sanctions-list"
-                : "eu-fsf-1.1",
+                : sourceCode === OFAC_SOURCE_CODE
+                  ? "ofac-advanced-v3"
+                  : "eu-fsf-1.1",
         } as never,
       })
       .eq("id", importId);
@@ -416,6 +471,8 @@ export async function runSanctionsImport(
       personCount: persons,
       entityCount: entities,
       shipCount: ships,
+      aircraftCount: aircraft,
+      walletCount: wallets,
       failedRecordCount: failedRecords,
       fileSizeBytes: bytes.byteLength,
       fileHash,
@@ -452,6 +509,8 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
     { count: personCount },
     { count: entityCount },
     { count: shipCount },
+    { count: aircraftCount },
+    { count: walletCount },
     { count: aliasCount },
     { count: identifierCount },
     { count: addressCount },
@@ -487,6 +546,18 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
       .eq("source_id", source.id)
       .eq("is_active", true)
       .eq("entity_type", "ship"),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .eq("entity_type", "aircraft"),
+    supabase
+      .from("sanctions_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", source.id)
+      .eq("is_active", true)
+      .contains("raw_record", { raw: { wallets: [{}] } }),
     supabase
       .from("sanctions_aliases")
       .select("sanctions_entries!inner(source_id)", { count: "exact", head: true })
@@ -569,6 +640,8 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
     personCount: personCount ?? 0,
     entityCount: entityCount ?? 0,
     shipCount: shipCount ?? 0,
+    aircraftCount: aircraftCount ?? 0,
+    walletCount: walletCount ?? 0,
     aliasCount: aliasCount ?? 0,
     identifierCount: identifierCount ?? 0,
     addressCount: addressCount ?? 0,
