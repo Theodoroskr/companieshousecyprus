@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.screening_name_candidates(text[], text[], text[], real, integer) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.screening_identifier_candidates(jsonb, text[]) FROM PUBLIC, anon, authenticated;
