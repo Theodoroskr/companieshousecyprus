@@ -144,7 +144,22 @@ export async function runScreening(
   context: "admin_test" | "company_profile" | "snapshot" | "monitoring" | "api",
   userId: string | null,
 ): Promise<ScreeningRunResult> {
+  if (input.subjectType === "individual" && !CONNECTED_INDIVIDUAL_SCREENING_ENABLED) {
+    throw new Error(
+      "Individual screening is disabled (connected_individual_screening_enabled = false). This release screens legal entities only.",
+    );
+  }
+  const isPerson = input.subjectType === "individual";
+  const expectedEntryType =
+    input.subjectType === "individual"
+      ? "person"
+      : input.subjectType === "entity"
+        ? "entity"
+        : input.subjectType === "vessel"
+          ? "ship"
+          : "aircraft";
   const config = await loadConfig(supabase);
+
   const forms = normalizeNameForms(input.name);
   const nameVariants = new Set<string>();
   const addVariants = (name: string) => {
