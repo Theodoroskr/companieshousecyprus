@@ -52,7 +52,11 @@ export function SanctionsSnapshotView({
 
       <ScreeningStatusBanner
         status={status}
-        title={status === "strong_entity_match" ? "Strong entity match identified" : snapshot.outcomeTitle}
+        title={
+          status === "strong_entity_match"
+            ? "Strong entity match identified"
+            : snapshot.outcomeTitle
+        }
         statement={status === "strong_entity_match" ? style.explanation : snapshot.outcomeStatement}
       >
         {analystReviewPending ? <ScreeningStatusBadge status="analyst_review_pending" /> : null}
@@ -65,7 +69,10 @@ export function SanctionsSnapshotView({
           <Row label="Registration number" value={snapshot.company.registrationNumber} />
           <Row label="Jurisdiction" value={snapshot.company.jurisdiction} />
           <Row label="Registered address" value={snapshot.company.registeredAddress} />
-          <Row label="Previous names screened" value={snapshot.previousNamesScreened.join("; ") || "None held in our records"} />
+          <Row
+            label="Previous names screened"
+            value={snapshot.previousNamesScreened.join("; ") || "None held in our records"}
+          />
           <Row
             label="Corporate shareholders screened"
             value={snapshot.corporateShareholdersScreened.join("; ") || "None available"}
@@ -130,7 +137,11 @@ export function SanctionsSnapshotView({
             ) : (
               <ul className="mt-2 space-y-3">
                 {run.candidates.map((c, i) => (
-                  <CandidateCard key={`${run.reference}-${i}`} candidate={c} subjectName={run.subjectName} />
+                  <CandidateCard
+                    key={`${run.reference}-${i}`}
+                    candidate={c}
+                    subjectName={run.subjectName}
+                  />
                 ))}
               </ul>
             )}
@@ -151,23 +162,35 @@ export function SanctionsSnapshotView({
   );
 }
 
-function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidate; subjectName: string }) {
+function CandidateCard({
+  candidate,
+  subjectName,
+}: {
+  candidate: SnapshotCandidate;
+  subjectName: string;
+}) {
   const status = candidateStatus(candidate);
   const style = SCREENING_STATUS[status];
-  const noteAnchor = `authority-note-${candidate.sourceCode}-${candidate.officialRecordId ?? candidate.matchedName}`
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-");
-  const authorityLabel = candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase();
+  const availability =
+    candidate.measuresAvailability ??
+    (candidate.measures?.length || candidate.measuresNote || candidate.lastAmendedDate
+      ? "present"
+      : "not_published");
+  const noteAnchor =
+    `authority-note-${candidate.sourceCode}-${candidate.officialRecordId ?? candidate.matchedName}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+  const authorityLabel =
+    candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase();
   return (
     <li className={`rounded-md border p-3 text-sm ${style.bg} ${style.leftBorder}`}>
-
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className={`font-semibold ${style.text}`}>{candidate.recordName}</p>
         <ScreeningStatusBadge status={status} className="bg-background" />
       </div>
       <p className="mt-1 text-sm text-foreground">
-        Relationship: name screened “{candidate.nameUsed}” for {subjectName} matched the listed record “
-        {candidate.matchedName}”.
+        Relationship: name screened “{candidate.nameUsed}” for {subjectName} matched the listed
+        record “{candidate.matchedName}”.
       </p>
       <p className="mt-1 text-xs text-foreground/80">
         {candidate.sourceCode.replace(/_/g, " ").toUpperCase()}
@@ -176,7 +199,10 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
         {candidate.designationDate ? ` · designated ${formatDate(candidate.designationDate)}` : ""}
       </p>
       {candidate.listingReason ? (
-        <div id={noteAnchor} className="mt-2 scroll-mt-24 rounded-md border border-border/60 bg-background/70 p-2">
+        <div
+          id={noteAnchor}
+          className="mt-2 scroll-mt-24 rounded-md border border-border/60 bg-background/70 p-2"
+        >
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Reason for listing, as published by the authority
           </p>
@@ -185,12 +211,18 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
             {candidate.listingReason}
           </blockquote>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            Quoted verbatim from {candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase()}. It describes
-            the listed record, not our identity determination.
+            Quoted verbatim from{" "}
+            {candidate.authority ?? candidate.sourceCode.replace(/_/g, " ").toUpperCase()}. It
+            describes the listed record, not our identity determination.
             {candidate.sourceLink ? (
               <>
                 {" "}
-                <a className="underline" href={candidate.sourceLink} rel="noopener noreferrer" target="_blank">
+                <a
+                  className="underline"
+                  href={candidate.sourceLink}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
                   Official source
                 </a>
               </>
@@ -198,46 +230,58 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
           </p>
         </div>
       ) : null}
-      {candidate.measures?.length || candidate.measuresNote || candidate.lastAmendedDate ? (
-        <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Measures published by the authority
+      <div className="mt-2 rounded-md border border-border/60 bg-background/70 p-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Measures published by the authority
+        </p>
+        {availability === "record_missing" ? (
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            Record details could not be retrieved from the source data; measures and amendment date
+            are unavailable.
           </p>
-          {candidate.measures?.length ? (
-            <TooltipProvider delayDuration={150}>
-              <ul className="mt-1 flex flex-wrap gap-1.5">
-                {candidate.measures.map((m) => (
-                  <MeasureChip
-                    key={m}
-                    measure={m}
-                    authorityLabel={authorityLabel}
-                    noteAnchor={candidate.listingReason ? noteAnchor : null}
-                    sourceLink={candidate.sourceLink ?? null}
-                  />
-                ))}
-              </ul>
-            </TooltipProvider>
-          ) : (
-
-            <p className="mt-1 text-xs text-muted-foreground">
-              The source does not publish a structured list of measures for this record.
-            </p>
-          )}
-          {candidate.measuresNote ? (
-            <p className="mt-1.5 text-xs leading-relaxed text-foreground/80">{candidate.measuresNote}</p>
-          ) : null}
-          <p className="mt-1.5 text-[11px] text-muted-foreground">
-            {candidate.lastAmendedDate
-              ? `Record last amended by the authority on ${formatDate(candidate.lastAmendedDate)}.`
+        ) : availability === "not_published" ? (
+          <p className="mt-1 text-xs text-muted-foreground">
+            The authority has not published measures or an amendment date for this record.
+          </p>
+        ) : candidate.measures?.length ? (
+          <TooltipProvider delayDuration={150}>
+            <ul className="mt-1 flex flex-wrap gap-1.5">
+              {candidate.measures.map((m) => (
+                <MeasureChip
+                  key={m}
+                  measure={m}
+                  authorityLabel={authorityLabel}
+                  noteAnchor={candidate.listingReason ? noteAnchor : null}
+                  sourceLink={candidate.sourceLink ?? null}
+                />
+              ))}
+            </ul>
+          </TooltipProvider>
+        ) : (
+          <p className="mt-1 text-xs text-muted-foreground">
+            The source does not publish a structured list of measures for this record.
+          </p>
+        )}
+        {candidate.measuresNote ? (
+          <p className="mt-1.5 text-xs leading-relaxed text-foreground/80">
+            {candidate.measuresNote}
+          </p>
+        ) : null}
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          {candidate.lastAmendedDate
+            ? `Record last amended by the authority on ${formatDate(candidate.lastAmendedDate)}.`
+            : availability === "not_published"
+              ? "No amendment date has been published by the authority for this record."
               : "The source does not publish an amendment date for this record."}{" "}
-            Measures apply to the listed record, not to our identity determination.
-          </p>
-        </div>
-      ) : null}
+          Measures apply to the listed record, not to our identity determination.
+        </p>
+      </div>
       {candidate.analystDecision ? (
         <p className="mt-1 text-xs text-foreground/80">
           Analyst determination: {candidate.analystDecision.decision.replace(/_/g, " ")}
-          {candidate.analystDecision.reviewedAt ? ` · ${formatDate(candidate.analystDecision.reviewedAt)}` : ""}
+          {candidate.analystDecision.reviewedAt
+            ? ` · ${formatDate(candidate.analystDecision.reviewedAt)}`
+            : ""}
         </p>
       ) : (
         <p className="mt-1 text-xs text-foreground/80">
@@ -266,7 +310,8 @@ function sourceStatus(
 ): SourceStatusKey {
   if (!source.importId) return "unavailable";
   const own = candidates.filter((c) => c.sourceCode === source.sourceCode);
-  if (own.some((c) => c.analystDecision?.decision === "confirmed_match")) return "checked_confirmed";
+  if (own.some((c) => c.analystDecision?.decision === "confirmed_match"))
+    return "checked_confirmed";
   if (own.some((c) => candidateStatus(c) === "strong_entity_match")) return "checked_candidate";
   if (own.some((c) => c.classification !== "rejected")) return "checked_candidate";
   return "checked_no_candidate";
@@ -322,13 +367,18 @@ function MeasureChip({
   );
   if (!explanation) {
     return (
-      <li className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">{measure}</li>
+      <li className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">
+        {measure}
+      </li>
     );
   }
   return (
     <Tooltip>
       <TooltipTrigger asChild>{chip}</TooltipTrigger>
-      <TooltipContent className="max-w-xs space-y-1.5 bg-popover p-3 text-popover-foreground shadow-md" side="top">
+      <TooltipContent
+        className="max-w-xs space-y-1.5 bg-popover p-3 text-popover-foreground shadow-md"
+        side="top"
+      >
         <p className="text-xs leading-relaxed">{explanation}</p>
         <p className="text-[11px] opacity-80">
           Published by {authorityLabel} for the listed record.{" "}

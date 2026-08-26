@@ -1,5 +1,6 @@
 /** Shared, browser-safe types for the entity-only Sanctions Risk Snapshot. */
 import type { EntityScreeningOutcome, SubjectRole } from "@/lib/sanctions/screening-scope";
+import type { MeasureAvailability } from "@/lib/sanctions/measures";
 
 export type SnapshotCandidate = {
   sourceCode: string;
@@ -19,6 +20,8 @@ export type SnapshotCandidate = {
   measures: string[];
   /** Free-text note published with the measures, when available. */
   measuresNote: string | null;
+  /** Whether the source record actually carries measure/amendment data. */
+  measuresAvailability?: MeasureAvailability;
   nameUsed: string;
   matchedName: string;
   nameSimilarity: number | null;
@@ -64,7 +67,6 @@ export type SanctionsSnapshot = {
   individualsExcludedNotice: string;
 };
 
-
 /**
  * Remove internal identity-scoring fields from a stored snapshot before it
  * leaves the server. Legacy snapshots were persisted with `matchScore` /
@@ -75,7 +77,13 @@ export function stripInternalScores<T>(snapshot: T): T {
   if (Array.isArray(snapshot)) return snapshot.map((v) => stripInternalScores(v)) as unknown as T;
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(snapshot as Record<string, unknown>)) {
-    if (key === "matchScore" || key === "matchLevel" || key === "match_score" || key === "match_level") continue;
+    if (
+      key === "matchScore" ||
+      key === "matchLevel" ||
+      key === "match_score" ||
+      key === "match_level"
+    )
+      continue;
     out[key] = stripInternalScores(value);
   }
   return out as T;
