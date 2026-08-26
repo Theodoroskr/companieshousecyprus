@@ -23,9 +23,33 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Companies House Cyprus — Free Cyprus Company Search";
+const TITLE = "Companies House Cyprus — Free Company Register Search";
 const DESCRIPTION =
-  "Free Cyprus company search on official Registrar data. Check status, directors and shareholders, then order certificates and reports with instant digital delivery.";
+  "Search any Cyprus company free in seconds: status, directors, shareholders and registered office from Registrar of Companies data. Order certificates and reports online, delivered digitally in 1–2 days.";
+
+const FAQS = [
+  {
+    q: "Is Companies House Cyprus the official Registrar?",
+    a: "No. We are an independent commercial service operated by Infocredit Group Limited (HE4404). We publish company information sourced from the Department of Registrar of Companies and Intellectual Property and sell certificates and reports on request.",
+  },
+  {
+    q: "Is searching Cyprus companies free?",
+    a: "Yes. Searching the register, viewing company status, registration date, type, registered office and officials is free and needs no account. You only pay when you order a certificate or a report.",
+  },
+  {
+    q: "How do I search by HE number?",
+    a: "Type the registry number in the search box, with or without the prefix — for example HE 252407, HE252407 or 252407. Company names in English or Greek also work, including transliterated spellings.",
+  },
+  {
+    q: "How fast are certificates delivered?",
+    a: "Company profiles are usually issued the same business day. Official certificates from the Registrar are typically delivered within one to two business days, by email and in your account.",
+  },
+  {
+    q: "How current is the company data?",
+    a: "The register copy is refreshed regularly from the Registrar's published datasets. Each company profile shows what we hold, and certificates are always ordered fresh from the Registrar.",
+  },
+];
+
 
 
 export const Route = createFileRoute("/")({
