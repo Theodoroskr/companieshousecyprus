@@ -1006,9 +1006,11 @@ export async function runOfacStreamingImport(
       });
       if (archiveResponse?.ok && archiveResponse.body) {
         storagePath = storagePathFor(adapter.storagePrefix, fileHash, retrievedAt);
+        // Resumable so a dropped archive transfer continues instead of restarting.
+        const archiveStream = createResumableBody(archiveResponse, source.source_url).stream;
         const { error: uploadError } = await supabase.storage
           .from(SANCTIONS_BUCKET)
-          .upload(storagePath, archiveResponse.body as never, {
+          .upload(storagePath, archiveStream as never, {
             contentType: "application/xml",
             upsert: true,
             duplex: "half",
