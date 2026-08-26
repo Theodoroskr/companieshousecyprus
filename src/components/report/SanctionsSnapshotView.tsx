@@ -27,9 +27,7 @@ export function SanctionsSnapshotView({
   meta: { reference: string; productName: string };
 }) {
   const candidates = snapshot.runs.flatMap((r) => r.candidates);
-  const hasStrongCandidate = candidates.some(
-    (c) => statusForClassification(c.classification, c.analystDecision?.decision) === "strong_entity_match",
-  );
+  const hasStrongCandidate = candidates.some((c) => candidateStatus(c) === "strong_entity_match");
   const analystReviewPending =
     snapshot.outcome !== "confirmed_entity_match_identified" &&
     candidates.some((c) => !c.analystDecision && c.classification !== "rejected");
@@ -152,7 +150,7 @@ export function SanctionsSnapshotView({
 }
 
 function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidate; subjectName: string }) {
-  const status = statusForClassification(candidate.classification, candidate.analystDecision?.decision);
+  const status = candidateStatus(candidate);
   const style = SCREENING_STATUS[status];
   return (
     <li className={`rounded-md border p-3 text-sm ${style.bg} ${style.leftBorder}`}>
@@ -188,6 +186,13 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
   );
 }
 
+function candidateStatus(c: SnapshotCandidate): ScreeningStatusKey {
+  return statusForClassification(c.classification, c.analystDecision?.decision, {
+    exactName: c.nameSimilarity != null && c.nameSimilarity >= 0.999,
+    hasConflicts: c.conflicting.length > 0,
+  });
+}
+
 /** Per-source result derived from the candidates returned for that source. */
 function sourceStatus(
   source: { sourceCode: string; importId: string | null },
@@ -196,6 +201,7 @@ function sourceStatus(
   if (!source.importId) return "unavailable";
   const own = candidates.filter((c) => c.sourceCode === source.sourceCode);
   if (own.some((c) => c.analystDecision?.decision === "confirmed_match")) return "checked_confirmed";
+  if (own.some((c) => candidateStatus(c) === "strong_entity_match")) return "checked_candidate";
   if (own.some((c) => c.classification !== "rejected")) return "checked_candidate";
   return "checked_no_candidate";
 }

@@ -309,7 +309,10 @@ function CandidateCard({ candidate: c, onDecision, pending }: { candidate: Candi
         <Badge variant="outline">{c.source_code}</Badge>
         <span className="font-medium">{c.primary_name}</span>
         <ScreeningStatusBadge
-          status={statusForClassification(c.system_classification, c.decision?.decision)}
+          status={statusForClassification(c.system_classification, c.decision?.decision, {
+            exactName: Number(c.name_similarity) >= 0.999,
+            hasConflicts: (c.conflicting as string[]).length > 0,
+          })}
           label={CLASS_LABELS[c.system_classification] ?? c.system_classification}
         />
         <span className="text-muted-foreground">score {Number(c.match_score).toFixed(1)} · level {c.match_level}</span>

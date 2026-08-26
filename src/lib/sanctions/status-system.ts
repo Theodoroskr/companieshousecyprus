@@ -165,14 +165,28 @@ export const SOURCE_STATUS: Record<SourceStatusKey, { label: string; status: Scr
   updating: { label: "Updating", status: "processing" },
 };
 
-/** Map a system candidate classification to a customer-facing status. */
+/**
+ * Map a system candidate classification to a customer-facing status.
+ *
+ * Display rule: an exact legal-name match with no conflicting attributes is
+ * presented as a strong match requiring review, even when the internal score
+ * leaves it as a potential candidate. The engine's thresholds are unchanged —
+ * this only affects how the candidate is described to the reader.
+ */
 export function statusForClassification(
   classification: string,
   analystDecision?: string | null,
+  signals?: { exactName?: boolean; hasConflicts?: boolean },
 ): ScreeningStatusKey {
   if (analystDecision === "confirmed_match") return "confirmed_entity_match";
   if (analystDecision === "false_positive") return "reviewed_not_confirmed";
   if (classification === "strong_candidate") return "strong_entity_match";
+  if (
+    signals?.exactName &&
+    !signals.hasConflicts &&
+    (classification === "potential_candidate" || classification === "weak_candidate")
+  )
+    return "strong_entity_match";
   if (classification === "potential_candidate" || classification === "weak_candidate")
     return "potential_entity_match";
   return "no_matches_identified";
