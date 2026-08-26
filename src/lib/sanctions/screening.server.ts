@@ -186,16 +186,25 @@ export async function runScreening(
       jurisdiction: input.jurisdiction ?? null,
       registration_number: input.registrationNumber ?? null,
       lei: input.lei ?? null,
-      date_of_birth: input.dateOfBirth ?? null,
-      nationality: input.nationality ?? null,
+      date_of_birth: isPerson ? (input.dateOfBirth ?? null) : null,
+      nationality: isPerson ? (input.nationality ?? null) : null,
       address: input.address ?? null,
       company_id: input.companyId ?? null,
       previous_names: input.previousNames ?? [],
       subject_aliases: input.aliases ?? [],
       sources_requested: sources,
       source_import_ids: importIds,
+      source_file_hashes: Object.fromEntries(
+        Object.entries(importIds).map(([code, meta]) => [code, meta.fileHash]),
+      ),
+      scope_version: SCREENING_SCOPE_VERSION,
+      entity_only: !CONNECTED_INDIVIDUAL_SCREENING_ENABLED,
+      excluded_categories: EXCLUDED_SUBJECT_CATEGORIES,
+      subject_role: input.role ?? "direct_company",
+      parent_request_id: input.parentRequestId ?? null,
       rules_version: config.rulesVersion,
       status: "processing",
+
     })
     .select("id")
     .single();
