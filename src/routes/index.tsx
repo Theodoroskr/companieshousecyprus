@@ -343,6 +343,55 @@ function HomePage() {
         </div>
       </section>
 
+      {/* How it works */}
+      <section className="border-y bg-sand">
+        <div className="mx-auto max-w-7xl px-4 py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">How it works</p>
+          <h2 className="mt-3 text-3xl font-bold text-foreground">From search to certified document in three steps</h2>
+          <ol className="mt-10 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: "1. Search the register",
+                body: "Enter a company name in English or Greek, or an HE number with or without the prefix. Results show status, type and district instantly — free, no account.",
+              },
+              {
+                title: "2. Open the company profile",
+                body: "See registration date, company age, registered office, officials and owners where we hold them, plus the documents available for that entity.",
+              },
+              {
+                title: "3. Order and receive",
+                body: "Add certificates or reports to your basket, pay online, and track delivery in your account. Documents arrive by email, typically in 1–2 business days.",
+              },
+            ].map((step) => (
+              <li key={step.title} className="rounded-xl border bg-card p-6 shadow-panel">
+                <h3 className="font-display text-lg font-semibold text-card-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto max-w-3xl px-4 py-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">FAQ</p>
+        <h2 className="mt-3 text-3xl font-bold text-foreground">Common questions about the Cyprus register</h2>
+        <dl className="mt-8 divide-y divide-border border-y">
+          {FAQS.map((item) => (
+            <div key={item.q} className="py-5">
+              <dt className="font-display font-semibold text-foreground">{item.q}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-6 text-sm text-muted-foreground">
+          More detail on coverage and sources on our{" "}
+          <Link to="/about" className="text-accent underline">about page</Link>, or see the{" "}
+          <Link to="/cyprus-companies-registry" className="text-accent underline">Cyprus companies registry guide</Link>.
+        </p>
+      </section>
+
+
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 pb-24">
         <div className="surface-deep grid-dots flex flex-col gap-6 rounded-2xl p-10 md:flex-row md:items-center md:justify-between md:p-14">
