@@ -358,7 +358,7 @@ function CompanySetUpPage() {
             The appropriate structure depends on the company’s activities, ownership and intended use.
             A qualified professional should review the circumstances before incorporation. You can
             check whether a name is already taken with our{" "}
-            <Link to="/search" className="underline underline-offset-2">
+            <Link to="/search" search={{ q: "", page: 1 }} className="underline underline-offset-2">
               Cyprus company search
             </Link>
             .
@@ -515,7 +515,7 @@ function CompanySetUpPage() {
               <h3 className="font-heading text-base">Useful links</h3>
               <ul className="mt-3 space-y-2">
                 <li>
-                  <Link to="/search" className="inline-flex items-center gap-2 underline underline-offset-2">
+                  <Link to="/search" search={{ q: "", page: 1 }} className="inline-flex items-center gap-2 underline underline-offset-2">
                     <Search className="h-4 w-4" aria-hidden="true" /> Cyprus company search
                   </Link>
                 </li>
@@ -585,7 +585,7 @@ function CompanySetUpPage() {
             <Button size="lg" variant="secondary" onClick={goToForm}>
               Start Your Enquiry
             </Button>
-            <Link to="/search" className="text-sm underline underline-offset-4">
+            <Link to="/search" search={{ q: "", page: 1 }} className="text-sm underline underline-offset-4">
               Search Cyprus Companies
             </Link>
           </div>
