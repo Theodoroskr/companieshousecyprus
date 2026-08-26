@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { INDIVIDUALS_EXCLUDED_NOTICE } from "@/lib/sanctions/screening-scope";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
+import { statusForClassification, statusForOutcome } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,12 +26,14 @@ type Source = (typeof ALL_SOURCES)[number];
 
 type Mode = "register" | "company";
 
-const OUTCOME_LABELS: Record<string, { label: string; tone: string }> = {
-  confirmed_match_identified: { label: "Confirmed match identified", tone: "bg-red-100 text-red-900 border-red-300" },
-  potential_match_identified: { label: "Potential match identified", tone: "bg-amber-100 text-amber-900 border-amber-300" },
-  no_match_above_threshold: { label: "No match identified above threshold", tone: "bg-emerald-100 text-emerald-900 border-emerald-300" },
-  screening_incomplete: { label: "Screening incomplete", tone: "bg-slate-100 text-slate-800 border-slate-300" },
-  source_unavailable: { label: "Source unavailable", tone: "bg-slate-100 text-slate-800 border-slate-300" },
+/** Analyst-facing wording for aggregate outcomes; colours come from the
+ * shared screening status system so every surface reads the same. */
+const OUTCOME_LABELS: Record<string, string> = {
+  confirmed_match_identified: "Confirmed direct entity match",
+  potential_match_identified: "Potential entity match",
+  no_match_above_threshold: "No matches identified",
+  screening_incomplete: "Screening incomplete",
+  source_unavailable: "Source unavailable",
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -234,8 +238,12 @@ function ScreeningWorkbench() {
 }
 
 function OutcomeBadge({ outcome }: { outcome: string }) {
-  const meta = OUTCOME_LABELS[outcome] ?? { label: outcome, tone: "" };
-  return <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${meta.tone}`}>{meta.label}</span>;
+  return (
+    <ScreeningStatusBadge
+      status={statusForOutcome(outcome)}
+      label={OUTCOME_LABELS[outcome] ?? outcome.replace(/_/g, " ")}
+    />
+  );
 }
 
 type ResultData = Awaited<ReturnType<typeof fetchScreeningResult>>;
@@ -300,7 +308,10 @@ function CandidateCard({ candidate: c, onDecision, pending }: { candidate: Candi
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline">{c.source_code}</Badge>
         <span className="font-medium">{c.primary_name}</span>
-        <Badge>{CLASS_LABELS[c.system_classification] ?? c.system_classification}</Badge>
+        <ScreeningStatusBadge
+          status={statusForClassification(c.system_classification, c.decision?.decision)}
+          label={CLASS_LABELS[c.system_classification] ?? c.system_classification}
+        />
         <span className="text-muted-foreground">score {Number(c.match_score).toFixed(1)} · level {c.match_level}</span>
         {c.identifier_match ? <Badge variant="outline">identifier match</Badge> : null}
         {c.decision ? <Badge variant="secondary">analyst: {c.decision.decision.replace(/_/g, " ")}</Badge> : null}
@@ -311,7 +322,7 @@ function CandidateCard({ candidate: c, onDecision, pending }: { candidate: Candi
         <div><dt className="text-muted-foreground">Programme</dt><dd>{c.programme ?? "—"}</dd></div>
         <div><dt className="text-muted-foreground">Matched on</dt><dd>{c.matched_name} ({c.matched_alias_type ?? "primary"}, similarity {Number(c.name_similarity).toFixed(2)})</dd></div>
         <div><dt className="text-muted-foreground">Corroborating</dt><dd>{(c.corroborating as string[]).join("; ") || "—"}</dd></div>
-        <div><dt className="text-muted-foreground">Conflicting</dt><dd className={(c.conflicting as string[]).length ? "text-red-700" : ""}>{(c.conflicting as string[]).join("; ") || "none"}</dd></div>
+        <div><dt className="text-muted-foreground">Conflicting</dt><dd className={(c.conflicting as string[]).length ? "text-screening-confirmed" : ""}>{(c.conflicting as string[]).join("; ") || "none"}</dd></div>
         {c.source_link ? <div><dt className="text-muted-foreground">Source</dt><dd><a className="underline" href={c.source_link} target="_blank" rel="noreferrer">official list</a></dd></div> : null}
       </dl>
       <details className="mt-1 text-xs">
