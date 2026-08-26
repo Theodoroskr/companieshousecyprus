@@ -202,14 +202,21 @@ function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidat
             Measures published by the authority
           </p>
           {candidate.measures?.length ? (
-            <ul className="mt-1 flex flex-wrap gap-1.5">
-              {candidate.measures.map((m) => (
-                <li key={m} className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs text-foreground">
-                  {m}
-                </li>
-              ))}
-            </ul>
+            <TooltipProvider delayDuration={150}>
+              <ul className="mt-1 flex flex-wrap gap-1.5">
+                {candidate.measures.map((m) => (
+                  <MeasureChip
+                    key={m}
+                    measure={m}
+                    authorityLabel={authorityLabel}
+                    noteAnchor={candidate.listingReason ? noteAnchor : null}
+                    sourceLink={candidate.sourceLink ?? null}
+                  />
+                ))}
+              </ul>
+            </TooltipProvider>
           ) : (
+
             <p className="mt-1 text-xs text-muted-foreground">
               The source does not publish a structured list of measures for this record.
             </p>
