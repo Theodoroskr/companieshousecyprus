@@ -691,10 +691,8 @@ export async function runOfacStreamingImport(
           .upload(storagePath, archiveResponse.body as never, {
             contentType: "application/xml",
             upsert: true,
-            // @ts-expect-error duplex is required for streaming bodies but
-            // is missing from the standard RequestInit typing path here.
             duplex: "half",
-          });
+          } as never);
         if (uploadError) {
           storagePath = null;
           console.warn("[ofac-worker] raw archive upload failed", uploadError.message);
