@@ -37,9 +37,7 @@ export type ScreeningSubjectInput = {
   companyId?: string | null;
 };
 
-type AdminClient = ReturnType<typeof import("@/integrations/supabase/client.server").supabaseAdmin.from> extends never
-  ? never
-  : Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
+type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
 function maskIdentifier(type: string | null | undefined, value: string | null | undefined): string | null {
   if (!value) return null;
@@ -195,17 +193,26 @@ export async function runScreening(
 
   try {
     // Candidate generation — name similarity
-    const { data: nameHits, error: nameErr } = await supabase.rpc("screening_name_candidates", {
+    type NameHit = {
+      sanctions_entry_id: string; source_code: string; entity_type: string; primary_name: string;
+      matched_name: string; matched_alias_type: string; name_similarity: number; name_used: string;
+    };
+    type IdHit = {
+      sanctions_entry_id: string; source_code: string; identifier_type: string;
+      identifier_value: string; issuing_country: string | null;
+    };
+    const nameRpc = (await supabase.rpc("screening_name_candidates", {
       p_names: [...nameVariants],
       p_sources: sources,
-      p_entity_types: null,
+      p_entity_types: undefined,
       p_min_sim: config.thresholds.min_name_similarity,
       p_limit: config.thresholds.max_candidates,
-    });
-    if (nameErr) throw new Error(nameErr.message);
+    } as never)) as { data: NameHit[] | null; error: { message: string } | null };
+    if (nameRpc.error) throw new Error(nameRpc.error.message);
+    const nameHits = nameRpc.data ?? [];
 
     // Candidate generation — reliable identifiers
-    const identifiers: { kind: string; value: string; country?: string }[] = [];
+    const identifiers: { kind: string; value: string; country?: string | undefined }[] = [];
     if (input.registrationNumber) identifiers.push({ kind: "registration_number", value: input.registrationNumber, country: input.jurisdiction ?? undefined });
     if (input.lei) identifiers.push({ kind: "lei", value: input.lei });
     if (input.identificationNumber) {
