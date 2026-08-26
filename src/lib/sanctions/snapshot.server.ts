@@ -17,6 +17,7 @@ import {
 } from "@/lib/sanctions/screening-scope";
 import { SCREENING_SOURCES, screenCyprusCompany, getScreeningResult } from "@/lib/sanctions/screening.server";
 import type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
+import { extractMeasures, extractMeasuresNote } from "@/lib/sanctions/measures";
 
 export type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
 
@@ -70,8 +71,6 @@ export async function buildSanctionsSnapshot(
           identifierMatch: Boolean(c.identifier_match),
           matching: (c.corroborating as string[] | null) ?? [],
           conflicting: (c.conflicting as string[] | null) ?? [],
-          matchScore: Number(c.match_score),
-          matchLevel: (c.match_level as number | null) ?? null,
           classification: c.system_classification as string,
           analystDecision: c.decision
             ? { decision: c.decision.decision as string, rationale: c.decision.rationale as string, reviewedAt: (c.decision.reviewed_at as string) ?? null }
