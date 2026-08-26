@@ -29,7 +29,14 @@ export type SnapshotCandidate = {
   matching: string[];
   conflicting: string[];
   classification: string;
-  analystDecision: { decision: string; rationale: string; reviewedAt: string | null } | null;
+  analystDecision: {
+    decision: string;
+    rationale: string;
+    reviewedAt: string | null;
+    /** "analyst" for a human determination, "system_identifier" for the auto-confirmation rule. */
+    decisionSource?: string | null;
+  } | null;
+
 };
 
 export type SnapshotRun = {
