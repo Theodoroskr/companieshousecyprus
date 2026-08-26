@@ -268,10 +268,17 @@ export const getDistricts = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const getCompanyCount = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = getServerClient();
-  const { count, error } = await supabase.from("companies").select("*", { count: "exact", head: true });
-  if (error) throw error;
-  return count ?? 0;
+  try {
+    const supabase = getServerClient();
+    const { count, error } = await supabase.from("companies").select("*", { count: "exact", head: true });
+    if (error) throw new Error(error.message);
+    return count ?? null;
+  } catch (error) {
+    // The count is decorative. Bulk imports can briefly put the database under
+    // enough load for an exact count to time out; that must not blank the home page.
+    console.error(error);
+    return null;
+  }
 });
 
 /**
