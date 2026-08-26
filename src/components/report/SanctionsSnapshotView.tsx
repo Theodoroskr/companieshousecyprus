@@ -154,6 +154,9 @@ export function SanctionsSnapshotView({
 function CandidateCard({ candidate, subjectName }: { candidate: SnapshotCandidate; subjectName: string }) {
   const status = candidateStatus(candidate);
   const style = SCREENING_STATUS[status];
+  const availability =
+    candidate.measuresAvailability ??
+    (candidate.measures?.length || candidate.measuresNote || candidate.lastAmendedDate ? "present" : "not_published");
   const noteAnchor = `authority-note-${candidate.sourceCode}-${candidate.officialRecordId ?? candidate.matchedName}`
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-");
