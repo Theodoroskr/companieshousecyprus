@@ -17,6 +17,7 @@ export type ScreeningStatusKey =
   | "potential_entity_match"
   | "strong_entity_match"
   | "confirmed_entity_match"
+  | "auto_confirmed_entity_match"
   | "screening_incomplete"
   | "source_unavailable"
   | "processing"
