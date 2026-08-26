@@ -332,9 +332,13 @@ export async function runSanctionsImport(
     let persons = 0;
     let entities = 0;
     let ships = 0;
+    let aircraft = 0;
+    let wallets = 0;
     let duplicates = 0;
     let failedRecords = 0;
     let batch: { import_id: string; source_record_id: string; record_hash: string; payload: SanctionsRecord }[] = [];
+    const parseStartedAt = Date.now();
+    const rssBefore = nodeRssMb();
 
     const flush = async () => {
       if (batch.length === 0) return;
@@ -352,7 +356,9 @@ export async function runSanctionsImport(
       parsed += 1;
       if (record.entity_type === "person") persons += 1;
       else if (record.entity_type === "ship") ships += 1;
+      else if (record.entity_type === "aircraft") aircraft += 1;
       else if (record.entity_type === "entity") entities += 1;
+      if (record.identifiers.some((i) => i.identifier_type === "digital_currency_address")) wallets += 1;
       batch.push({
         import_id: importId,
         source_record_id: record.source_record_id,
@@ -362,6 +368,8 @@ export async function runSanctionsImport(
       if (batch.length >= STAGING_BATCH) await flush();
     }
     await flush();
+    const parseDurationMs = Date.now() - parseStartedAt;
+    const rssAfter = nodeRssMb();
 
     await supabase.from("sanctions_imports").update({ status: "staging" }).eq("id", importId);
 
