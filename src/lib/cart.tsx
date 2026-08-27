@@ -1,35 +1,14 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { PRODUCTS_BY_SLUG } from "./products";
 import { APOSTILLE_FEE, CERTIFICATE_SERVICE_FEE, VAT_RATE, priceBreakdown, supportsApostille } from "./pricing";
+import {
+  CartContext,
+  CART_STORAGE_KEY as STORAGE_KEY,
+  type CartContextValue,
+  type CartItem,
+} from "./cart-context";
 
-export type CartItem = {
-  productSlug: string;
-  companySlug: string | null;
-  companyName: string | null;
-  companyNumber: string | null;
-  quantity: number;
-  /** Optional apostille certification — certificates only. */
-  apostille?: boolean;
-};
-
-type CartContextValue = {
-  items: CartItem[];
-  count: number;
-  subtotal: number;
-  serviceFee: number;
-  apostilleFee: number;
-  vat: number;
-  total: number;
-  setApostille: (index: number, apostille: boolean) => void;
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (index: number) => void;
-  updateQuantity: (index: number, quantity: number) => void;
-  clear: () => void;
-};
-
-const STORAGE_KEY = "chc.cart.v1";
-
-const CartContext = createContext<CartContextValue | null>(null);
+export type { CartItem, CartContextValue } from "./cart-context";
 
 export const CART_VAT_RATE = VAT_RATE;
 export const CART_SERVICE_FEE = CERTIFICATE_SERVICE_FEE;
