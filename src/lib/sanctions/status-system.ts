@@ -272,7 +272,7 @@ export type SnapshotCandidateLike = {
 
 /** Minimal structural view of a stored snapshot payload. */
 export type SnapshotLike = {
-  outcome?: string | null;
+  outcome?: string | null | undefined;
   runs?: { candidates?: SnapshotCandidateLike[] }[];
 };
 
