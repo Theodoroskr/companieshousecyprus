@@ -6,8 +6,11 @@ export type AuthContextValue = {
   email: string | null;
   signedIn: boolean;
   isAdmin: boolean;
+  isSupport: boolean;
+  /** Admin or support agent — may access the customer-facing admin areas. */
+  isStaff: boolean;
   roles: string[];
-  accountType: 'admin' | 'client' | 'guest';
+  accountType: 'admin' | 'support' | 'client' | 'guest';
   signOut: () => Promise<void>;
 };
 
