@@ -96,7 +96,6 @@ import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public
 import { Route as ApiPublicSanctionsImportRouteImport } from './routes/api/public/sanctions-import'
 import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
 import { Route as ApiPublicSitemapMonitorRouteImport } from './routes/api/public/sitemap-monitor'
-import { Route as ApiPublicTaxcheckTmpRouteImport } from './routes/api/public/taxcheck-tmp'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -569,11 +568,6 @@ const ApiPublicSitemapMonitorRoute = ApiPublicSitemapMonitorRouteImport.update({
   path: '/api/public/sitemap-monitor',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTaxcheckTmpRoute = ApiPublicTaxcheckTmpRouteImport.update({
-  id: '/api/public/taxcheck-tmp',
-  path: '/api/public/taxcheck-tmp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
   id: '/companies/a-z/$letter',
   path: '/companies/a-z/$letter',
@@ -713,7 +707,6 @@ export interface FileRoutesByFullPath {
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
-  '/api/public/taxcheck-tmp': typeof ApiPublicTaxcheckTmpRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -810,7 +803,6 @@ export interface FileRoutesByTo {
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
-  '/api/public/taxcheck-tmp': typeof ApiPublicTaxcheckTmpRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -910,7 +902,6 @@ export interface FileRoutesById {
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
-  '/api/public/taxcheck-tmp': typeof ApiPublicTaxcheckTmpRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -1010,7 +1001,6 @@ export interface FileRouteTypes {
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
-    | '/api/public/taxcheck-tmp'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1107,7 +1097,6 @@ export interface FileRouteTypes {
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
-    | '/api/public/taxcheck-tmp'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1206,7 +1195,6 @@ export interface FileRouteTypes {
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
-    | '/api/public/taxcheck-tmp'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1294,7 +1282,6 @@ export interface RootRouteChildren {
   ApiPublicSanctionsImportRoute: typeof ApiPublicSanctionsImportRoute
   ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
   ApiPublicSitemapMonitorRoute: typeof ApiPublicSitemapMonitorRoute
-  ApiPublicTaxcheckTmpRoute: typeof ApiPublicTaxcheckTmpRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -1913,13 +1900,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSitemapMonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/taxcheck-tmp': {
-      id: '/api/public/taxcheck-tmp'
-      path: '/api/public/taxcheck-tmp'
-      fullPath: '/api/public/taxcheck-tmp'
-      preLoaderRoute: typeof ApiPublicTaxcheckTmpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/companies/a-z/$letter': {
       id: '/companies/a-z/$letter'
       path: '/companies/a-z/$letter'
@@ -2117,7 +2097,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSanctionsImportRoute: ApiPublicSanctionsImportRoute,
   ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
   ApiPublicSitemapMonitorRoute: ApiPublicSitemapMonitorRoute,
-  ApiPublicTaxcheckTmpRoute: ApiPublicTaxcheckTmpRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,

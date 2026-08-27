@@ -293,6 +293,64 @@ function HomePage() {
         </div>
       </div>
 
+      {/* New product promo — Sanctions Risk Snapshot */}
+      <section className="mx-auto max-w-7xl px-4 pt-12">
+        <div className="relative overflow-hidden rounded-2xl border border-accent/30 bg-gradient-to-br from-primary via-[oklch(0.28_0.06_255)] to-[oklch(0.34_0.07_248)] p-6 md:p-10">
+          <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-accent/15 blur-3xl" />
+          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent">
+                <ShieldCheck className="size-3.5" />
+                New product
+              </span>
+              <h2 className="mt-4 font-display text-2xl font-bold text-primary-foreground md:text-3xl">
+                Sanctions Risk Snapshot — screen a Cyprus company in minutes
+              </h2>
+              <p className="mt-3 text-primary-foreground/80">
+                We screen a company&apos;s legal name, previous names and corporate shareholders against the official
+                EU, UN, UK and US sanctions lists, and return a timestamped, explainable report — matching and
+                conflicting attributes, confidence band and plain-language rationale. Legal entities only.
+              </p>
+              <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+                {[
+                  "EU FSF, UN, UKSL and OFAC SDN checked separately",
+                  "Current and previous legal names screened",
+                  "Full audit trail of what was checked and when",
+                  "Same-day delivery, downloadable PDF",
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-2 text-sm text-primary-foreground/85">
+                    <Check className="mt-0.5 size-4 shrink-0 text-accent" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="shrink-0 rounded-xl border border-primary-foreground/15 bg-white/10 p-6 text-center lg:w-64">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">From</p>
+              <p className="mt-1 font-display text-4xl font-bold text-accent">
+                {formatPrice(PRODUCTS.find((p) => p.slug === "sanctions-risk-snapshot")?.price ?? 29)}
+              </p>
+              <p className="mt-1 text-sm text-primary-foreground/70">per company · same day</p>
+              <Button asChild size="lg" className="mt-5 w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link to="/report/$type" params={{ type: "sanctions-risk-snapshot" }}>
+                  See what&apos;s included
+                  <ArrowRight className="ml-1 size-4" />
+                </Link>
+              </Button>
+              <Link
+                to="/search"
+                search={{ q: "", page: 1 }}
+                className="mt-3 inline-block text-sm text-primary-foreground/70 underline hover:text-primary-foreground"
+              >
+                Find a company first
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
       {/* Documents grid */}
       <section className="mx-auto max-w-7xl px-4 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
