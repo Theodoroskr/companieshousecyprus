@@ -52,10 +52,12 @@ function loadScript(): Promise<void> {
  * so authentication keeps working before the keys are added.
  */
 export function Turnstile({
+  siteKey,
   action,
   onToken,
   resetKey,
 }: {
+  siteKey: string;
   action: string;
   onToken: (token: string | null) => void;
   resetKey?: string | number;
@@ -66,8 +68,9 @@ export function Turnstile({
   onTokenRef.current = onToken;
 
   useEffect(() => {
-    if (!turnstileSiteKey) return;
+    if (!siteKey) return;
     let cancelled = false;
+
     void loadScript()
       .then(() => {
         if (cancelled || !containerRef.current || !window.turnstile) return;
