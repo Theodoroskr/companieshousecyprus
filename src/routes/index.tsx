@@ -312,6 +312,75 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Registry explained + comparison */}
+      <section className="mx-auto max-w-7xl px-4 py-20">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">The registry, explained</p>
+          <h2 className="mt-3 text-3xl font-bold text-foreground">What “Companies House Cyprus” actually refers to</h2>
+          <div className="mt-6 space-y-4 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              Cyprus has no body literally called “Companies House” — that name belongs to the UK register. The Cypriot
+              equivalent is the <strong className="text-foreground">Department of Registrar of Companies and Intellectual
+              Property (DRCIP)</strong>, part of the Ministry of Energy, Commerce and Industry. It maintains the official
+              register of every Cyprus company, partnership, business name and overseas branch, and it alone can issue
+              certified copies and certificates with legal standing.
+            </p>
+            <p>
+              Every entity on the register carries a unique registry number — <strong className="text-foreground">HE</strong> for
+              limited companies, <strong className="text-foreground">S</strong>/<strong className="text-foreground">B</strong> for
+              partnerships and business names, <strong className="text-foreground">AE</strong> for overseas companies — together
+              with its registration date, registered office, status (active, dissolved, struck off) and its directors,
+              secretary and shareholders as filed. This is the data lenders, counterparties and regulators mean when they
+              ask you to “check Companies House in Cyprus”.
+            </p>
+            <p>
+              Companies House Cyprus (this site) is an independent commercial service, operated by Infocredit Group
+              Limited (HE4404), that republishes that registry data for free searching and orders official documents from
+              the Registrar on your behalf.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-12 overflow-hidden rounded-xl border bg-card shadow-panel">
+          <div className="border-b bg-sand px-6 py-4">
+            <h3 className="font-display text-lg font-semibold text-card-foreground">
+              Official Registrar vs. Companies House Cyprus — which do you need?
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-6 py-3 font-semibold">Task</th>
+                  <th className="px-6 py-3 font-semibold">Official Registrar (DRCIP)</th>
+                  <th className="px-6 py-3 font-semibold">Companies House Cyprus (this site)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {[
+                  ["Search companies free online", "Limited public search", "Full free search, English & Greek, no account"],
+                  ["View status, directors, shareholders", "On-site or e-filing access", "Instantly on any company profile"],
+                  ["Company incorporation and filings", "Yes — filings must go to DRCIP", "No — we never file with the Registrar"],
+                  ["Certified certificates (legal standing)", "Issues all official certificates", "Orders them from DRCIP for you, delivered digitally"],
+                  ["Company profiles, credit & KYB reports", "Not offered", "Same-day digital reports"],
+                  ["Typical turnaround", "Days, in person or by post", "1–2 business days, by email"],
+                ].map(([task, official, ours]) => (
+                  <tr key={task} className="align-top">
+                    <td className="px-6 py-4 font-medium text-foreground">{task}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{official}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{ours}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Not affiliated with, or endorsed by, the Department of Registrar of Companies and Intellectual Property.
+          For incorporation and statutory filings, always use the official Registrar.
+        </p>
+      </section>
+
       {/* Browse A–Z */}
       <section className="mx-auto max-w-7xl px-4 py-20">
         <div className="max-w-3xl">
