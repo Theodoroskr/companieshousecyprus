@@ -19,7 +19,7 @@ const AUXILIARY_PRODUCTS: { id: string; taxCode: string }[] = [
 
 export const syncProductTaxCodes = createServerFn({ method: "POST" })
   .inputValidator((data: { environment: StripeEnv }) => {
-    if (!data.environment || (data.environment !== "test" && data.environment !== "live")) {
+    if (!data.environment || (data.environment !== "sandbox" && data.environment !== "live")) {
       throw new Error("Invalid environment");
     }
     return data;
