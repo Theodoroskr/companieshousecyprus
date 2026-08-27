@@ -377,7 +377,12 @@ function AdminDashboardPage() {
             )}
           </section>
 
+          <div className="mt-8">
+            <AuthTrafficWidget />
+          </div>
+
           <section className="mt-6 grid gap-3 sm:grid-cols-3">
+
             <QuickLink to="/admin/orders" title="Manage orders" body="Set status, due dates and upload documents." />
             <QuickLink to="/admin/api4all" title="API4ALL lookups" body="Check registry codes and pull reports." />
             <QuickLink to="/admin/users" title="Users & roles" body="Review client accounts and admin access." />
