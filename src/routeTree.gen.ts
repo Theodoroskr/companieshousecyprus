@@ -63,6 +63,7 @@ import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as DirectoryIndexRouteImport } from './routes/directory.index'
 import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
@@ -387,6 +388,11 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
+  id: '/directory/',
+  path: '/directory/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesIndexRoute = GuidesIndexRouteImport.update({
   id: '/guides/',
   path: '/guides/',
@@ -661,6 +667,7 @@ export interface FileRoutesByFullPath {
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/directory/': typeof DirectoryIndexRoute
   '/guides/': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
@@ -754,6 +761,7 @@ export interface FileRoutesByTo {
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/directory': typeof DirectoryIndexRoute
   '/guides': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
@@ -850,6 +858,7 @@ export interface FileRoutesById {
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/directory/': typeof DirectoryIndexRoute
   '/guides/': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
@@ -946,6 +955,7 @@ export interface FileRouteTypes {
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
+    | '/directory/'
     | '/guides/'
     | '/.mcp/invoke-tool/$tool'
     | '/account/orders'
@@ -1039,6 +1049,7 @@ export interface FileRouteTypes {
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout'
+    | '/directory'
     | '/guides'
     | '/.mcp/invoke-tool/$tool'
     | '/account/orders'
@@ -1134,6 +1145,7 @@ export interface FileRouteTypes {
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/checkout/'
+    | '/directory/'
     | '/guides/'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/account/orders'
@@ -1229,6 +1241,7 @@ export interface RootRouteChildren {
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  DirectoryIndexRoute: typeof DirectoryIndexRoute
   GuidesIndexRoute: typeof GuidesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicA4aCallbackRoute: typeof ApiPublicA4aCallbackRoute
@@ -1630,6 +1643,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/directory/': {
+      id: '/directory/'
+      path: '/directory'
+      fullPath: '/directory/'
+      preLoaderRoute: typeof DirectoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/': {
       id: '/guides/'
       path: '/guides'
@@ -2019,6 +2039,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  DirectoryIndexRoute: DirectoryIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicA4aCallbackRoute: ApiPublicA4aCallbackRoute,
