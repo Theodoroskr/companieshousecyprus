@@ -264,7 +264,7 @@ export const Route = createFileRoute("/company/$slug")({
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
       <h1 className="text-4xl font-bold">Unable to load company</h1>
       <p className="mt-4 text-muted-foreground">{error.message}</p>
-      <Link to="/" className="mt-6 text-copper hover:underline">Back to home</Link>
+      <Link to="/" className="mt-6 text-copper hover:underline">Back to Cyprus company search</Link>
     </div>
   ),
 });
