@@ -57,6 +57,7 @@ export type PlaceOrderInput = {
     companyName: string | null;
     companyNumber: string | null;
     quantity: number;
+    apostille?: boolean;
   }[];
 };
 
@@ -67,10 +68,12 @@ export async function placeOrder(input: PlaceOrderInput) {
       const product = PRODUCTS.find((candidate) => candidate.slug === item.productSlug);
       if (!product) return null;
       const quantity = Math.min(20, Math.max(1, Math.round(item.quantity || 1)));
-      const breakdown = priceBreakdown(product, quantity);
+      const apostille = item.apostille === true;
+      const breakdown = priceBreakdown(product, quantity, { apostille });
       return {
         product,
         quantity,
+        apostille: breakdown.apostilleFee > 0,
         breakdown,
         companySlug: item.companySlug?.slice(0, 200) ?? null,
         companyName: item.companyName?.slice(0, 300) ?? null,
@@ -83,8 +86,9 @@ export async function placeOrder(input: PlaceOrderInput) {
 
   const subtotal = rows.reduce((sum, row) => sum + row.breakdown.documentPrice, 0);
   const serviceFee = rows.reduce((sum, row) => sum + row.breakdown.serviceFee, 0);
-  const vat = Math.round((subtotal + serviceFee) * 0.19 * 100) / 100;
-  const total = subtotal + serviceFee + vat;
+  const apostilleFee = rows.reduce((sum, row) => sum + row.breakdown.apostilleFee, 0);
+  const vat = Math.round((subtotal + serviceFee + apostilleFee) * 0.19 * 100) / 100;
+  const total = subtotal + serviceFee + apostilleFee + vat;
 
   const reference = makeReference();
   const accessToken = randomToken();
@@ -103,6 +107,7 @@ export async function placeOrder(input: PlaceOrderInput) {
       notes: input.notes?.trim().slice(0, 2000) || null,
       subtotal_cents: cents(subtotal),
       service_fee_cents: cents(serviceFee),
+      apostille_fee_cents: cents(apostilleFee),
       vat_cents: cents(vat),
       total_cents: cents(total),
       status: "awaiting_payment",
@@ -123,6 +128,8 @@ export async function placeOrder(input: PlaceOrderInput) {
       quantity: row.quantity,
       document_price_cents: cents(row.breakdown.documentPrice),
       service_fee_cents: cents(row.breakdown.serviceFee),
+      apostille: row.apostille,
+      apostille_fee_cents: cents(row.breakdown.apostilleFee),
       vat_cents: cents(row.breakdown.vat),
       total_cents: cents(row.breakdown.total),
       a4a_kind: A4A_PRODUCT_KIND[row.product.slug] ?? null,
@@ -140,9 +147,9 @@ export async function placeOrder(input: PlaceOrderInput) {
 }
 
 const ORDER_COLUMNS =
-  "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, created_at, updated_at, due_date, delivered_at";
+  "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, apostille_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, created_at, updated_at, due_date, delivered_at";
 const ITEM_COLUMNS =
-  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size, screening_outcome, order_documents(id, name, size_bytes, content_type, created_at, path)";
+  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, apostille, apostille_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size, screening_outcome, order_documents(id, name, size_bytes, content_type, created_at, path)";
 
 export async function readOrder(reference: string, token: string) {
   const supabase = ordersClient();
@@ -730,7 +737,7 @@ export async function markOrderPaid(orderId: string) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, reference, access_token, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, paid_at",
+      "id, status, reference, access_token, full_name, email, firm, vat_number, subtotal_cents, service_fee_cents, apostille_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, paid_at",
     )
     .eq("id", orderId)
     .maybeSingle();

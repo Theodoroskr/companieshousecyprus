@@ -4,7 +4,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail, AlertCircle } from 'lucide-react';
 import { useCart } from '@/lib/cart';
 import { PRODUCTS_BY_SLUG, formatPrice } from '@/lib/products';
-import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from '@/lib/pricing';
+import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE, APOSTILLE_FEE, APOSTILLE_DESCRIPTION, supportsApostille } from '@/lib/pricing';
 import { submitOrder, submitOrderAsUser, startStripeOrderPayment, listMyOrders } from '@/lib/orders.functions';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import { useAccount } from '@/hooks/useAccount';
@@ -105,7 +105,7 @@ function passwordStrength(password: string) {
 
 
 function CheckoutPage() {
-  const { items, subtotal, serviceFee, vat, total, clear } = useCart();
+  const { items, subtotal, serviceFee, apostilleFee, vat, total, clear, setApostille } = useCart();
   const account = useAccount();
   const loadMyOrders = useServerFn(listMyOrders);
   const [profile, setProfile] = useState<Record<string, string>>({});
@@ -321,6 +321,7 @@ function CheckoutPage() {
                       companyName: input?.companyName.trim() || item.companyName,
                       companyNumber: input?.companyNumber.trim() || item.companyNumber,
                       quantity: item.quantity,
+                      apostille: item.apostille === true,
                     };
                   }),
                 };
@@ -730,11 +731,13 @@ function CheckoutPage() {
               {items.map((item, index) => {
                 const product = PRODUCTS_BY_SLUG[item.productSlug];
                 if (!product) return null;
-                const breakdown = priceBreakdown(product, item.quantity);
+                const breakdown = priceBreakdown(product, item.quantity, { apostille: item.apostille });
+                const apostilleAvailable = supportsApostille(product);
                 const effectiveName = item.companyName ?? companyInputs[index]?.companyName;
                 const effectiveNumber = item.companyNumber ?? companyInputs[index]?.companyNumber;
                 return (
-                  <li key={`${item.productSlug}-${index}`} className='flex justify-between gap-4'>
+                  <li key={`${item.productSlug}-${index}`} className='space-y-3'>
+                   <div className='flex justify-between gap-4'>
                     <span>
                       {product.name}
                       {item.quantity > 1 ? ` × ${item.quantity}` : ''}
@@ -753,6 +756,12 @@ function CheckoutPage() {
                             <span>{formatPrice(breakdown.serviceFee)} fee</span>
                           </>
                         )}
+                        {breakdown.apostilleFee > 0 && (
+                          <>
+                            <span className='text-border'>|</span>
+                            <span>{formatPrice(breakdown.apostilleFee)} apostille</span>
+                          </>
+                        )}
                         <span className='text-border'>|</span>
                         <span>{formatPrice(breakdown.vat)} VAT</span>
                       </span>
@@ -761,6 +770,25 @@ function CheckoutPage() {
                       <span className='block font-medium'>{formatPrice(breakdown.total)}</span>
                       <span className='block text-xs text-muted-foreground'>incl. VAT</span>
                     </span>
+                   </div>
+                    {apostilleAvailable && (
+                      <div className='rounded-lg border border-dashed bg-muted/30 p-3'>
+                        <label className='flex items-start gap-3'>
+                          <Checkbox
+                            className='mt-0.5'
+                            checked={item.apostille === true}
+                            onCheckedChange={(checked) => setApostille(index, checked === true)}
+                            aria-label={`Add apostille to ${product.name}`}
+                          />
+                          <span className='text-xs'>
+                            <span className='block text-sm font-medium text-foreground'>
+                              Add Apostille — {formatPrice(APOSTILLE_FEE)} per certificate
+                            </span>
+                            <span className='mt-1 block text-muted-foreground'>{APOSTILLE_DESCRIPTION}</span>
+                          </span>
+                        </label>
+                      </div>
+                    )}
                   </li>
                 );
               })}
@@ -776,8 +804,14 @@ function CheckoutPage() {
                   <dd>{formatPrice(serviceFee)}</dd>
                 </div>
               )}
+              {apostilleFee > 0 && (
+                <div className='flex justify-between'>
+                  <dt className='text-muted-foreground'>Apostille ({formatPrice(APOSTILLE_FEE)} per certificate)</dt>
+                  <dd>{formatPrice(apostilleFee)}</dd>
+                </div>
+              )}
               <div className='flex justify-between'>
-                <dt className='text-muted-foreground'>VAT ({Math.round(VAT_RATE * 100)}%) — reports &amp; service fee</dt>
+                <dt className='text-muted-foreground'>VAT ({Math.round(VAT_RATE * 100)}%) — reports, service &amp; apostille fees</dt>
                 <dd>{formatPrice(vat)}</dd>
               </div>
               <div className='flex justify-between border-t pt-2 text-base font-semibold'>

@@ -56,6 +56,7 @@ export type PlaceOrderPayload = {
     companyName: string | null;
     companyNumber: string | null;
     quantity: number;
+    apostille?: boolean;
   }[];
 };
 

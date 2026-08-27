@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { PRODUCTS_BY_SLUG } from "./products";
-import { CERTIFICATE_SERVICE_FEE, VAT_RATE } from "./pricing";
+import { APOSTILLE_FEE, CERTIFICATE_SERVICE_FEE, VAT_RATE, priceBreakdown, supportsApostille } from "./pricing";
 
 export type CartItem = {
   productSlug: string;
@@ -8,6 +8,8 @@ export type CartItem = {
   companyName: string | null;
   companyNumber: string | null;
   quantity: number;
+  /** Optional apostille certification — certificates only. */
+  apostille?: boolean;
 };
 
 type CartContextValue = {
@@ -15,8 +17,10 @@ type CartContextValue = {
   count: number;
   subtotal: number;
   serviceFee: number;
+  apostilleFee: number;
   vat: number;
   total: number;
+  setApostille: (index: number, apostille: boolean) => void;
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (index: number) => void;
   updateQuantity: (index: number, quantity: number) => void;
@@ -29,6 +33,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export const CART_VAT_RATE = VAT_RATE;
 export const CART_SERVICE_FEE = CERTIFICATE_SERVICE_FEE;
+export const CART_APOSTILLE_FEE = APOSTILLE_FEE;
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -61,17 +66,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const serviceFee = items.reduce((sum, item) => {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
       if (!product) return sum;
-      const certificates = product.certificateCount ?? (product.category === "certificate" ? 1 : 0);
-      return sum + CERTIFICATE_SERVICE_FEE * certificates * item.quantity;
+      return sum + priceBreakdown(product, item.quantity, { apostille: item.apostille }).serviceFee;
+    }, 0);
+    const apostilleFee = items.reduce((sum, item) => {
+      const product = PRODUCTS_BY_SLUG[item.productSlug];
+      if (!product) return sum;
+      return sum + priceBreakdown(product, item.quantity, { apostille: item.apostille }).apostilleFee;
     }, 0);
     const vatBase = items.reduce((sum, item) => {
       const product = PRODUCTS_BY_SLUG[item.productSlug];
       if (!product) return sum;
-      const certificates = product.certificateCount ?? (product.category === "certificate" ? 1 : 0);
-      const fee = CERTIFICATE_SERVICE_FEE * certificates * item.quantity;
+      const breakdown = priceBreakdown(product, item.quantity, { apostille: item.apostille });
       const vatableDocument =
         product.category === "certificate" ? 0 : (product.vatablePrice ?? product.price) * item.quantity;
-      return sum + fee + vatableDocument;
+      return sum + breakdown.serviceFee + breakdown.apostilleFee + vatableDocument;
     }, 0);
     const vat = Math.round(vatBase * VAT_RATE * 100) / 100;
 
@@ -81,8 +89,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count: hydrated ? items.reduce((sum, item) => sum + item.quantity, 0) : 0,
       subtotal,
       serviceFee,
+      apostilleFee,
       vat,
-      total: subtotal + serviceFee + vat,
+      total: subtotal + serviceFee + apostilleFee + vat,
+      setApostille: (index, apostille) =>
+        setItems((current) =>
+          current.map((item, i) => {
+            if (i !== index) return item;
+            const product = PRODUCTS_BY_SLUG[item.productSlug];
+            if (!product || !supportsApostille(product)) return item;
+            return { ...item, apostille };
+          }),
+        ),
       addItem: (item) =>
         setItems((current) => {
           const index = current.findIndex(
