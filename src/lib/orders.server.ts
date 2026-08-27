@@ -142,7 +142,7 @@ export async function placeOrder(input: PlaceOrderInput) {
 const ORDER_COLUMNS =
   "id, reference, status, full_name, email, firm, vat_number, phone, notes, subtotal_cents, service_fee_cents, vat_cents, total_cents, charged_subtotal_cents, charged_tax_cents, charged_total_cents, charged_currency, created_at, updated_at, due_date, delivered_at";
 const ITEM_COLUMNS =
-  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size, order_documents(id, name, size_bytes, content_type, created_at, path)";
+  "id, product_slug, product_name, company_slug, company_name, company_number, quantity, document_price_cents, service_fee_cents, vat_cents, total_cents, a4a_kind, a4a_code, fulfilment_status, fulfilment_message, delivered_at, due_date, document_path, document_name, document_size, screening_outcome, order_documents(id, name, size_bytes, content_type, created_at, path)";
 
 export async function readOrder(reference: string, token: string) {
   const supabase = ordersClient();
@@ -440,6 +440,7 @@ export async function fulfilSanctionsSnapshotItem(itemId: string) {
       .from("order_items")
       .update({
         report_json: snapshot as never,
+        screening_outcome: snapshot.outcome,
         fulfilment_status: bypassReview ? "processing" : "awaiting_review",
         fulfilment_message: bypassReview
           ? "Sanctions screening completed — match auto-confirmed on an official identifier."

@@ -260,3 +260,67 @@ export function statusForFulfilment(state: string | null | undefined): Screening
       return "processing";
   }
 }
+
+/** Structural view of a stored snapshot candidate, for status derivation. */
+export type SnapshotCandidateLike = {
+  classification?: string | null;
+  nameSimilarity?: number | null;
+  identifierMatch?: boolean;
+  conflicting?: string[] | null;
+  analystDecision?: { decision?: string | null; decisionSource?: string | null } | null;
+};
+
+/** Minimal structural view of a stored snapshot payload. */
+export type SnapshotLike = {
+  outcome?: string | null | undefined;
+  runs?: { candidates?: SnapshotCandidateLike[] }[];
+};
+
+/** Customer-facing status for one snapshot candidate. */
+export function snapshotCandidateStatus(c: SnapshotCandidateLike): ScreeningStatusKey {
+  return statusForClassification(c.classification ?? "", c.analystDecision?.decision, {
+    exactName: c.nameSimilarity != null && c.nameSimilarity >= 0.999,
+    hasConflicts: (c.conflicting?.length ?? 0) > 0,
+    identifierMatch: Boolean(c.identifierMatch),
+    decisionSource: c.analystDecision?.decisionSource ?? null,
+  });
+}
+
+/**
+ * Badge for a snapshot order line. The stored screening result takes
+ * precedence over the fulfilment state, so a delivered (or rerun) line never
+ * shows "No matches identified" while its report contains live candidates.
+ */
+export function statusForSnapshotBadge(
+  fulfilmentStatus: string | null | undefined,
+  snapshot?: SnapshotLike | null,
+): ScreeningStatusKey {
+  if (fulfilmentStatus === "withdrawn" || fulfilmentStatus === "refunded") return "withdrawn";
+  if (fulfilmentStatus === "failed") return "screening_incomplete";
+  const outcome = snapshot?.outcome;
+  if (outcome) {
+    const live = (snapshot?.runs ?? [])
+      .flatMap((r) => r.candidates ?? [])
+      .filter((c) => c.classification !== "rejected");
+    const hasStrongCandidate = live.some((c) => snapshotCandidateStatus(c) === "strong_entity_match");
+    const derived = statusForOutcome(outcome, { hasStrongCandidate });
+    // Consistency guard: a report containing live candidates can never be
+    // presented as "No matches identified", whatever the stored outcome says.
+    const effective =
+      derived === "no_matches_identified" && live.length > 0
+        ? hasStrongCandidate
+          ? "strong_entity_match"
+          : "potential_entity_match"
+        : derived;
+    if (
+      fulfilmentStatus === "awaiting_review" &&
+      live.some(
+        (c) => !c.analystDecision && snapshotCandidateStatus(c) !== "auto_confirmed_entity_match",
+      )
+    ) {
+      return "analyst_review_pending";
+    }
+    return effective;
+  }
+  return statusForFulfilment(fulfilmentStatus);
+}

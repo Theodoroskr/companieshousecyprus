@@ -563,6 +563,7 @@ export type Database = {
           product_slug: string
           quantity: number
           report_json: Json | null
+          screening_outcome: string | null
           screening_request_id: string | null
           service_fee_cents: number
           total_cents: number
@@ -592,6 +593,7 @@ export type Database = {
           product_slug: string
           quantity?: number
           report_json?: Json | null
+          screening_outcome?: string | null
           screening_request_id?: string | null
           service_fee_cents?: number
           total_cents?: number
@@ -621,6 +623,7 @@ export type Database = {
           product_slug?: string
           quantity?: number
           report_json?: Json | null
+          screening_outcome?: string | null
           screening_request_id?: string | null
           service_fee_cents?: number
           total_cents?: number

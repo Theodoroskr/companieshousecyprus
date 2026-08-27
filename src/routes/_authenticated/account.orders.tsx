@@ -7,7 +7,7 @@ import { listMyOrders, myDocumentUrl, type OrderListItem } from "@/lib/orders.fu
 import { formatPrice } from "@/lib/products";
 import { formatDate } from "@/lib/format";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
-import { statusForFulfilment } from "@/lib/sanctions/status-system";
+import { statusForSnapshotBadge } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { useAccount } from "@/hooks/useAccount";
@@ -310,7 +310,11 @@ function MyOrdersPage() {
                                   )
                                 : null}
                             {item.product_slug === "sanctions-risk-snapshot" ? (
-                              <ScreeningStatusBadge status={statusForFulfilment(item.fulfilment_status)} />
+                              <ScreeningStatusBadge
+                                status={statusForSnapshotBadge(item.fulfilment_status, {
+                                  outcome: item.screening_outcome,
+                                })}
+                              />
                             ) : (
                               <span className="flex items-center gap-1.5">
                                 <Icon className={`size-4 ${item.fulfilment_status === "processing" ? "animate-spin" : ""}`} />

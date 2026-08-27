@@ -7,7 +7,7 @@ import { fetchOrder, orderDocumentUrl, startStripeOrderPayment, syncOrderPayment
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { formatPrice } from "@/lib/products";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
-import { statusForFulfilment } from "@/lib/sanctions/status-system";
+import { statusForSnapshotBadge } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 
 
@@ -276,7 +276,9 @@ function OrderPage() {
                   {order.status === "paid" &&
                     (item.product_slug === "sanctions-risk-snapshot" ? (
                       <ScreeningStatusBadge
-                        status={statusForFulfilment(item.fulfilment_status)}
+                        status={statusForSnapshotBadge(item.fulfilment_status, {
+                          outcome: (item as { screening_outcome?: string | null }).screening_outcome,
+                        })}
                         className="mt-1"
                       />
                     ) : (

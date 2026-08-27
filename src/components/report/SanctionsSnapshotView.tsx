@@ -7,7 +7,7 @@ import { buildCandidateAudit, type AuditFieldResult } from "@/lib/sanctions/audi
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   SCREENING_STATUS,
-  statusForClassification,
+  snapshotCandidateStatus,
   statusForOutcome,
   type ScreeningStatusKey,
   type SourceStatusKey,
@@ -501,12 +501,7 @@ function ConfidencePanel({ candidate }: { candidate: SnapshotCandidate }) {
 }
 
 function candidateStatus(c: SnapshotCandidate): ScreeningStatusKey {
-  return statusForClassification(c.classification, c.analystDecision?.decision, {
-    exactName: c.nameSimilarity != null && c.nameSimilarity >= 0.999,
-    hasConflicts: c.conflicting.length > 0,
-    identifierMatch: c.identifierMatch,
-    decisionSource: c.analystDecision?.decisionSource ?? null,
-  });
+  return snapshotCandidateStatus(c);
 }
 
 /** Per-source result derived from the candidates returned for that source. */
