@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Receipt, ShoppingCart, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
-import { priceBreakdown, VAT_RATE } from "@/lib/pricing";
+import { priceBreakdown, VAT_RATE, APOSTILLE_FEE, supportsApostille } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Your cart — Companies House Cyprus";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { items, subtotal, serviceFee, vat, total, removeItem, updateQuantity, clear } = useCart();
+  const { items, subtotal, serviceFee, apostilleFee, vat, total, removeItem, updateQuantity, clear } = useCart();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
@@ -55,7 +55,7 @@ function CartPage() {
             {items.map((item, index) => {
               const product = PRODUCTS_BY_SLUG[item.productSlug];
               if (!product) return null;
-              const breakdown = priceBreakdown(product, item.quantity);
+              const breakdown = priceBreakdown(product, item.quantity, { apostille: item.apostille });
               return (
                 <li key={`${item.productSlug}-${item.companySlug ?? "none"}`} className="rounded-xl border bg-card p-5 shadow-panel">
                   <div className="flex flex-wrap items-start justify-between gap-4">
@@ -90,9 +90,20 @@ function CartPage() {
                             </span>
                           </>
                         )}
+                        {breakdown.apostilleFee > 0 && (
+                          <>
+                            <span className="text-border">|</span>
+                            <span>{formatPrice(breakdown.apostilleFee)} apostille</span>
+                          </>
+                        )}
                         <span className="text-border">|</span>
                         <span>{formatPrice(breakdown.vat)} VAT</span>
                       </div>
+                      {supportsApostille(product) && breakdown.apostilleFee === 0 && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Apostille certification ({formatPrice(APOSTILLE_FEE)} per certificate) can be added at checkout.
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">{formatPrice(breakdown.total)}</p>
@@ -149,6 +160,12 @@ function CartPage() {
                     Service fee (€50 per certificate)
                   </dt>
                   <dd className="font-medium">{formatPrice(serviceFee)}</dd>
+                </div>
+              )}
+              {apostilleFee > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Apostille ({formatPrice(APOSTILLE_FEE)} per certificate)</dt>
+                  <dd className="font-medium">{formatPrice(apostilleFee)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
