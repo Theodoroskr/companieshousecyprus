@@ -348,7 +348,7 @@ function CompanyPage() {
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium uppercase tracking-widest text-primary-foreground/50 sm:text-[11px]">
               <li>
-                <Link to="/" className="transition-colors hover:text-primary-foreground">Home</Link>
+                <Link to="/" className="transition-colors hover:text-primary-foreground">Cyprus company search</Link>
               </li>
               <li aria-hidden="true">/</li>
               <li>
