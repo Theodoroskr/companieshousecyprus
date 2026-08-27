@@ -57,7 +57,9 @@ function AdminUsersPage() {
         <div>
           <h1 className="font-display text-2xl font-bold">Users</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Grant or revoke administrator and client access. New sign-ups become clients automatically.
+            Grant or revoke access. <strong>Admin</strong> sees everything; <strong>support</strong> can work on
+            orders, deliveries and customer emails only; <strong>client</strong> is portal access. New sign-ups become
+            clients automatically.
           </p>
         </div>
         <div className="flex items-center gap-2">
