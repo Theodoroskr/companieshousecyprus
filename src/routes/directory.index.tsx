@@ -130,7 +130,7 @@ function DirectoryIndex() {
               <div className="mt-4 flex flex-wrap gap-3 text-sm">
                 <Link
                   to="/report/$type"
-                  params={{ type: "sanctions-snapshot" }}
+                  params={{ type: "sanctions-risk-snapshot" }}
                   className="rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground"
                 >
                   Sanctions Risk Snapshot
