@@ -12,10 +12,11 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics";
 
-const TITLE = "Cyprus Companies Registry — Free Register Search & Official Documents";
+const TITLE = "Cyprus Companies Registry | Free Company Search";
 const DESCRIPTION =
-  "Search the Cyprus companies registry free: company status, registration number, type and registered office. Directors, shareholders and official Registrar certificates are paid and delivered digitally.";
+  "Free Cyprus companies registry search: status, registration number, type and registered office. Directors, shareholders, certificates and reports are paid, delivered digitally.";
 const CANONICAL = "https://companieshousecyprus.com/cyprus-companies-registry";
 
 export const Route = createFileRoute("/cyprus-companies-registry")({
@@ -211,6 +212,7 @@ function RegistryLandingPage() {
             className="mt-8 max-w-2xl"
             onSubmit={(event) => {
               event.preventDefault();
+              trackEvent("search_start", { query: q.trim().slice(0, 120), source: "cyprus_companies_registry" });
               navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
             }}
           >

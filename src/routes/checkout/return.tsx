@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { trackEvent } from '@/lib/analytics';
 
 const TITLE = 'Payment status — Companies House Cyprus';
 const DESCRIPTION = 'Confirm your payment and view your order.';
@@ -57,9 +58,26 @@ function CheckoutReturnPage() {
       try {
         const res = await fetch(`/checkout/session-status?session_id=${encodeURIComponent(sessionId)}`);
         if (!res.ok) throw new Error('Could not verify payment status');
-        const data = await res.json() as { status?: 'paid' | 'open' | 'unpaid' | 'no_payment_required' | null };
+        const data = await res.json() as {
+          status?: 'paid' | 'open' | 'unpaid' | 'no_payment_required' | null;
+          amount_total?: number | null;
+          currency?: string | null;
+          order_reference?: string | null;
+        };
         if (!cancelled) {
-          setStatus(data.status ?? 'paid');
+          const nextStatus = data.status ?? 'paid';
+          setStatus(nextStatus);
+          if (nextStatus === 'paid' || nextStatus === 'no_payment_required') {
+            const key = `purchase_tracked:${sessionId}`;
+            if (!sessionStorage.getItem(key)) {
+              sessionStorage.setItem(key, '1');
+              trackEvent('purchase_completed', {
+                transaction_id: data.order_reference ?? reference ?? sessionId,
+                value: (data.amount_total ?? 0) / 100,
+                currency: (data.currency ?? 'eur').toUpperCase(),
+              });
+            }
+          }
         }
       } catch (e) {
         if (!cancelled) {
@@ -72,7 +90,7 @@ function CheckoutReturnPage() {
     };
     void check();
     return () => { cancelled = true; };
-  }, [sessionId]);
+  }, [sessionId, reference]);
 
   if (loading) {
     return (

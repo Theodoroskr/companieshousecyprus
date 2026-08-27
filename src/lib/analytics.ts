@@ -10,7 +10,11 @@ export type TrackedEvent =
   | "form_start"
   | "form_submit"
   | "form_error"
-  | "guide_download";
+  | "guide_download"
+  | "search_start"
+  | "search_result_click"
+  | "purchase_completed";
+
 
 export function trackEvent(event: TrackedEvent, params: Record<string, string | number | boolean> = {}) {
   if (typeof window === "undefined") return;
