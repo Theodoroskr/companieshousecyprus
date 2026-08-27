@@ -273,7 +273,8 @@ function OrderPage() {
                         : item.total_cents,
                     )}
                   </p>
-                  {order.status === "paid" &&
+                  {order.status !== "awaiting_payment" &&
+                    order.status !== "cancelled" &&
                     (item.product_slug === "sanctions-risk-snapshot" ? (
                       <ScreeningStatusBadge
                         status={statusForSnapshotBadge(item.fulfilment_status, {
@@ -301,7 +302,9 @@ function OrderPage() {
                   </span>
                 </div>
               )}
-              {order.status === "paid" && item.fulfilment_status === "awaiting_review" && (
+              {order.status !== "awaiting_payment" &&
+                order.status !== "cancelled" &&
+                item.fulfilment_status === "awaiting_review" && (
                 <p className="mt-3 rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
                   The report has arrived and is being checked by our analysts before release.
                 </p>
