@@ -75,8 +75,10 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
+          "@id": "https://companieshousecyprus.com/#website",
           name: "Companies House Cyprus",
           url: "https://companieshousecyprus.com/",
+          publisher: { "@id": "https://companieshousecyprus.com/#organization" },
           description:
             "Free Cyprus company register search and online ordering of official certificates, reports and KYB documents with digital delivery.",
           inLanguage: "en",
@@ -103,12 +105,30 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
+          "@id": "https://companieshousecyprus.com/#organization",
           name: "Companies House Cyprus",
           alternateName: "CHC",
           url: "https://companieshousecyprus.com/",
-          logo: "https://companieshousecyprus.com/favicon.png",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://companieshousecyprus.com/favicon.png",
+          },
           description:
             "Search and browse Cyprus companies from the official Registrar of Companies. Company profiles, officials & owners, addresses, statuses, and certified documents delivered digitally.",
+          foundingDate: "2024",
+          parentOrganization: {
+            "@type": "Organization",
+            name: "Infocredit Group Limited",
+            identifier: "HE4404",
+          },
+          areaServed: { "@type": "Country", name: "Cyprus" },
+          knowsAbout: [
+            "Cyprus company register",
+            "Department of Registrar of Companies and Intellectual Property",
+            "Cyprus company search",
+            "certificates of good standing",
+            "KYB due diligence",
+          ],
           sameAs: [
             "https://companieshousecyprus.com/contact",
             "https://companieshousecyprus.com/pricing",
