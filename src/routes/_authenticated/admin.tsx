@@ -1,19 +1,23 @@
-import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
+import { ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+/** `support: true` marks areas support agents may use; everything else is admin-only. */
 const ADMIN_LINKS = [
-  { to: "/admin", label: "Dashboard" },
-  { to: "/admin/orders", label: "Orders" },
+  { to: "/admin", label: "Dashboard", support: true },
+  { to: "/admin/orders", label: "Orders", support: true },
 
-  { to: "/admin/import", label: "Imports" },
-  { to: "/admin/sanctions-data", label: "Sanctions data" },
-  { to: "/admin/screening", label: "Screening test" },
-  { to: "/admin/api4all", label: "API4ALL" },
-  { to: "/admin/users", label: "Users" },
-  { to: "/admin/usage", label: "Usage" },
-  { to: "/admin/emails", label: "Emails" },
-  { to: "/admin/sitemap", label: "Sitemap" },
+  { to: "/admin/import", label: "Imports", support: false },
+  { to: "/admin/sanctions-data", label: "Sanctions data", support: false },
+  { to: "/admin/screening", label: "Screening test", support: false },
+  { to: "/admin/api4all", label: "API4ALL", support: false },
+  { to: "/admin/users", label: "Users", support: false },
+  { to: "/admin/usage", label: "Usage", support: false },
+  { to: "/admin/emails", label: "Emails", support: true },
+  { to: "/admin/sitemap", label: "Sitemap", support: false },
 ] as const;
+
+const SUPPORT_ALLOWED_PREFIXES = ["/admin/orders", "/admin/emails", "/admin/reports"];
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ context }) => {
@@ -21,22 +25,31 @@ export const Route = createFileRoute("/_authenticated/admin")({
       .from("user_roles")
       .select("role")
       .eq("user_id", context.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
+      .in("role", ["admin", "support"]);
 
-    if (error || !data) {
+    const roles = (data ?? []).map((r) => String(r.role));
+    if (error || roles.length === 0) {
       throw redirect({ to: "/account/orders", replace: true });
     }
+    return { isAdmin: roles.includes("admin"), isSupportOnly: !roles.includes("admin") };
   },
   component: AdminLayout,
 });
 
 function AdminLayout() {
+  const { isAdmin, isSupportOnly } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const links = ADMIN_LINKS.filter((link) => isAdmin || link.support);
+  const blocked =
+    isSupportOnly &&
+    pathname !== "/admin" &&
+    !SUPPORT_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
   return (
     <div>
       <nav className="border-b bg-muted/40">
         <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2">
-          {ADMIN_LINKS.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.to}
               to={link.to}
