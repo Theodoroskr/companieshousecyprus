@@ -5,6 +5,7 @@ import { displayOfficialNo } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
+import { trackEvent } from "@/lib/analytics";
 
 const TYPE_OPTIONS = [
   { code: "C", label: "Company" },
