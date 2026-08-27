@@ -108,12 +108,36 @@ function AdminUsersPage() {
         </p>
       )}
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Filter by email…"
-        className="mt-6 w-full max-w-sm rounded-md border bg-background px-3 py-2 text-sm"
-      />
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Filter by email…"
+          className="w-full max-w-sm rounded-md border bg-background px-3 py-2 text-sm"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {ROLE_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setRoleFilter(f.key)}
+              className={
+                roleFilter === f.key
+                  ? "rounded-full border border-copper/50 bg-copper/10 px-3 py-1 text-xs font-semibold text-copper"
+                  : "rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+              }
+            >
+              {f.label}
+              <span className="ml-1 tabular-nums opacity-70">{roleCounts[f.key]}</span>
+            </button>
+          ))}
+        </div>
+        {(roleFilter !== "all" || term) && (
+          <p className="text-xs text-muted-foreground">
+            {users.length} of {allUsers.length} accounts
+          </p>
+        )}
+      </div>
 
       {query.isLoading && (
         <p className="mt-10 flex items-center gap-2 text-muted-foreground">
