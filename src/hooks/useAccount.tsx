@@ -5,8 +5,10 @@ export type AccountState = {
   email: string | null;
   signedIn: boolean;
   isAdmin: boolean;
+  isSupport: boolean;
+  isStaff: boolean;
   roles: string[];
-  accountType: 'admin' | 'client' | 'guest';
+  accountType: 'admin' | 'support' | 'client' | 'guest';
 };
 
 /**
