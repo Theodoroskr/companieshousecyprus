@@ -58,8 +58,8 @@ describe("statusForSnapshotBadge", () => {
       statusForSnapshotBadge("delivered", { outcome: "no_entity_matches_identified" }),
     ).toBe("no_matches_identified");
     expect(
-      statusForSnapshotBadge("delivered", { outcome: "confirmed_entity_match" }),
-    ).toBe("confirmed_entity_match_identified");
+      statusForSnapshotBadge("delivered", { outcome: "confirmed_entity_match_identified" }),
+    ).toBe("confirmed_entity_match");
   });
 
   it("falls back to the fulfilment mapping when no outcome is stored", () => {
