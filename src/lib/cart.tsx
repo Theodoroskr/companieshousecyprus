@@ -115,6 +115,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [items, hydrated]);
 
+  // In production, degrade gracefully: render children against the outer
+  // provider instead of shadowing it with a fresh, cart-wiping instance.
+  if (nested) return <>{children}</>;
+
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
