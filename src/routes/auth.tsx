@@ -163,7 +163,13 @@ function AuthPage() {
             short while — request another one if it stops working.
           </p>
         )}
-        <Button type="submit" className="w-full" disabled={busy}>
+        <Turnstile action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={busy || (Boolean(turnstileSiteKey) && !captchaToken)}
+        >
+
           {busy
             ? "Please wait…"
             : mode === "forgot"
