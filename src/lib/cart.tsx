@@ -15,10 +15,23 @@ export const CART_SERVICE_FEE = CERTIFICATE_SERVICE_FEE;
 export const CART_APOSTILLE_FEE = APOSTILLE_FEE;
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  // Nesting guard: a second CartProvider would hydrate its own empty state and
+  // persist it over the outer cart's localStorage, wiping the customer's cart.
+  // Nesting is a static tree property, so reading the parent context before the
+  // state hooks below cannot violate hook ordering.
+  const parent = useContext(CartContext);
+  const nested = parent != null;
+  if (nested && import.meta.env.DEV) {
+    throw new Error(
+      "Nested <CartProvider> detected. Only one CartProvider may be mounted (see src/routes/__root.tsx); nesting would reset cart state.",
+    );
+  }
+
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    if (nested) return;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) setItems(JSON.parse(raw) as CartItem[]);
@@ -26,16 +39,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       /* ignore malformed cart */
     }
     setHydrated(true);
-  }, []);
+  }, [nested]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (nested || !hydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       /* storage unavailable */
     }
-  }, [items, hydrated]);
+  }, [items, hydrated, nested]);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotal = items.reduce((sum, item) => {
