@@ -7,6 +7,7 @@ export type StripeCheckoutResult =
   | { error: string };
 
 type OrderItemRow = {
+  apostille?: boolean | null;
   product_slug: string;
   product_name: string;
   company_name: string | null;
@@ -53,7 +54,7 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
 
       const { data: items, error: itemsError } = await supabase
         .from('order_items')
-        .select('product_slug, product_name, company_name, company_number, quantity')
+        .select('product_slug, product_name, company_name, company_number, quantity, apostille')
         .eq('order_id', order.id);
       if (itemsError || !items || items.length === 0) {
         return { error: 'Order has no items' };
