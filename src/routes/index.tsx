@@ -23,9 +23,9 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Companies House Cyprus — Free Company Register Search";
+const TITLE = "Companies House Cyprus | Cyprus Company Search — Free";
 const DESCRIPTION =
-  "Search any Cyprus company free in seconds: status, directors, shareholders and registered office from Registrar of Companies data. Order certificates and reports online, delivered digitally in 1–2 days.";
+  "Free Cyprus company search: status, directors, shareholders and registered office from official Registrar data. Order official certificates and company reports online, delivered digitally in 1–2 days.";
 
 const FAQS = [
   {

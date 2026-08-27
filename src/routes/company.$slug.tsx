@@ -264,7 +264,7 @@ export const Route = createFileRoute("/company/$slug")({
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
       <h1 className="text-4xl font-bold">Unable to load company</h1>
       <p className="mt-4 text-muted-foreground">{error.message}</p>
-      <Link to="/" className="mt-6 text-copper hover:underline">Back to home</Link>
+      <Link to="/" className="mt-6 text-copper hover:underline">Back to Cyprus company search</Link>
     </div>
   ),
 });
@@ -348,7 +348,7 @@ function CompanyPage() {
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium uppercase tracking-widest text-primary-foreground/50 sm:text-[11px]">
               <li>
-                <Link to="/" className="transition-colors hover:text-primary-foreground">Home</Link>
+                <Link to="/" className="transition-colors hover:text-primary-foreground">Cyprus company search</Link>
               </li>
               <li aria-hidden="true">/</li>
               <li>
