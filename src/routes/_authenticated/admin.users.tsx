@@ -137,6 +137,11 @@ function AdminUsersPage() {
                           <ShieldCheck className="size-3" /> admin
                         </span>
                       )}
+                      {isSupport && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                          <LifeBuoy className="size-3" /> support
+                        </span>
+                      )}
                       {isClient && (
                         <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
                           <UserRound className="size-3" /> client
