@@ -545,6 +545,8 @@ export type Database = {
           a4a_kind: string | null
           a4a_next_attempt_at: string | null
           a4a_reference: string | null
+          apostille: boolean
+          apostille_fee_cents: number
           company_name: string | null
           company_number: string | null
           company_slug: string | null
@@ -575,6 +577,8 @@ export type Database = {
           a4a_kind?: string | null
           a4a_next_attempt_at?: string | null
           a4a_reference?: string | null
+          apostille?: boolean
+          apostille_fee_cents?: number
           company_name?: string | null
           company_number?: string | null
           company_slug?: string | null
@@ -605,6 +609,8 @@ export type Database = {
           a4a_kind?: string | null
           a4a_next_attempt_at?: string | null
           a4a_reference?: string | null
+          apostille?: boolean
+          apostille_fee_cents?: number
           company_name?: string | null
           company_number?: string | null
           company_slug?: string | null
@@ -649,6 +655,7 @@ export type Database = {
       orders: {
         Row: {
           access_token: string
+          apostille_fee_cents: number
           charged_currency: string | null
           charged_subtotal_cents: number | null
           charged_tax_cents: number | null
@@ -680,6 +687,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          apostille_fee_cents?: number
           charged_currency?: string | null
           charged_subtotal_cents?: number | null
           charged_tax_cents?: number | null
@@ -711,6 +719,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          apostille_fee_cents?: number
           charged_currency?: string | null
           charged_subtotal_cents?: number | null
           charged_tax_cents?: number | null
