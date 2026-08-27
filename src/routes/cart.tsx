@@ -4,6 +4,7 @@ import { useCart } from "@/lib/cart";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { priceBreakdown, VAT_RATE, APOSTILLE_FEE, supportsApostille } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
+import { CrossSellSuggestions } from "@/components/cross-sell-suggestions";
 
 const TITLE = "Your cart — Companies House Cyprus";
 const DESCRIPTION = "Review the Cyprus certificates and company reports you are about to order.";
@@ -140,6 +141,9 @@ function CartPage() {
                 </li>
               );
             })}
+            <li>
+              <CrossSellSuggestions />
+            </li>
             <li>
               <Button variant="ghost" size="sm" onClick={clear}>
                 Clear cart
