@@ -242,6 +242,7 @@ function HomePage() {
             className="mx-auto mt-8 max-w-2xl"
             onSubmit={(event) => {
               event.preventDefault();
+              trackEvent("search_start", { query: q.trim().slice(0, 120), source: "homepage_hero" });
               navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
             }}
           >
