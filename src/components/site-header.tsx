@@ -159,7 +159,7 @@ export function SiteHeader() {
                 My orders
               </Link>
               <SignOutButton className='hidden sm:inline-flex' />
-              {account.isAdmin && (
+              {account.isStaff && (
                 <Link
                   to="/admin/orders"
                   className="hidden items-center gap-1 rounded-md border border-copper/40 px-2.5 py-1 text-xs font-semibold text-copper hover:bg-copper/10 sm:inline-flex"
@@ -248,7 +248,7 @@ export function SiteHeader() {
                   My orders
                 </Link>
                 <SignOutButton className='justify-start px-3 py-2 h-auto w-full text-foreground hover:bg-muted' />
-                {account.isAdmin && (
+                {account.isStaff && (
                   <Link to="/admin/orders" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold text-copper hover:bg-muted">
                     Admin dashboard
                   </Link>
