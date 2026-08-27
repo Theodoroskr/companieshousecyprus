@@ -14,7 +14,7 @@ describe("statusForSnapshotBadge", () => {
         {
           candidates: [
             {
-              classification: "exact_name_match",
+              classification: "potential_candidate",
               nameSimilarity: 1,
               identifierMatch: false,
               conflicting: [],
@@ -34,7 +34,7 @@ describe("statusForSnapshotBadge", () => {
         {
           candidates: [
             {
-              classification: "exact_name_match",
+              classification: "potential_candidate",
               nameSimilarity: 1,
               identifierMatch: false,
               conflicting: [],
@@ -59,7 +59,7 @@ describe("statusForSnapshotBadge", () => {
     ).toBe("no_matches_identified");
     expect(
       statusForSnapshotBadge("delivered", { outcome: "confirmed_entity_match" }),
-    ).toBe("confirmed_entity_match");
+    ).toBe("confirmed_entity_match_identified");
   });
 
   it("falls back to the fulfilment mapping when no outcome is stored", () => {
@@ -71,7 +71,7 @@ describe("snapshotCandidateStatus", () => {
   it("promotes an exact legal-name match to strong", () => {
     expect(
       snapshotCandidateStatus({
-        classification: "exact_name_match",
+        classification: "potential_candidate",
         nameSimilarity: 1,
         identifierMatch: false,
         conflicting: [],
