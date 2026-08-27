@@ -7,10 +7,10 @@ export type ImportKind = "companies" | "officials";
 export const getAdminContext = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { isAdmin, adminCount } = await import("@/lib/admin.server").then((m) =>
-      m.readAdminContext(context.userId),
-    );
-    return { userId: context.userId, isAdmin, adminCount };
+    const mod = await import("@/lib/admin.server");
+    const { isAdmin, adminCount } = await mod.readAdminContext(context.userId);
+    const { isSupport } = await mod.readStaffContext(context.userId);
+    return { userId: context.userId, isAdmin, isSupport, adminCount };
   });
 
 export const claimFirstAdmin = createServerFn({ method: "POST" })
