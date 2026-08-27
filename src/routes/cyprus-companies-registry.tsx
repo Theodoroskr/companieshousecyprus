@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 
 const TITLE = "Cyprus Companies Registry — Free Register Search & Official Documents";
 const DESCRIPTION =
-  "Search the Cyprus companies registry free: company status, registration number, directors, shareholders and registered office — plus official Registrar certificates delivered digitally.";
+  "Search the Cyprus companies registry free: company status, registration number, type and registered office. Directors, shareholders and official Registrar certificates are paid and delivered digitally.";
 const CANONICAL = "https://companieshousecyprus.com/cyprus-companies-registry";
 
 export const Route = createFileRoute("/cyprus-companies-registry")({
@@ -202,8 +202,9 @@ function RegistryLandingPage() {
             Cyprus companies registry <span className="text-gradient-copper">search</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Look up any company registered in Cyprus — status, registration number, directors, shareholders and
-            registered office — using data from the official Registrar of Companies. Free to search, no account needed.
+            Look up any company registered in Cyprus — status, registration number, type and registered office — using
+            data from the official Registrar of Companies. Directors, shareholders and detailed reports are paid. Free to
+            search, no account needed.
           </p>
 
           <form
