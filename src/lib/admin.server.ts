@@ -40,6 +40,21 @@ export async function assertAdmin(userId: string) {
   if (!isAdmin) throw new Error("Forbidden: admin access required");
 }
 
+/** Roles that may access customer-facing admin areas (orders, documents, emails). */
+export async function readStaffContext(userId: string) {
+  const supabase = adminClient();
+  const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const roles = (data ?? []).map((r) => String(r.role));
+  return { isAdmin: roles.includes("admin"), isSupport: roles.includes("support"), roles };
+}
+
+/** Passes for administrators and support agents. */
+export async function assertSupport(userId: string) {
+  const { isAdmin, isSupport } = await readStaffContext(userId);
+  if (!isAdmin && !isSupport) throw new Error("Forbidden: support or admin access required");
+}
+
 /** One-time bootstrap: the first signed-in user may claim admin when none exists. */
 export async function claimFirstAdminForUser(userId: string) {
   const supabase = adminClient();
