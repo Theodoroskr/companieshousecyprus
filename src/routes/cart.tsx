@@ -141,6 +141,9 @@ function CartPage() {
               );
             })}
             <li>
+              <CrossSellSuggestions />
+            </li>
+            <li>
               <Button variant="ghost" size="sm" onClick={clear}>
                 Clear cart
               </Button>
