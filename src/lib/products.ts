@@ -9,6 +9,8 @@ export type Product = {
   price: number;
   delivery: string;
   category: ProductCategory;
+  /** Stripe tax code for this product. */
+  taxCode: string;
   description: string[];
   includes: { title: string; detail: string }[];
   typicalUse: string;
@@ -37,6 +39,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     popular: true,
     description: [
       "The Certificate of Good Standing is issued by the Cyprus Department of Registrar of Companies and Intellectual Property. It confirms that a company is duly registered, has filed its statutory returns and has not been struck off or placed in liquidation.",
@@ -59,6 +62,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "A true copy of the certificate issued when the company was entered on the Cyprus register, including any subsequent change-of-name certificates.",
     ],
@@ -79,6 +83,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "Certifies the persons currently registered as directors and secretary of a Cyprus company, as filed with the Registrar.",
     ],
@@ -99,6 +104,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "Certifies the registered shareholders of a Cyprus company and the number and class of shares held by each, as recorded by the Registrar.",
     ],
@@ -119,6 +125,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "Confirms the registered office address of a Cyprus company exactly as held by the Registrar, including street, locality, postcode and district.",
     ],
@@ -138,6 +145,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "The Certificate of Capital confirms the authorised and issued share capital of a Cyprus company as recorded in the Registrar's documents, including the number, class and nominal value of shares.",
     ],
@@ -158,6 +166,7 @@ export const PRODUCTS: Product[] = [
     price: 40,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "The Certificate of Strike Off is issued by the Cyprus Registrar to confirm that a company has been removed from the register and is formally dissolved. It is commonly required to close bank accounts, settle claims or prove cessation of legal existence.",
     ],
@@ -178,6 +187,7 @@ export const PRODUCTS: Product[] = [
     price: 70,
     delivery: "1–2 business days",
     category: "certificate",
+    taxCode: "txcd_10103001",
     description: [
       "The Memorandum and Articles of Association is a statutory document for registering a company in Cyprus. It contains information including the company's name and registered office as well as details about share capital such as currency, price per share, names of the shareholders and the amount of shares held as well as internal management and governance of a company.",
     ],
@@ -200,6 +210,7 @@ export const PRODUCTS: Product[] = [
     price: 29,
     delivery: "Same day",
     category: "report",
+    taxCode: "txcd_10103001",
     description: [
       "This product screens a Cyprus company against the official sanctions lists published by the European Union (EU FSF), the United Nations Security Council, the United Kingdom (UKSL) and the United States (OFAC SDN).",
       "We screen the company's current legal name, its previous names and available corporate shareholders (legal entities only). Each source is checked separately and the report shows the result per source, so you can see exactly what was checked, when, and what was found.",
@@ -225,6 +236,7 @@ export const PRODUCTS: Product[] = [
     price: 65,
     delivery: "1–2 business days",
     category: "report",
+    taxCode: "txcd_10103001",
     popular: true,
     description: [
       "A structured profile of a Cyprus company assembled from the Registrar's records: legal identity, current status, directors and secretary, shareholders, registered office and filing history.",
@@ -249,6 +261,7 @@ export const PRODUCTS: Product[] = [
     price: 130,
     delivery: "4 days",
     category: "report",
+    taxCode: "txcd_10103001",
     description: [
       "Combines the registry profile with the company's filed financial statements, sector benchmarks and a structured risk assessment for credit and trade-terms decisions.",
     ],
@@ -270,6 +283,7 @@ export const PRODUCTS: Product[] = [
     price: 185,
     delivery: "1–2 business days",
     category: "pack",
+    taxCode: "txcd_10103001",
     certificateCount: 3,
     vatablePrice: 65,
     description: [
@@ -293,6 +307,7 @@ export const PRODUCTS: Product[] = [
     price: 160,
     delivery: "1–2 business days",
     category: "pack",
+    taxCode: "txcd_10103001",
     certificateCount: 4,
     // Certificates only — no report component, so VAT applies to the service fee alone.
     vatablePrice: 0,
@@ -317,6 +332,7 @@ export const PRODUCTS: Product[] = [
     price: 750,
     delivery: "Scoped after assessment (typically 5–10 business days)",
     category: "report",
+    taxCode: "txcd_10103001",
     description: [
       "Due Diligence Reports are assessed independently and are recommended for complex cases that require specialised investigations, procedures or data that is not included in other reports.",
       "Prior to a report, our team assesses your information requirements in order to establish what actions are required as part of your due diligence investigation. A member of our research team will be assigned to perform your Due Diligence investigation and will oversee all required activities and then compile the results into one comprehensive report. The same researcher will then review all investigation results to provide you with a concise analysis of the company and our findings.",
