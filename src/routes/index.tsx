@@ -75,8 +75,10 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
+          "@id": "https://companieshousecyprus.com/#website",
           name: "Companies House Cyprus",
           url: "https://companieshousecyprus.com/",
+          publisher: { "@id": "https://companieshousecyprus.com/#organization" },
           description:
             "Free Cyprus company register search and online ordering of official certificates, reports and KYB documents with digital delivery.",
           inLanguage: "en",
