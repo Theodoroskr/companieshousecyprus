@@ -28,7 +28,7 @@ export type PriceBreakdown = {
 export function priceBreakdown(
   product: { price: number; category: string; certificateCount?: number; vatablePrice?: number },
   quantity = 1,
-  options: { apostille?: boolean } = {},
+  options: { apostille?: boolean | undefined } = {},
 ): PriceBreakdown {
   const documentPrice = product.price * quantity;
   const certificates = certificateUnits(product);
