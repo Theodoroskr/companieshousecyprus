@@ -90,7 +90,7 @@ function CheckoutReturnPage() {
     };
     void check();
     return () => { cancelled = true; };
-  }, [sessionId]);
+  }, [sessionId, reference]);
 
   if (loading) {
     return (
