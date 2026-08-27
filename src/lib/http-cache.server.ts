@@ -25,6 +25,17 @@ export function setCompanyPageCacheHeaders(opts: {
   }
 }
 
+/** Caching for public directory listing pages (counts refresh hourly). */
+export function setDirectoryPageCacheHeaders() {
+  setResponseHeader(
+    "cache-control",
+    "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800",
+  );
+  setResponseHeader("vary", "Accept-Encoding");
+}
+
+
+
 /** Pages that must never be cached or indexed (missing / errored company). */
 export function setNoStoreHeaders(status?: number) {
   setResponseHeader("cache-control", "no-store");
