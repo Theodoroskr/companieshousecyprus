@@ -19,7 +19,12 @@ const DESCRIPTION =
 export const Route = createFileRoute("/directory/")({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(overviewQueryOptions());
+    if (import.meta.env.SSR) {
+      const { setDirectoryPageCacheHeaders } = await import("@/lib/http-cache.server");
+      setDirectoryPageCacheHeaders();
+    }
   },
+
   head: () => ({
     meta: [
       { title: TITLE },
