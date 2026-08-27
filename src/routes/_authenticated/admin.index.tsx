@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { AuthTrafficWidget } from "@/components/admin/auth-traffic-widget";
+
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
