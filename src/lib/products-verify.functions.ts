@@ -30,10 +30,11 @@ export const verifyProductTaxCodes = createServerFn({ method: "POST" })
     const rows: TaxCodeCheckRow[] = [];
     for (const t of targets) {
       try {
-        const prices = await stripe.prices.list({ lookup_keys: [t.id], expand: ["data.product"] });
+        const prices = await stripe.prices.list({ lookup_keys: [t.id], limit: 1 });
         const price = prices.data[0];
-        if (!price) throw new Error(`No price with lookup key ${t.id}`);
-        const product = typeof price.product === "string" ? await stripe.products.retrieve(price.product) : (price.product as { tax_code?: string | { id: string } | null });
+        if (!price) throw new Error(`No Stripe price found for lookup key ${t.id}`);
+        const productId = typeof price.product === "string" ? price.product : price.product.id;
+        const product = await stripe.products.retrieve(productId);
         const actual = typeof product.tax_code === "string" ? product.tax_code : (product.tax_code?.id ?? null);
         rows.push({ id: t.id, expected: t.expected, actual, ok: actual === t.expected });
       } catch (error) {
