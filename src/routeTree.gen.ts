@@ -64,6 +64,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as DirectoryIndexRouteImport } from './routes/directory.index'
+import { Route as DirectorySignalRouteImport } from './routes/directory.$signal'
 import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
@@ -393,6 +394,11 @@ const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
   path: '/directory/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DirectorySignalRoute = DirectorySignalRouteImport.update({
+  id: '/directory/$signal',
+  path: '/directory/$signal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesIndexRoute = GuidesIndexRouteImport.update({
   id: '/guides/',
   path: '/guides/',
@@ -661,6 +667,7 @@ export interface FileRoutesByFullPath {
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/directory/$signal': typeof DirectorySignalRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -755,6 +762,7 @@ export interface FileRoutesByTo {
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/directory/$signal': typeof DirectorySignalRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -852,6 +860,7 @@ export interface FileRoutesById {
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/directory/$signal': typeof DirectorySignalRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -949,6 +958,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/directory/$signal'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
@@ -1043,6 +1053,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/directory/$signal'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
@@ -1139,6 +1150,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/directory/$signal'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
@@ -1235,6 +1247,7 @@ export interface RootRouteChildren {
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  DirectorySignalRoute: typeof DirectorySignalRoute
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
@@ -1650,6 +1663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DirectoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/directory/$signal': {
+      id: '/directory/$signal'
+      path: '/directory/$signal'
+      fullPath: '/directory/$signal'
+      preLoaderRoute: typeof DirectorySignalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/': {
       id: '/guides/'
       path: '/guides'
@@ -2033,6 +2053,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutReturnRoute: CheckoutReturnRoute,
   CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
   CompanySlugRoute: CompanySlugRoute,
+  DirectorySignalRoute: DirectorySignalRoute,
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
