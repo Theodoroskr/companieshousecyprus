@@ -101,9 +101,11 @@ function AuthPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
+      setCaptchaNonce((n) => n + 1);
       setBusy(false);
     }
   };
+
 
   const heading = mode === "forgot" ? "Reset your password" : "Sign in";
   const intro =
