@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAuthTrafficBreakdown } from "@/lib/auth-guard.functions";
-import type { TrafficRow } from "@/lib/auth-guard.server";
+
+type TrafficRow = { key: string; total: number; passed: number };
 
 const RANGES = [
   { key: 1, label: "24h" },
