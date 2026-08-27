@@ -21,6 +21,16 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   component: AdminUsersPage,
 });
 
+type RoleFilter = "all" | "admin" | "support" | "client" | "none";
+
+const ROLE_FILTERS: { key: RoleFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "admin", label: "Admins" },
+  { key: "support", label: "Support" },
+  { key: "client", label: "Clients" },
+  { key: "none", label: "No role" },
+];
+
 function AdminUsersPage() {
   const list = useServerFn(listUsers);
   const setRole = useServerFn(updateUserRole);
@@ -28,6 +38,7 @@ function AdminUsersPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
   const query = useQuery({ queryKey: ["admin", "users"], queryFn: () => list() });
 
@@ -47,9 +58,20 @@ function AdminUsersPage() {
 
   const allUsers = query.data ?? [];
   const adminCount = allUsers.filter((u) => u.roles.includes("admin")).length;
-  const users = allUsers.filter((u) =>
-    search.trim() ? u.email.toLowerCase().includes(search.trim().toLowerCase()) : true,
-  );
+  const roleCounts: Record<RoleFilter, number> = {
+    all: allUsers.length,
+    admin: adminCount,
+    support: allUsers.filter((u) => u.roles.includes("support")).length,
+    client: allUsers.filter((u) => u.roles.includes("client")).length,
+    none: allUsers.filter((u) => u.roles.length === 0).length,
+  };
+  const term = search.trim().toLowerCase();
+  const users = allUsers.filter((u) => {
+    if (roleFilter === "none" ? u.roles.length > 0 : roleFilter !== "all" && !u.roles.includes(roleFilter)) {
+      return false;
+    }
+    return term ? u.email.toLowerCase().includes(term) : true;
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -86,12 +108,36 @@ function AdminUsersPage() {
         </p>
       )}
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Filter by email…"
-        className="mt-6 w-full max-w-sm rounded-md border bg-background px-3 py-2 text-sm"
-      />
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Filter by email…"
+          className="w-full max-w-sm rounded-md border bg-background px-3 py-2 text-sm"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {ROLE_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setRoleFilter(f.key)}
+              className={
+                roleFilter === f.key
+                  ? "rounded-full border border-copper/50 bg-copper/10 px-3 py-1 text-xs font-semibold text-copper"
+                  : "rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+              }
+            >
+              {f.label}
+              <span className="ml-1 tabular-nums opacity-70">{roleCounts[f.key]}</span>
+            </button>
+          ))}
+        </div>
+        {(roleFilter !== "all" || term) && (
+          <p className="text-xs text-muted-foreground">
+            {users.length} of {allUsers.length} accounts
+          </p>
+        )}
+      </div>
 
       {query.isLoading && (
         <p className="mt-10 flex items-center gap-2 text-muted-foreground">
