@@ -6,7 +6,7 @@ import { adminReleaseReport, adminReviewSnapshot, adminRerunSnapshot } from "@/l
 import { SanctionsSnapshotView } from "@/components/report/SanctionsSnapshotView";
 import { SnapshotReportShell } from "@/components/report/SnapshotReportShell";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
-import { statusForFulfilment } from "@/lib/sanctions/status-system";
+import { statusForSnapshotBadge } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 
 const TITLE = "Review sanctions screening — Companies House Cyprus";
@@ -65,7 +65,11 @@ function AdminSnapshotReview() {
         </>
       }
       subtitle={meta ? `Order ${meta.reference} · ${meta.customer ?? "—"}` : undefined}
-      statusSlot={meta ? <ScreeningStatusBadge status={statusForFulfilment(meta.fulfilmentStatus)} /> : null}
+      statusSlot={
+        meta ? (
+          <ScreeningStatusBadge status={statusForSnapshotBadge(meta.fulfilmentStatus, snapshot)} />
+        ) : null
+      }
       empty={
         <p className="rounded-xl border bg-card p-8 text-sm text-muted-foreground">
           No screening has been stored for this line yet. Use “Rerun screening”.

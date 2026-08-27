@@ -7,7 +7,7 @@ import { fetchOrder, orderDocumentUrl, startStripeOrderPayment, syncOrderPayment
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { formatPrice } from "@/lib/products";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
-import { statusForFulfilment } from "@/lib/sanctions/status-system";
+import { statusForSnapshotBadge } from "@/lib/sanctions/status-system";
 import { Button } from "@/components/ui/button";
 
 
