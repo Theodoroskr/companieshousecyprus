@@ -75,8 +75,10 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      await verifyChallenge({ data: { mode, token: captchaToken } });
       if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
+
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
