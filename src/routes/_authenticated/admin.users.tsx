@@ -45,7 +45,9 @@ function AdminUsersPage() {
     },
   });
 
-  const users = (query.data ?? []).filter((u) =>
+  const allUsers = query.data ?? [];
+  const adminCount = allUsers.filter((u) => u.roles.includes("admin")).length;
+  const users = allUsers.filter((u) =>
     search.trim() ? u.email.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
