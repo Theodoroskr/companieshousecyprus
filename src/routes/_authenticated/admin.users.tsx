@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import { LifeBuoy, Loader2, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import { listUsers, updateUserRole } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 
