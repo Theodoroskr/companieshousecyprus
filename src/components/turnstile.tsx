@@ -96,7 +96,7 @@ export function Turnstile({
         widgetIdRef.current = null;
       }
     };
-  }, [action]);
+  }, [action, siteKey]);
 
   useEffect(() => {
     if (resetKey === undefined) return;
@@ -106,6 +106,7 @@ export function Turnstile({
     }
   }, [resetKey]);
 
-  if (!turnstileSiteKey) return null;
+  if (!siteKey) return null;
   return <div ref={containerRef} className="flex justify-center" />;
 }
+
