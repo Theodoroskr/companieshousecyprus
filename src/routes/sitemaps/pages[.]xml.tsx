@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DIRECTORY_SIGNALS } from "@/lib/directory-signals";
 
 const BASE_URL = "https://companieshousecyprus.com";
 
@@ -6,9 +7,16 @@ const PATHS = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/search", priority: "0.8", changefreq: "weekly" },
   { path: "/cyprus-companies-registry", priority: "0.9", changefreq: "monthly" },
+  { path: "/directory", priority: "0.8", changefreq: "weekly" },
+  ...DIRECTORY_SIGNALS.map((signal) => ({
+    path: `/directory/${signal.slug}`,
+    priority: "0.7",
+    changefreq: "weekly",
+  })),
   { path: "/guides", priority: "0.6", changefreq: "monthly" },
   { path: "/guides/register-company-cyprus", priority: "0.9", changefreq: "monthly" },
   { path: "/company-set-up/", priority: "0.9", changefreq: "monthly" },
+
 
   { path: "/pricing", priority: "0.8", changefreq: "monthly" },
   { path: "/solutions/kyb-for-banks", priority: "0.8", changefreq: "monthly" },

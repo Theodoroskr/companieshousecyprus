@@ -146,6 +146,24 @@ export type Database = {
         }
         Relationships: []
       }
+      directory_signal_counts: {
+        Row: {
+          company_count: number
+          refreshed_at: string
+          signal: string
+        }
+        Insert: {
+          company_count?: number
+          refreshed_at?: string
+          signal: string
+        }
+        Update: {
+          company_count?: number
+          refreshed_at?: string
+          signal?: string
+        }
+        Relationships: []
+      }
       guide_editorial: {
         Row: {
           date_published: string
@@ -1762,6 +1780,20 @@ export type Database = {
           type_code: string
         }[]
       }
+      companies_by_status_page: {
+        Args: { p_limit: number; p_offset: number; p_statuses: string[] }
+        Returns: {
+          district_en: string
+          locality: string
+          name: string
+          official_no: string
+          reg_number: number
+          slug: string
+          status_en: string
+          status_group: string
+          type_code: string
+        }[]
+      }
       companies_district_counts: {
         Args: never
         Returns: {
@@ -1791,6 +1823,7 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
       reset_officials_counts_chunk: {
