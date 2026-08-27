@@ -4,6 +4,7 @@ import { Search, ShoppingCart, ChevronDown, Menu, X, ArrowRight, ShieldCheck } f
 import { useCart } from "@/lib/cart";
 import { useAccount } from "@/hooks/useAccount";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/sign-out-button";
 import logoAsset from "@/assets/logo.png.asset.json";
