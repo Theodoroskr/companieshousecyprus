@@ -13,6 +13,7 @@ import {
 import { getCompanyCount } from "@/lib/companies.functions";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { trackEvent } from "@/lib/analytics";
 
 const homeQueryOptions = () =>
   queryOptions({
