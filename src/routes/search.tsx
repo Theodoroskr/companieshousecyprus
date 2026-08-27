@@ -224,14 +224,26 @@ function SearchPage() {
                 No companies matched. Try a shorter name or the HE number.
               </li>
             )}
-            {data.rows.map((company) => (
+            {data.rows.map((company, index) => (
               <li key={company.slug} className="transition-colors hover:bg-muted/50">
                 <Link
                   to="/company/$slug"
                   params={{ slug: company.slug }}
                   search={pendingProduct ? { product: pendingProduct.slug } : {}}
+                  onClick={() =>
+                    trackEvent("search_result_click", {
+                      query: q.trim().slice(0, 120),
+                      slug: company.slug,
+                      position: (page - 1) * 50 + index + 1,
+                      page,
+                      result_count: data.count,
+                      filtered: types.length + statuses.length > 0,
+                      ...(pendingProduct ? { product: pendingProduct.slug } : {}),
+                    })
+                  }
                   className="flex flex-wrap items-center justify-between gap-3 p-4"
                 >
+
                   <span>
                     <span className="block font-medium">{company.name}</span>
                     <span className="mt-1 block text-sm text-muted-foreground">
