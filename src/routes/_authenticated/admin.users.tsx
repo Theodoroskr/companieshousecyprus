@@ -118,7 +118,9 @@ function AdminUsersPage() {
             {users.map((user) => {
               const isAdmin = user.roles.includes("admin");
               const isClient = user.roles.includes("client");
+              const isSupport = user.roles.includes("support");
               const busy = mutation.isPending && mutation.variables?.userId === user.id;
+              const lastAdmin = isAdmin && adminCount <= 1;
               return (
                 <tr key={user.id} className="border-t align-middle">
                   <td className="px-4 py-3">
