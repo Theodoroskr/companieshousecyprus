@@ -117,7 +117,7 @@ export const listUsers = createServerFn({ method: "GET" })
   });
 
 export const updateUserRole = createServerFn({ method: "POST" })
-  .inputValidator((data: { userId: string; role: "admin" | "client"; grant: boolean }) => data)
+  .inputValidator((data: { userId: string; role: "admin" | "client" | "support"; grant: boolean }) => data)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { assertAdmin, setUserRole } = await import("@/lib/admin.server");
