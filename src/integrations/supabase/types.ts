@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_traffic_events: {
+        Row: {
+          country: string | null
+          id: number
+          mode: string
+          occurred_at: string
+          outcome: string
+          path: string | null
+          referrer_host: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          country?: string | null
+          id?: number
+          mode: string
+          occurred_at?: string
+          outcome: string
+          path?: string | null
+          referrer_host?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          country?: string | null
+          id?: number
+          mode?: string
+          occurred_at?: string
+          outcome?: string
+          path?: string | null
+          referrer_host?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       change_feed_runs: {
         Row: {
           changed_count: number
@@ -1757,6 +1790,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auth_traffic_breakdown: { Args: { p_since: string }; Returns: Json }
       backfill_officials_count_chunk: {
         Args: { batch_size: number; start_offset: number }
         Returns: {
