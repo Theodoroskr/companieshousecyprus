@@ -21,6 +21,16 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   component: AdminUsersPage,
 });
 
+type RoleFilter = "all" | "admin" | "support" | "client" | "none";
+
+const ROLE_FILTERS: { key: RoleFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "admin", label: "Admins" },
+  { key: "support", label: "Support" },
+  { key: "client", label: "Clients" },
+  { key: "none", label: "No role" },
+];
+
 function AdminUsersPage() {
   const list = useServerFn(listUsers);
   const setRole = useServerFn(updateUserRole);
@@ -28,6 +38,7 @@ function AdminUsersPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
   const query = useQuery({ queryKey: ["admin", "users"], queryFn: () => list() });
 
