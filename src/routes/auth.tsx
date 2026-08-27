@@ -45,8 +45,10 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const verifyChallenge = useServerFn(verifyAuthChallenge);
 
-  const navigateForUser = async (userId: string, requestedRedirect?: string | undefined) => {
     const target = safeRedirect(requestedRedirect);
     if (target) {
       await navigate({ to: target, replace: true });
