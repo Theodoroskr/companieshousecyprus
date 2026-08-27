@@ -123,6 +123,7 @@ function SearchPage() {
             onSubmit={(e) => {
               e.preventDefault();
               const value = String(new FormData(e.currentTarget).get("q") ?? "");
+              trackEvent("search_start", { query: value.trim().slice(0, 120), source: "search_page" });
               setSearch({ q: value, page: 1 });
             }}
           >
