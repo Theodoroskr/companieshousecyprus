@@ -273,7 +273,8 @@ function OrderPage() {
                         : item.total_cents,
                     )}
                   </p>
-                  {order.status === "paid" &&
+                  {order.status !== "awaiting_payment" &&
+                    order.status !== "cancelled" &&
                     (item.product_slug === "sanctions-risk-snapshot" ? (
                       <ScreeningStatusBadge
                         status={statusForSnapshotBadge(item.fulfilment_status, {
