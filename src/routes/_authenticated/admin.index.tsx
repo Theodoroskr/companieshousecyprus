@@ -383,9 +383,9 @@ function AdminDashboardPage() {
             <AuthTrafficWidget />
           </div>
 
-          <section className="mt-6 grid gap-3 sm:grid-cols-3">
-
+          <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <QuickLink to="/admin/orders" title="Manage orders" body="Set status, due dates and upload documents." />
+            <QuickLink to="/admin/products" title="Products & tax codes" body="Review catalogue and sync Stripe tax codes." />
             <QuickLink to="/admin/api4all" title="API4ALL lookups" body="Check registry codes and pull reports." />
             <QuickLink to="/admin/users" title="Users & roles" body="Review client accounts and admin access." />
           </section>
