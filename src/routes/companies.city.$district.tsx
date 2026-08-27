@@ -54,7 +54,7 @@ function DistrictPage() {
       <section className="surface-deep grid-dots">
         <div className="mx-auto max-w-7xl px-4 py-12">
           <nav className="flex items-center gap-2 text-xs text-primary-foreground/60">
-            <Link to="/" className="hover:text-primary-foreground">Home</Link>
+            <Link to="/" className="hover:text-primary-foreground">Cyprus company search</Link>
             <span>/</span>
             <span className="text-primary-foreground/90">{name}</span>
           </nav>
