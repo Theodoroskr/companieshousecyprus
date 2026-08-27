@@ -13,6 +13,10 @@ export const Route = createFileRoute("/api/public/taxcheck-tmp")({
           const prods = await stripe.products.list({ limit: 100 });
           return Response.json(prods.data.map((p) => ({ id: p.id, name: p.name, tax_code: p.tax_code })));
         }
+        if (url.searchParams.get("sync")) {
+          const { syncProductTaxCodes } = await import("@/lib/products-sync.functions");
+          return Response.json(await syncProductTaxCodes({ data: { environment } }));
+        }
         const result = await verifyProductTaxCodes({ data: { environment } });
         return Response.json(result);
       },
