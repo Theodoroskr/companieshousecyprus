@@ -1823,6 +1823,7 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_support_or_admin: { Args: { _user_id: string }; Returns: boolean }
       refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
@@ -1903,7 +1904,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user" | "client"
+      app_role: "admin" | "moderator" | "user" | "client" | "support"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2031,7 +2032,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user", "client"],
+      app_role: ["admin", "moderator", "user", "client", "support"],
     },
   },
 } as const

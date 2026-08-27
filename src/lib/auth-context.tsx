@@ -6,8 +6,11 @@ export type AuthContextValue = {
   email: string | null;
   signedIn: boolean;
   isAdmin: boolean;
+  isSupport: boolean;
+  /** Admin or support agent — may access the customer-facing admin areas. */
+  isStaff: boolean;
   roles: string[];
-  accountType: 'admin' | 'client' | 'guest';
+  accountType: 'admin' | 'support' | 'client' | 'guest';
   signOut: () => Promise<void>;
 };
 
@@ -19,25 +22,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: null,
     signedIn: false,
     isAdmin: false,
+    isSupport: false,
+    isStaff: false,
     roles: [],
     accountType: 'guest',
   });
 
   const resolve = useCallback(async (userId: string | null, email: string | null) => {
     if (!userId) {
-      setState({ ready: true, email: null, signedIn: false, isAdmin: false, roles: [], accountType: 'guest' });
+      setState({
+        ready: true,
+        email: null,
+        signedIn: false,
+        isAdmin: false,
+        isSupport: false,
+        isStaff: false,
+        roles: [],
+        accountType: 'guest',
+      });
       return;
     }
     const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId);
     const roles = (data ?? []).map((r) => String(r.role));
     const isAdmin = roles.includes('admin');
+    const isSupport = roles.includes('support');
     setState({
       ready: true,
       email,
       signedIn: true,
       isAdmin,
+      isSupport,
+      isStaff: isAdmin || isSupport,
       roles,
-      accountType: isAdmin ? 'admin' : 'client',
+      accountType: isAdmin ? 'admin' : isSupport ? 'support' : 'client',
     });
   }, []);
 
@@ -45,7 +62,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Optimistically clear auth state immediately so the header (and any other
     // consumer) re-renders in the logged-out state before the async sign-out
     // and navigation complete.
-    setState((prev) => ({ ...prev, signedIn: false, isAdmin: false, email: null, roles: [], accountType: 'guest' }));
+    setState((prev) => ({
+      ...prev,
+      signedIn: false,
+      isAdmin: false,
+      isSupport: false,
+      isStaff: false,
+      email: null,
+      roles: [],
+      accountType: 'guest',
+    }));
     await supabase.auth.signOut();
   }, []);
 

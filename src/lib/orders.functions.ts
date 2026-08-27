@@ -84,8 +84,8 @@ export const fetchOrder = createServerFn({ method: "POST" })
 export const adminListOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { listOrders } = await import("@/lib/orders.server");
     return { orders: await listOrders() };
   });
@@ -94,8 +94,8 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((data: { reference: string; status: string }) => data)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { setOrderStatus } = await import("@/lib/orders.server");
     return setOrderStatus(data.reference.trim(), data.status);
   });
@@ -104,8 +104,8 @@ export const adminFulfilItem = createServerFn({ method: "POST" })
   .inputValidator((data: { itemId: string }) => data)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { fulfilOrderItem } = await import("@/lib/orders.server");
     return fulfilOrderItem(data.itemId.trim());
   });
@@ -178,8 +178,8 @@ export const adminSetOrderDates = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { setOrderDates } = await import("@/lib/orders.server");
     return setOrderDates(data);
   });
@@ -192,8 +192,8 @@ export const adminSetItemDueDate = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { setOrderItemDueDate } = await import("@/lib/orders.server");
     return setOrderItemDueDate(data.itemId.trim(), data.dueDate ?? null);
   });
@@ -216,8 +216,8 @@ export const adminUploadItemDocument = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { uploadOrderItemDocuments } = await import("@/lib/orders.server");
     return uploadOrderItemDocuments({
       itemId: data.itemId.trim(),
@@ -238,8 +238,8 @@ export const adminDeleteItemDocument = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { deleteOrderDocument } = await import("@/lib/orders.server");
     return deleteOrderDocument(data.documentId.trim());
   });
@@ -252,8 +252,8 @@ export const adminDocumentUrl = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { signOrderDocument } = await import("@/lib/orders.server");
     return { url: await signOrderDocument(data.path.trim()) };
   });
@@ -300,8 +300,8 @@ export const adminReviewReport = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { reportForReview } = await import("@/lib/orders.server");
     return reportForReview(data.itemId.trim());
   });
@@ -314,8 +314,8 @@ export const adminReleaseReport = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { releaseOrderItemReport } = await import("@/lib/orders.server");
     return releaseOrderItemReport(data.itemId.trim(), data.notify !== false);
   });
@@ -345,8 +345,8 @@ export const adminReviewSnapshot = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { snapshotForReview } = await import("@/lib/orders.server");
     return snapshotForReview(data.itemId.trim());
   });
@@ -359,8 +359,8 @@ export const adminRerunSnapshot = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { fulfilSanctionsSnapshotItem } = await import("@/lib/orders.server");
     return fulfilSanctionsSnapshotItem(data.itemId.trim());
   });

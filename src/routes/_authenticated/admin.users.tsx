@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import { LifeBuoy, Loader2, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import { listUsers, updateUserRole } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 
@@ -32,7 +32,8 @@ function AdminUsersPage() {
   const query = useQuery({ queryKey: ["admin", "users"], queryFn: () => list() });
 
   const mutation = useMutation({
-    mutationFn: (input: { userId: string; role: "admin" | "client"; grant: boolean }) => setRole({ data: input }),
+    mutationFn: (input: { userId: string; role: "admin" | "client" | "support"; grant: boolean }) =>
+      setRole({ data: input }),
     onSuccess: (_r, input) => {
       setError(null);
       setMessage(`${input.grant ? "Granted" : "Revoked"} ${input.role} access.`);
@@ -44,7 +45,9 @@ function AdminUsersPage() {
     },
   });
 
-  const users = (query.data ?? []).filter((u) =>
+  const allUsers = query.data ?? [];
+  const adminCount = allUsers.filter((u) => u.roles.includes("admin")).length;
+  const users = allUsers.filter((u) =>
     search.trim() ? u.email.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
@@ -54,7 +57,9 @@ function AdminUsersPage() {
         <div>
           <h1 className="font-display text-2xl font-bold">Users</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Grant or revoke administrator and client access. New sign-ups become clients automatically.
+            Grant or revoke access. <strong>Admin</strong> sees everything; <strong>support</strong> can work on
+            orders, deliveries and customer emails only; <strong>client</strong> is portal access. New sign-ups become
+            clients automatically.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -115,7 +120,9 @@ function AdminUsersPage() {
             {users.map((user) => {
               const isAdmin = user.roles.includes("admin");
               const isClient = user.roles.includes("client");
+              const isSupport = user.roles.includes("support");
               const busy = mutation.isPending && mutation.variables?.userId === user.id;
+              const lastAdmin = isAdmin && adminCount <= 1;
               return (
                 <tr key={user.id} className="border-t align-middle">
                   <td className="px-4 py-3">
@@ -130,6 +137,11 @@ function AdminUsersPage() {
                       {isAdmin && (
                         <span className="inline-flex items-center gap-1 rounded-full border border-copper/40 bg-copper/10 px-2 py-0.5 text-xs font-semibold text-copper">
                           <ShieldCheck className="size-3" /> admin
+                        </span>
+                      )}
+                      {isSupport && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                          <LifeBuoy className="size-3" /> support
                         </span>
                       )}
                       {isClient && (
@@ -149,11 +161,20 @@ function AdminUsersPage() {
                       <Button
                         size="sm"
                         variant={isAdmin ? "outline" : "default"}
-                        disabled={busy}
+                        disabled={busy || lastAdmin}
+                        title={lastAdmin ? "At least one administrator must remain." : undefined}
                         onClick={() => mutation.mutate({ userId: user.id, role: "admin", grant: !isAdmin })}
                       >
                         {busy && <Loader2 className="size-3.5 animate-spin" />}
                         {isAdmin ? "Revoke admin" : "Make admin"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => mutation.mutate({ userId: user.id, role: "support", grant: !isSupport })}
+                      >
+                        {isSupport ? "Revoke support" : "Make support"}
                       </Button>
                       <Button
                         size="sm"
