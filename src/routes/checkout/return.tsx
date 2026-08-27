@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { trackEvent } from '@/lib/analytics';
 
 const TITLE = 'Payment status — Companies House Cyprus';
 const DESCRIPTION = 'Confirm your payment and view your order.';
