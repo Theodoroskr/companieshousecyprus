@@ -186,8 +186,11 @@ export async function buildSanctionsSnapshot(
         (company.data.reg_number != null ? String(company.data.reg_number) : null),
       jurisdiction: "Cyprus",
       registeredAddress:
-        company.data.address_full ??
-        ([company.data.locality, company.data.district_en].filter(Boolean).join(", ") || null),
+        resolveAddressDisplay({
+          address_full: company.data.address_full,
+          locality: company.data.locality,
+          district_en: company.data.district_en,
+        })?.primary ?? null,
     },
     previousNamesScreened: screening.previousNamesScreened,
     corporateShareholdersScreened: screening.corporateShareholdersScreened,
