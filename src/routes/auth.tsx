@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { accountDestination } from "@/lib/account-destination";
-import { Turnstile, turnstileSiteKey } from "@/components/turnstile";
-import { verifyAuthChallenge } from "@/lib/auth-guard.functions";
+import { Turnstile } from "@/components/turnstile";
+import { getTurnstileSiteKey, verifyAuthChallenge } from "@/lib/auth-guard.functions";
+
 
 
 export const Route = createFileRoute("/auth")({
