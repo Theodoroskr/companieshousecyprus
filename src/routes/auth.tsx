@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { accountDestination } from "@/lib/account-destination";
+import { Turnstile, turnstileSiteKey } from "@/components/turnstile";
+import { verifyAuthChallenge } from "@/lib/auth-guard.functions";
+
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -41,9 +45,13 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const verifyChallenge = useServerFn(verifyAuthChallenge);
 
   const navigateForUser = async (userId: string, requestedRedirect?: string | undefined) => {
     const target = safeRedirect(requestedRedirect);
+
     if (target) {
       await navigate({ to: target, replace: true });
       return;
@@ -67,8 +75,10 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      await verifyChallenge({ data: { mode, token: captchaToken } });
       if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
+
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
@@ -91,9 +101,11 @@ function AuthPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
+      setCaptchaNonce((n) => n + 1);
       setBusy(false);
     }
   };
+
 
   const heading = mode === "forgot" ? "Reset your password" : "Sign in";
   const intro =
@@ -151,7 +163,13 @@ function AuthPage() {
             short while — request another one if it stops working.
           </p>
         )}
-        <Button type="submit" className="w-full" disabled={busy}>
+        <Turnstile action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={busy || (Boolean(turnstileSiteKey) && !captchaToken)}
+        >
+
           {busy
             ? "Please wait…"
             : mode === "forgot"

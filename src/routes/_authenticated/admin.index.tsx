@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { AuthTrafficWidget } from "@/components/admin/auth-traffic-widget";
+
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
@@ -377,7 +379,12 @@ function AdminDashboardPage() {
             )}
           </section>
 
+          <div className="mt-8">
+            <AuthTrafficWidget />
+          </div>
+
           <section className="mt-6 grid gap-3 sm:grid-cols-3">
+
             <QuickLink to="/admin/orders" title="Manage orders" body="Set status, due dates and upload documents." />
             <QuickLink to="/admin/api4all" title="API4ALL lookups" body="Check registry codes and pull reports." />
             <QuickLink to="/admin/users" title="Users & roles" body="Review client accounts and admin access." />
