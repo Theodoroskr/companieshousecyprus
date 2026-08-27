@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics";
 
 const TITLE = "Cyprus Companies Registry — Free Register Search & Official Documents";
 const DESCRIPTION =
