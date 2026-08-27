@@ -27,6 +27,7 @@ import {
   extractMeasuresNote,
   measureAvailability,
 } from "@/lib/sanctions/measures";
+import { resolveAddressDisplay } from "@/lib/format";
 
 export type { SanctionsSnapshot, SnapshotCandidate, SnapshotRun } from "@/lib/sanctions/snapshot";
 
