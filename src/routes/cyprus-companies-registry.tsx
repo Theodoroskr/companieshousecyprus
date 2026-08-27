@@ -212,6 +212,7 @@ function RegistryLandingPage() {
             className="mt-8 max-w-2xl"
             onSubmit={(event) => {
               event.preventDefault();
+              trackEvent("search_start", { query: q.trim().slice(0, 120), source: "cyprus_companies_registry" });
               navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
             }}
           >
