@@ -25,7 +25,7 @@ const homeQueryOptions = () =>
 
 const TITLE = "Companies House Cyprus | Cyprus Company Search — Free";
 const DESCRIPTION =
-  "Free Cyprus company search: status, directors, shareholders and registered office from official Registrar data. Order official certificates and company reports online, delivered digitally in 1–2 days.";
+  "Free Cyprus company search: status, registration number, type and registered office from official Registrar data. Directors, shareholders, certificates and reports are paid and delivered digitally in 1–2 days.";
 
 const FAQS = [
   {
@@ -34,7 +34,7 @@ const FAQS = [
   },
   {
     q: "Is searching Cyprus companies free?",
-    a: "Yes. Searching the register, viewing company status, registration date, type, registered office and officials is free and needs no account. You only pay when you order a certificate or a report.",
+    a: "Yes. Searching the register and viewing company status, registration number, type, registration date and registered office is free and needs no account. Directors, shareholders and detailed reports require a paid Company Profile Report or certificate.",
   },
   {
     q: "How do I search by HE number?",
@@ -231,9 +231,9 @@ function HomePage() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Free access to Cyprus company information sourced from the Department of Registrar of Companies — status,
-            directors, shareholders and registered office — then order certificates and reports with instant digital
-            delivery. Independent service, not the Registrar.
+            Free Cyprus company search from official Registrar data — look up status, registration number, type and
+            registered office. Order Company Profile Reports, Credit Reports, Sanctions Snapshots and official
+            certificates with digital delivery. Independent service, not the Registrar.
           </p>
 
 
@@ -452,7 +452,8 @@ function HomePage() {
               <tbody className="divide-y">
                 {[
                   ["Search companies free online", "Limited public search", "Full free search, English & Greek, no account"],
-                  ["View status, directors, shareholders", "On-site or e-filing access", "Instantly on any company profile"],
+                  ["View status, registration number, registered office", "On-site or e-filing access", "Free on any company profile"],
+                  ["View directors, shareholders, filing history", "On-site or e-filing access", "Paid Company Profile Report"],
                   ["Company incorporation and filings", "Yes — filings must go to DRCIP", "No — we never file with the Registrar"],
                   ["Certified certificates (legal standing)", "Issues all official certificates", "Orders them from DRCIP for you, delivered digitally"],
                   ["Company profiles, credit & KYB reports", "Not offered", "Same-day digital reports"],
