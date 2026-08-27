@@ -276,7 +276,9 @@ function OrderPage() {
                   {order.status === "paid" &&
                     (item.product_slug === "sanctions-risk-snapshot" ? (
                       <ScreeningStatusBadge
-                        status={statusForFulfilment(item.fulfilment_status)}
+                        status={statusForSnapshotBadge(item.fulfilment_status, {
+                          outcome: (item as { screening_outcome?: string | null }).screening_outcome,
+                        })}
                         className="mt-1"
                       />
                     ) : (
