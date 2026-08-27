@@ -31,7 +31,12 @@ export const Route = createFileRoute('/checkout/session-status')({
             });
           }
 
-          return Response.json({ status: session.payment_status });
+          return Response.json({
+            status: session.payment_status,
+            amount_total: session.amount_total ?? null,
+            currency: session.currency ?? null,
+            order_reference: reference ?? null,
+          });
         } catch (error) {
           return Response.json({ error: getStripeErrorMessage(error) }, { status: 500 });
         }
