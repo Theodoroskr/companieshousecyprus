@@ -58,9 +58,20 @@ function AdminUsersPage() {
 
   const allUsers = query.data ?? [];
   const adminCount = allUsers.filter((u) => u.roles.includes("admin")).length;
-  const users = allUsers.filter((u) =>
-    search.trim() ? u.email.toLowerCase().includes(search.trim().toLowerCase()) : true,
-  );
+  const roleCounts: Record<RoleFilter, number> = {
+    all: allUsers.length,
+    admin: adminCount,
+    support: allUsers.filter((u) => u.roles.includes("support")).length,
+    client: allUsers.filter((u) => u.roles.includes("client")).length,
+    none: allUsers.filter((u) => u.roles.length === 0).length,
+  };
+  const term = search.trim().toLowerCase();
+  const users = allUsers.filter((u) => {
+    if (roleFilter === "none" ? u.roles.length > 0 : roleFilter !== "all" && !u.roles.includes(roleFilter)) {
+      return false;
+    }
+    return term ? u.email.toLowerCase().includes(term) : true;
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
