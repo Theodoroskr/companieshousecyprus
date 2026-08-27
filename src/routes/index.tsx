@@ -34,7 +34,7 @@ const FAQS = [
   },
   {
     q: "Is searching Cyprus companies free?",
-    a: "Yes. Searching the register and viewing company status, registration number, type, registration date and registered office is free and needs no account. Directors, shareholders and detailed reports require a paid Company Profile Report or certificate.";
+    a: "Yes. Searching the register and viewing company status, registration number, type, registration date and registered office is free and needs no account. Directors, shareholders and detailed reports require a paid Company Profile Report or certificate.",
   },
   {
     q: "How do I search by HE number?",
