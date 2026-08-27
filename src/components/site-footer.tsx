@@ -115,10 +115,16 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link to="/directory" className="text-muted-foreground hover:text-foreground">
+                Directory
+              </Link>
+            </li>
+            <li>
               <Link to="/resources" className="text-muted-foreground hover:text-foreground">
                 Registry statistics
               </Link>
             </li>
+
             <li>
               <Link to="/faq" className="text-muted-foreground hover:text-foreground">
                 FAQ
