@@ -36,7 +36,14 @@ export const syncProductTaxCodes = createServerFn({ method: "POST" })
 
     for (const target of targets) {
       try {
-        await stripe.products.update(target.id, { tax_code: target.taxCode });
+        const prices = await stripe.prices.list({ lookup_keys: [target.id], limit: 1 });
+        const price = prices.data[0];
+        if (!price) {
+          errors.push(`${target.id}: no Stripe price found for this lookup key`);
+          continue;
+        }
+        const productId = typeof price.product === "string" ? price.product : price.product.id;
+        await stripe.products.update(productId, { tax_code: target.taxCode });
         updated.push(target.id);
       } catch (error) {
         errors.push(`${target.id}: ${getStripeErrorMessage(error)}`);
