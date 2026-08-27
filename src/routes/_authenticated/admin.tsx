@@ -61,7 +61,24 @@ function AdminLayout() {
           ))}
         </div>
       </nav>
-      <Outlet />
+      {blocked ? (
+        <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+          <ShieldAlert className="mx-auto size-8 text-muted-foreground" />
+          <h1 className="mt-4 font-display text-xl font-bold">Insufficient access</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            This area is restricted to administrators. Support agents can work on orders, deliveries and customer
+            emails.
+          </p>
+          <Link
+            to="/admin/orders"
+            className="mt-6 inline-flex rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
+          >
+            Go to orders
+          </Link>
+        </div>
+      ) : (
+        <Outlet />
+      )}
     </div>
   );
 }
