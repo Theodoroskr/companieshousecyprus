@@ -28,6 +28,7 @@ export function SiteHeader() {
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!q.trim()) return;
+    trackEvent("search_start", { query: q.trim().slice(0, 120), source: "header" });
     navigate({ to: "/search", search: { q: q.trim(), page: 1 } });
     setOpen(false);
   };
