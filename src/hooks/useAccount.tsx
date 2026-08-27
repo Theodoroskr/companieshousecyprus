@@ -18,6 +18,6 @@ export type AccountState = {
  * Backed by a shared AuthContext so sign-out updates every consumer immediately.
  */
 export function useAccount(): AccountState {
-  const { ready, email, signedIn, isAdmin, roles, accountType } = useAuthContext();
-  return { ready, email, signedIn, isAdmin, roles, accountType };
+  const { ready, email, signedIn, isAdmin, isSupport, isStaff, roles, accountType } = useAuthContext();
+  return { ready, email, signedIn, isAdmin, isSupport, isStaff, roles, accountType };
 }
