@@ -32,7 +32,8 @@ function AdminUsersPage() {
   const query = useQuery({ queryKey: ["admin", "users"], queryFn: () => list() });
 
   const mutation = useMutation({
-    mutationFn: (input: { userId: string; role: "admin" | "client"; grant: boolean }) => setRole({ data: input }),
+    mutationFn: (input: { userId: string; role: "admin" | "client" | "support"; grant: boolean }) =>
+      setRole({ data: input }),
     onSuccess: (_r, input) => {
       setError(null);
       setMessage(`${input.grant ? "Granted" : "Revoked"} ${input.role} access.`);
