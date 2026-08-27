@@ -69,6 +69,14 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
           quantity: item.quantity,
         });
 
+        if ((item as { apostille?: boolean }).apostille) {
+          const apostillePriceId = await resolvePriceId(stripe, 'apostille-service');
+          lineItems.push({
+            price: apostillePriceId,
+            quantity: item.quantity,
+          });
+        }
+
         if (item.product_slug.startsWith('certificate-') && item.product_slug !== 'certificate-service-fee') {
           const feePriceId = await resolvePriceId(stripe, 'certificate-service-fee');
           lineItems.push({
