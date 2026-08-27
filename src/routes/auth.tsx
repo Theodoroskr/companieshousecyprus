@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { accountDestination } from "@/lib/account-destination";
-import { Turnstile, turnstileSiteKey } from "@/components/turnstile";
-import { verifyAuthChallenge } from "@/lib/auth-guard.functions";
+import { Turnstile } from "@/components/turnstile";
+import { getTurnstileSiteKey, verifyAuthChallenge } from "@/lib/auth-guard.functions";
+
 
 
 export const Route = createFileRoute("/auth")({
@@ -47,7 +48,20 @@ function AuthPage() {
   const [resetSent, setResetSent] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
+  const [siteKey, setSiteKey] = useState("");
   const verifyChallenge = useServerFn(verifyAuthChallenge);
+  const fetchSiteKey = useServerFn(getTurnstileSiteKey);
+
+  useEffect(() => {
+    let active = true;
+    fetchSiteKey().then(({ siteKey }) => {
+      if (active) setSiteKey(siteKey);
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchSiteKey]);
+
 
   const navigateForUser = async (userId: string, requestedRedirect?: string | undefined) => {
     const target = safeRedirect(requestedRedirect);
@@ -163,12 +177,13 @@ function AuthPage() {
             short while — request another one if it stops working.
           </p>
         )}
-        <Turnstile action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        <Turnstile siteKey={siteKey} action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
         <Button
           type="submit"
           className="w-full"
-          disabled={busy || (Boolean(turnstileSiteKey) && !captchaToken)}
+          disabled={busy || (Boolean(siteKey) && !captchaToken)}
         >
+
 
           {busy
             ? "Please wait…"

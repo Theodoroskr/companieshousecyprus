@@ -3,12 +3,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type AuthChallengeMode = "signin" | "signup" | "forgot";
 
+export const getTurnstileSiteKey = createServerFn({ method: "GET" }).handler(async () => {
+  return { siteKey: process.env["TURNSTILE_SITE_KEY"] ?? "" };
+});
+
 export const verifyAuthChallenge = createServerFn({ method: "POST" })
   .inputValidator((data: { mode: AuthChallengeMode; token: string | null }) => data)
   .handler(async ({ data }) => {
     const { verifyAuthAttempt } = await import("@/lib/auth-guard.server");
     return verifyAuthAttempt(data.mode, data.token);
   });
+
 
 export const getAuthTrafficBreakdown = createServerFn({ method: "GET" })
   .inputValidator((data: { days: number }) => data)

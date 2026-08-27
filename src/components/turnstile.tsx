@@ -25,7 +25,7 @@ declare global {
   }
 }
 
-export const turnstileSiteKey = (import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string | undefined) ?? "";
+
 
 function loadScript(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -52,10 +52,12 @@ function loadScript(): Promise<void> {
  * so authentication keeps working before the keys are added.
  */
 export function Turnstile({
+  siteKey,
   action,
   onToken,
   resetKey,
 }: {
+  siteKey: string;
   action: string;
   onToken: (token: string | null) => void;
   resetKey?: string | number;
@@ -66,15 +68,17 @@ export function Turnstile({
   onTokenRef.current = onToken;
 
   useEffect(() => {
-    if (!turnstileSiteKey) return;
+    if (!siteKey) return;
     let cancelled = false;
+
     void loadScript()
       .then(() => {
         if (cancelled || !containerRef.current || !window.turnstile) return;
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: turnstileSiteKey,
+          sitekey: siteKey,
           action,
           theme: "auto",
+
           callback: (token) => onTokenRef.current(token),
           "expired-callback": () => onTokenRef.current(null),
           "error-callback": () => onTokenRef.current(null),
@@ -92,7 +96,7 @@ export function Turnstile({
         widgetIdRef.current = null;
       }
     };
-  }, [action]);
+  }, [action, siteKey]);
 
   useEffect(() => {
     if (resetKey === undefined) return;
@@ -102,6 +106,7 @@ export function Turnstile({
     }
   }, [resetKey]);
 
-  if (!turnstileSiteKey) return null;
+  if (!siteKey) return null;
   return <div ref={containerRef} className="flex justify-center" />;
 }
+
