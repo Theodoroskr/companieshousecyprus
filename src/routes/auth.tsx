@@ -48,7 +48,20 @@ function AuthPage() {
   const [resetSent, setResetSent] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
+  const [siteKey, setSiteKey] = useState("");
   const verifyChallenge = useServerFn(verifyAuthChallenge);
+  const fetchSiteKey = useServerFn(getTurnstileSiteKey);
+
+  useEffect(() => {
+    let active = true;
+    fetchSiteKey().then(({ siteKey }) => {
+      if (active) setSiteKey(siteKey);
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchSiteKey]);
+
 
   const navigateForUser = async (userId: string, requestedRedirect?: string | undefined) => {
     const target = safeRedirect(requestedRedirect);
