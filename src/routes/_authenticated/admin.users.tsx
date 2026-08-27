@@ -159,11 +159,20 @@ function AdminUsersPage() {
                       <Button
                         size="sm"
                         variant={isAdmin ? "outline" : "default"}
-                        disabled={busy}
+                        disabled={busy || lastAdmin}
+                        title={lastAdmin ? "At least one administrator must remain." : undefined}
                         onClick={() => mutation.mutate({ userId: user.id, role: "admin", grant: !isAdmin })}
                       >
                         {busy && <Loader2 className="size-3.5 animate-spin" />}
                         {isAdmin ? "Revoke admin" : "Make admin"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => mutation.mutate({ userId: user.id, role: "support", grant: !isSupport })}
+                      >
+                        {isSupport ? "Revoke support" : "Make support"}
                       </Button>
                       <Button
                         size="sm"
