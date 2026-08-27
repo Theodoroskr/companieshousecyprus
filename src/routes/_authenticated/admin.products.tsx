@@ -36,7 +36,7 @@ function AdminProductsPage() {
     setError(null);
     setResult(null);
     try {
-      const res = await sync({ environment });
+      const res = await sync({ data: { environment } });
       setResult(res);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
