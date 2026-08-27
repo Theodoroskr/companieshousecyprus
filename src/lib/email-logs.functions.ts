@@ -14,8 +14,8 @@ export const sendTestOrderConfirmation = createServerFn({ method: "POST" })
   .inputValidator((data: { to: string }) => data)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { sendOrderConfirmationEmail } = await import("@/lib/order-emails.server");
     await sendOrderConfirmationEmail(
       {
@@ -44,8 +44,8 @@ export const listDeliveryLogs = createServerFn({ method: "POST" })
   .inputValidator((data: EmailLogFilters | undefined) => data ?? {})
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<EmailLogResult> => {
-    const { assertAdmin } = await import("@/lib/admin.server");
-    await assertAdmin(context.userId);
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
     const { readEmailLogs } = await import("@/lib/email-logs.server");
     return readEmailLogs({
       recipient: data.recipient?.trim() || undefined,
