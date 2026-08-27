@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { accountDestination } from "@/lib/account-destination";
+import { Turnstile, turnstileSiteKey } from "@/components/turnstile";
+import { verifyAuthChallenge } from "@/lib/auth-guard.functions";
+
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
