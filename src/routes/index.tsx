@@ -458,6 +458,72 @@ function HomePage() {
           </div>
         </div>
 
+        {/* Registry number formats */}
+        <div className="mt-12 rounded-xl border bg-sand p-6 md:p-8">
+          <h3 className="font-display text-lg font-semibold text-foreground">
+            Cyprus registry number formats — HE, S, B and the rest
+          </h3>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+            Every entity on the Cyprus register carries a prefixed registry number. The prefix tells you the entity
+            type, and you can search with or without it — HE 252407, HE252407 and 252407 all resolve to the same record.
+          </p>
+          <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              ["HE", "Private and public limited companies — the most common Cyprus entity."],
+              ["C", "Legacy company records issued before the current HE numbering."],
+              ["S", "Partnerships — general and limited."],
+              ["B", "Business names (trading names) registered by a person or company."],
+              ["EE", "Business name filings recorded in Greek script."],
+              ["AE", "Overseas companies and branches registered in Cyprus."],
+            ].map(([prefix, meaning]) => (
+              <div key={prefix} className="rounded-lg border bg-card p-4">
+                <dt className="font-mono text-base font-bold text-accent">{prefix}</dt>
+                <dd className="mt-1 text-sm text-muted-foreground">{meaning}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {/* How to search, step by step */}
+        <div className="mt-8 rounded-xl border bg-card p-6 shadow-panel md:p-8">
+          <h3 className="font-display text-lg font-semibold text-card-foreground">
+            How to search Companies House Cyprus, step by step
+          </h3>
+          <ol className="mt-5 space-y-4 text-sm leading-relaxed text-muted-foreground">
+            <li>
+              <strong className="text-foreground">1. Enter a name or number.</strong> Type a full or partial company
+              name in English or Greek, or the registry number in any format. Transliterated spellings are matched too.
+            </li>
+            <li>
+              <strong className="text-foreground">2. Narrow the results.</strong> Result rows show registered name,
+              registry number, entity type, registration date and current status; filter by type or status to isolate
+              active companies, partnerships or business names.
+            </li>
+            <li>
+              <strong className="text-foreground">3. Open the company profile.</strong> Free on every profile: status,
+              registry number, entity type, registration date, company age, registered office and district.
+            </li>
+            <li>
+              <strong className="text-foreground">4. Order what you need.</strong> Directors, secretary and
+              shareholders come with a paid Company Profile Report; certified Registrar certificates can be added from
+              the same page and arrive by email.
+            </li>
+          </ol>
+          <p className="mt-5 text-sm text-muted-foreground">
+            Prefer to browse? Use the{" "}
+            <Link to="/companies/a-z/$letter" params={{ letter: "a" }} className="text-accent underline">
+              A–Z index
+            </Link>{" "}
+            or read the full{" "}
+            <Link to="/guides/companies-house-cyprus" className="text-accent underline">
+              Companies House Cyprus guide
+            </Link>
+            .
+          </p>
+        </div>
+
+
+
         <div className="mt-12 overflow-hidden rounded-xl border bg-card shadow-panel">
           <div className="border-b bg-sand px-6 py-4">
             <h3 className="font-display text-lg font-semibold text-card-foreground">
