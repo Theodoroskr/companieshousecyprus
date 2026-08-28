@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, Loader2, RefreshCw, Users, Wallet } from "lucide-react";
 import { getUserUsage } from "@/lib/admin.functions";
+import { useAuthContext } from "@/lib/auth-context";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/format";
@@ -41,7 +43,12 @@ function AdminUsagePage() {
     company: "",
   });
 
+  const { ready, signedIn } = useAuthContext();
+
   const query = useQuery({
+    // Wait for the Supabase session to hydrate; without it the client
+    // middleware sends no bearer token and the server function 401s.
+    enabled: ready && signedIn,
     queryKey: ["admin", "usage", applied],
     queryFn: () =>
       fetchUsage({
@@ -52,6 +59,7 @@ function AdminUsagePage() {
         },
       }),
   });
+
 
   const rows = query.data?.rows ?? [];
   const totals = query.data?.totals;
