@@ -228,8 +228,9 @@ function HomePage() {
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-            Companies House Cyprus. <span className="text-gradient-copper">Free company search.</span>
+            Companies House Cyprus. <span className="text-gradient-copper">Cyprus Companies House search, free.</span>
           </h1>
+
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
             Free Cyprus company search from official Registrar data — look up status, registration number, type and
