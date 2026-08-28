@@ -16,8 +16,8 @@ export const Route = createFileRoute("/api/public/indexnow")({
         });
       },
       POST: async ({ request }) => {
-        const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
-        const unauthorized = await authenticateCronRequest(request);
+        const { authorizeScheduler } = await import("@/lib/job-secret.server");
+        const unauthorized = await authorizeScheduler(request, "indexnow");
         if (unauthorized) return unauthorized;
         try {
           const result = await runIndexNowBatch();

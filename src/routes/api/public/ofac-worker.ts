@@ -6,8 +6,8 @@ import { createFileRoute } from "@tanstack/react-router";
  * standard function limits. Callers must present the platform cron secret.
  */
 async function run(request: Request) {
-  const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
-  const unauthorized = await authenticateCronRequest(request);
+  const { authorizeScheduler } = await import("@/lib/job-secret.server");
+  const unauthorized = await authorizeScheduler(request, "ofac_worker");
   if (unauthorized) return unauthorized;
 
   const { runOfacStreamingImport } = await import("@/lib/sanctions.server");

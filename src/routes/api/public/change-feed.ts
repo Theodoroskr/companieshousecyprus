@@ -46,8 +46,8 @@ export const Route = createFileRoute("/api/public/change-feed")({
         }
       },
       POST: async ({ request }) => {
-        const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
-        const unauthorized = await authenticateCronRequest(request);
+        const { authorizeScheduler } = await import("@/lib/job-secret.server");
+        const unauthorized = await authorizeScheduler(request, "change_feed");
         if (unauthorized) return unauthorized;
         try {
           const result = await runDailyChangeFeed();

@@ -6,8 +6,8 @@ import { createFileRoute } from "@tanstack/react-router";
  * secret (Authorization: Bearer …).
  */
 async function run(request: Request) {
-  const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
-  const unauthorized = await authenticateCronRequest(request);
+  const { authorizeScheduler } = await import("@/lib/job-secret.server");
+  const unauthorized = await authorizeScheduler(request, "sanctions_import");
   if (unauthorized) return unauthorized;
 
   const { listActiveSourceCodes, runSanctionsImport } = await import("@/lib/sanctions.server");
