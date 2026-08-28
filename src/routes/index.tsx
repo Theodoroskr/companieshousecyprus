@@ -26,7 +26,7 @@ const homeQueryOptions = () =>
 
 const TITLE = "Companies House Cyprus — Cyprus Companies House Search";
 const DESCRIPTION =
-  "Free Cyprus company search: status, registration number, type and registered office from official Registrar data. Directors, shareholders, certificates and reports are paid and delivered digitally in 1–2 days.";
+  "Cyprus Companies House search, free: status, registration number, type and registered office from official Registrar data. Directors, shareholders, certificates and reports delivered digitally.";
 
 const FAQS = [
   {
