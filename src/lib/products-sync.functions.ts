@@ -26,7 +26,9 @@ export const syncProductTaxCodes = createServerFn({ method: "POST" })
     }
     return data;
   })
-  .handler(async ({ data }): Promise<SyncTaxCodesResult> => {
+  .handler(async ({ data, context }): Promise<SyncTaxCodesResult> => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
     const stripe = createStripeClient(data.environment);
     const updated: string[] = [];
     const errors: string[] = [];
