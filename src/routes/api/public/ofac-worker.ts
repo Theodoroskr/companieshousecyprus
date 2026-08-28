@@ -3,22 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 /**
  * Scheduler-only endpoint: dedicated worker for the OFAC SDN Advanced XML
  * (~126 MB). Uses the streaming import path so peak memory stays within the
- * standard function limits. Callers authenticate exactly like the other
- * scheduled jobs (project apikey header or platform cron secret).
+ * standard function limits. Callers must present the platform cron secret.
  */
-function schedulerKeyMatches(request: Request): boolean {
-  const expected = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
-  if (!expected) return false;
-  const provided = request.headers.get("apikey") ?? "";
-  return provided.length === expected.length && provided === expected;
-}
-
 async function run(request: Request) {
-  if (!schedulerKeyMatches(request)) {
-    const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
-    const unauthorized = await authenticateCronRequest(request);
-    if (unauthorized) return unauthorized;
-  }
+  const { authorizeScheduler } = await import("@/lib/job-secret.server");
+  const unauthorized = await authorizeScheduler(request, "ofac_worker");
+  if (unauthorized) return unauthorized;
 
   const { runOfacStreamingImport } = await import("@/lib/sanctions.server");
   try {

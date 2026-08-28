@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { PRODUCTS } from "@/lib/products";
 import { createStripeClient, type StripeEnv, getStripeErrorMessage } from "@/lib/stripe.server";
 
@@ -18,13 +19,16 @@ const AUXILIARY_PRODUCTS: { id: string; taxCode: string }[] = [
 ];
 
 export const syncProductTaxCodes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { environment: StripeEnv }) => {
     if (!data.environment || (data.environment !== "sandbox" && data.environment !== "live")) {
       throw new Error("Invalid environment");
     }
     return data;
   })
-  .handler(async ({ data }): Promise<SyncTaxCodesResult> => {
+  .handler(async ({ data, context }): Promise<SyncTaxCodesResult> => {
+    const { assertAdmin } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
     const stripe = createStripeClient(data.environment);
     const updated: string[] = [];
     const errors: string[] = [];

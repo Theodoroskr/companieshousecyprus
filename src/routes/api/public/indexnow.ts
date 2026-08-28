@@ -2,19 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getIndexNowStatus, runIndexNowBatch } from "@/lib/indexnow.server";
 
 /**
- * IndexNow batch submitter. Called by the scheduled job (pg_cron) with the
- * project's publishable key in the `apikey` header. GET returns a read-only
- * status report with no customer data.
+ * IndexNow batch submitter. Called by the scheduled job with the platform
+ * cron secret in the Authorization header. GET returns a read-only status
+ * report with no customer data.
  */
-function authorized(request: Request): boolean {
-  const expected = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
-  if (!expected) return false;
-  const provided =
-    request.headers.get("apikey") ??
-    /^Bearer ([^\s,]+)$/.exec(request.headers.get("authorization") ?? "")?.[1] ??
-    "";
-  return provided.length === expected.length && provided === expected;
-}
 
 export const Route = createFileRoute("/api/public/indexnow")({
   server: {
@@ -25,9 +16,9 @@ export const Route = createFileRoute("/api/public/indexnow")({
         });
       },
       POST: async ({ request }) => {
-        if (!authorized(request)) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+        const { authorizeScheduler } = await import("@/lib/job-secret.server");
+        const unauthorized = await authorizeScheduler(request, "indexnow");
+        if (unauthorized) return unauthorized;
         try {
           const result = await runIndexNowBatch();
           return Response.json(result, {
