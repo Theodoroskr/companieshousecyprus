@@ -87,6 +87,10 @@ export async function sendTemplateEmail(
     ...(options.extraCopies ?? []),
   ]
 
+  const idempotencyKey = options.idempotencyKey
+    ? sanitizeIdempotencyKey(options.idempotencyKey)
+    : crypto.randomUUID()
+
   try {
     await sendLovableEmail(
       {
@@ -98,7 +102,7 @@ export async function sendTemplateEmail(
         text,
         purpose: 'transactional',
         label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
+        idempotency_key: idempotencyKey,
         ...(options.replyTo ? { reply_to: options.replyTo } : {}),
       },
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
@@ -106,7 +110,7 @@ export async function sendTemplateEmail(
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
       for (const copyTo of copyTargets) {
-        await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+        await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey })
       }
       return { sent: false, reason: 'recipient_suppressed' }
     }
@@ -114,7 +118,7 @@ export async function sendTemplateEmail(
   }
 
   for (const copyTo of copyTargets) {
-    await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+    await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey })
   }
 
   return { sent: true }
