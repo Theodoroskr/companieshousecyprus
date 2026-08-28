@@ -32,6 +32,15 @@ export interface SendTemplateEmailOptions {
 }
 
 /**
+ * Header values must be ASCII (Fetch spec). Idempotency keys are derived from
+ * document/product names that may contain non-ASCII characters (em-dashes,
+ * accents). Strip to a safe ASCII key so the outbound request does not fail.
+ */
+function sanitizeIdempotencyKey(key: string): string {
+  return key.replace(/[^\x20-\x7E]/g, '-').replace(/-{2,}/g, '-')
+}
+
+/**
  * Renders a registered template and sends it through Lovable's managed email
  * API. Suppression, retries, and rate limits are enforced by Lovable
  * server-side. A suppressed recipient is an expected outcome
@@ -78,6 +87,10 @@ export async function sendTemplateEmail(
     ...(options.extraCopies ?? []),
   ]
 
+  const idempotencyKey = options.idempotencyKey
+    ? sanitizeIdempotencyKey(options.idempotencyKey)
+    : crypto.randomUUID()
+
   try {
     await sendLovableEmail(
       {
@@ -89,7 +102,7 @@ export async function sendTemplateEmail(
         text,
         purpose: 'transactional',
         label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
+        idempotency_key: idempotencyKey,
         ...(options.replyTo ? { reply_to: options.replyTo } : {}),
       },
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
@@ -97,7 +110,7 @@ export async function sendTemplateEmail(
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
       for (const copyTo of copyTargets) {
-        await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+        await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey })
       }
       return { sent: false, reason: 'recipient_suppressed' }
     }
@@ -105,7 +118,7 @@ export async function sendTemplateEmail(
   }
 
   for (const copyTo of copyTargets) {
-    await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey: options.idempotencyKey })
+    await sendOfficeCopy({ apiKey, to: copyTo, subject, html, text, templateName, idempotencyKey })
   }
 
   return { sent: true }
@@ -121,6 +134,9 @@ async function sendOfficeCopy(args: {
   templateName: string
   idempotencyKey?: string | undefined
 }) {
+  const key = args.idempotencyKey
+    ? `${sanitizeIdempotencyKey(args.idempotencyKey)}-copy-${args.to}`
+    : crypto.randomUUID()
   try {
     await sendLovableEmail(
       {
@@ -132,7 +148,7 @@ async function sendOfficeCopy(args: {
         text: args.text,
         purpose: 'transactional',
         label: `${args.templateName}-copy`,
-        idempotency_key: args.idempotencyKey ? `${args.idempotencyKey}-copy-${args.to}` : crypto.randomUUID(),
+        idempotency_key: key,
       },
       { apiKey: args.apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
