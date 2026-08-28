@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { PRODUCTS } from "@/lib/products";
 import { createStripeClient, type StripeEnv, getStripeErrorMessage } from "@/lib/stripe.server";
 
