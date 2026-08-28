@@ -105,7 +105,7 @@ export const Route = createFileRoute("/guides/companies-house-cyprus")({
       },
     ],
   }),
-  component: CompaniesHouseCyprusGuide;
+  component: CompaniesHouseCyprusGuide,
 });
 
 const PREFIXES: Array<[string, string]> = [
