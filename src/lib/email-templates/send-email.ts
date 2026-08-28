@@ -134,6 +134,9 @@ async function sendOfficeCopy(args: {
   templateName: string
   idempotencyKey?: string | undefined
 }) {
+  const key = args.idempotencyKey
+    ? `${sanitizeIdempotencyKey(args.idempotencyKey)}-copy-${args.to}`
+    : crypto.randomUUID()
   try {
     await sendLovableEmail(
       {
@@ -145,7 +148,7 @@ async function sendOfficeCopy(args: {
         text: args.text,
         purpose: 'transactional',
         label: `${args.templateName}-copy`,
-        idempotency_key: args.idempotencyKey ? `${args.idempotencyKey}-copy-${args.to}` : crypto.randomUUID(),
+        idempotency_key: key,
       },
       { apiKey: args.apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
