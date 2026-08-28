@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, Loader2, RefreshCw, Users, Wallet } from "lucide-react";
 import { getUserUsage } from "@/lib/admin.functions";
+import { useAuth } from "@/lib/auth-context";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/format";
