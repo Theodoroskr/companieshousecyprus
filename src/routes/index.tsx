@@ -30,9 +30,18 @@ const DESCRIPTION =
 
 const FAQS = [
   {
+    q: "Is there a Companies House in Cyprus?",
+    a: "Not under that name. The Cyprus equivalent of Companies House is the Department of Registrar of Companies and Intellectual Property (DRCIP), which keeps the official register of companies, partnerships, business names and overseas branches and issues all certified certificates.",
+  },
+  {
+    q: "What is the difference between Cyprus Companies House and UK Companies House?",
+    a: "UK Companies House registers companies in the United Kingdom. Cyprus companies are registered with the DRCIP in Nicosia and carry prefixed registry numbers such as HE 252407. Companies House Cyprus is an independent commercial service that republishes Cyprus registry data for free searching and orders official documents from the Registrar.",
+  },
+  {
     q: "Is Companies House Cyprus the official Registrar?",
     a: "No. We are an independent commercial service operated by Infocredit Group Limited (HE4404). We publish company information sourced from the Department of Registrar of Companies and Intellectual Property and sell certificates and reports on request.",
   },
+
   {
     q: "Is searching Cyprus companies free?",
     a: "Yes. Searching the register and viewing company status, registration number, type, registration date and registered office is free and needs no account. Directors, shareholders and detailed reports require a paid Company Profile Report or certificate.",
@@ -433,6 +442,18 @@ function HomePage() {
               Companies House Cyprus (this site) is an independent commercial service, operated by Infocredit Group
               Limited (HE4404), that republishes that registry data for free searching and orders official documents from
               the Registrar on your behalf.
+            </p>
+            <p>
+              Full background — registry numbers, what is free versus paid, how the Cyprus register compares with UK
+              Companies House — is in our guide:{" "}
+              <Link to="/guides/companies-house-cyprus" className="text-accent underline">
+                Companies House Cyprus explained
+              </Link>
+              . You can also{" "}
+              <Link to="/search" search={{ q: "", page: 1 }} className="text-accent underline">
+                run a Cyprus company search
+              </Link>{" "}
+              straight away.
             </p>
           </div>
         </div>

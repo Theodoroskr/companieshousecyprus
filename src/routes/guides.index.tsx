@@ -26,6 +26,11 @@ export const Route = createFileRoute("/guides/")({
 
 const GUIDES = [
   {
+    to: "/guides/companies-house-cyprus" as const,
+    title: "Companies House Cyprus Explained: the Cyprus Company Register",
+    body: "Who keeps the Cyprus register, what it records, how to search by name or HE number, registry number prefixes, certificate turnaround, and how the Cyprus register differs from UK Companies House.",
+  },
+  {
     to: "/guides/register-company-cyprus" as const,
     title: "How to Register a Company in Cyprus: Complete 2026 Guide",
     body: "The incorporation process end to end — structures, required documents, indicative timelines, costs, tax and VAT registration, beneficial ownership, banking preparation and annual compliance.",

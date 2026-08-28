@@ -66,6 +66,7 @@ import { Route as CompanySlugRouteImport } from './routes/company.$slug'
 import { Route as DirectoryIndexRouteImport } from './routes/directory.index'
 import { Route as DirectorySignalRouteImport } from './routes/directory.$signal'
 import { Route as GuidesIndexRouteImport } from './routes/guides.index'
+import { Route as GuidesCompaniesHouseCyprusRouteImport } from './routes/guides.companies-house-cyprus'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
@@ -405,6 +406,12 @@ const GuidesIndexRoute = GuidesIndexRouteImport.update({
   path: '/guides/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesCompaniesHouseCyprusRoute =
+  GuidesCompaniesHouseCyprusRouteImport.update({
+    id: '/guides/companies-house-cyprus',
+    path: '/guides/companies-house-cyprus',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const GuidesRegisterCompanyCyprusRoute =
   GuidesRegisterCompanyCyprusRouteImport.update({
     id: '/guides/register-company-cyprus',
@@ -675,6 +682,7 @@ export interface FileRoutesByFullPath {
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/directory/$signal': typeof DirectorySignalRoute
+  '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -771,6 +779,7 @@ export interface FileRoutesByTo {
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/directory/$signal': typeof DirectorySignalRoute
+  '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -870,6 +879,7 @@ export interface FileRoutesById {
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
   '/directory/$signal': typeof DirectorySignalRoute
+  '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/report/$type': typeof ReportTypeRoute
@@ -969,6 +979,7 @@ export interface FileRouteTypes {
     | '/checkout/session-status'
     | '/company/$slug'
     | '/directory/$signal'
+    | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
@@ -1065,6 +1076,7 @@ export interface FileRouteTypes {
     | '/checkout/session-status'
     | '/company/$slug'
     | '/directory/$signal'
+    | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
@@ -1163,6 +1175,7 @@ export interface FileRouteTypes {
     | '/checkout/session-status'
     | '/company/$slug'
     | '/directory/$signal'
+    | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
     | '/report/$type'
@@ -1261,6 +1274,7 @@ export interface RootRouteChildren {
   CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
   CompanySlugRoute: typeof CompanySlugRoute
   DirectorySignalRoute: typeof DirectorySignalRoute
+  GuidesCompaniesHouseCyprusRoute: typeof GuidesCompaniesHouseCyprusRoute
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ReportTypeRoute: typeof ReportTypeRoute
@@ -1690,6 +1704,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/companies-house-cyprus': {
+      id: '/guides/companies-house-cyprus'
+      path: '/guides/companies-house-cyprus'
+      fullPath: '/guides/companies-house-cyprus'
+      preLoaderRoute: typeof GuidesCompaniesHouseCyprusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/register-company-cyprus': {
       id: '/guides/register-company-cyprus'
       path: '/guides/register-company-cyprus'
@@ -2076,6 +2097,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
   CompanySlugRoute: CompanySlugRoute,
   DirectorySignalRoute: DirectorySignalRoute,
+  GuidesCompaniesHouseCyprusRoute: GuidesCompaniesHouseCyprusRoute,
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ReportTypeRoute: ReportTypeRoute,
