@@ -443,6 +443,18 @@ function HomePage() {
               Limited (HE4404), that republishes that registry data for free searching and orders official documents from
               the Registrar on your behalf.
             </p>
+            <p>
+              Full background — registry numbers, what is free versus paid, how the Cyprus register compares with UK
+              Companies House — is in our guide:{" "}
+              <Link to="/guides/companies-house-cyprus" className="text-accent underline">
+                Companies House Cyprus explained
+              </Link>
+              . You can also{" "}
+              <Link to="/search" search={{ q: "", page: 1 }} className="text-accent underline">
+                run a Cyprus company search
+              </Link>{" "}
+              straight away.
+            </p>
           </div>
         </div>
 
