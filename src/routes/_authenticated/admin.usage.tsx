@@ -41,7 +41,12 @@ function AdminUsagePage() {
     company: "",
   });
 
+  const { ready, signedIn } = useAuth();
+
   const query = useQuery({
+    // Wait for the Supabase session to hydrate; without it the client
+    // middleware sends no bearer token and the server function 401s.
+    enabled: ready && signedIn,
     queryKey: ["admin", "usage", applied],
     queryFn: () =>
       fetchUsage({
@@ -52,6 +57,7 @@ function AdminUsagePage() {
         },
       }),
   });
+
 
   const rows = query.data?.rows ?? [];
   const totals = query.data?.totals;
