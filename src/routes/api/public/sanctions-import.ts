@@ -2,23 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 
 /**
  * Scheduler-only endpoint: refreshes every active sanctions source
- * (EU FSF, UN Consolidated List, …). Callers must present either the
- * platform cron secret (Authorization: Bearer …) or the project key in the
- * `apikey` header, matching the pattern used by the other scheduled jobs.
+ * (EU FSF, UN Consolidated List, …). Callers must present the platform cron
+ * secret (Authorization: Bearer …).
  */
-function schedulerKeyMatches(request: Request): boolean {
-  const expected = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
-  if (!expected) return false;
-  const provided = request.headers.get("apikey") ?? "";
-  return provided.length === expected.length && provided === expected;
-}
-
 async function run(request: Request) {
-  if (!schedulerKeyMatches(request)) {
-    const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
-    const unauthorized = await authenticateCronRequest(request);
-    if (unauthorized) return unauthorized;
-  }
+  const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
+  const unauthorized = await authenticateCronRequest(request);
+  if (unauthorized) return unauthorized;
 
   const { listActiveSourceCodes, runSanctionsImport } = await import("@/lib/sanctions.server");
   try {

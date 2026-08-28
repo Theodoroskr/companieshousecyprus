@@ -7,19 +7,10 @@ import { CHANGE_FEED_MAX_ITEMS } from "@/lib/change-feed";
  *
  * GET  — public, read-only list of company IDs changed in the window plus the
  *        last few job runs. Only registry data (public by design) is exposed.
- * POST — scheduled trigger (pg_cron, publishable key in the `apikey` header):
+ * POST — scheduled trigger (platform cron secret required):
  *        regenerates sitemap chunk metadata and submits ONLY the changed
  *        profiles to IndexNow.
  */
-function authorized(request: Request): boolean {
-  const expected = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
-  if (!expected) return false;
-  const provided =
-    request.headers.get("apikey") ??
-    /^Bearer ([^\s,]+)$/.exec(request.headers.get("authorization") ?? "")?.[1] ??
-    "";
-  return provided.length === expected.length && provided === expected;
-}
 
 export const Route = createFileRoute("/api/public/change-feed")({
   server: {
@@ -55,7 +46,9 @@ export const Route = createFileRoute("/api/public/change-feed")({
         }
       },
       POST: async ({ request }) => {
-        if (!authorized(request)) return new Response("Unauthorized", { status: 401 });
+        const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
+        const unauthorized = await authenticateCronRequest(request);
+        if (unauthorized) return unauthorized;
         try {
           const result = await runDailyChangeFeed();
           return Response.json(result, {
