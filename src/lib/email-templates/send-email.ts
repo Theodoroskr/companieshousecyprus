@@ -32,6 +32,15 @@ export interface SendTemplateEmailOptions {
 }
 
 /**
+ * Header values must be ASCII (Fetch spec). Idempotency keys are derived from
+ * document/product names that may contain non-ASCII characters (em-dashes,
+ * accents). Strip to a safe ASCII key so the outbound request does not fail.
+ */
+function sanitizeIdempotencyKey(key: string): string {
+  return key.replace(/[^\x20-\x7E]/g, '-').replace(/-{2,}/g, '-')
+}
+
+/**
  * Renders a registered template and sends it through Lovable's managed email
  * API. Suppression, retries, and rate limits are enforced by Lovable
  * server-side. A suppressed recipient is an expected outcome
