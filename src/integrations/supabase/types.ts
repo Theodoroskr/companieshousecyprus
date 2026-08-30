@@ -1296,6 +1296,95 @@ export type Database = {
           },
         ]
       }
+      sanctions_relay_chunks: {
+        Row: {
+          body: string
+          byte_length: number
+          byte_start: number
+          chunk_index: number
+          created_at: string
+          job_id: string
+        }
+        Insert: {
+          body: string
+          byte_length: number
+          byte_start: number
+          chunk_index: number
+          created_at?: string
+          job_id: string
+        }
+        Update: {
+          body?: string
+          byte_length?: number
+          byte_start?: number
+          chunk_index?: number
+          created_at?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctions_relay_chunks_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "sanctions_relay_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctions_relay_jobs: {
+        Row: {
+          attempts: number
+          chunk_count: number
+          chunk_size: number
+          consumed_at: string | null
+          created_at: string
+          error: string | null
+          id: string
+          next_offset: number
+          pending_request_id: number | null
+          pending_since: string | null
+          ready_at: string | null
+          source_code: string
+          status: string
+          total_bytes: number | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          chunk_count?: number
+          chunk_size?: number
+          consumed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          next_offset?: number
+          pending_request_id?: number | null
+          pending_since?: string | null
+          ready_at?: string | null
+          source_code: string
+          status?: string
+          total_bytes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          chunk_count?: number
+          chunk_size?: number
+          consumed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          next_offset?: number
+          pending_request_id?: number | null
+          pending_since?: string | null
+          ready_at?: string | null
+          source_code?: string
+          status?: string
+          total_bytes?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sanctions_sources: {
         Row: {
           authority: string
@@ -1981,6 +2070,11 @@ export type Database = {
           reactivated: number
           removed: number
         }[]
+      }
+      sanctions_relay_cleanup: { Args: never; Returns: number }
+      sanctions_relay_tick: {
+        Args: { _source_code?: string; _url?: string }
+        Returns: Json
       }
       sanctions_try_lock: { Args: { _source_code: string }; Returns: boolean }
       sanctions_unlock: { Args: { _source_code: string }; Returns: boolean }

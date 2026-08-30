@@ -201,6 +201,88 @@ export async function collectStream(stream: ReadableStream<Uint8Array>): Promise
   return out;
 }
 
+type RelayDownload = {
+  jobId: string;
+  chunkCount: number;
+  totalBytes: number;
+  readyAt: string | null;
+  stream: ReadableStream<Uint8Array>;
+};
+
+/**
+ * Reads a relayed source file out of the database.
+ *
+ * The hosting network cannot complete a TLS handshake with the Treasury
+ * servers (every direct request answers HTTP 525), while the database can.
+ * `public.sanctions_relay_tick()` pulls the file in ranged pieces into
+ * `sanctions_relay_chunks`; this opens the newest completed transfer as a
+ * stream so the importer pipeline (hash → parse → stage) is unchanged.
+ */
+export async function openRelayDownload(
+  supabase: ReturnType<typeof adminClient>,
+  sourceCode: string,
+): Promise<RelayDownload | null> {
+  const { data: job } = await supabase
+    .from("sanctions_relay_jobs")
+    .select("id, chunk_count, total_bytes, ready_at")
+    .eq("source_code", sourceCode)
+    .eq("status", "ready")
+    .order("ready_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!job) return null;
+
+  const jobId = job.id as string;
+  const chunkCount = (job.chunk_count as number) ?? 0;
+  if (chunkCount === 0) return null;
+
+  const encoder = new TextEncoder();
+  let index = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      if (index >= chunkCount) {
+        controller.close();
+        return;
+      }
+      const { data, error } = await supabase
+        .from("sanctions_relay_chunks")
+        .select("body")
+        .eq("job_id", jobId)
+        .eq("chunk_index", index)
+        .maybeSingle();
+      if (error) {
+        controller.error(new Error(`Relay chunk ${index} read failed: ${error.message}`));
+        return;
+      }
+      if (!data) {
+        controller.error(new Error(`Relay chunk ${index} is missing`));
+        return;
+      }
+      index += 1;
+      controller.enqueue(encoder.encode(data.body as string));
+    },
+  });
+
+  return {
+    jobId,
+    chunkCount,
+    totalBytes: (job.total_bytes as number) ?? 0,
+    readyAt: (job.ready_at as string) ?? null,
+    stream,
+  };
+}
+
+/** Marks a relayed file as consumed so the next transfer can start. */
+async function markRelayConsumed(supabase: ReturnType<typeof adminClient>, jobId: string): Promise<void> {
+  await supabase
+    .from("sanctions_relay_jobs")
+    .update({ status: "consumed", consumed_at: new Date().toISOString(), updated_at: new Date().toISOString() } as never)
+    .eq("id", jobId);
+  await supabase.from("sanctions_relay_chunks").delete().eq("job_id", jobId);
+}
+
+
+
 type SourceAdapter = {
   validate: (xml: string) => { ok: boolean; reason?: string };
   iterate: (xml: string) => Generator<SanctionsRecord>;
@@ -470,6 +552,7 @@ export async function runSanctionsImport(
         urlUsed,
         downloadAttempts,
         resumeLog: download.resumeLog,
+
         receivedBytes: download.receivedBytes(),
         totalBytes: download.totalBytes,
       });
@@ -815,45 +898,75 @@ export async function runOfacStreamingImport(
     importId = created.id;
 
     // 1. open the stream --------------------------------------------------
+    // Preferred transport is the database relay: Treasury's edge refuses the
+    // TLS handshake from our hosting network (HTTP 525), so a scheduled SQL
+    // job pulls the file into the database in ranged pieces. A direct fetch is
+    // still attempted when no relayed copy is waiting.
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
     const downloadStartedAt = Date.now();
-    const { response, urlUsed, attempts: downloadAttempts } = await fetchSanctionsSource(sourceCode, source.source_url);
-    if (!response) {
-      const detail = "Source is unreachable (network/TLS failure after retries).";
-      await failImport(supabase, importId, detail, { stage: "download", downloadAttempts });
-      return { importId, status: "failed", message: detail };
-    }
-    const finalHost = response.url ? new URL(response.url).host : null;
-    if (response.status !== 200) {
-      const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
-      await failImport(supabase, importId, detail, {
-        stage: "download",
-        status: response.status,
-        finalHost,
-        urlUsed,
-        downloadAttempts,
-      });
-      return { importId, status: "failed", message: detail };
-    }
-    const contentType = response.headers.get("content-type") ?? "";
-    const etagHeader = response.headers.get("etag");
-    const officialDigest = extractOfficialDigest(response.headers);
-    if (contentType && !/xml|octet-stream|text\/plain/i.test(contentType)) {
-      const detail = `Unexpected content type from source: ${contentType}`;
-      await failImport(supabase, importId, detail, { stage: "download", contentType, finalHost });
-      return { importId, status: "failed", message: detail };
-    }
-    if (!response.body) {
-      const detail = "Source response has no readable body stream.";
-      await failImport(supabase, importId, detail, { stage: "download", finalHost });
-      return { importId, status: "failed", message: detail };
-    }
+    const relay = await openRelayDownload(supabase, sourceCode);
+
+    let bodyStream: ReadableStream<Uint8Array>;
+    let resumeLog: ResumeEvent[] = [];
+    let finalHost: string | null = null;
+    let contentType = "";
+    let etagHeader: string | null = null;
+    let officialDigest: ReturnType<typeof extractOfficialDigest> = null;
+    let sourceLastModified: string | null = null;
+    let fileName: string;
+    let downloadAttempts: Array<{ url: string; outcome: string }> = [];
     const retrievedAt = new Date();
-    const lastModifiedHeader = response.headers.get("last-modified");
-    const sourceLastModified = lastModifiedHeader ? new Date(lastModifiedHeader).toISOString() : null;
-    const fileName =
-      /filename="([^"]+)"/.exec(response.headers.get("content-disposition") ?? "")?.[1] ??
-      `ofac-sdn-${retrievedAt.toISOString().slice(0, 10)}.xml`;
+
+    if (relay) {
+      bodyStream = relay.stream;
+      finalHost = "database-relay";
+      contentType = "application/xml";
+      sourceLastModified = relay.readyAt;
+      fileName = `ofac-sdn-${retrievedAt.toISOString().slice(0, 10)}.xml`;
+    } else {
+      const direct = await fetchSanctionsSource(sourceCode, source.source_url);
+      const response = direct.response;
+      downloadAttempts = direct.attempts;
+      if (!response) {
+        const detail = "Source is unreachable (network/TLS failure after retries) and no relayed copy is ready yet.";
+        await failImport(supabase, importId, detail, { stage: "download", downloadAttempts, relay: "pending" });
+        return { importId, status: "failed", message: detail };
+      }
+      finalHost = response.url ? new URL(response.url).host : null;
+      if (response.status !== 200) {
+        const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
+        await failImport(supabase, importId, detail, {
+          stage: "download",
+          status: response.status,
+          finalHost,
+          urlUsed: direct.urlUsed,
+          downloadAttempts,
+        });
+        return { importId, status: "failed", message: detail };
+      }
+      contentType = response.headers.get("content-type") ?? "";
+      etagHeader = response.headers.get("etag");
+      officialDigest = extractOfficialDigest(response.headers);
+      if (contentType && !/xml|octet-stream|text\/plain/i.test(contentType)) {
+        const detail = `Unexpected content type from source: ${contentType}`;
+        await failImport(supabase, importId, detail, { stage: "download", contentType, finalHost });
+        return { importId, status: "failed", message: detail };
+      }
+      if (!response.body) {
+        const detail = "Source response has no readable body stream.";
+        await failImport(supabase, importId, detail, { stage: "download", finalHost });
+        return { importId, status: "failed", message: detail };
+      }
+      const lastModifiedHeader = response.headers.get("last-modified");
+      sourceLastModified = lastModifiedHeader ? new Date(lastModifiedHeader).toISOString() : null;
+      fileName =
+        /filename="([^"]+)"/.exec(response.headers.get("content-disposition") ?? "")?.[1] ??
+        `ofac-sdn-${retrievedAt.toISOString().slice(0, 10)}.xml`;
+      const resumable = createResumableBody(response, direct.urlUsed ?? source.source_url);
+      bodyStream = resumable.stream;
+      resumeLog = resumable.resumeLog;
+    }
+
 
     // 2. stream: hash + parse + stage, chunk by chunk ----------------------
     await supabase.from("sanctions_imports").update({ status: "parsing" }).eq("id", importId);
@@ -913,10 +1026,10 @@ export async function runOfacStreamingImport(
       if (batch.length >= STAGING_BATCH) await flush();
     };
 
-    // Resumable read: a dropped connection mid-way through the 126 MB feed
-    // continues with `Range: bytes=<received>-` rather than starting over.
-    const download = createResumableBody(response, urlUsed ?? source.source_url);
-    const reader = download.stream.getReader();
+    // Relay chunks arrive from the database; a direct download is resumable so
+    // a dropped connection continues with `Range: bytes=<received>-`.
+    const reader = bodyStream.getReader();
+
     let chunkIndex = 0;
     for (;;) {
       const { done, value } = await reader.read();
@@ -949,6 +1062,11 @@ export async function runOfacStreamingImport(
     }
 
     const fileHash = hasher.digestHex();
+
+    // The relayed bytes are fully parsed and staged now — release the copy so
+    // the next scheduled transfer can start and the 126 MB text is not kept.
+    if (relay) await markRelayConsumed(supabase, relay.jobId);
+
 
     // Integrity gate: if the source published a SHA-256 digest and our
     // downloaded bytes do not match, fail loudly — never publish.
@@ -1003,7 +1121,7 @@ export async function runOfacStreamingImport(
             contentType,
             etag: etagHeader,
             perf,
-            resumeLog: download.resumeLog,
+            resumeLog,
             parser: "ofac-advanced-v3-stream",
           } as never,
         } as never)
@@ -1022,17 +1140,19 @@ export async function runOfacStreamingImport(
 
     // 3. archive the raw file privately -----------------------------------
     // The bytes were streamed (never buffered), so re-fetch for the archive
-    // upload; Storage handles the streamed request body on its side.
+    // upload; Storage handles the streamed request body on its side. Relayed
+    // imports skip this: the origin is unreachable from this network.
     const archiveStartedAt = Date.now();
     let storagePath: string | null = null;
     try {
-      const { response: archiveResponse } = await fetchSanctionsSource(source.source_code, source.source_url, {
-        attemptsPerUrl: 2,
-      });
+      const archiveResponse = relay
+        ? null
+        : (await fetchSanctionsSource(source.source_code, source.source_url, { attemptsPerUrl: 2 })).response;
       if (archiveResponse?.ok && archiveResponse.body) {
         storagePath = storagePathFor(adapter.storagePrefix, fileHash, retrievedAt);
         // Resumable so a dropped archive transfer continues instead of restarting.
         const archiveStream = createResumableBody(archiveResponse, source.source_url).stream;
+
         const { error: uploadError } = await supabase.storage
           .from(SANCTIONS_BUCKET)
           .upload(storagePath, archiveStream as never, {
@@ -1138,7 +1258,7 @@ export async function runOfacStreamingImport(
           rssMbBefore: rssBefore,
           rssMbAfter: rssAfter,
           perf,
-          resumeLog: download.resumeLog,
+          resumeLog,
           parser: "ofac-advanced-v3-stream",
           rawArchived: storagePath !== null,
         } as never,
