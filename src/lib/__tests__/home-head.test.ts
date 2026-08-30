@@ -12,11 +12,12 @@ import {
 describe("homepage head metadata", () => {
   it("keeps the pinned title, description and canonical URL", () => {
     expect(HOME_TITLE).toBe(
-      "Companies House Cyprus | Free Cyprus Company Search",
+      "Companies House Cyprus: Free Registrar Search",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Search Companies House Cyprus free: company status, registration number, type, directors and registered office. Official certificates and reports delivered digitally in minutes.",
+      "Cyprus Companies House search, free. Look up any company on Registrar of Companies data: status, registration number, type, directors and registered office — plus certificates and reports delivered digitally in minutes.",
     );
+
     expect(HOME_CANONICAL_URL).toBe("https://companieshousecyprus.com/");
   });
 

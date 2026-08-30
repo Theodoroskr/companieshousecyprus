@@ -2,10 +2,11 @@
 // src/routes/index.tsx and guarded by src/lib/__tests__/home-head.test.ts
 // so title, description and canonical URL cannot drift across builds.
 
-export const HOME_TITLE = "Companies House Cyprus | Free Cyprus Company Search";
+export const HOME_TITLE = "Companies House Cyprus: Free Registrar Search";
 
 export const HOME_DESCRIPTION =
-  "Search Companies House Cyprus free: company status, registration number, type, directors and registered office. Official certificates and reports delivered digitally in minutes.";
+  "Cyprus Companies House search, free. Look up any company on Registrar of Companies data: status, registration number, type, directors and registered office — plus certificates and reports delivered digitally in minutes.";
+
 
 export const HOME_CANONICAL_URL = "https://companieshousecyprus.com/";
 
