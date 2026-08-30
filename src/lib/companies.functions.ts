@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizeCompanySlug } from "@/lib/slug";
+import { normaliseCompanyKey } from "@/lib/registrar-mapping";
+
 import { searchVariants } from "@/lib/format";
 
 const PAGE_SIZE = 50;
