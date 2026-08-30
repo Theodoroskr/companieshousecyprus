@@ -154,14 +154,16 @@ export const Route = createFileRoute("/company/$slug")({
     // Name-based canonical URL: ID-form and historic name slugs both keep
     // working, but permanently redirect to the current canonical path.
     const canonicalSlug = c.canonical_slug ?? companyCanonicalSlug(c);
-    if (canonicalSlug && canonicalSlug !== params.slug) {
+    const redirectTo = canonicalRedirectTarget(params.slug, c);
+    if (redirectTo) {
       throw redirect({
         to: "/company/$slug",
-        params: { slug: canonicalSlug },
+        params: { slug: redirectTo },
         statusCode: 301,
         replace: true,
       });
     }
+
     if (import.meta.env.SSR) {
       const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
       setCompanyPageCacheHeaders({
