@@ -71,6 +71,7 @@ export async function sendPendingOrderReminders() {
     try {
       await sendTemplateEmail("order-assistance", order.email, {
         idempotencyKey: `order-assistance-${order.reference}`,
+        sendOfficeCopy: true,
         templateData: {
           fullName: order.full_name ?? undefined,
           reference: order.reference,
