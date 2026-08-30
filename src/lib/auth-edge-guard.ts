@@ -9,6 +9,8 @@
  * the app.
  */
 
+import { clientKey } from "@/lib/waf";
+
 export const AUTH_GUARD_COOKIE = "chc_ac";
 
 /** Countries whose cookieless direct hits get challenged. */
@@ -51,6 +53,26 @@ function isDocumentRequest(request: Request): boolean {
   return accept === "" || accept.includes("text/html") || accept.includes("*/*");
 }
 
+/** Cookieless direct hits allowed per client before the challenge kicks in. */
+export const COOKIELESS_THRESHOLD = 3;
+export const COOKIELESS_WINDOW_MS = 600_000;
+
+const cookielessHits = new Map<string, number[]>();
+const MAX_TRACKED_CLIENTS = 5_000;
+
+/** Test helper — clears the per-client counters. */
+export function resetAuthGuardState(): void {
+  cookielessHits.clear();
+}
+
+function countCookielessHit(key: string, nowMs: number): number {
+  const recent = (cookielessHits.get(key) ?? []).filter((t) => nowMs - t < COOKIELESS_WINDOW_MS);
+  recent.push(nowMs);
+  if (!cookielessHits.has(key) && cookielessHits.size >= MAX_TRACKED_CLIENTS) cookielessHits.clear();
+  cookielessHits.set(key, recent);
+  return recent.length;
+}
+
 export function decideAuthGuard(request: Request, now: Date = new Date()): GuardDecision {
   const url = new URL(request.url);
   if (!GUARDED_PATHS.has(url.pathname)) return "allow";
@@ -59,8 +81,8 @@ export function decideAuthGuard(request: Request, now: Date = new Date()): Guard
   const country = (request.headers.get("cf-ipcountry") ?? "").toUpperCase();
   if (!CHALLENGED_COUNTRIES.has(country)) return "allow";
 
-  // Anyone arriving from our own site (internal link) or already carrying any
-  // session/analytics cookie is a returning browser, not a bare probe.
+  // Anyone arriving from our own site (internal link) or already carrying our
+  // proof-of-JS cookie is a returning browser, not a bare probe.
   const cookieHeader = request.headers.get("cookie");
   if (hasValidGuardCookie(cookieHeader, now)) return "allow";
 
@@ -73,8 +95,15 @@ export function decideAuthGuard(request: Request, now: Date = new Date()): Guard
     }
   }
 
+  // A first-time visitor typing the URL or following an email link looks
+  // exactly like a probe on hit #1. Only sustained repeat hits from the same
+  // client get challenged, so legitimate browsers are never interrupted.
+  const key = clientKey(request);
+  if (countCookielessHit(key, now.getTime()) <= COOKIELESS_THRESHOLD) return "allow";
+
   return "challenge";
 }
+
 
 export function authChallengeResponse(url: string, now: Date = new Date()): Response {
   const token = guardToken(now);
@@ -95,12 +124,11 @@ location.replace(${JSON.stringify(url)});
 </main></body></html>`;
 
   return new Response(html, {
-    status: 503,
+    status: 200,
     headers: {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "no-store",
       "x-robots-tag": "noindex, nofollow",
-      "retry-after": "5",
     },
   });
 }
