@@ -48,13 +48,32 @@ function stripAccents(input: string): string {
 }
 
 /**
+ * True when the text is essentially an English/Latin name that happens to
+ * contain a stray Greek look-alike letter (registry data sometimes records an
+ * English company name with one Greek homoglyph, e.g. "TCKΗ HOLDING LTD").
+ * Such names must be used exactly as registered — transliterating them
+ * produces a wrong synthetic Latin form.
+ */
+export function isPredominantlyLatin(text?: string | null): boolean {
+  if (!text) return false;
+  const latin = (text.match(/[A-Za-z]/g) ?? []).length;
+  const greek = (text.match(/[\u0370-\u03ff]/g) ?? []).length;
+  if (latin === 0 || greek === 0) return latin > 0;
+  return greek <= 2 || greek / (latin + greek) < 0.25;
+}
+
+/**
  * Transliterate a Greek string into Latin characters (ELOT-743 style, simplified),
  * preserving the original casing pattern of each word.
+ *
+ * Predominantly-Latin text (English names with a stray Greek homoglyph) is
+ * returned unchanged — it is already the registered English form.
  */
 export function greekToLatin(input?: string | null): string | null {
   if (!input) return null;
   const clean = stripAccents(input).replace(/ς/g, "σ");
   if (!/[\u0370-\u03ff]/.test(clean)) return input;
+  if (isPredominantlyLatin(clean)) return input;
 
   const isGreekChar = (ch: string | undefined) => !!ch && /[\u0370-\u03ff]/.test(ch);
   const isUpperGreek = (ch: string | undefined) => isGreekChar(ch) && ch === ch!.toUpperCase();
@@ -240,10 +259,27 @@ export function maskName(name: string | null | undefined): string {
     .join(" ");
 }
 
+/** Greek homoglyphs that look identical to Latin capitals in registry data. */
+const HOMOGLYPHS: Record<string, string> = {
+  Α: "A", Β: "B", Ε: "E", Ζ: "Z", Η: "H", Ι: "I", Κ: "K", Μ: "M",
+  Ν: "N", Ο: "O", Ρ: "P", Τ: "T", Υ: "Y", Χ: "X",
+};
+
+/**
+ * Replace Greek look-alike letters with their Latin visual equivalents so an
+ * English query still matches an English name recorded with a Greek homoglyph
+ * (e.g. "TCKH" matches registered "TCKΗ"), and vice versa.
+ */
+export function normalizeHomoglyphs(input?: string | null): string | null {
+  if (!input) return null;
+  return input.replace(/[Ͱ-Ͽ]/g, (ch) => HOMOGLYPHS[ch.toUpperCase()] ?? ch);
+}
+
 /**
  * Build the set of query variants to match against Latin-script registry names.
  * A Greek query is transliterated (ELOT-743 style) so "ΤΡΑΠΕΖΑ ΚΥΠΡΟΥ" also
- * matches "TRAPEZA KYPROU"; accents and final sigma are normalised too.
+ * matches "TRAPEZA KYPROU"; accents and final sigma are normalised too, and
+ * predominantly-Latin queries also get a homoglyph-normalised variant.
  */
 export function searchVariants(q: string): string[] {
   const base = stripAccents(q).trim().replace(/\s+/g, " ");
@@ -254,5 +290,6 @@ export function searchVariants(q: string): string[] {
   };
   push(base);
   push(greekToLatin(base));
+  push(normalizeHomoglyphs(base));
   return out;
 }
