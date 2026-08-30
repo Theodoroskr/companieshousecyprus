@@ -116,9 +116,11 @@ describe("registry landing metadata", () => {
       expect(landing.h1.length).toBeGreaterThan(10);
       expect(landing.title.length).toBeLessThanOrEqual(60);
       expect(landing.description.length).toBeLessThanOrEqual(165);
-      // H1 and title must share the page's core term.
-      const core = landing.h1.toLowerCase().split(" ").slice(0, 2).join(" ");
-      expect(landing.title.toLowerCase()).toContain(core);
+      // Every significant word of the H1 must appear in the title snippet.
+      const title = landing.title.toLowerCase();
+      for (const word of landing.h1.toLowerCase().split(/\s+/).filter((w) => w.length > 3)) {
+        expect(title).toContain(word);
+      }
     }
   });
 
