@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Mail, Phone } from "lucide-react";
 import { PRODUCTS } from "@/lib/products";
+import { REGISTRY_LANDINGS } from "@/lib/seo/registry-landings";
 import logoAsset from "@/assets/logo.png.asset.json";
 import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
 import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
