@@ -70,7 +70,7 @@ function AdminGdprPage() {
       add({
         data: {
           personName,
-          companySlug: companySlug || null,
+          companySlug,
           requesterEmail: requesterEmail || null,
           reason: reason || null,
           internalNotes: internalNotes || null,
@@ -128,8 +128,9 @@ function AdminGdprPage() {
         <div>
           <h1 className="font-display text-2xl font-bold">GDPR name removals</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Suppressed names are withheld everywhere on the public site — company profiles, shared-officer links and
-            structured data. The underlying registry record is untouched; only the published name is hidden.
+            A suppression hides a name on one specific company profile — its officials list, shared-officer links and
+            structured data. Other companies where the same name appears are unaffected. The underlying registry record
+            is untouched; only the published name is hidden.
           </p>
         </div>
       </header>
@@ -149,7 +150,7 @@ function AdminGdprPage() {
           className="mt-4 grid gap-4 md:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!personName.trim()) return;
+            if (!personName.trim() || !companySlug.trim()) return;
             addMutation.mutate();
           }}
         >
@@ -165,11 +166,12 @@ function AdminGdprPage() {
           </label>
 
           <label className="text-sm">
-            <span className="font-medium">Company (optional — blank = site-wide)</span>
+            <span className="font-medium">Company *</span>
             <div className="mt-1 flex gap-2">
               <input
                 value={companySlug}
                 onChange={(e) => setCompanySlug(e.target.value)}
+                required
                 placeholder="C266206 or HE266206"
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               />
@@ -297,7 +299,7 @@ function AdminGdprPage() {
                       {row.person_name}
                       {row.reason ? <div className="text-xs text-muted-foreground">{row.reason}</div> : null}
                     </td>
-                    <td className="px-4 py-3">{row.company_slug ?? "Site-wide"}</td>
+                    <td className="px-4 py-3">{row.company_slug}</td>
                     <td className="px-4 py-3 text-muted-foreground">{row.requester_email ?? "—"}</td>
                     <td className="px-4 py-3">
                       <span
