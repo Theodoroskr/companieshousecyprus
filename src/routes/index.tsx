@@ -19,6 +19,7 @@ import {
   HOME_DESCRIPTION,
   buildHomeHead,
 } from "@/lib/home-head";
+import { homeWebsiteJsonLd, homeOrganizationJsonLd } from "@/lib/home-jsonld";
 
 const homeQueryOptions = () =>
   queryOptions({
@@ -75,83 +76,11 @@ export const Route = createFileRoute("/")({
     scripts: [
       {
         type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          "@id": "https://companieshousecyprus.com/#website",
-          name: "Companies House Cyprus",
-          url: "https://companieshousecyprus.com/",
-          publisher: { "@id": "https://companieshousecyprus.com/#organization" },
-          description:
-            "Free Cyprus company register search and online ordering of official certificates, reports and KYB documents with digital delivery.",
-          inLanguage: "en",
-          keywords: [
-            "Companies House Cyprus",
-            "Cyprus company register",
-            "Cyprus company search",
-            "certificate of good standing Cyprus",
-            "Cyprus company report",
-          ],
-          potentialAction: {
-            "@type": "SearchAction",
-            name: "Search Cyprus companies",
-            target: {
-              "@type": "EntryPoint",
-              urlTemplate: "https://companieshousecyprus.com/search?q={search_term_string}&page=1",
-            },
-            "query-input": "required name=search_term_string",
-          },
-        }),
+        children: JSON.stringify(homeWebsiteJsonLd()),
       },
       {
         type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          "@id": "https://companieshousecyprus.com/#organization",
-          name: "Companies House Cyprus",
-          alternateName: "CHC",
-          url: "https://companieshousecyprus.com/",
-          logo: {
-            "@type": "ImageObject",
-            url: "https://companieshousecyprus.com/favicon.png",
-          },
-          description:
-            "Search and browse Cyprus companies from the official Registrar of Companies. Company profiles, officials & owners, addresses, statuses, and certified documents delivered digitally.",
-          foundingDate: "2024",
-          parentOrganization: {
-            "@type": "Organization",
-            name: "Infocredit Group Limited",
-            identifier: "HE4404",
-          },
-          areaServed: { "@type": "Country", name: "Cyprus" },
-          knowsAbout: [
-            "Cyprus company register",
-            "Department of Registrar of Companies and Intellectual Property",
-            "Cyprus company search",
-            "certificates of good standing",
-            "KYB due diligence",
-          ],
-          sameAs: [
-            "https://companieshousecyprus.com/contact",
-            "https://companieshousecyprus.com/pricing",
-          ],
-          contactPoint: {
-            "@type": "ContactPoint",
-            telephone: "+35722398241",
-            contactType: "customer service",
-            email: "info@companieshousecyprus.com",
-            availableLanguage: ["English", "Greek"],
-            areaServed: "CY",
-          },
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: "1 Agiou Andreou Street",
-            addressLocality: "Limassol",
-            postalCode: "3036",
-            addressCountry: "CY",
-          },
-        }),
+        children: JSON.stringify(homeOrganizationJsonLd()),
       },
       {
         type: "application/ld+json",
