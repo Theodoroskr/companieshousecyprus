@@ -6,6 +6,7 @@
  * chunked company sitemaps and are not listed here.
  */
 import { DIRECTORY_SIGNALS } from "@/lib/directory-signals";
+import { INTERNATIONAL_GUIDES, INTERNATIONAL_HUB_PATH } from "@/lib/seo/international-guides";
 import { REGISTRY_LANDINGS, registryLandingPath, SITE_URL } from "@/lib/seo/registry-landings";
 
 export { SITE_URL };
@@ -25,6 +26,12 @@ export const STATIC_PAGES: SitemapPage[] = [
   ...REGISTRY_LANDINGS.map((landing) => ({
     path: registryLandingPath(landing),
     priority: "0.9",
+    changefreq: "monthly" as const,
+  })),
+  { path: INTERNATIONAL_HUB_PATH, priority: "0.8", changefreq: "monthly" },
+  ...INTERNATIONAL_GUIDES.map((guide) => ({
+    path: guide.path,
+    priority: "0.8",
     changefreq: "monthly" as const,
   })),
   { path: "/directory", priority: "0.8", changefreq: "weekly" },

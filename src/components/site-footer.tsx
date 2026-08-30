@@ -138,6 +138,11 @@ export function SiteFooter() {
             </li>
 
             <li>
+              <Link to="/international" className="text-muted-foreground hover:text-foreground">
+                International
+              </Link>
+            </li>
+            <li>
               <Link to="/faq" className="text-muted-foreground hover:text-foreground">
                 FAQ
               </Link>
