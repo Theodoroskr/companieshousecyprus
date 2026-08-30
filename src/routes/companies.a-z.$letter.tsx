@@ -6,6 +6,7 @@ import { displayOfficialNo } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { CopyGuard } from "@/components/copy-guard";
+import { companyCanonicalSlug } from "@/lib/slug";
 
 const letterQueryOptions = (letter: string, page: number) =>
   queryOptions({
@@ -74,7 +75,7 @@ function LetterPage() {
             <li key={company.slug} className="transition-colors hover:bg-muted/50">
               <Link
                 to="/company/$slug"
-                params={{ slug: company.slug }}
+                params={{ slug: companyCanonicalSlug(company) }}
                 className="flex flex-wrap items-center justify-between gap-3 p-4"
               >
                 <span>

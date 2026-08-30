@@ -49,7 +49,7 @@ function RelatedCompanies({ slug }: { slug: string }) {
           <ul className="mt-2 divide-y">
             {byAddress.map((row) => (
               <li key={row.slug} className="flex flex-col gap-0.5 py-3">
-                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
+                <Link to="/company/$slug" params={{ slug: companyCanonicalSlug(row) }} className="text-base font-medium hover:text-copper">
                   {row.name}
                 </Link>
                 <span className="text-sm text-muted-foreground">{displayOfficialNo(row)}</span>
@@ -75,7 +75,7 @@ function RelatedCompanies({ slug }: { slug: string }) {
           <ul className="mt-3 divide-y">
             {byOfficial.map((row) => (
               <li key={row.slug} className="flex flex-col gap-0.5 py-3">
-                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
+                <Link to="/company/$slug" params={{ slug: companyCanonicalSlug(row) }} className="text-base font-medium hover:text-copper">
                   {row.name}
                 </Link>
                 <div className="flex items-center justify-between gap-4">

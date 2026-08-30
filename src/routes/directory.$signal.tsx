@@ -9,6 +9,7 @@ import {
 import { displayOfficialNo } from "@/lib/format";
 import { CopyGuard } from "@/components/copy-guard";
 import { Button } from "@/components/ui/button";
+import { companyCanonicalSlug } from "@/lib/slug";
 
 const SITE_URL = "https://companieshousecyprus.com";
 /** Beyond this depth pagination pages are thin duplicates — keep them out of the index. */
@@ -147,7 +148,7 @@ function DirectorySignalPage() {
               <li key={company.slug} className="transition-colors hover:bg-muted/50">
                 <Link
                   to="/company/$slug"
-                  params={{ slug: company.slug }}
+                  params={{ slug: companyCanonicalSlug(company) }}
                   className="flex flex-wrap items-center justify-between gap-3 p-4"
                 >
                   <span>

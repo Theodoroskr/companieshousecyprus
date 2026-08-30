@@ -2,6 +2,7 @@ import { defineTool, ToolError } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { getCompanyBySlug, searchCompanies } from "@/lib/companies.functions";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, latinAddress } from "@/lib/format";
+import { companyCanonicalSlug } from "@/lib/slug";
 
 const BASE_URL = "https://companieshousecyprus.com";
 
@@ -75,7 +76,7 @@ function respond(result: Awaited<ReturnType<typeof getCompanyBySlug>>) {
     },
     officials_role: officialsLabel,
     officials: officials.map((o) => ({ name: o.person_name, position: o.position_en })),
-    profile_url: `${BASE_URL}/company/${company.slug}`,
+    profile_url: `${BASE_URL}/company/${company.canonical_slug ?? companyCanonicalSlug(company)}`,
     source: "Cyprus Registrar of Companies via Companies House Cyprus",
     disclaimer:
       "Public registry data provided for information purposes only; it does not constitute legal or credit advice.",

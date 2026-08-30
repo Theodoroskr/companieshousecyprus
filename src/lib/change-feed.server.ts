@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { INDEXNOW_ORIGIN } from "@/lib/indexnow";
 import { runIndexNowBatch, type IndexNowRunResult } from "@/lib/indexnow.server";
 import {
+import { companyCanonicalSlug } from "@/lib/slug";
   CHANGE_FEED_MAX_ITEMS,
   changeFeedWindowStart,
   type ChangeFeedRunSummary,
@@ -11,8 +12,8 @@ import {
 /** How many IndexNow batches a single daily run may push. */
 const MAX_BATCHES_PER_RUN = 1;
 
-function canonicalUrl(officialNo: string | null, slug: string): string {
-  return `${INDEXNOW_ORIGIN}/company/${officialNo && officialNo.length > 0 ? officialNo : slug}`;
+function canonicalUrl(row: { slug: string; name?: string | null; official_no?: string | null; canonical_slug?: string | null }): string {
+  return `${INDEXNOW_ORIGIN}/company/${row.canonical_slug ?? companyCanonicalSlug(row)}`;
 }
 
 async function lastCompletedWindowEnd(): Promise<string | null> {
@@ -49,7 +50,7 @@ export async function listChangedCompanies(options: {
     const upper = Math.min(offset + PAGE, limit + 1) - 1;
     const { data, error } = await supabaseAdmin
       .from("companies")
-      .select("slug, official_no, name, updated_at")
+      .select("slug, canonical_slug, official_no, name, updated_at")
       .gte("updated_at", windowStart)
       .lt("updated_at", windowEnd)
       .order("updated_at", { ascending: true })
@@ -68,7 +69,7 @@ export async function listChangedCompanies(options: {
         slug: row.slug,
         name: row.name,
         updatedAt: row.updated_at ?? windowEnd,
-        canonicalUrl: canonicalUrl(row.official_no, row.slug),
+        canonicalUrl: canonicalUrl(row),
       });
     }
     if (truncated || rows.length < upper - offset + 1) break;

@@ -61,8 +61,14 @@ async function requeueAffectedCompanies(personName: string, companySlug: string 
   const { data } = await query;
   const slugs = Array.from(new Set((data ?? []).map((r) => r.slug)));
   if (slugs.length === 0) return 0;
+  // Queue the canonical, name-based paths — those are the URLs search engines index.
+  const { data: companies } = await supabase
+    .from("companies")
+    .select("slug, canonical_slug")
+    .in("slug", slugs);
+  const canonicalBySlug = new Map((companies ?? []).map((c) => [c.slug, c.canonical_slug ?? c.slug]));
   const { data: queued } = await supabase.rpc("enqueue_indexnow_urls", {
-    _paths: slugs.map((s) => `/company/${s}`),
+    _paths: slugs.map((s) => `/company/${canonicalBySlug.get(s) ?? s}`),
   });
   return typeof queued === "number" ? queued : slugs.length;
 }
