@@ -446,9 +446,10 @@ function SitemapHealthPage() {
                     {(canonicalData.failures?.length ? canonicalData.failures : canonicalData.checks ?? []).map((c) => (
                       <tr key={c.slug} className="border-t">
                         <td className="px-4 py-2">
-                          <a className="text-copper hover:underline" href={`/company/${c.slug}`} target="_blank" rel="noreferrer">
-                            /company/{c.slug}
+                          <a className="text-copper hover:underline" href={`/company/${c.canonicalSlug ?? c.slug}`} target="_blank" rel="noreferrer">
+                            /company/{c.canonicalSlug ?? c.slug}
                           </a>
+
                           {c.redirectedTo && (
                             <span className="block text-xs text-muted-foreground">→ {c.redirectedTo}</span>
                           )}
