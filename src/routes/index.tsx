@@ -19,6 +19,7 @@ import {
   HOME_DESCRIPTION,
   buildHomeHead,
 } from "@/lib/home-head";
+import { homeWebsiteJsonLd, homeOrganizationJsonLd } from "@/lib/home-jsonld";
 
 const homeQueryOptions = () =>
   queryOptions({
