@@ -24,9 +24,9 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Companies House Cyprus — Cyprus Companies House Search";
+const TITLE = "Cyprus Registrar of Companies Search | Companies House";
 const DESCRIPTION =
-  "Cyprus Companies House search, free: status, registration number, type and registered office from official Registrar data. Directors, shareholders, certificates and reports delivered digitally.";
+  "Search the Registrar of Companies Cyprus register free: status, registration number, type and registered office. Directors, certificates and reports delivered digitally. Independent service.";
 
 const FAQS = [
   {
@@ -237,7 +237,7 @@ function HomePage() {
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-            Companies House Cyprus. <span className="text-gradient-copper">Cyprus Companies House search, free.</span>
+            Registrar of Companies Cyprus search. <span className="text-gradient-copper">Companies House Cyprus, free.</span>
           </h1>
 
 
