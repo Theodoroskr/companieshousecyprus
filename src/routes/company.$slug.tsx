@@ -80,7 +80,7 @@ function RelatedCompanies({ slug }: { slug: string }) {
                 </Link>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-sm text-muted-foreground">{displayOfficialNo(row)}</span>
-                  <span className="text-sm text-muted-foreground">via {maskName(row.via)}</span>
+                  <span className="text-sm text-muted-foreground">via {row.via}</span>
                 </div>
               </li>
             ))}
@@ -626,9 +626,10 @@ function CompanyPage() {
                         : null;
                     return (
                       <li key={index} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
-                        <span className={official.person_name ? "font-medium" : "italic text-muted-foreground"}>
-                          {official.person_name ?? "Name withheld on request"}
+                        <span className={official.suppressed ? "italic text-muted-foreground" : "font-medium"}>
+                          {official.suppressed || !official.person_name ? "Name withheld on request" : official.person_name}
                         </span>
+
                         <span className="text-xs font-semibold uppercase tracking-widest text-copper">
                           {position}
                           {secondary ? (
