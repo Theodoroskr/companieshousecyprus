@@ -23,6 +23,14 @@ export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
           const loc = `${BASE_URL}/company/${row.canonicalSlug}`;
           body += `  <url>\n`;
           body += `    <loc>${loc}</loc>\n`;
+          // Page-specific lastmod (content_updated_at) so recrawlers pick up
+          // enriched profiles; omitted when the source timestamp is missing.
+          if (row.lastmod) {
+            const d = new Date(row.lastmod);
+            if (!Number.isNaN(d.getTime())) {
+              body += `    <lastmod>${d.toISOString().slice(0, 10)}</lastmod>\n`;
+            }
+          }
           body += `    <changefreq>monthly</changefreq>\n`;
           body += `  </url>\n`;
         }
