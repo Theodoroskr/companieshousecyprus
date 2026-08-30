@@ -20,7 +20,7 @@ export const Route = createFileRoute("/sitemaps/companies/$n.xml")({
         let body = `<?xml version="1.0" encoding="UTF-8"?>\n`;
         body += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
         for (const row of rows) {
-          const loc = `${BASE_URL}/company/${row.slug}`;
+          const loc = `${BASE_URL}/company/${row.canonicalSlug}`;
           body += `  <url>\n`;
           body += `    <loc>${loc}</loc>\n`;
           body += `    <changefreq>monthly</changefreq>\n`;
