@@ -16,7 +16,7 @@ describe("homepage JSON-LD", () => {
     expect(site["@type"]).toBe("WebSite");
     expect(site.url).toBe(HOME_CANONICAL_URL);
     expect(site["@id"]).toBe(`${HOME_CANONICAL_URL}#website`);
-    expect(site.publisher["@id"]).toBe(`${HOME_CANONICAL_URL}#organization`);
+    expect(site.publisher?.["@id"]).toBe(`${HOME_CANONICAL_URL}#organization`);
   });
 
   it("Organization url, @id and logo derive from the canonical URL", () => {
