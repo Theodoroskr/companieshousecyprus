@@ -37,3 +37,31 @@ export function companyCanonicalSlug(company: {
   const base = slugifyCompanyName(company.name);
   return base ? `${base}-${id}` : id;
 }
+
+/**
+ * Registry-key candidates for an incoming URL slug. Covers the ID form
+ * ("C4404", "he4404", "HE 4404") including public-prefix → internal-type-code
+ * mapping, which is what makes legacy ID URLs resolvable forever.
+ */
+export function storedSlugCandidates(
+  input: string,
+  mapKey: (input: string) => string | null,
+): string[] {
+  const direct = normalizeCompanySlug(input ?? "");
+  const mapped = direct ? mapKey(direct) : null;
+  return Array.from(new Set([direct, mapped].filter((v): v is string => Boolean(v))));
+}
+
+/**
+ * The canonical name-based slug a request must be 301-redirected to, or null
+ * when the incoming slug is already canonical. Historic name slugs, ID slugs
+ * and mixed-case variants all resolve here.
+ */
+export function canonicalRedirectTarget(
+  inputSlug: string,
+  company: { slug: string; canonical_slug?: string | null; name?: string | null; official_no?: string | null },
+): string | null {
+  const canonical = company.canonical_slug || companyCanonicalSlug(company);
+  if (!canonical) return null;
+  return canonical === inputSlug ? null : canonical;
+}
