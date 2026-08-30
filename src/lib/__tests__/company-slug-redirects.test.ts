@@ -34,10 +34,13 @@ const partnership = {
 
 describe("legacy ID slugs resolve to the stored registry key", () => {
   it("accepts public prefixes, internal codes, casing and spacing", () => {
-    for (const input of ["C4404", "c4404", "HE4404", "he4404", "HE 4404", "he-4404", "4404"]) {
-      expect(candidates(input)).toContain("C4404");
+    for (const input of ["C4404", "c4404", "HE4404", "he4404", "HE 4404", "he-4404"]) {
+      expect(candidates(input), input).toContain("C4404");
     }
+    // A bare number is ambiguous across registry families: never guessed.
+    expect(candidates("4404")).not.toContain("C4404");
   });
+
 
   it("maps every registry prefix family to its internal type code", () => {
     expect(candidates("EE40076")).toContain("B40076");
