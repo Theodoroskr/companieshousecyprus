@@ -133,11 +133,32 @@ export async function runIndexNowBatch(): Promise<IndexNowRunResult> {
       return { ok: true, status: "idle", submitted: 0, pendingRemaining: 0 };
     }
 
-    // Rows queued before paths existed (and company rows) fall back to the
-    // canonical profile URL built from the slug.
-    const urlList = rows.map(
-      (row) => `${INDEXNOW_ORIGIN}${row.path ?? `/company/${row.slug}`}`,
+    // Company rows must be submitted at their canonical, name-based URL. Rows
+    // queued before canonical slugs existed (or before paths were stored) still
+    // carry the registry-ID path, which now only 301-redirects — resolve those
+    // to the current canonical slug before submitting.
+    const idPaths = new Map<string, string>();
+    const needsCanonical = rows.filter(
+      (row) => !row.path || row.path.toUpperCase() === `/COMPANY/${row.slug.toUpperCase()}`,
     );
+    if (needsCanonical.length > 0) {
+      const { data: canonicalRows } = await supabaseAdmin
+        .from("companies")
+        .select("slug, canonical_slug")
+        .in(
+          "slug",
+          needsCanonical.map((row) => row.slug),
+        );
+      for (const row of canonicalRows ?? []) {
+        if (row.canonical_slug) idPaths.set(row.slug, `/company/${row.canonical_slug}`);
+      }
+    }
+
+    const urlList = rows.map((row) => {
+      const path = idPaths.get(row.slug) ?? row.path ?? `/company/${row.slug}`;
+      return `${INDEXNOW_ORIGIN}${path}`;
+    });
+
 
     const response = await fetch(ENDPOINT, {
       method: "POST",
