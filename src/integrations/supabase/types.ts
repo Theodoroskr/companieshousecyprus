@@ -578,7 +578,7 @@ export type Database = {
       }
       officials_suppressions: {
         Row: {
-          company_slug: string | null
+          company_slug: string
           created_at: string
           created_by: string | null
           id: string
@@ -591,7 +591,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          company_slug?: string | null
+          company_slug: string
           created_at?: string
           created_by?: string | null
           id?: string
@@ -604,7 +604,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          company_slug?: string | null
+          company_slug?: string
           created_at?: string
           created_by?: string | null
           id?: string

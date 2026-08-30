@@ -1,0 +1,1 @@
+ALTER TABLE public.officials_suppressions ALTER COLUMN company_slug SET NOT NULL;
