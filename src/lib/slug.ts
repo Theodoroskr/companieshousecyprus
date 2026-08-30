@@ -37,7 +37,12 @@ export function companyCanonicalSlug(company: {
   slug: string;
   name?: string | null;
   official_no?: string | null;
+  canonical_slug?: string | null;
 }): string {
+  // Prefer the stored generated column: Greek-name transliteration in Postgres
+  // is the source of truth, so recomputing here can drift from the sitemap and
+  // the page's own canonical tag.
+  if (company.canonical_slug) return company.canonical_slug;
   const id = (company.official_no || company.slug || "").toLowerCase();
   const base = slugifyCompanyName(company.name);
   return base ? `${base}-${id}` : id;

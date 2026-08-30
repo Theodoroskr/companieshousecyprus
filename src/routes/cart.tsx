@@ -67,7 +67,13 @@ function CartPage() {
                           <>
                             For{" "}
                             {item.companySlug ? (
-                              <Link to="/company/$slug" params={{ slug: item.companySlug }} className="text-copper hover:underline">
+                              <Link to="/company/$slug" params={{
+                                  slug: companyCanonicalSlug({
+                                    slug: item.companySlug,
+                                    name: item.companyName,
+                                    official_no: item.companyNumber,
+                                  }),
+                                }} className="text-copper hover:underline">
                                 {item.companyName}
                               </Link>
                             ) : (

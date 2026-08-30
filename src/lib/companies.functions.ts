@@ -52,7 +52,7 @@ export type Official = Database["public"]["Tables"]["officials"]["Row"];
 
 export type CompanyListItem = Pick<
   Company,
-  "slug" | "type_code" | "name" | "official_no" | "reg_number" | "status_en" | "status_group" | "district_en" | "locality"
+  "slug" | "canonical_slug" | "type_code" | "name" | "official_no" | "reg_number" | "status_en" | "status_group" | "district_en" | "locality"
 >;
 
 const COMPANY_COLUMNS =
@@ -109,7 +109,7 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const slug = normalizeCompanySlug(data.slug);
     const select =
-      "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
+      "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
 
     const { data: base } = await supabase
       .from("companies")
@@ -194,7 +194,7 @@ export const searchCompanies = createServerFn({ method: "GET" })
       (COMPANY_STATUS_GROUPS as readonly string[]).includes(s),
     );
     const select =
-      "slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
+      "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
 
     const build = () => {
       let query = supabase.from("companies").select(select, { count: "exact" });
@@ -278,7 +278,10 @@ export const listCompaniesByDistrict = createServerFn({ method: "GET" })
     const page = Math.max(1, data.page);
     const res = await supabase
       .from("companies")
-      .select("slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality", { count: "exact" })
+      .select(
+        "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality",
+        { count: "exact" },
+      )
       .eq("district_en", district)
       .order("name", { ascending: true })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
