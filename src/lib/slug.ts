@@ -7,9 +7,14 @@ export function normalizeCompanySlug(input: string): string {
   const raw = (input ?? "").trim().toUpperCase();
   if (!raw) return raw;
   if (raw.includes("-")) {
-    const last = raw.split("-").filter(Boolean).pop() ?? raw;
+    const parts = raw.split("-").filter(Boolean);
+    const last = parts[parts.length - 1] ?? raw;
+    const prev = parts[parts.length - 2];
+    // "he-4404" → "HE4404": the prefix is a separate segment in some legacy URLs.
+    if (/^\d+$/.test(last) && prev && /^[A-Z]{1,2}$/.test(prev)) return `${prev}${last}`;
     if (/^[A-Z]{0,2}\d+$/.test(last)) return last;
   }
+
   return raw;
 }
 
