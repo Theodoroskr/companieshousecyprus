@@ -259,10 +259,27 @@ export function maskName(name: string | null | undefined): string {
     .join(" ");
 }
 
+/** Greek homoglyphs that look identical to Latin capitals in registry data. */
+const HOMOGLYPHS: Record<string, string> = {
+  Α: "A", Β: "B", Ε: "E", Ζ: "Z", Η: "H", Ι: "I", Κ: "K", Μ: "M",
+  Ν: "N", Ο: "O", Ρ: "P", Τ: "T", Υ: "Y", Χ: "X",
+};
+
+/**
+ * Replace Greek look-alike letters with their Latin visual equivalents so an
+ * English query still matches an English name recorded with a Greek homoglyph
+ * (e.g. "TCKH" matches registered "TCKΗ"), and vice versa.
+ */
+export function normalizeHomoglyphs(input?: string | null): string | null {
+  if (!input) return null;
+  return input.replace(/[Ͱ-Ͽ]/g, (ch) => HOMOGLYPHS[ch.toUpperCase()] ?? ch);
+}
+
 /**
  * Build the set of query variants to match against Latin-script registry names.
  * A Greek query is transliterated (ELOT-743 style) so "ΤΡΑΠΕΖΑ ΚΥΠΡΟΥ" also
- * matches "TRAPEZA KYPROU"; accents and final sigma are normalised too.
+ * matches "TRAPEZA KYPROU"; accents and final sigma are normalised too, and
+ * predominantly-Latin queries also get a homoglyph-normalised variant.
  */
 export function searchVariants(q: string): string[] {
   const base = stripAccents(q).trim().replace(/\s+/g, " ");
@@ -273,5 +290,6 @@ export function searchVariants(q: string): string[] {
   };
   push(base);
   push(greekToLatin(base));
+  push(normalizeHomoglyphs(base));
   return out;
 }
