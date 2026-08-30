@@ -9,7 +9,7 @@ import { PRODUCTS, formatPrice } from "@/lib/products";
 import { COMPANY_PAGE_COPY } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
-import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
+import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, officialNameDisplay, resolveAddressDisplay } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
@@ -226,7 +226,7 @@ export const Route = createFileRoute("/company/$slug")({
       ? []
       : visibleOfficials
           .filter((o) => (o.position_en ?? "").toLowerCase().includes("director"))
-          .map((o) => o.person_name as string)
+          .map((o) => officialNameDisplay(o.person_name)?.primary ?? (o.person_name as string))
           .slice(0, 3);
     const faq = buildCompanyFaqs({
       name: c.name,
@@ -755,9 +755,20 @@ function CompanyPage() {
                         : null;
                     return (
                       <li key={index} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
-                        <span className={official.suppressed ? "italic text-muted-foreground" : "font-medium"}>
-                          {official.suppressed || !official.person_name ? "Name withheld on request" : official.person_name}
-                        </span>
+                        {(() => {
+                          if (official.suppressed || !official.person_name) {
+                            return <span className="italic text-muted-foreground">Name withheld on request</span>;
+                          }
+                          const display = officialNameDisplay(official.person_name);
+                          return (
+                            <span className="font-medium">
+                              {display?.primary ?? official.person_name}
+                              {display?.original ? (
+                                <span className="ml-2 text-xs font-normal text-muted-foreground">{display.original}</span>
+                              ) : null}
+                            </span>
+                          );
+                        })()}
 
                         <span className="text-xs font-semibold uppercase tracking-widest text-copper">
                           {position}

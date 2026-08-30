@@ -1868,6 +1868,13 @@ export type Database = {
     }
     Functions: {
       auth_traffic_breakdown: { Args: { p_since: string }; Returns: Json }
+      backfill_company_content_updated_at: {
+        Args: { batch_limit?: number }
+        Returns: {
+          remaining_count: number
+          updated_count: number
+        }[]
+      }
       backfill_officials_count_chunk: {
         Args: { batch_size: number; start_offset: number }
         Returns: {

@@ -92,6 +92,7 @@ import { Route as ApiPublicA4aPollRouteImport } from './routes/api/public/a4a-po
 import { Route as ApiPublicCanonicalHealthRouteImport } from './routes/api/public/canonical-health'
 import { Route as ApiPublicChangeFeedRouteImport } from './routes/api/public/change-feed'
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
+import { Route as ApiPublicContentBackfillRouteImport } from './routes/api/public/content-backfill'
 import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/indexnow'
 import { Route as ApiPublicOfacWorkerRouteImport } from './routes/api/public/ofac-worker'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
@@ -551,6 +552,12 @@ const ApiPublicCompanyLookupRoute = ApiPublicCompanyLookupRouteImport.update({
   path: '/api/public/company-lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContentBackfillRoute =
+  ApiPublicContentBackfillRouteImport.update({
+    id: '/api/public/content-backfill',
+    path: '/api/public/content-backfill',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIndexnowRoute = ApiPublicIndexnowRouteImport.update({
   id: '/api/public/indexnow',
   path: '/api/public/indexnow',
@@ -722,6 +729,7 @@ export interface FileRoutesByFullPath {
   '/api/public/canonical-health': typeof ApiPublicCanonicalHealthRoute
   '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
+  '/api/public/content-backfill': typeof ApiPublicContentBackfillRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
@@ -821,6 +829,7 @@ export interface FileRoutesByTo {
   '/api/public/canonical-health': typeof ApiPublicCanonicalHealthRoute
   '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
+  '/api/public/content-backfill': typeof ApiPublicContentBackfillRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
@@ -923,6 +932,7 @@ export interface FileRoutesById {
   '/api/public/canonical-health': typeof ApiPublicCanonicalHealthRoute
   '/api/public/change-feed': typeof ApiPublicChangeFeedRoute
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
+  '/api/public/content-backfill': typeof ApiPublicContentBackfillRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
@@ -1025,6 +1035,7 @@ export interface FileRouteTypes {
     | '/api/public/canonical-health'
     | '/api/public/change-feed'
     | '/api/public/company-lookup'
+    | '/api/public/content-backfill'
     | '/api/public/indexnow'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
@@ -1124,6 +1135,7 @@ export interface FileRouteTypes {
     | '/api/public/canonical-health'
     | '/api/public/change-feed'
     | '/api/public/company-lookup'
+    | '/api/public/content-backfill'
     | '/api/public/indexnow'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
@@ -1225,6 +1237,7 @@ export interface FileRouteTypes {
     | '/api/public/canonical-health'
     | '/api/public/change-feed'
     | '/api/public/company-lookup'
+    | '/api/public/content-backfill'
     | '/api/public/indexnow'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
@@ -1314,6 +1327,7 @@ export interface RootRouteChildren {
   ApiPublicCanonicalHealthRoute: typeof ApiPublicCanonicalHealthRoute
   ApiPublicChangeFeedRoute: typeof ApiPublicChangeFeedRoute
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
+  ApiPublicContentBackfillRoute: typeof ApiPublicContentBackfillRoute
   ApiPublicIndexnowRoute: typeof ApiPublicIndexnowRoute
   ApiPublicOfacWorkerRoute: typeof ApiPublicOfacWorkerRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
@@ -1911,6 +1925,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCompanyLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/content-backfill': {
+      id: '/api/public/content-backfill'
+      path: '/api/public/content-backfill'
+      fullPath: '/api/public/content-backfill'
+      preLoaderRoute: typeof ApiPublicContentBackfillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/indexnow': {
       id: '/api/public/indexnow'
       path: '/api/public/indexnow'
@@ -2154,6 +2175,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCanonicalHealthRoute: ApiPublicCanonicalHealthRoute,
   ApiPublicChangeFeedRoute: ApiPublicChangeFeedRoute,
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
+  ApiPublicContentBackfillRoute: ApiPublicContentBackfillRoute,
   ApiPublicIndexnowRoute: ApiPublicIndexnowRoute,
   ApiPublicOfacWorkerRoute: ApiPublicOfacWorkerRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
