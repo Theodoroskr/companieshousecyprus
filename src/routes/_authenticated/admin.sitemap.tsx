@@ -62,6 +62,7 @@ type IndexNowStatus = {
 
 type CanonicalCheck = {
   slug: string;
+  canonicalSlug?: string;
   url: string;
   sample: string;
   status: number | null;
@@ -69,6 +70,7 @@ type CanonicalCheck = {
   canonicalHref: string | null;
   expectedChunk: number | null;
   inSitemap: boolean | null;
+  idRedirectsToCanonical?: boolean | null;
   issues: string[];
   ok: boolean;
 };
@@ -88,6 +90,7 @@ type CanonicalHealth = {
     canonicalMismatch: number;
     fetchFailed: number;
     sitemapUnreachable: number;
+    idUrlNotRedirecting?: number;
   };
   failures?: CanonicalCheck[];
   checks?: CanonicalCheck[];
