@@ -69,6 +69,7 @@ import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as GuidesCompaniesHouseCyprusRouteImport } from './routes/guides.companies-house-cyprus'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
+import { Route as RegistryTopicRouteImport } from './routes/registry.$topic'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
@@ -424,6 +425,11 @@ const OrderReferenceRoute = OrderReferenceRouteImport.update({
   path: '/order/$reference',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegistryTopicRoute = RegistryTopicRouteImport.update({
+  id: '/registry/$topic',
+  path: '/registry/$topic',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportTypeRoute = ReportTypeRouteImport.update({
   id: '/report/$type',
   path: '/report/$type',
@@ -691,6 +697,7 @@ export interface FileRoutesByFullPath {
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
+  '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
@@ -789,6 +796,7 @@ export interface FileRoutesByTo {
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
+  '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
@@ -890,6 +898,7 @@ export interface FileRoutesById {
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/order/$reference': typeof OrderReferenceRoute
+  '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
@@ -991,6 +1000,7 @@ export interface FileRouteTypes {
     | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
+    | '/registry/$topic'
     | '/report/$type'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
@@ -1089,6 +1099,7 @@ export interface FileRouteTypes {
     | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
+    | '/registry/$topic'
     | '/report/$type'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
@@ -1189,6 +1200,7 @@ export interface FileRouteTypes {
     | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
     | '/order/$reference'
+    | '/registry/$topic'
     | '/report/$type'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
@@ -1289,6 +1301,7 @@ export interface RootRouteChildren {
   GuidesCompaniesHouseCyprusRoute: typeof GuidesCompaniesHouseCyprusRoute
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
+  RegistryTopicRoute: typeof RegistryTopicRoute
   ReportTypeRoute: typeof ReportTypeRoute
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
@@ -1737,6 +1750,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderReferenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/registry/$topic': {
+      id: '/registry/$topic'
+      path: '/registry/$topic'
+      fullPath: '/registry/$topic'
+      preLoaderRoute: typeof RegistryTopicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report/$type': {
       id: '/report/$type'
       path: '/report/$type'
@@ -2121,6 +2141,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesCompaniesHouseCyprusRoute: GuidesCompaniesHouseCyprusRoute,
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   OrderReferenceRoute: OrderReferenceRoute,
+  RegistryTopicRoute: RegistryTopicRoute,
   ReportTypeRoute: ReportTypeRoute,
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Mail, Phone } from "lucide-react";
 import { PRODUCTS } from "@/lib/products";
+import { REGISTRY_LANDINGS } from "@/lib/seo/registry-landings";
 import logoAsset from "@/assets/logo.png.asset.json";
 import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
 import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
@@ -63,6 +64,17 @@ export function SiteFooter() {
                 Cyprus companies registry
               </Link>
             </li>
+            {REGISTRY_LANDINGS.map((landing) => (
+              <li key={landing.slug}>
+                <Link
+                  to="/registry/$topic"
+                  params={{ topic: landing.slug }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {landing.label}
+                </Link>
+              </li>
+            ))}
             <li>
               <Link
                 to="/company-set-up"
