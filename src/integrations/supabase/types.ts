@@ -97,6 +97,7 @@ export type Database = {
           a4a_code: string | null
           address_full: string | null
           building: string | null
+          content_updated_at: string | null
           district_el: string | null
           district_en: string | null
           is_foreign_address: boolean | null
@@ -125,6 +126,7 @@ export type Database = {
           a4a_code?: string | null
           address_full?: string | null
           building?: string | null
+          content_updated_at?: string | null
           district_el?: string | null
           district_en?: string | null
           is_foreign_address?: boolean | null
@@ -153,6 +155,7 @@ export type Database = {
           a4a_code?: string | null
           address_full?: string | null
           building?: string | null
+          content_updated_at?: string | null
           district_el?: string | null
           district_en?: string | null
           is_foreign_address?: boolean | null
@@ -1861,6 +1864,10 @@ export type Database = {
       refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
+      reseed_indexnow_recent_companies: {
+        Args: { _days?: number; _limit?: number }
+        Returns: number
+      }
       reset_officials_counts_chunk: {
         Args: { batch_size?: number }
         Returns: number
