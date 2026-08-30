@@ -8,11 +8,13 @@ import {
   FileCheck2,
   Search,
   ShieldCheck,
+  Stamp,
   Timer,
 } from "lucide-react";
 import { getCompanyCount } from "@/lib/companies.functions";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
+import { APOSTILLE_FEE } from "@/lib/pricing";
 import { trackEvent } from "@/lib/analytics";
 import {
   HOME_TITLE,
