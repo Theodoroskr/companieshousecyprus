@@ -781,6 +781,31 @@ export async function runOfacStreamingImport(
       return { importId: null, status: "skipped", message: "Source is not active." };
     }
 
+    // The scheduler runs this worker several times a day so a CDN/TLS blip at
+    // one hour no longer costs a whole day of freshness. A successful run in
+    // the last 20 hours means there is nothing to do — skip before spending
+    // the ~126 MB download.
+    if (!options.force) {
+      const since = new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString();
+      const { data: recent } = await supabase
+        .from("sanctions_imports")
+        .select("id, completed_at")
+        .eq("source_id", source.id)
+        .in("status", ["completed", "unchanged"])
+        .gte("completed_at", since)
+        .order("completed_at", { ascending: false })
+        .limit(1);
+      if (recent && recent.length > 0) {
+        return {
+          importId: null,
+          status: "skipped",
+          message: `Already updated at ${recent[0]!.completed_at} — skipping until the next daily window.`,
+        };
+      }
+    }
+
+
+
     const { data: created, error: createError } = await supabase
       .from("sanctions_imports")
       .insert({ source_id: source.id, status: "started" })
