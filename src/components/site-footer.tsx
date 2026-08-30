@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Mail, Phone } from "lucide-react";
+import { Heart, Mail, Phone } from "lucide-react";
 import { PRODUCTS } from "@/lib/products";
 import { REGISTRY_LANDINGS } from "@/lib/seo/registry-landings";
 import logoAsset from "@/assets/logo.png.asset.json";
