@@ -1,78 +1,94 @@
-// Title / meta-description templates for company profile pages.
-// Kept field-driven: any missing field is omitted rather than leaving an empty
-// gap in the snippet (the failure mode of the old WordPress templates).
+// Title & meta description templates for /company/$slug pages.
+//
+// Optimised for company-name queries ("NOVARDIA CREDIT INSURANCE BROKERS LTD"):
+// the entity name always comes first, the number disambiguates, and the
+// description promises the data categories searchers want (officers,
+// registered office, status, history) because those words drive the click.
+//
+// Hard limits: titles aim for ≤ 60 chars, descriptions ≤ 155 chars. The name
+// itself is never truncated — when the name is long we drop suffixes first.
 
-const TITLE_MAX = 62;
-const DESCRIPTION_MAX = 155;
-
-export type CompanyMetaInput = {
+export interface CompanyTitleInput {
   name: string;
-  officialNo?: string | null;
+  officialNo: string;
+}
+
+export interface CompanyDescriptionInput {
+  name: string;
+  officialNo: string;
   status?: string | null;
   statusGroup?: string | null;
   typeEn?: string | null;
   districtEn?: string | null;
-  registrationDate?: string | null; // already formatted for display (dd/mm/yyyy)
-};
-
-function cut(value: string, max: number): string {
-  if (value.length <= max) return value;
-  const sliced = value.slice(0, max - 1);
-  const boundary = sliced.lastIndexOf(" ");
-  return `${(boundary > max * 0.6 ? sliced.slice(0, boundary) : sliced).replace(/[\s,.;:—-]+$/, "")}…`;
+  registrationDate?: string | null;
+  businessName?: boolean;
 }
 
-export function plainStatus(statusGroup?: string | null, statusEn?: string | null): string | null {
-  switch ((statusGroup ?? "").toLowerCase()) {
-    case "active":
-      return "Active";
-    case "dissolved":
-      return "Dissolved";
-    case "struck-off":
-    case "struck_off":
-      return "Struck off";
-    case "overdue":
-    case "filing-overdue":
-      return "Filing overdue";
-    default:
-      break;
-  }
-  const raw = (statusEn ?? "").trim();
-  if (!raw) return null;
-  if (/reminder|overdue|non[- ]?compliant/i.test(raw)) return "Filing overdue";
-  if (/dissolv/i.test(raw)) return "Dissolved";
-  if (/strike|struck/i.test(raw)) return "Struck off";
-  if (/^registered$|active/i.test(raw)) return "Active";
-  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+const TITLE_SUFFIX = " — Cyprus company profile";
+const TITLE_BRAND = " | Companies House Cyprus";
+const TITLE_MAX = 60;
+const DESCRIPTION_MAX = 155;
+
+function truncateTitle(title: string): string {
+  if (title.length <= TITLE_MAX + 4) return title;
+  const cut = title.slice(0, TITLE_MAX + 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 20 ? lastSpace : TITLE_MAX + 1).trimEnd()}…`;
 }
 
-export function companyTitle(input: CompanyMetaInput): string {
-  const label = (input.officialNo ?? "").trim();
-  const base = label ? `${input.name} — ${label}` : input.name;
-  const full = `${base} | Cyprus company register`;
-  if (full.length <= TITLE_MAX) return full;
-  // Never truncate the company name: drop the suffix first, then the number.
-  if (base.length <= TITLE_MAX) return base;
-  return cut(input.name, TITLE_MAX);
+function clampDescription(text: string): string {
+  if (text.length <= DESCRIPTION_MAX) return text;
+  const cut = text.slice(0, DESCRIPTION_MAX - 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 40 ? lastSpace : DESCRIPTION_MAX - 1).trimEnd()}…`;
 }
 
-export function companyDescription(input: CompanyMetaInput): string {
-  const label = (input.officialNo ?? "").trim();
-  const head = label ? `${input.name} (${label})` : input.name;
+/**
+ * <title> for a company profile.
+ * Name first for exact-match queries; add the number and topic suffix when
+ * they fit, brand only when there is still room.
+ */
+export function companyTitle({ name, officialNo }: CompanyTitleInput): string {
+  const withSuffix = `${name}${TITLE_SUFFIX}`;
+  const withBrand = `${withSuffix}${TITLE_BRAND}`;
+  if (withBrand.length <= TITLE_MAX) return withBrand;
+  if (withSuffix.length <= TITLE_MAX) return withSuffix;
+  const withNumber = `${name} (${officialNo})`;
+  if (withNumber.length <= TITLE_MAX) return withNumber;
+  return truncateTitle(name);
+}
 
-  const type = (input.typeEn ?? "").trim().toLowerCase();
-  const place = (input.districtEn ?? "").trim();
-  const date = (input.registrationDate ?? "").trim();
+/**
+ * Meta description for a company profile.
+ * Leads with the differentiators (officers, office, status) then grounds the
+ * entity with type, district and status. Degrades gracefully for long names.
+ */
+export function companyDescription({
+  name,
+  officialNo,
+  status,
+  statusGroup,
+  typeEn,
+  districtEn,
+  businessName,
+}: CompanyDescriptionInput): string {
+  const statusText = status ?? (statusGroup === "active" ? "Active" : null);
+  const statusPhrase = statusText ? ` Status: ${statusText}.` : "";
+  const officerWord = businessName ? "Owner" : "Directors, secretary";
 
-  const parts: string[] = [];
-  parts.push(type ? `${type} registered in ${place ? `${place}, Cyprus` : "Cyprus"}` : `registered in ${place ? `${place}, Cyprus` : "Cyprus"}`);
-  if (date) parts.push(`on ${date}`);
+  const full =
+    `${officerWord}, registered office and filing history for ${name} (${officialNo})` +
+    (typeEn ? `, a ${typeEn}` : "") +
+    (districtEn ? ` in ${districtEn}, Cyprus` : "") +
+    `.${statusPhrase}`;
+  if (full.length <= DESCRIPTION_MAX) return full;
 
-  const status = plainStatus(input.statusGroup, input.status);
-  const first = `${head} — ${parts.join(" ")}.`;
-  const second = status
-    ? `${status}. Registered office, officials and certificates available to order.`
-    : `Registered office, officials and certificates available to order.`;
+  const noDistrict =
+    `${officerWord}, registered office and filing history for ${name} (${officialNo})` +
+    (typeEn ? `, a Cyprus ${typeEn}` : "") +
+    `.${statusPhrase}`;
+  if (noDistrict.length <= DESCRIPTION_MAX) return noDistrict;
 
-  return cut(`${first} ${second}`, DESCRIPTION_MAX);
+  const minimal = `Official Cyprus registry record for ${name} (${officialNo}).${statusPhrase}`;
+  return clampDescription(minimal);
 }

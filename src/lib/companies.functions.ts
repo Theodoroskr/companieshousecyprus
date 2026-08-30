@@ -171,6 +171,34 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     return { byAddress, addressCount, byOfficial, addressFull: base?.address_full ?? null };
   });
 
+// SSR "People also viewed": same district and entity type, so the strip is
+// indexable internal linking between company profiles (not personalised).
+export const getSimilarCompanies = createServerFn({ method: "GET" })
+  .validator((data: { slug: string }) => data)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const slug = normalizeCompanySlug(data.slug);
+
+    const { data: base } = await supabase
+      .from("companies")
+      .select("slug, district_en, type_code")
+      .eq("slug", slug)
+      .single();
+    if (!base?.district_en || !base.type_code) return { similar: [] as CompanyListItem[] };
+
+    const { data: rows } = await supabase
+      .from("companies")
+      .select("slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality")
+      .eq("district_en", base.district_en)
+      .eq("type_code", base.type_code)
+      .neq("slug", slug)
+      .order("name", { ascending: true })
+      .limit(9);
+
+    return { similar: (rows ?? []) as CompanyListItem[] };
+  });
+
+
 const COMPANY_TYPE_CODES = ["C", "B", "P", "O", "N"] as const;
 const COMPANY_STATUS_GROUPS = [
   "active",
@@ -367,14 +395,14 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
     // use a keyset cursor on the slug primary key, which stays fast.
     const PAGE = 1_000;
     const start = n * SITEMAP_CHUNK_SIZE;
-    const rows: { slug: string; canonicalSlug: string }[] = [];
+    const rows: { slug: string; canonicalSlug: string; lastmod: string | null }[] = [];
     let cursor: string | null = null;
 
     while (rows.length < SITEMAP_CHUNK_SIZE) {
       const limit = Math.min(PAGE, SITEMAP_CHUNK_SIZE - rows.length);
       let query = supabase
         .from("companies")
-        .select("slug, canonical_slug")
+        .select("slug, canonical_slug, content_updated_at")
         .order("slug", { ascending: true });
       query = cursor
         ? query.gt("slug", cursor).limit(limit)
@@ -383,7 +411,13 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
       const { data: page, error } = await query;
       if (error) throw error;
       const batch = page ?? [];
-      for (const r of batch) rows.push({ slug: r.slug, canonicalSlug: r.canonical_slug ?? r.slug });
+      for (const r of batch) {
+        rows.push({
+          slug: r.slug,
+          canonicalSlug: r.canonical_slug ?? r.slug,
+          lastmod: r.content_updated_at ?? null,
+        });
+      }
       if (batch.length < limit) break;
       cursor = batch[batch.length - 1]!.slug;
     }

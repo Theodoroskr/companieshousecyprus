@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, CalendarDays, FileCheck2, Info, Lock, MapPin, Network, Receipt, ShieldCheck, Star, Users } from "lucide-react";
-import { getCompanyBySlug, getRelatedCompanies } from "@/lib/companies.functions";
+import { Building2, CalendarDays, CircleHelp, FileCheck2, Info, Lock, MapPin, Network, Receipt, ShieldCheck, Star, Users } from "lucide-react";
+import { getCompanyBySlug, getRelatedCompanies, getSimilarCompanies } from "@/lib/companies.functions";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
@@ -101,6 +101,54 @@ const companyQueryOptions = (slug: string) =>
     queryFn: () => getCompanyBySlug({ data: { slug } }),
   });
 
+const similarQueryOptions = (slug: string) =>
+  queryOptions({
+    queryKey: ["similar", slug],
+    queryFn: () => getSimilarCompanies({ data: { slug } }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+interface CompanyFaq {
+  question: string;
+  answer: string;
+}
+
+function buildCompanyFaqs(args: {
+  name: string;
+  officialNo: string;
+  businessName: boolean;
+  officialsCount: number;
+  directorNames: string[];
+  status: string | null;
+  registrationDate: string | null;
+}): CompanyFaq[] {
+  const { name, businessName, officialsCount, directorNames, status, registrationDate } = args;
+
+  let officersAnswer: string;
+  if (businessName) {
+    officersAnswer = `${name} is a registered business name. Its registered owner is not shown publicly here; ownership details are released through the Cyprus Company Profile (structure) report, which you can order on this page.`;
+  } else if (officialsCount > 0) {
+    const listed = directorNames.length > 0 ? `, including ${directorNames.join(", ")}` : "";
+    officersAnswer = `${name} has ${officialsCount} officer${officialsCount === 1 ? "" : "s"} on record in our copy of the Cyprus register${listed}. The current certified list is available in the Certificate of Directors & Secretary.`;
+  } else {
+    officersAnswer = `Officers are not published for ${name} in our copy of the register. A Certificate of Directors & Secretary returns the current board directly from the Registrar of Companies.`;
+  }
+
+  const registeredAnswer = registrationDate
+    ? `${name} was registered with the Cyprus Registrar of Companies on ${registrationDate}.`
+    : `The registration date for ${name} is not present in our copy of the register.`;
+
+  const statusAnswer = status
+    ? `${name} is currently recorded as “${status}” in the Cyprus companies register.`
+    : `The current registry status of ${name} is not available in our copy of the register.`;
+
+  return [
+    { question: `Who are the ${businessName ? "owners" : "directors"} of ${name}?`, answer: officersAnswer },
+    { question: `When was ${name} registered?`, answer: registeredAnswer },
+    { question: `Is ${name} still active?`, answer: statusAnswer },
+  ];
+}
+
 const ORDERABLE = [
   "certificate-of-good-standing",
   "cyprus-company-profile",
@@ -172,6 +220,27 @@ export const Route = createFileRoute("/company/$slug")({
       });
     }
 
+    const businessName = isBusinessName(c);
+    const visibleOfficials = data.officials.filter((o) => !o.suppressed && o.person_name);
+    const directorNames = businessName
+      ? []
+      : visibleOfficials
+          .filter((o) => (o.position_en ?? "").toLowerCase().includes("director"))
+          .map((o) => o.person_name as string)
+          .slice(0, 3);
+    const faq = buildCompanyFaqs({
+      name: c.name,
+      officialNo: displayOfficialNo(c),
+      businessName,
+      officialsCount: data.officials.length,
+      directorNames,
+      status: c.status_en,
+      registrationDate: formatDate(c.registration_date),
+    });
+
+    // SSR the "People also viewed" strip so the internal links are indexable.
+    const similarData = await context.queryClient.ensureQueryData(similarQueryOptions(canonicalSlug)).catch(() => null);
+
     return {
       canonicalSlug,
       name: c.name,
@@ -179,6 +248,7 @@ export const Route = createFileRoute("/company/$slug")({
       status: c.status_en,
       statusGroup: c.status_group ?? null,
       typeEn: c.type_en ?? null,
+      subtypeEn: c.subtype_en ?? null,
       registrationDate: formatDate(c.registration_date),
       registrationIso: c.registration_date ? String(c.registration_date).slice(0, 10) : null,
       district_en: c.district_en ?? null,
@@ -188,6 +258,11 @@ export const Route = createFileRoute("/company/$slug")({
       locality: c.locality ?? null,
       postcode: c.postcode ?? null,
       isForeignAddress: Boolean(c.is_foreign_address),
+      businessName,
+      officialsCount: data.officials.length,
+      directorNames,
+      faq,
+      similar: similarData?.similar ?? [],
     };
   },
 
@@ -213,6 +288,7 @@ export const Route = createFileRoute("/company/$slug")({
       typeEn: loaderData.typeEn,
       districtEn: loaderData.district_en,
       registrationDate: loaderData.registrationDate,
+      businessName: loaderData.businessName,
     });
 
 
@@ -262,6 +338,18 @@ export const Route = createFileRoute("/company/$slug")({
           type: "application/ld+json",
           children: JSON.stringify(companyOrganizationJsonLd(loaderData, canonicalSlug)),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: loaderData.faq.map((item) => ({
+              "@type": "Question",
+              name: item.question,
+              acceptedAnswer: { "@type": "Answer", text: item.answer },
+            })),
+          }),
+        },
       ],
 
     };
@@ -294,8 +382,10 @@ function statusTone(group: string | null | undefined) {
 function CompanyPage() {
   const { slug } = Route.useParams();
   const { product: pendingProductSlug } = Route.useSearch();
+  const loaderData = Route.useLoaderData();
   const { data } = useSuspenseQuery(companyQueryOptions(slug));
   const { company, officials } = data;
+  const { faq, similar } = loaderData;
 
 
   const pendingProduct = pendingProductSlug ? PRODUCTS.find((item) => item.slug === pendingProductSlug) : undefined;
@@ -499,6 +589,29 @@ function CompanyPage() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 lg:grid-cols-[1.5fr_1fr]">
 
         <div className="space-y-8">
+          <section className="rounded-xl border bg-card p-4 shadow-panel sm:p-5">
+            <h2 className="flex items-center gap-2 font-display text-base font-semibold">
+              <Building2 className="size-4 text-copper" /> Company profile
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {company.name} ({displayOfficialNo(company)}) is
+              {company.type_en ? ` a ${company.type_en}` : " an entity"}
+              {company.subtype_en && company.subtype_en !== company.type_en ? ` (${company.subtype_en})` : ""}
+              {company.district_en ? ` registered in ${company.district_en}, Cyprus` : " registered in Cyprus"}
+              {registrationDate ? `, incorporated on ${registrationDate}` : ""}
+              {age ? ` — ${age.years} year${age.years === 1 ? "" : "s"}${age.months ? ` ${age.months} month${age.months === 1 ? "" : "s"}` : ""} old` : ""}.
+              {company.status_en ? ` Its current registry status is “${company.status_en}”.` : ""}
+              {" "}This page brings together the official registry record
+              {!businessName && officials.length > 0
+                ? `, ${officials.length} officer${officials.length === 1 ? "" : "s"} on record,`
+                : businessName
+                  ? ", ownership available via the structure report,"
+                  : ""}
+              {" "}the registered office address and certified documents you can order directly from the Registrar —
+              company profile, credit report, certificates of good standing, directors &amp; secretary, shareholders and more.
+            </p>
+          </section>
+
           <section className="rounded-xl border bg-card p-4 shadow-panel sm:p-5">
             <h2 className="flex items-center gap-2 font-display text-base font-semibold">
               <Building2 className="size-4 text-copper" /> Registry record
@@ -729,7 +842,47 @@ function CompanyPage() {
             <p className="mt-3 text-xs text-muted-foreground">{COMPANY_PAGE_COPY.supporting}</p>
           </section>
 
+          <section className="rounded-xl border bg-card p-6 shadow-panel">
+            <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+              <CircleHelp className="size-5 text-copper" /> Frequently asked questions about {company.name}
+            </h2>
+            <dl className="mt-4 space-y-4">
+              {faq.map((item) => (
+                <div key={item.question} className="border-b pb-4 last:border-0 last:pb-0">
+                  <dt className="text-sm font-semibold">{item.question}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
           <RelatedCompanies slug={company.slug} />
+
+          {similar.length > 0 && (
+            <section className="rounded-xl border bg-card p-6 shadow-panel">
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+                <Users className="size-5 text-copper" /> People also viewed
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Other {company.type_en ? `${company.type_en}s` : "entities"} registered in {company.district_en ?? "Cyprus"}.
+              </p>
+              <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+                {similar.map((row) => (
+                  <li key={row.slug} className="min-w-0">
+                    <Link
+                      to="/company/$slug"
+                      params={{ slug: companyCanonicalSlug(row) }}
+                      className="block truncate text-sm font-medium hover:text-copper"
+                    >
+                      {row.name}
+                    </Link>
+                    <span className="text-xs text-muted-foreground">{displayOfficialNo(row)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
 
 
           <p className="text-xs text-muted-foreground">
