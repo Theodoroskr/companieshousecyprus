@@ -9,6 +9,8 @@
  * the app.
  */
 
+import { clientKey } from "@/lib/waf";
+
 export const AUTH_GUARD_COOKIE = "chc_ac";
 
 /** Countries whose cookieless direct hits get challenged. */
@@ -122,12 +124,11 @@ location.replace(${JSON.stringify(url)});
 </main></body></html>`;
 
   return new Response(html, {
-    status: 503,
+    status: 200,
     headers: {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "no-store",
       "x-robots-tag": "noindex, nofollow",
-      "retry-after": "5",
     },
   });
 }
