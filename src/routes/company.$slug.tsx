@@ -119,8 +119,8 @@ export const Route = createFileRoute("/company/$slug")({
   validateSearch: (search: Record<string, unknown>): { product?: string } =>
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   // Legacy WordPress URLs (template placeholders like "{{vcompany.name}}-c4404",
-  // "dfd.name") and lowercase/pretty slugs must not render duplicate content:
-  // send them to the canonical registry-id URL with a permanent redirect.
+  // "dfd.name") must never render content. Anything else is resolved in the
+  // loader, which knows the company's canonical name-based slug.
   beforeLoad: ({ params }) => {
     const legacy = classifyLegacyPath(`/company/${params.slug}`);
     const token = legacy ? extractRegistryToken(params.slug) : null;
@@ -128,11 +128,10 @@ export const Route = createFileRoute("/company/$slug")({
       // Template-leak URL with nothing to resolve: a clean not-found, never content.
       throw notFound();
     }
-    const canonical = normalizeCompanySlug(token ?? params.slug);
-    if (canonical && canonical !== params.slug) {
+    if (legacy && token) {
       throw redirect({
         to: "/company/$slug",
-        params: { slug: canonical },
+        params: { slug: normalizeCompanySlug(token) },
         statusCode: 301,
         replace: true,
       });
@@ -152,15 +151,27 @@ export const Route = createFileRoute("/company/$slug")({
     }
 
     const c = data.company;
+    // Name-based canonical URL: ID-form and historic name slugs both keep
+    // working, but permanently redirect to the current canonical path.
+    const canonicalSlug = c.canonical_slug ?? companyCanonicalSlug(c);
+    if (canonicalSlug && canonicalSlug !== params.slug) {
+      throw redirect({
+        to: "/company/$slug",
+        params: { slug: canonicalSlug },
+        statusCode: 301,
+        replace: true,
+      });
+    }
     if (import.meta.env.SSR) {
       const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
       setCompanyPageCacheHeaders({
-        slug: normalizeCompanySlug(params.slug),
+        slug: c.slug,
         updatedAt: c.updated_at ?? null,
       });
     }
 
     return {
+      canonicalSlug,
       name: c.name,
       officialNo: displayOfficialNo(c),
       status: c.status_en,
@@ -177,6 +188,7 @@ export const Route = createFileRoute("/company/$slug")({
       isForeignAddress: Boolean(c.is_foreign_address),
     };
   },
+
 
   head: ({ loaderData, params }) => {
     if (!loaderData) {
