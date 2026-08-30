@@ -63,6 +63,17 @@ export function SiteFooter() {
                 Cyprus companies registry
               </Link>
             </li>
+            {REGISTRY_LANDINGS.map((landing) => (
+              <li key={landing.slug}>
+                <Link
+                  to="/registry/$topic"
+                  params={{ topic: landing.slug }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {landing.label}
+                </Link>
+              </li>
+            ))}
             <li>
               <Link
                 to="/company-set-up"
