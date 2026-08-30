@@ -56,24 +56,36 @@ export function greekToLatin(input?: string | null): string | null {
   const clean = stripAccents(input).replace(/ς/g, "σ");
   if (!/[\u0370-\u03ff]/.test(clean)) return input;
 
+  const isGreekChar = (ch: string | undefined) => !!ch && /[\u0370-\u03ff]/.test(ch);
+  const isUpperGreek = (ch: string | undefined) => isGreekChar(ch) && ch === ch!.toUpperCase();
+  /** True when the letter sits inside an ALL-CAPS run (registry data is upper-case). */
+  const inCapsRun = (idx: number, span: number) =>
+    isUpperGreek(clean[idx - 1]) || isUpperGreek(clean[idx + span]);
+
   let out = "";
   let i = 0;
   while (i < clean.length) {
     const char = clean[i]!;
     const upperPair = (char + (clean[i + 1] ?? "")).toUpperCase();
     const digraph = DIGRAPHS[upperPair];
-    const isGreek = /[\u0370-\u03ff]/.test(char);
+    const isGreek = isGreekChar(char);
 
-    if (digraph && /[\u0370-\u03ff]/.test(clean[i + 1] ?? "")) {
-      const bothUpper = char === char.toUpperCase() && clean[i + 1] === clean[i + 1]!.toUpperCase();
-      out += bothUpper ? digraph.toUpperCase() : char === char.toUpperCase() ? digraph : digraph.toLowerCase();
+    if (digraph && isGreekChar(clean[i + 1])) {
+      const bothUpper = isUpperGreek(char) && isUpperGreek(clean[i + 1]);
+      out += !bothUpper
+        ? isUpperGreek(char)
+          ? digraph
+          : digraph.toLowerCase()
+        : inCapsRun(i, 2)
+          ? digraph.toUpperCase()
+          : digraph;
       i += 2;
       continue;
     }
 
     if (isGreek) {
       const mapped = LETTERS[char.toUpperCase()] ?? char;
-      out += char === char.toUpperCase() ? mapped.toUpperCase() === mapped ? mapped : mapped : mapped.toLowerCase();
+      out += !isUpperGreek(char) ? mapped.toLowerCase() : inCapsRun(i, 1) ? mapped.toUpperCase() : mapped;
       i += 1;
       continue;
     }
@@ -83,6 +95,19 @@ export function greekToLatin(input?: string | null): string | null {
   }
   return out;
 }
+
+/**
+ * Latin (ELOT-743 / ISO 843) rendering of a person's name, plus the Greek
+ * original when it genuinely differs. Used for directors and secretaries so
+ * the names are readable and searchable outside Greek script.
+ */
+export function officialNameDisplay(name?: string | null): { primary: string; original: string | null } | null {
+  const raw = (name ?? "").replace(/\s+/g, " ").trim();
+  if (!raw) return null;
+  const latin = (greekToLatin(raw) ?? raw).trim();
+  return { primary: latin, original: latin !== raw ? raw : null };
+}
+
 
 /** Tidy a raw registry address: collapse whitespace and empty comma segments. */
 export function cleanAddress(address?: string | null): string | null {
