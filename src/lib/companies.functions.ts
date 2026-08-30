@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { normalizeCompanySlug } from "@/lib/slug";
+import { normalizeCompanySlug, storedSlugCandidates } from "@/lib/slug";
 import { normaliseCompanyKey } from "@/lib/registrar-mapping";
 
 import { searchVariants } from "@/lib/format";
@@ -68,9 +68,8 @@ async function resolveStoredSlug(
   supabase: ReturnType<typeof getServerClient>,
   input: string,
 ): Promise<string | null> {
-  const direct = normalizeCompanySlug(input);
-  const mapped = normaliseCompanyKey("", direct)?.slug ?? null;
-  const candidates = Array.from(new Set([direct, mapped].filter((v): v is string => Boolean(v))));
+  const candidates = storedSlugCandidates(input, (v) => normaliseCompanyKey("", v)?.slug ?? null);
+
   if (candidates.length > 0) {
     const { data } = await supabase.from("companies").select("slug").in("slug", candidates).limit(1);
     if (data?.[0]?.slug) return data[0].slug;

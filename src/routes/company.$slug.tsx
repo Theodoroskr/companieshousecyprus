@@ -11,7 +11,7 @@ import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
+import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
 import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
@@ -154,14 +154,16 @@ export const Route = createFileRoute("/company/$slug")({
     // Name-based canonical URL: ID-form and historic name slugs both keep
     // working, but permanently redirect to the current canonical path.
     const canonicalSlug = c.canonical_slug ?? companyCanonicalSlug(c);
-    if (canonicalSlug && canonicalSlug !== params.slug) {
+    const redirectTo = canonicalRedirectTarget(params.slug, c);
+    if (redirectTo) {
       throw redirect({
         to: "/company/$slug",
-        params: { slug: canonicalSlug },
+        params: { slug: redirectTo },
         statusCode: 301,
         replace: true,
       });
     }
+
     if (import.meta.env.SSR) {
       const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
       setCompanyPageCacheHeaders({
