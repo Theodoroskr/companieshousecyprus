@@ -24,6 +24,7 @@ import { Route as CompanySitemapDotxmlRouteImport } from './routes/company-sitem
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CyprusCompaniesRegistryRouteImport } from './routes/cyprus-companies-registry'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as InternationalRouteImport } from './routes/international'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as New_company_sitemapDotxmlRouteImport } from './routes/new_company_sitemap[.]xml'
@@ -59,20 +60,28 @@ import { Route as WpSitemapDotxmlRouteImport } from './routes/wp-sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as BgCyprusCompanyRegisterRouteImport } from './routes/bg/cyprus-company-register'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as CheckoutSessionStatusRouteImport } from './routes/checkout.session-status'
 import { Route as CompanySlugRouteImport } from './routes/company.$slug'
+import { Route as DeHandelsregisterZypernRouteImport } from './routes/de/handelsregister-zypern'
 import { Route as DirectoryIndexRouteImport } from './routes/directory.index'
 import { Route as DirectorySignalRouteImport } from './routes/directory.$signal'
+import { Route as FrRegistreCommerceChypreRouteImport } from './routes/fr/registre-commerce-chypre'
+import { Route as GrGemiKyprouRouteImport } from './routes/gr/gemi-kyprou'
 import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as GuidesCompaniesHouseCyprusRouteImport } from './routes/guides.companies-house-cyprus'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
+import { Route as IlCyprusCompanyRegistryRouteImport } from './routes/il/cyprus-company-registry'
+import { Route as ItRegistroImpreseCiproRouteImport } from './routes/it/registro-imprese-cipro'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as RegistryTopicRouteImport } from './routes/registry.$topic'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
+import { Route as RoRegistrulComertuluiCipruRouteImport } from './routes/ro/registrul-comertului-cipru'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
+import { Route as UkCyprusCompaniesHouseRouteImport } from './routes/uk/cyprus-companies-house'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -182,6 +191,11 @@ const CyprusCompaniesRegistryRoute = CyprusCompaniesRegistryRouteImport.update({
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InternationalRoute = InternationalRouteImport.update({
+  id: '/international',
+  path: '/international',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -374,6 +388,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BgCyprusCompanyRegisterRoute = BgCyprusCompanyRegisterRouteImport.update({
+  id: '/bg/cyprus-company-register',
+  path: '/bg/cyprus-company-register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   id: '/checkout/',
   path: '/checkout/',
@@ -394,6 +413,11 @@ const CompanySlugRoute = CompanySlugRouteImport.update({
   path: '/company/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeHandelsregisterZypernRoute = DeHandelsregisterZypernRouteImport.update({
+  id: '/de/handelsregister-zypern',
+  path: '/de/handelsregister-zypern',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
   id: '/directory/',
   path: '/directory/',
@@ -402,6 +426,17 @@ const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
 const DirectorySignalRoute = DirectorySignalRouteImport.update({
   id: '/directory/$signal',
   path: '/directory/$signal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrRegistreCommerceChypreRoute =
+  FrRegistreCommerceChypreRouteImport.update({
+    id: '/fr/registre-commerce-chypre',
+    path: '/fr/registre-commerce-chypre',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const GrGemiKyprouRoute = GrGemiKyprouRouteImport.update({
+  id: '/gr/gemi-kyprou',
+  path: '/gr/gemi-kyprou',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuidesIndexRoute = GuidesIndexRouteImport.update({
@@ -421,6 +456,16 @@ const GuidesRegisterCompanyCyprusRoute =
     path: '/guides/register-company-cyprus',
     getParentRoute: () => rootRouteImport,
   } as any)
+const IlCyprusCompanyRegistryRoute = IlCyprusCompanyRegistryRouteImport.update({
+  id: '/il/cyprus-company-registry',
+  path: '/il/cyprus-company-registry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItRegistroImpreseCiproRoute = ItRegistroImpreseCiproRouteImport.update({
+  id: '/it/registro-imprese-cipro',
+  path: '/it/registro-imprese-cipro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderReferenceRoute = OrderReferenceRouteImport.update({
   id: '/order/$reference',
   path: '/order/$reference',
@@ -436,6 +481,12 @@ const ReportTypeRoute = ReportTypeRouteImport.update({
   path: '/report/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoRegistrulComertuluiCipruRoute =
+  RoRegistrulComertuluiCipruRouteImport.update({
+    id: '/ro/registrul-comertului-cipru',
+    path: '/ro/registrul-comertului-cipru',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SitemapsPagesDotxmlRoute = SitemapsPagesDotxmlRouteImport.update({
   id: '/sitemaps/pages.xml',
   path: '/sitemaps/pages.xml',
@@ -444,6 +495,11 @@ const SitemapsPagesDotxmlRoute = SitemapsPagesDotxmlRouteImport.update({
 const SolutionsKybForBanksRoute = SolutionsKybForBanksRouteImport.update({
   id: '/solutions/kyb-for-banks',
   path: '/solutions/kyb-for-banks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UkCyprusCompaniesHouseRoute = UkCyprusCompaniesHouseRouteImport.update({
+  id: '/uk/cyprus-companies-house',
+  path: '/uk/cyprus-companies-house',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
@@ -662,6 +718,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
   '/faq': typeof FaqRoute
+  '/international': typeof InternationalRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
@@ -697,17 +754,25 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/bg/cyprus-company-register': typeof BgCyprusCompanyRegisterRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/de/handelsregister-zypern': typeof DeHandelsregisterZypernRoute
   '/directory/$signal': typeof DirectorySignalRoute
+  '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
+  '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
+  '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
+  '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
+  '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
+  '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/directory/': typeof DirectoryIndexRoute
   '/guides/': typeof GuidesIndexRoute
@@ -763,6 +828,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
   '/faq': typeof FaqRoute
+  '/international': typeof InternationalRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
@@ -797,17 +863,25 @@ export interface FileRoutesByTo {
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bg/cyprus-company-register': typeof BgCyprusCompanyRegisterRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/de/handelsregister-zypern': typeof DeHandelsregisterZypernRoute
   '/directory/$signal': typeof DirectorySignalRoute
+  '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
+  '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
+  '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
+  '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
+  '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
+  '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout': typeof CheckoutIndexRoute
   '/directory': typeof DirectoryIndexRoute
   '/guides': typeof GuidesIndexRoute
@@ -865,6 +939,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
   '/faq': typeof FaqRoute
+  '/international': typeof InternationalRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new_company_sitemap.xml': typeof New_company_sitemapDotxmlRoute
@@ -900,17 +975,25 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/bg/cyprus-company-register': typeof BgCyprusCompanyRegisterRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/session-status': typeof CheckoutSessionStatusRoute
   '/company/$slug': typeof CompanySlugRoute
+  '/de/handelsregister-zypern': typeof DeHandelsregisterZypernRoute
   '/directory/$signal': typeof DirectorySignalRoute
+  '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
+  '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
+  '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
+  '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
+  '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
+  '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/directory/': typeof DirectoryIndexRoute
   '/guides/': typeof GuidesIndexRoute
@@ -968,6 +1051,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cyprus-companies-registry'
     | '/faq'
+    | '/international'
     | '/llms.txt'
     | '/mcp'
     | '/new_company_sitemap.xml'
@@ -1003,17 +1087,25 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
+    | '/bg/cyprus-company-register'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/de/handelsregister-zypern'
     | '/directory/$signal'
+    | '/fr/registre-commerce-chypre'
+    | '/gr/gemi-kyprou'
     | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
+    | '/il/cyprus-company-registry'
+    | '/it/registro-imprese-cipro'
     | '/order/$reference'
     | '/registry/$topic'
     | '/report/$type'
+    | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
+    | '/uk/cyprus-companies-house'
     | '/checkout/'
     | '/directory/'
     | '/guides/'
@@ -1069,6 +1161,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cyprus-companies-registry'
     | '/faq'
+    | '/international'
     | '/llms.txt'
     | '/mcp'
     | '/new_company_sitemap.xml'
@@ -1103,17 +1196,25 @@ export interface FileRouteTypes {
     | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/bg/cyprus-company-register'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/de/handelsregister-zypern'
     | '/directory/$signal'
+    | '/fr/registre-commerce-chypre'
+    | '/gr/gemi-kyprou'
     | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
+    | '/il/cyprus-company-registry'
+    | '/it/registro-imprese-cipro'
     | '/order/$reference'
     | '/registry/$topic'
     | '/report/$type'
+    | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
+    | '/uk/cyprus-companies-house'
     | '/checkout'
     | '/directory'
     | '/guides'
@@ -1170,6 +1271,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cyprus-companies-registry'
     | '/faq'
+    | '/international'
     | '/llms.txt'
     | '/mcp'
     | '/new_company_sitemap.xml'
@@ -1205,17 +1307,25 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
+    | '/bg/cyprus-company-register'
     | '/checkout/return'
     | '/checkout/session-status'
     | '/company/$slug'
+    | '/de/handelsregister-zypern'
     | '/directory/$signal'
+    | '/fr/registre-commerce-chypre'
+    | '/gr/gemi-kyprou'
     | '/guides/companies-house-cyprus'
     | '/guides/register-company-cyprus'
+    | '/il/cyprus-company-registry'
+    | '/it/registro-imprese-cipro'
     | '/order/$reference'
     | '/registry/$topic'
     | '/report/$type'
+    | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
+    | '/uk/cyprus-companies-house'
     | '/checkout/'
     | '/directory/'
     | '/guides/'
@@ -1273,6 +1383,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CyprusCompaniesRegistryRoute: typeof CyprusCompaniesRegistryRoute
   FaqRoute: typeof FaqRoute
+  InternationalRoute: typeof InternationalRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   New_company_sitemapDotxmlRoute: typeof New_company_sitemapDotxmlRoute
@@ -1307,17 +1418,25 @@ export interface RootRouteChildren {
   WpSitemapDotxmlRoute: typeof WpSitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  BgCyprusCompanyRegisterRoute: typeof BgCyprusCompanyRegisterRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   CheckoutSessionStatusRoute: typeof CheckoutSessionStatusRoute
   CompanySlugRoute: typeof CompanySlugRoute
+  DeHandelsregisterZypernRoute: typeof DeHandelsregisterZypernRoute
   DirectorySignalRoute: typeof DirectorySignalRoute
+  FrRegistreCommerceChypreRoute: typeof FrRegistreCommerceChypreRoute
+  GrGemiKyprouRoute: typeof GrGemiKyprouRoute
   GuidesCompaniesHouseCyprusRoute: typeof GuidesCompaniesHouseCyprusRoute
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
+  IlCyprusCompanyRegistryRoute: typeof IlCyprusCompanyRegistryRoute
+  ItRegistroImpreseCiproRoute: typeof ItRegistroImpreseCiproRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   RegistryTopicRoute: typeof RegistryTopicRoute
   ReportTypeRoute: typeof ReportTypeRoute
+  RoRegistrulComertuluiCipruRoute: typeof RoRegistrulComertuluiCipruRoute
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
+  UkCyprusCompaniesHouseRoute: typeof UkCyprusCompaniesHouseRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   DirectoryIndexRoute: typeof DirectoryIndexRoute
   GuidesIndexRoute: typeof GuidesIndexRoute
@@ -1447,6 +1566,13 @@ declare module '@tanstack/react-router' {
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/international': {
+      id: '/international'
+      path: '/international'
+      fullPath: '/international'
+      preLoaderRoute: typeof InternationalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -1694,6 +1820,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/bg/cyprus-company-register': {
+      id: '/bg/cyprus-company-register'
+      path: '/bg/cyprus-company-register'
+      fullPath: '/bg/cyprus-company-register'
+      preLoaderRoute: typeof BgCyprusCompanyRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/': {
       id: '/checkout/'
       path: '/checkout'
@@ -1722,6 +1855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/de/handelsregister-zypern': {
+      id: '/de/handelsregister-zypern'
+      path: '/de/handelsregister-zypern'
+      fullPath: '/de/handelsregister-zypern'
+      preLoaderRoute: typeof DeHandelsregisterZypernRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/directory/': {
       id: '/directory/'
       path: '/directory'
@@ -1734,6 +1874,20 @@ declare module '@tanstack/react-router' {
       path: '/directory/$signal'
       fullPath: '/directory/$signal'
       preLoaderRoute: typeof DirectorySignalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fr/registre-commerce-chypre': {
+      id: '/fr/registre-commerce-chypre'
+      path: '/fr/registre-commerce-chypre'
+      fullPath: '/fr/registre-commerce-chypre'
+      preLoaderRoute: typeof FrRegistreCommerceChypreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gr/gemi-kyprou': {
+      id: '/gr/gemi-kyprou'
+      path: '/gr/gemi-kyprou'
+      fullPath: '/gr/gemi-kyprou'
+      preLoaderRoute: typeof GrGemiKyprouRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guides/': {
@@ -1757,6 +1911,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesRegisterCompanyCyprusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/il/cyprus-company-registry': {
+      id: '/il/cyprus-company-registry'
+      path: '/il/cyprus-company-registry'
+      fullPath: '/il/cyprus-company-registry'
+      preLoaderRoute: typeof IlCyprusCompanyRegistryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/registro-imprese-cipro': {
+      id: '/it/registro-imprese-cipro'
+      path: '/it/registro-imprese-cipro'
+      fullPath: '/it/registro-imprese-cipro'
+      preLoaderRoute: typeof ItRegistroImpreseCiproRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order/$reference': {
       id: '/order/$reference'
       path: '/order/$reference'
@@ -1778,6 +1946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ro/registrul-comertului-cipru': {
+      id: '/ro/registrul-comertului-cipru'
+      path: '/ro/registrul-comertului-cipru'
+      fullPath: '/ro/registrul-comertului-cipru'
+      preLoaderRoute: typeof RoRegistrulComertuluiCipruRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemaps/pages.xml': {
       id: '/sitemaps/pages.xml'
       path: '/sitemaps/pages.xml'
@@ -1790,6 +1965,13 @@ declare module '@tanstack/react-router' {
       path: '/solutions/kyb-for-banks'
       fullPath: '/solutions/kyb-for-banks'
       preLoaderRoute: typeof SolutionsKybForBanksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/uk/cyprus-companies-house': {
+      id: '/uk/cyprus-companies-house'
+      path: '/uk/cyprus-companies-house'
+      fullPath: '/uk/cyprus-companies-house'
+      preLoaderRoute: typeof UkCyprusCompaniesHouseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/invoke-tool/$tool': {
@@ -2120,6 +2302,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CyprusCompaniesRegistryRoute: CyprusCompaniesRegistryRoute,
   FaqRoute: FaqRoute,
+  InternationalRoute: InternationalRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   New_company_sitemapDotxmlRoute: New_company_sitemapDotxmlRoute,
@@ -2155,17 +2338,25 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  BgCyprusCompanyRegisterRoute: BgCyprusCompanyRegisterRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   CheckoutSessionStatusRoute: CheckoutSessionStatusRoute,
   CompanySlugRoute: CompanySlugRoute,
+  DeHandelsregisterZypernRoute: DeHandelsregisterZypernRoute,
   DirectorySignalRoute: DirectorySignalRoute,
+  FrRegistreCommerceChypreRoute: FrRegistreCommerceChypreRoute,
+  GrGemiKyprouRoute: GrGemiKyprouRoute,
   GuidesCompaniesHouseCyprusRoute: GuidesCompaniesHouseCyprusRoute,
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
+  IlCyprusCompanyRegistryRoute: IlCyprusCompanyRegistryRoute,
+  ItRegistroImpreseCiproRoute: ItRegistroImpreseCiproRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   RegistryTopicRoute: RegistryTopicRoute,
   ReportTypeRoute: ReportTypeRoute,
+  RoRegistrulComertuluiCipruRoute: RoRegistrulComertuluiCipruRoute,
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
+  UkCyprusCompaniesHouseRoute: UkCyprusCompaniesHouseRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   DirectoryIndexRoute: DirectoryIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,
