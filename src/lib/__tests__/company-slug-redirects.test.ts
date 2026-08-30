@@ -172,9 +172,12 @@ describe("canonical URLs emitted by lists, search and APIs", () => {
     expect(slug).toBe("coffee-lovers-ltd-he266206");
   });
 
-  it("emits a canonical link for a cart line built from stored order fields", () => {
-    expect(
-      companyCanonicalSlug({ slug: "C266206", name: "Coffee Lovers Ltd", official_no: "HE266206" }),
-    ).toBe(canonicalRedirectTarget("C266206", "coffee-lovers-ltd-he266206")?.replace("/company/", ""));
+  it("emits the same target a cart-line ID slug would 301 to", () => {
+    const linked = companyCanonicalSlug({
+      slug: "C266206",
+      name: "Coffee Lovers Ltd",
+      official_no: "HE266206",
+    });
+    expect(`/company/${linked}`).toBe(canonicalRedirectTarget("C266206", "coffee-lovers-ltd-he266206"));
   });
 });
