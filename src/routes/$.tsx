@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { classifyLegacyPath } from "@/lib/legacy-url";
 import { resolveLegacyCompanySlug } from "@/lib/legacy-url.server";
+import { legacyRegistryRedirect } from "@/lib/seo/legacy-redirects";
+
 
 function htmlShell(opts: { status: number; title: string; body: string }) {
   return new Response(
