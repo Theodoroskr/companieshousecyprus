@@ -14,6 +14,8 @@ const ADMIN_LINKS = [
   { to: "/admin/api4all", label: "API4ALL", support: false },
   { to: "/admin/users", label: "Users", support: false },
   { to: "/admin/usage", label: "Usage", support: false },
+  { to: "/admin/gdpr", label: "GDPR", support: false },
+
   { to: "/admin/emails", label: "Emails", support: true },
   { to: "/admin/sitemap", label: "Sitemap", support: false },
 ] as const;
