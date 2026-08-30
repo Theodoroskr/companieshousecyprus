@@ -24,9 +24,9 @@ const homeQueryOptions = () =>
     },
   });
 
-const TITLE = "Cyprus Registrar of Companies Search | Companies House";
+const TITLE = "Companies House Cyprus | Free Cyprus Company Search";
 const DESCRIPTION =
-  "Search the Registrar of Companies Cyprus register free: status, registration number, type and registered office. Directors, certificates and reports delivered digitally. Independent service.";
+  "Search Companies House Cyprus free: company status, registration number, type, directors and registered office. Official certificates and reports delivered digitally in minutes.";
 
 const FAQS = [
   {
