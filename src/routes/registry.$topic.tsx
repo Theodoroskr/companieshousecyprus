@@ -33,7 +33,7 @@ function LandingNotFound() {
         This registry page does not exist. Search the Cyprus register instead.
       </p>
       <Button asChild className="mt-6">
-        <Link to="/search">Search companies</Link>
+        <Link to="/search" search={{ q: "", page: 1 }}>Search companies</Link>
       </Button>
     </div>
   );
@@ -71,7 +71,7 @@ function RegistryLandingPage() {
               event.preventDefault();
               const q = query.trim();
               if (!q) return;
-              void navigate({ to: "/search", search: { q } });
+              void navigate({ to: "/search", search: { q, page: 1 } });
             }}
           >
             <label className="sr-only" htmlFor="registry-landing-search">
