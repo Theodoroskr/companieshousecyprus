@@ -35,7 +35,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     h1: "Cyprus Company Search",
     title: "Cyprus Company Search | Free Registrar Lookup",
     description:
-      "Search Cyprus companies free by name or registration number. See status, company type, registration date, registered office and officials on record from Registrar of Companies data.",
+      "Search Cyprus companies free by name or registration number: status, company type, registration date, registered office and officials from Registrar data.",
     intro:
       "Search every company on the Cyprus register by name or registration number. Results come from the Department of Registrar of Companies and Intellectual Property record, with no account and no charge for the search itself.",
     sections: [
@@ -78,7 +78,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     h1: "Registrar of Companies Cyprus",
     title: "Registrar of Companies Cyprus | Search the Register",
     description:
-      "Look up Cyprus Registrar of Companies records online: company status, registration number, type, registered office and officials, plus official certificates delivered digitally.",
+      "Look up Cyprus Registrar of Companies records: status, registration number, type, registered office and officials, plus certificates delivered digitally.",
     intro:
       "The Department of Registrar of Companies and Intellectual Property maintains the official Cyprus company register. This service makes that record searchable, with certificates and reports available to order when you need them in a document.",
     sections: [
@@ -116,7 +116,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     h1: "Check a Cyprus Company Registration Number",
     title: "Check Cyprus Company Registration Number | Free Lookup",
     description:
-      "Check any Cyprus company registration number free. Confirm the registered name, organisation type, registry status and registered office behind an HE, EE, S or AE number.",
+      "Check any Cyprus company registration number free: registered name, organisation type, registry status and registered office behind an HE, EE, S or AE number.",
     intro:
       "Enter a Cyprus registration number to confirm which entity it belongs to, whether it is still on the register, and where it is registered.",
     sections: [
@@ -151,9 +151,9 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     slug: "cyprus-company-status-check",
     label: "Cyprus company status check",
     h1: "Cyprus Company Status Check",
-    title: "Cyprus Company Status Check | Active, Struck Off, Liquidation",
+    title: "Cyprus Company Status Check | Active or Struck Off",
     description:
-      "Check whether a Cyprus company is active, dissolved, struck off or in liquidation. Registry status, registration date and registered office from Registrar of Companies data.",
+      "Check whether a Cyprus company is active, dissolved, struck off or in liquidation: registry status, registration date and registered office from Registrar data.",
     intro:
       "Confirm the current registry status of any Cyprus company before you contract, invoice or onboard. Status is shown exactly as recorded by the Registrar.",
     sections: [

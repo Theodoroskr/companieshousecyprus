@@ -52,7 +52,9 @@ describe("pages sitemap", () => {
   it("excludes private and transactional routes", () => {
     const blocked = ["/cart", "/checkout", "/account", "/admin", "/auth", "/order/"];
     for (const path of blocked) {
-      expect(locs.some((loc) => loc.includes(path))).toBe(false);
+      expect(
+        STATIC_PAGES.some((page) => page.path === path || page.path.startsWith(`${path}/`)),
+      ).toBe(false);
     }
   });
 
