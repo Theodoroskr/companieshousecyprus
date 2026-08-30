@@ -14,6 +14,11 @@ import { getCompanyCount } from "@/lib/companies.functions";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS, formatPrice } from "@/lib/products";
 import { trackEvent } from "@/lib/analytics";
+import {
+  HOME_TITLE,
+  HOME_DESCRIPTION,
+  buildHomeHead,
+} from "@/lib/home-head";
 
 const homeQueryOptions = () =>
   queryOptions({
@@ -66,18 +71,7 @@ export const Route = createFileRoute("/")({
     await context.queryClient.ensureQueryData(homeQueryOptions());
   },
   head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://companieshousecyprus.com/" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: TITLE },
-      { name: "twitter:description", content: DESCRIPTION },
-    ],
-    links: [{ rel: "canonical", href: "https://companieshousecyprus.com/" }],
+    ...buildHomeHead(),
     scripts: [
       {
         type: "application/ld+json",
