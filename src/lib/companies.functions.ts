@@ -365,14 +365,14 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
     // use a keyset cursor on the slug primary key, which stays fast.
     const PAGE = 1_000;
     const start = n * SITEMAP_CHUNK_SIZE;
-    const rows: { slug: string }[] = [];
+    const rows: { slug: string; canonicalSlug: string }[] = [];
     let cursor: string | null = null;
 
     while (rows.length < SITEMAP_CHUNK_SIZE) {
       const limit = Math.min(PAGE, SITEMAP_CHUNK_SIZE - rows.length);
       let query = supabase
         .from("companies")
-        .select("slug")
+        .select("slug, canonical_slug")
         .order("slug", { ascending: true });
       query = cursor
         ? query.gt("slug", cursor).limit(limit)
@@ -381,7 +381,7 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
       const { data: page, error } = await query;
       if (error) throw error;
       const batch = page ?? [];
-      for (const r of batch) rows.push({ slug: r.slug });
+      for (const r of batch) rows.push({ slug: r.slug, canonicalSlug: r.canonical_slug ?? r.slug });
       if (batch.length < limit) break;
       cursor = batch[batch.length - 1]!.slug;
     }
