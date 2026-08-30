@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { classifyLegacyPath } from "@/lib/legacy-url";
 import { resolveLegacyCompanySlug } from "@/lib/legacy-url.server";
+import { legacyRegistryRedirect } from "@/lib/seo/legacy-redirects";
+
 
 function htmlShell(opts: { status: number; title: string; body: string }) {
   return new Response(
@@ -33,7 +35,21 @@ function htmlShell(opts: { status: number; title: string; body: string }) {
 
 async function handleLegacy(request: Request): Promise<Response> {
   const url = new URL(request.url);
+
+  // Retired registry URLs move permanently onto their canonical landing page.
+  const redirect = legacyRegistryRedirect(url.pathname, url.search);
+  if (redirect) {
+    return new Response(null, {
+      status: redirect.status,
+      headers: {
+        location: redirect.target,
+        "cache-control": "public, max-age=86400",
+      },
+    });
+  }
+
   const legacy = classifyLegacyPath(url.pathname, url.search);
+
 
   if (legacy) {
     const slug = await resolveLegacyCompanySlug(legacy.token);
