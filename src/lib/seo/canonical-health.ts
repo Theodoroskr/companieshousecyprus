@@ -48,10 +48,12 @@ export type CanonicalIssue =
   | "redirected"
   | "canonical-mismatch"
   | "fetch-failed"
-  | "sitemap-unreachable";
+  | "sitemap-unreachable"
+  | "id-url-not-redirecting";
 
 export type CanonicalCheck = {
   slug: string;
+  canonicalSlug: string;
   url: string;
   sample: string;
   status: number | null;
@@ -59,12 +61,14 @@ export type CanonicalCheck = {
   canonicalHref: string | null;
   expectedChunk: number | null;
   inSitemap: boolean | null;
+  idRedirectsToCanonical: boolean | null;
   issues: CanonicalIssue[];
   ok: boolean;
 };
 
 export function evaluateCheck(input: {
   slug: string;
+  canonicalSlug?: string;
   sample: string;
   status: number | null;
   location: string | null;
@@ -73,9 +77,14 @@ export function evaluateCheck(input: {
   expectedChunk: number | null;
   inSitemap: boolean | null;
   sitemapError: string | null;
+  /** Status returned by the registry-ID URL, when probed. */
+  idStatus?: number | null;
+  /** Location header returned by the registry-ID URL, when probed. */
+  idLocation?: string | null;
 }): CanonicalCheck {
   const issues: CanonicalIssue[] = [];
-  const url = canonicalUrl(input.slug);
+  const canonicalSlug = input.canonicalSlug || input.slug;
+  const url = canonicalUrl(canonicalSlug);
 
   if (input.fetchError) issues.push("fetch-failed");
   else if (input.status !== null && input.status >= 300 && input.status < 400) issues.push("redirected");
@@ -87,8 +96,19 @@ export function evaluateCheck(input: {
   if (input.sitemapError) issues.push("sitemap-unreachable");
   else if (input.inSitemap === false) issues.push("missing-in-sitemap");
 
+  // The registry-ID URL must permanently redirect to the canonical URL, so no
+  // legacy link or old index entry keeps a second address alive.
+  let idRedirectsToCanonical: boolean | null = null;
+  if (canonicalSlug !== input.slug && input.idStatus != null) {
+    const target = input.idLocation ? new URL(input.idLocation, CANONICAL_ORIGIN).pathname : null;
+    idRedirectsToCanonical =
+      (input.idStatus === 301 || input.idStatus === 308) && target === canonicalPath(canonicalSlug);
+    if (!idRedirectsToCanonical) issues.push("id-url-not-redirecting");
+  }
+
   return {
     slug: input.slug,
+    canonicalSlug,
     url,
     sample: input.sample,
     status: input.status,
@@ -96,6 +116,7 @@ export function evaluateCheck(input: {
     canonicalHref,
     expectedChunk: input.expectedChunk,
     inSitemap: input.inSitemap,
+    idRedirectsToCanonical,
     issues,
     ok: issues.length === 0,
   };
