@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enqueue_indexnow_company() FROM PUBLIC, anon, authenticated;
