@@ -2,6 +2,7 @@ import { defineTool, ToolError } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { searchCompanies } from "@/lib/companies.functions";
 import { displayOfficialNo } from "@/lib/format";
+import { companyCanonicalSlug } from "@/lib/slug";
 
 const BASE_URL = "https://companieshousecyprus.com";
 
@@ -33,7 +34,7 @@ export default defineTool({
       status_group: row.status_group,
       district: row.district_en,
       locality: row.locality,
-      profile_url: `${BASE_URL}/company/${row.slug}`,
+      profile_url: `${BASE_URL}/company/${companyCanonicalSlug(row)}`,
       slug: row.slug,
     }));
 

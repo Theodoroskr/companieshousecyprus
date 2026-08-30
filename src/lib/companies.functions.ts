@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizeCompanySlug } from "@/lib/slug";
+import { normaliseCompanyKey } from "@/lib/registrar-mapping";
+
 import { searchVariants } from "@/lib/format";
 
 const PAGE_SIZE = 50;
@@ -53,16 +55,42 @@ export type CompanyListItem = Pick<
   "slug" | "type_code" | "name" | "official_no" | "reg_number" | "status_en" | "status_group" | "district_en" | "locality"
 >;
 
+const COMPANY_COLUMNS =
+  "slug, canonical_slug, type_code, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at";
+
+/**
+ * Resolve any incoming company URL slug to the stored registry key.
+ * Accepts the ID form ("C4404" / "he4404"), the canonical name-based form
+ * ("infocredit-group-limited-he4404") and any previously published name-based
+ * slug recorded in `company_slug_history`.
+ */
+async function resolveStoredSlug(
+  supabase: ReturnType<typeof getServerClient>,
+  input: string,
+): Promise<string | null> {
+  const direct = normalizeCompanySlug(input);
+  const mapped = normaliseCompanyKey("", direct)?.slug ?? null;
+  const candidates = Array.from(new Set([direct, mapped].filter((v): v is string => Boolean(v))));
+  if (candidates.length > 0) {
+    const { data } = await supabase.from("companies").select("slug").in("slug", candidates).limit(1);
+    if (data?.[0]?.slug) return data[0].slug;
+  }
+  // Fall back to the canonical / historic name-based slug lookup.
+  const { data: resolved } = await supabase.rpc("resolve_company_slug", {
+    _input: (input ?? "").trim().toLowerCase(),
+  });
+  return (resolved as string | null) ?? null;
+}
+
 export const getCompanyBySlug = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const slug = normalizeCompanySlug(data.slug);
+    const slug = await resolveStoredSlug(supabase, data.slug);
+    if (!slug) throw new Error(`Company not found: ${data.slug}`);
     const { data: company, error } = await supabase
       .from("companies")
-      .select(
-        "slug, type_code, name, official_no, reg_number, registration_date, status_en, status_group, status_date, type_en, subtype_en, address_full, building, street, locality, district_el, district_en, postcode, is_foreign_address, report_years, officials_count, updated_at",
-      )
+      .select(COMPANY_COLUMNS)
       .eq("slug", slug)
       .single();
     if (error || !company) {
@@ -74,6 +102,7 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     return { company, officials: officials ?? [] };
 
   });
+
 
 export const getRelatedCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
@@ -336,14 +365,14 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
     // use a keyset cursor on the slug primary key, which stays fast.
     const PAGE = 1_000;
     const start = n * SITEMAP_CHUNK_SIZE;
-    const rows: { slug: string }[] = [];
+    const rows: { slug: string; canonicalSlug: string }[] = [];
     let cursor: string | null = null;
 
     while (rows.length < SITEMAP_CHUNK_SIZE) {
       const limit = Math.min(PAGE, SITEMAP_CHUNK_SIZE - rows.length);
       let query = supabase
         .from("companies")
-        .select("slug")
+        .select("slug, canonical_slug")
         .order("slug", { ascending: true });
       query = cursor
         ? query.gt("slug", cursor).limit(limit)
@@ -352,7 +381,7 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
       const { data: page, error } = await query;
       if (error) throw error;
       const batch = page ?? [];
-      for (const r of batch) rows.push({ slug: r.slug });
+      for (const r of batch) rows.push({ slug: r.slug, canonicalSlug: r.canonical_slug ?? r.slug });
       if (batch.length < limit) break;
       cursor = batch[batch.length - 1]!.slug;
     }

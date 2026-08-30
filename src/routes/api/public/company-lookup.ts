@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCompanyBySlug } from "@/lib/companies.functions";
 import { searchCompanies } from "@/lib/companies.functions";
 import { displayOfficialNo, formatDate, companyAge, latinAddress, isBusinessName } from "@/lib/format";
+import { companyCanonicalSlug } from "@/lib/slug";
 
 const LookupInput = z.object({
   q: z.string().min(1).max(200),
@@ -88,7 +89,7 @@ export const Route = createFileRoute("/api/public/company-lookup")({
             registration_number: displayOfficialNo(first),
             status: first.status_en,
             type: first.type_code,
-            profile_url: `${baseUrl}/company/${first.slug}`,
+            profile_url: `${baseUrl}/company/${companyCanonicalSlug(first)}`,
           });
         }
       },
@@ -131,7 +132,7 @@ function buildResponse(
       position_el: o.position_el,
       is_owner: ownerLabel ? o.position_en?.includes(ownerLabel) : false,
     })),
-    profile_url: `${baseUrl}/company/${company.slug}`,
+    profile_url: `${baseUrl}/company/${company.canonical_slug ?? companyCanonicalSlug(company)}`,
     source: "Cyprus Registrar of Companies via Companies House Cyprus",
     disclaimer:
       "This profile is derived from public registry data for information purposes only and does not constitute legal advice.",

@@ -11,7 +11,7 @@ import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
 import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { normalizeCompanySlug } from "@/lib/slug";
+import { companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
 import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
@@ -49,7 +49,7 @@ function RelatedCompanies({ slug }: { slug: string }) {
           <ul className="mt-2 divide-y">
             {byAddress.map((row) => (
               <li key={row.slug} className="flex flex-col gap-0.5 py-3">
-                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
+                <Link to="/company/$slug" params={{ slug: companyCanonicalSlug(row) }} className="text-base font-medium hover:text-copper">
                   {row.name}
                 </Link>
                 <span className="text-sm text-muted-foreground">{displayOfficialNo(row)}</span>
@@ -75,7 +75,7 @@ function RelatedCompanies({ slug }: { slug: string }) {
           <ul className="mt-3 divide-y">
             {byOfficial.map((row) => (
               <li key={row.slug} className="flex flex-col gap-0.5 py-3">
-                <Link to="/company/$slug" params={{ slug: row.slug }} className="text-base font-medium hover:text-copper">
+                <Link to="/company/$slug" params={{ slug: companyCanonicalSlug(row) }} className="text-base font-medium hover:text-copper">
                   {row.name}
                 </Link>
                 <div className="flex items-center justify-between gap-4">
@@ -119,8 +119,8 @@ export const Route = createFileRoute("/company/$slug")({
   validateSearch: (search: Record<string, unknown>): { product?: string } =>
     typeof search["product"] === "string" ? { product: search["product"] as string } : {},
   // Legacy WordPress URLs (template placeholders like "{{vcompany.name}}-c4404",
-  // "dfd.name") and lowercase/pretty slugs must not render duplicate content:
-  // send them to the canonical registry-id URL with a permanent redirect.
+  // "dfd.name") must never render content. Anything else is resolved in the
+  // loader, which knows the company's canonical name-based slug.
   beforeLoad: ({ params }) => {
     const legacy = classifyLegacyPath(`/company/${params.slug}`);
     const token = legacy ? extractRegistryToken(params.slug) : null;
@@ -128,11 +128,10 @@ export const Route = createFileRoute("/company/$slug")({
       // Template-leak URL with nothing to resolve: a clean not-found, never content.
       throw notFound();
     }
-    const canonical = normalizeCompanySlug(token ?? params.slug);
-    if (canonical && canonical !== params.slug) {
+    if (legacy && token) {
       throw redirect({
         to: "/company/$slug",
-        params: { slug: canonical },
+        params: { slug: normalizeCompanySlug(token) },
         statusCode: 301,
         replace: true,
       });
@@ -152,15 +151,27 @@ export const Route = createFileRoute("/company/$slug")({
     }
 
     const c = data.company;
+    // Name-based canonical URL: ID-form and historic name slugs both keep
+    // working, but permanently redirect to the current canonical path.
+    const canonicalSlug = c.canonical_slug ?? companyCanonicalSlug(c);
+    if (canonicalSlug && canonicalSlug !== params.slug) {
+      throw redirect({
+        to: "/company/$slug",
+        params: { slug: canonicalSlug },
+        statusCode: 301,
+        replace: true,
+      });
+    }
     if (import.meta.env.SSR) {
       const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
       setCompanyPageCacheHeaders({
-        slug: normalizeCompanySlug(params.slug),
+        slug: c.slug,
         updatedAt: c.updated_at ?? null,
       });
     }
 
     return {
+      canonicalSlug,
       name: c.name,
       officialNo: displayOfficialNo(c),
       status: c.status_en,
@@ -178,20 +189,23 @@ export const Route = createFileRoute("/company/$slug")({
     };
   },
 
+
   head: ({ loaderData, params }) => {
     if (!loaderData) {
       return {
         meta: [{ title: "Company unavailable | Companies House Cyprus" }, { name: "robots", content: "noindex" }],
       };
     }
-    const canonicalSlug = normalizeCompanySlug(params.slug);
+    const idSlug = normalizeCompanySlug(params.slug);
+    const canonicalSlug = loaderData.canonicalSlug || idSlug;
     const title = companyTitle({
       name: loaderData.name,
-      officialNo: loaderData.officialNo ?? canonicalSlug,
+      officialNo: loaderData.officialNo ?? idSlug,
     });
     const description = companyDescription({
       name: loaderData.name,
-      officialNo: loaderData.officialNo ?? canonicalSlug,
+      officialNo: loaderData.officialNo ?? idSlug,
+
       status: loaderData.status,
       statusGroup: loaderData.statusGroup,
       typeEn: loaderData.typeEn,

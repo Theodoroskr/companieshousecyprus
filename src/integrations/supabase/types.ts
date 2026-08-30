@@ -97,6 +97,7 @@ export type Database = {
           a4a_code: string | null
           address_full: string | null
           building: string | null
+          canonical_slug: string | null
           content_updated_at: string | null
           district_el: string | null
           district_en: string | null
@@ -126,6 +127,7 @@ export type Database = {
           a4a_code?: string | null
           address_full?: string | null
           building?: string | null
+          canonical_slug?: string | null
           content_updated_at?: string | null
           district_el?: string | null
           district_en?: string | null
@@ -155,6 +157,7 @@ export type Database = {
           a4a_code?: string | null
           address_full?: string | null
           building?: string | null
+          canonical_slug?: string | null
           content_updated_at?: string | null
           district_el?: string | null
           district_en?: string | null
@@ -181,6 +184,35 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      company_slug_history: {
+        Row: {
+          created_at: string
+          id: number
+          old_canonical_slug: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          old_canonical_slug: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          old_canonical_slug?: string
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_slug_history_slug_fkey"
+            columns: ["slug"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       directory_signal_counts: {
         Row: {
@@ -1930,6 +1962,7 @@ export type Database = {
         Args: { batch_size?: number }
         Returns: number
       }
+      resolve_company_slug: { Args: { _input: string }; Returns: string }
       sanctions_publish_import: {
         Args: { _import_id: string }
         Returns: {
@@ -1996,6 +2029,7 @@ export type Database = {
           type_code: string
         }[]
       }
+      slugify_company_name: { Args: { _name: string }; Returns: string }
       truncate_officials_only: { Args: never; Returns: undefined }
       unaccent_safe: { Args: { _t: string }; Returns: string }
       update_officials_count_for_slugs: {

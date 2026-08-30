@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { trackEvent } from "@/lib/analytics";
+import { companyCanonicalSlug } from "@/lib/slug";
 
 const TYPE_OPTIONS = [
   { code: "C", label: "Company" },
@@ -228,7 +229,7 @@ function SearchPage() {
               <li key={company.slug} className="transition-colors hover:bg-muted/50">
                 <Link
                   to="/company/$slug"
-                  params={{ slug: company.slug }}
+                  params={{ slug: companyCanonicalSlug(company) }}
                   search={pendingProduct ? { product: pendingProduct.slug } : {}}
                   onClick={() =>
                     trackEvent("search_result_click", {
