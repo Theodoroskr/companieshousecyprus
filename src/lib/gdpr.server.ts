@@ -84,7 +84,8 @@ export async function createSuppression(input: {
   const personName = input.personName.trim();
   if (!personName) throw new Error("A person name is required");
 
-  const companySlug = input.companySlug?.trim() ? normalizeCompanySlug(input.companySlug) : null;
+  const companySlug = input.companySlug?.trim() ? normalizeCompanySlug(input.companySlug) : "";
+  if (!companySlug) throw new Error("A company is required — suppressions apply to one company only");
 
   const supabase = adminClient();
   const { data, error } = await supabase
