@@ -219,6 +219,21 @@ export function SiteFooter() {
             Cyprus or the Department of Registrar of Companies and Intellectual Property.
           </p>
           <p>© {new Date().getFullYear()} Companies House Cyprus. Registry-sourced information from the Department of Registrar of Companies and Intellectual Property.</p>
+          <p className="flex items-center gap-1">
+            <span>Made by</span>
+            <a
+              href="https://www.blenddigital.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground hover:underline"
+            >
+              Blend Digital
+            </a>
+            <span>with</span>
+            <Heart className="h-3 w-3 fill-primary text-primary" aria-hidden="true" />
+            <span className="sr-only">love</span>
+          </p>
+
         </div>
       </div>
     </footer>
