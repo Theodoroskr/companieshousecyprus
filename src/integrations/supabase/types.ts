@@ -1879,6 +1879,7 @@ export type Database = {
       companies_by_letter_page: {
         Args: { p_letter: string; p_limit?: number; p_offset?: number }
         Returns: {
+          canonical_slug: string
           district_en: string
           locality: string
           name: string
@@ -1894,6 +1895,7 @@ export type Database = {
       companies_by_status_page: {
         Args: { p_limit: number; p_offset: number; p_statuses: string[] }
         Returns: {
+          canonical_slug: string
           district_en: string
           locality: string
           name: string
@@ -2016,6 +2018,7 @@ export type Database = {
           p_types?: string[]
         }
         Returns: {
+          canonical_slug: string
           capped: boolean
           district_en: string
           locality: string

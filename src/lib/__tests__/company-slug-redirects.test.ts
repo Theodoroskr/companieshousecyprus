@@ -146,3 +146,41 @@ describe("redirect chains terminate (slug history is honoured forever)", () => {
     expect(resolve("renamed-partnership")).toBe("B40076");
   });
 });
+
+describe("canonical URLs emitted by lists, search and APIs", () => {
+  it("prefers the stored canonical_slug over a recomputed one", () => {
+    // Postgres transliterates Greek names; the JS fallback must never override it.
+    expect(
+      companyCanonicalSlug({
+        slug: "C4404",
+        name: "ΙΝΦΟΚΡΕΝΤΙΤ",
+        official_no: "HE4404",
+        canonical_slug: "infokredit-he4404",
+      }),
+    ).toBe("infokredit-he4404");
+  });
+
+  it("falls back to name + registry number when canonical_slug is absent", () => {
+    expect(
+      companyCanonicalSlug({ slug: "C4404", name: "Infocredit Group Limited", official_no: "HE4404" }),
+    ).toBe("infocredit-group-limited-he4404");
+  });
+
+  it("never emits a bare registry-ID slug when a name is known", () => {
+    const slug = companyCanonicalSlug({ slug: "C266206", name: "Coffee Lovers Ltd", official_no: "HE266206" });
+    expect(slug).not.toBe("C266206");
+    expect(slug).toBe("coffee-lovers-ltd-he266206");
+  });
+
+  it("emits the same target a cart-line ID slug would 301 to", () => {
+    const linked = companyCanonicalSlug({
+      slug: "C266206",
+      name: "Coffee Lovers Ltd",
+      official_no: "HE266206",
+    });
+    const company = { slug: "C266206", canonical_slug: "coffee-lovers-ltd-he266206" };
+    expect(linked).toBe(canonicalRedirectTarget("C266206", company));
+    // and the canonical link itself must not redirect again
+    expect(canonicalRedirectTarget(linked, company)).toBeNull();
+  });
+});
