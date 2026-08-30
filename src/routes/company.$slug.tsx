@@ -196,14 +196,16 @@ export const Route = createFileRoute("/company/$slug")({
         meta: [{ title: "Company unavailable | Companies House Cyprus" }, { name: "robots", content: "noindex" }],
       };
     }
-    const canonicalSlug = normalizeCompanySlug(params.slug);
+    const idSlug = normalizeCompanySlug(params.slug);
+    const canonicalSlug = loaderData.canonicalSlug || idSlug;
     const title = companyTitle({
       name: loaderData.name,
-      officialNo: loaderData.officialNo ?? canonicalSlug,
+      officialNo: loaderData.officialNo ?? idSlug,
     });
     const description = companyDescription({
       name: loaderData.name,
-      officialNo: loaderData.officialNo ?? canonicalSlug,
+      officialNo: loaderData.officialNo ?? idSlug,
+
       status: loaderData.status,
       statusGroup: loaderData.statusGroup,
       typeEn: loaderData.typeEn,
