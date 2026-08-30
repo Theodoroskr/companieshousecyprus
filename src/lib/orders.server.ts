@@ -90,8 +90,73 @@ export async function placeOrder(input: PlaceOrderInput) {
   const vat = Math.round((subtotal + serviceFee + apostilleFee) * 0.19 * 100) / 100;
   const total = subtotal + serviceFee + apostilleFee + vat;
 
+  // Safeguard: if the same customer re-submits an identical basket that is still
+  // awaiting payment, reuse that order instead of creating a duplicate.
+  const fingerprint = (
+    items: {
+      product_slug: string;
+      company_slug: string | null;
+      company_number: string | null;
+      quantity: number;
+      apostille: boolean;
+    }[],
+  ) =>
+    items
+      .map(
+        (item) =>
+          `${item.product_slug}|${item.company_slug ?? ""}|${item.company_number ?? ""}|${item.quantity}|${item.apostille ? 1 : 0}`,
+      )
+      .sort()
+      .join("~");
+
+  const wanted = fingerprint(
+    rows.map((row) => ({
+      product_slug: row.product.slug,
+      company_slug: row.companySlug,
+      company_number: row.companyNumber,
+      quantity: row.quantity,
+      apostille: row.apostille,
+    })),
+  );
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data: existingOrders } = await supabase
+    .from("orders")
+    .select(
+      "id, reference, access_token, total_cents, order_items(product_slug, company_slug, company_number, quantity, apostille)",
+    )
+    .eq("email", input.email.trim().slice(0, 200))
+    .eq("status", "awaiting_payment")
+    .is("paid_at", null)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const reusable = (existingOrders ?? []).find(
+    (order) =>
+      order.total_cents === cents(total) &&
+      fingerprint((order.order_items ?? []) as never) === wanted,
+  );
+
+  if (reusable?.access_token) {
+    await supabase
+      .from("orders")
+      .update({
+        user_id: input.userId?.trim() || null,
+        full_name: input.fullName.trim().slice(0, 200),
+        firm: input.firm?.trim().slice(0, 200) || null,
+        vat_number: input.vatNumber?.trim().slice(0, 40) || null,
+        phone: input.phone?.trim().slice(0, 60) || null,
+        notes: input.notes?.trim().slice(0, 2000) || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", reusable.id);
+    return { reference: reusable.reference, token: reusable.access_token };
+  }
+
   const reference = makeReference();
   const accessToken = randomToken();
+
 
   const { data: order, error } = await supabase
     .from("orders")
