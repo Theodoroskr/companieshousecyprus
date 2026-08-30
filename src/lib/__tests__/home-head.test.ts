@@ -15,7 +15,7 @@ describe("homepage head metadata", () => {
       "Companies House Cyprus: Free Registrar Search",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Free Cyprus Companies House search on official Registrar of Companies data: status, HE number, directors and registered office — companieshousecyprus.com.",
+      "Companies House Cyprus: free search of official Registrar of Companies data — status, HE number, directors, registered office. Order certificates & reports.",
     );
     expect(HOME_DESCRIPTION.length).toBeLessThanOrEqual(160);
 
