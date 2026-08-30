@@ -99,7 +99,7 @@ export const Route = createFileRoute("/api/public/canonical-health")({
             let html: string | null = null;
             let fetchError: string | null = rank.error;
             try {
-              const res = await fetch(`${origin}${canonicalPath(s.slug)}`, {
+              const res = await fetch(`${origin}${canonicalPath(s.canonicalSlug)}`, {
                 redirect: "manual",
                 headers: { "user-agent": "chc-canonical-health" },
               });
@@ -111,16 +111,36 @@ export const Route = createFileRoute("/api/public/canonical-health")({
               fetchError = err instanceof Error ? err.message : "page fetch failed";
             }
 
+            // Confirm the registry-ID URL still 301s to the canonical URL.
+            let idStatus: number | null = null;
+            let idLocation: string | null = null;
+            if (s.canonicalSlug !== s.slug) {
+              try {
+                const res = await fetch(`${origin}${canonicalPath(s.slug)}`, {
+                  method: "HEAD",
+                  redirect: "manual",
+                  headers: { "user-agent": "chc-canonical-health" },
+                });
+                idStatus = res.status;
+                idLocation = res.headers.get("location");
+              } catch {
+                idStatus = null;
+              }
+            }
+
             return evaluateCheck({
               slug: s.slug,
+              canonicalSlug: s.canonicalSlug,
               sample: s.sample,
               status,
               location,
               html,
               fetchError,
               expectedChunk: chunk,
-              inSitemap: chunkResult?.locs ? chunkResult.locs.has(canonicalUrl(s.slug)) : null,
+              inSitemap: chunkResult?.locs ? chunkResult.locs.has(canonicalUrl(s.canonicalSlug)) : null,
               sitemapError: chunkResult?.error ?? (chunk === null ? rank.error : null),
+              idStatus,
+              idLocation,
             });
           }),
         );
@@ -143,6 +163,7 @@ export const Route = createFileRoute("/api/public/canonical-health")({
               canonicalMismatch: countIssue("canonical-mismatch"),
               fetchFailed: countIssue("fetch-failed"),
               sitemapUnreachable: countIssue("sitemap-unreachable"),
+              idUrlNotRedirecting: countIssue("id-url-not-redirecting"),
             },
             failures: failing,
             checks,
