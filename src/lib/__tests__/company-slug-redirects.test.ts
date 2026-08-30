@@ -178,6 +178,9 @@ describe("canonical URLs emitted by lists, search and APIs", () => {
       name: "Coffee Lovers Ltd",
       official_no: "HE266206",
     });
-    expect(`/company/${linked}`).toBe(canonicalRedirectTarget("C266206", "coffee-lovers-ltd-he266206"));
+    const company = { slug: "C266206", canonical_slug: "coffee-lovers-ltd-he266206" };
+    expect(linked).toBe(canonicalRedirectTarget("C266206", company));
+    // and the canonical link itself must not redirect again
+    expect(canonicalRedirectTarget(linked, company)).toBeNull();
   });
 });
