@@ -544,6 +544,48 @@ export type Database = {
           },
         ]
       }
+      officials_suppressions: {
+        Row: {
+          company_slug: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          internal_notes: string | null
+          person_name: string
+          person_name_normalized: string
+          reason: string | null
+          requester_email: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_slug?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          internal_notes?: string | null
+          person_name: string
+          person_name_normalized: string
+          reason?: string | null
+          requester_email?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_slug?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          internal_notes?: string | null
+          person_name?: string
+          person_name_normalized?: string
+          reason?: string | null
+          requester_email?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_documents: {
         Row: {
           content_type: string | null
@@ -1838,6 +1880,21 @@ export type Database = {
           name: string
         }[]
       }
+      company_official_names_public: {
+        Args: { p_limit?: number; p_slug: string }
+        Returns: {
+          person_name: string
+        }[]
+      }
+      company_officials_public: {
+        Args: { p_slug: string }
+        Returns: {
+          person_name: string
+          position_el: string
+          position_en: string
+          suppressed: boolean
+        }[]
+      }
       enqueue_indexnow_urls: { Args: { _paths: string[] }; Returns: number }
       has_role: {
         Args: {
@@ -1861,6 +1918,7 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_support_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      normalize_person_name: { Args: { _name: string }; Returns: string }
       refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
@@ -1939,6 +1997,7 @@ export type Database = {
         }[]
       }
       truncate_officials_only: { Args: never; Returns: undefined }
+      unaccent_safe: { Args: { _t: string }; Returns: string }
       update_officials_count_for_slugs: {
         Args: { slugs: string[] }
         Returns: undefined

@@ -68,12 +68,11 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
     if (error || !company) {
       throw new Error(`Company not found: ${data.slug}`);
     }
-    const { data: officials } = await supabase
-      .from("officials")
-      .select("person_name, position_en, position_el")
-      .eq("slug", slug)
-      .order("position_en", { ascending: true });
+    // Officials come through the RPC so GDPR-suppressed names are withheld
+    // server-side and never reach the SSR HTML.
+    const { data: officials } = await supabase.rpc("company_officials_public", { p_slug: slug });
     return { company, officials: officials ?? [] };
+
   });
 
 export const getRelatedCompanies = createServerFn({ method: "GET" })
@@ -104,14 +103,16 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
       addressCount = res.count ?? byAddress.length;
     }
 
-    const { data: own } = await supabase
-      .from("officials")
-      .select("person_name")
-      .eq("slug", slug)
-      .limit(20);
+    // Suppressed names are excluded so they can never surface as a
+    // "shared official" link on another company page.
+    const { data: own } = await supabase.rpc("company_official_names_public", {
+      p_slug: slug,
+      p_limit: 20,
+    });
     const names = Array.from(
       new Set((own ?? []).map((o) => o.person_name).filter((n): n is string => Boolean(n && n.trim()))),
     ).slice(0, 8);
+
 
     let byOfficial: Array<CompanyListItem & { via: string }> = [];
     if (names.length > 0) {
