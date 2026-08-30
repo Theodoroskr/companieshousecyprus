@@ -1,8 +1,8 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { INDEXNOW_ORIGIN } from "@/lib/indexnow";
 import { runIndexNowBatch, type IndexNowRunResult } from "@/lib/indexnow.server";
-import {
 import { companyCanonicalSlug } from "@/lib/slug";
+import {
   CHANGE_FEED_MAX_ITEMS,
   changeFeedWindowStart,
   type ChangeFeedRunSummary,
