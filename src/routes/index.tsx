@@ -198,6 +198,13 @@ function HomePage() {
             <p className="mt-3 text-sm text-primary-foreground/60">
               Try “SOFTBOT” or “HE 252407”.
             </p>
+            <Link
+              to="/pricing"
+              className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/25"
+            >
+              <Stamp className="size-4" />
+              Apostille certification available on all certificates · +{formatPrice(APOSTILLE_FEE)} · recognised abroad
+            </Link>
           </form>
 
           <dl className="mx-auto mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4 border-t border-primary-foreground/15 pt-8">
