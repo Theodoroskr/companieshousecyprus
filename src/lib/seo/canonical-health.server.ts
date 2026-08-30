@@ -30,7 +30,7 @@ function client() {
   });
 }
 
-export type Sampled = { slug: string; sample: string };
+export type Sampled = { slug: string; canonicalSlug: string; sample: string };
 
 /**
  * Build a representative sample of company slugs:
@@ -46,12 +46,20 @@ export async function sampleCompanySlugs(opts: {
   explicit: string[];
 }): Promise<{ samples: Sampled[]; total: number }> {
   const supabase = client();
-  const seen = new Map<string, string>();
-  const add = (slug: string, sample: string) => {
-    if (slug && !seen.has(slug)) seen.set(slug, sample);
+  const seen = new Map<string, { canonicalSlug: string; sample: string }>();
+  const add = (slug: string, canonicalSlug: string | null, sample: string) => {
+    if (slug && !seen.has(slug)) seen.set(slug, { canonicalSlug: canonicalSlug || slug, sample });
   };
 
-  for (const slug of opts.explicit) add(slug, "explicit");
+  if (opts.explicit.length > 0) {
+    const { data, error } = await supabase
+      .from("companies")
+      .select("slug, canonical_slug")
+      .in("slug", opts.explicit);
+    if (error) throw error;
+    const canonicalBySlug = new Map((data ?? []).map((r) => [r.slug, r.canonical_slug]));
+    for (const slug of opts.explicit) add(slug, canonicalBySlug.get(slug) ?? null, "explicit");
+  }
 
   const { count, error: countError } = await supabase
     .from("companies")
@@ -62,11 +70,11 @@ export async function sampleCompanySlugs(opts: {
   if (opts.recent > 0) {
     const { data, error } = await supabase
       .from("companies")
-      .select("slug")
+      .select("slug, canonical_slug")
       .order("updated_at", { ascending: false })
       .limit(opts.recent);
     if (error) throw error;
-    for (const row of data ?? []) add(row.slug, "recent");
+    for (const row of data ?? []) add(row.slug, row.canonical_slug, "recent");
   }
 
   if (opts.boundaries && total > 0) {
@@ -77,12 +85,12 @@ export async function sampleCompanySlugs(opts: {
       for (const [offset, kind] of [[first, "boundary-first"], [last, "boundary-last"]] as const) {
         const { data, error } = await supabase
           .from("companies")
-          .select("slug")
+          .select("slug, canonical_slug")
           .order("slug", { ascending: true })
           .range(offset, offset);
         if (error) throw error;
-        const slug = data?.[0]?.slug;
-        if (slug) add(slug, kind);
+        const row = data?.[0];
+        if (row?.slug) add(row.slug, row.canonical_slug, kind);
       }
     }
   }
@@ -92,16 +100,19 @@ export async function sampleCompanySlugs(opts: {
       const offset = Math.floor(Math.random() * total);
       const { data, error } = await supabase
         .from("companies")
-        .select("slug")
+        .select("slug, canonical_slug")
         .order("slug", { ascending: true })
         .range(offset, offset);
       if (error) throw error;
-      const slug = data?.[0]?.slug;
-      if (slug) add(slug, "random");
+      const row = data?.[0];
+      if (row?.slug) add(row.slug, row.canonical_slug, "random");
     }
   }
 
-  return { samples: Array.from(seen, ([slug, sample]) => ({ slug, sample })), total };
+  return {
+    samples: Array.from(seen, ([slug, v]) => ({ slug, canonicalSlug: v.canonicalSlug, sample: v.sample })),
+    total,
+  };
 }
 
 /** 0-based rank of a slug in ascending slug order (used to derive its sitemap chunk). */
