@@ -5,7 +5,7 @@
 export const HOME_TITLE = "Companies House Cyprus: Free Registrar Search";
 
 export const HOME_DESCRIPTION =
-  "Cyprus Companies House search, free. Look up any company on Registrar of Companies data: status, registration number, type, directors and registered office — plus certificates and reports delivered digitally in minutes.";
+  "Free Cyprus Companies House search on official Registrar of Companies data: status, HE number, directors and registered office — companieshousecyprus.com.";
 
 
 export const HOME_CANONICAL_URL = "https://companieshousecyprus.com/";
