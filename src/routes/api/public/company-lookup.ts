@@ -126,12 +126,17 @@ function buildResponse(
       postcode: company.postcode,
       is_foreign: company.is_foreign_address,
     },
+    officials_count: officials.length,
+    // Names are withheld from public responses; released in purchased reports.
     officials: officials.map((o) => ({
-      name: o.person_name,
+      name: null,
       position: o.position_en,
       position_el: o.position_el,
       is_owner: ownerLabel ? o.position_en?.includes(ownerLabel) : false,
     })),
+    officials_note:
+      "Officer names are not published publicly. They are available in the Certificate of Directors & Secretary or the Cyprus Company Profile (structure) report.",
+
     profile_url: `${baseUrl}/company/${company.canonical_slug ?? companyCanonicalSlug(company)}`,
     source: "Cyprus Registrar of Companies via Companies House Cyprus",
     disclaimer:
