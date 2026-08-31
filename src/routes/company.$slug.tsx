@@ -739,9 +739,10 @@ function CompanyPage() {
             ) : officials.length > 0 ? (
               <>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Current directors and the secretary of {company.name} as recorded in our copy of the register. For a
-                  version certified by the Registrar — accepted by banks, KYC teams and courts — order the Certificate
-                  of Directors &amp; Secretary.
+                  {company.name} has {officials.length} officer{officials.length === 1 ? "" : "s"} on record in our copy
+                  of the register. Individual names are not published on this free page — they are released in the
+                  Certificate of Directors &amp; Secretary, certified by the Registrar and accepted by banks, KYC teams
+                  and courts.
                 </p>
                 <ul className="mt-4 divide-y">
                   {officials.map((official, index) => {
@@ -752,20 +753,13 @@ function CompanyPage() {
                         : null;
                     return (
                       <li key={index} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
-                        {(() => {
-                          if (official.suppressed || !official.person_name) {
-                            return <span className="italic text-muted-foreground">Name withheld on request</span>;
-                          }
-                          const display = officialNameDisplay(official.person_name);
-                          return (
-                            <span className="font-medium">
-                              {display?.primary ?? official.person_name}
-                              {display?.original ? (
-                                <span className="ml-2 text-xs font-normal text-muted-foreground">{display.original}</span>
-                              ) : null}
-                            </span>
-                          );
-                        })()}
+                        {official.suppressed ? (
+                          <span className="italic text-muted-foreground">Name withheld on request</span>
+                        ) : (
+                          <span className="select-none font-medium tracking-wide text-muted-foreground/80 blur-[0.6px]">
+                            {maskName(official.person_name)}
+                          </span>
+                        )}
 
                         <span className="text-xs font-semibold uppercase tracking-widest text-copper">
                           {position}
@@ -775,6 +769,11 @@ function CompanyPage() {
                             </span>
                           ) : null}
                         </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+
                       </li>
                     );
                   })}
