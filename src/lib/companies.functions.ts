@@ -107,7 +107,9 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const slug = normalizeCompanySlug(data.slug);
+    // Callers pass the canonical name-based slug, so resolve it to the stored
+    // registry key exactly like getCompanyBySlug does.
+    const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
     const select =
       "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
 
@@ -177,7 +179,7 @@ export const getSimilarCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const slug = normalizeCompanySlug(data.slug);
+    const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
 
     const { data: base } = await supabase
       .from("companies")
