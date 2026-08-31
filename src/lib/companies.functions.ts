@@ -179,7 +179,7 @@ export const getSimilarCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const slug = normalizeCompanySlug(data.slug);
+    const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
 
     const { data: base } = await supabase
       .from("companies")
