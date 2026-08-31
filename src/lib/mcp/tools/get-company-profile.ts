@@ -75,7 +75,13 @@ function respond(result: Awaited<ReturnType<typeof getCompanyBySlug>>) {
       is_foreign: company.is_foreign_address,
     },
     officials_role: officialsLabel,
-    officials: officials.map((o) => ({ name: o.person_name, position: o.position_en })),
+    officials_count: officials.length,
+    // Individual names are withheld from public output; they are released in
+    // the purchased Certificate of Directors & Secretary / structure report.
+    officials: officials.map((o) => ({ name: null, position: o.position_en })),
+    officials_note:
+      "Officer names are not published publicly. They are available in the Certificate of Directors & Secretary or the Cyprus Company Profile (structure) report.",
+
     profile_url: `${BASE_URL}/company/${company.canonical_slug ?? companyCanonicalSlug(company)}`,
     source: "Cyprus Registrar of Companies via Companies House Cyprus",
     disclaimer:
