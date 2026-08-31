@@ -221,13 +221,10 @@ export const Route = createFileRoute("/company/$slug")({
     }
 
     const businessName = isBusinessName(c);
-    const visibleOfficials = data.officials.filter((o) => !o.suppressed && o.person_name);
-    const directorNames = businessName
-      ? []
-      : visibleOfficials
-          .filter((o) => (o.position_en ?? "").toLowerCase().includes("director"))
-          .map((o) => officialNameDisplay(o.person_name)?.primary ?? (o.person_name as string))
-          .slice(0, 3);
+    // Officer names are not published on the free public page — they are
+    // released in the purchased reports/certificates only.
+    const directorNames: string[] = [];
+
     const faq = buildCompanyFaqs({
       name: c.name,
       officialNo: displayOfficialNo(c),
