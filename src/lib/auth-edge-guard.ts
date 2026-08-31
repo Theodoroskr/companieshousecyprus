@@ -3,22 +3,28 @@
  *
  * A botnet has been hammering GET /auth with cookieless, referrer-less direct
  * hits from CN data-centre ranges (~180k views, ~0.4s sessions, zero form
- * submissions). Those requests never run JavaScript, so we answer them with a
- * tiny interstitial that sets a cookie and reloads. Real browsers pass it in
- * milliseconds; script-only clients loop on the interstitial and never reach
- * the app.
+ * submissions). CN traffic to the login surfaces is now hard-blocked (403) —
+ * we have no legitimate CN user base.
+ *
+ * For HK we answer cookieless repeat direct hits with a tiny interstitial that
+ * sets a cookie and reloads. Real browsers pass it in milliseconds;
+ * script-only clients loop on the interstitial and never reach the app.
  */
 
 import { clientKey } from "@/lib/waf";
 
 export const AUTH_GUARD_COOKIE = "chc_ac";
 
+/** Countries geo-blocked outright (403) on the login surfaces. */
+const BLOCKED_COUNTRIES = new Set(["CN"]);
+const BLOCKED_PATHS = new Set(["/auth", "/auth/", "/login", "/login/"]);
+
 /** Countries whose cookieless direct hits get challenged. */
-const CHALLENGED_COUNTRIES = new Set(["CN", "HK"]);
+const CHALLENGED_COUNTRIES = new Set(["HK"]);
 
 const GUARDED_PATHS = new Set(["/auth", "/auth/", "/reset-password", "/reset-password/"]);
 
-export type GuardDecision = "allow" | "challenge";
+export type GuardDecision = "allow" | "challenge" | "block";
 
 function dayStamp(now: Date): string {
   return now.toISOString().slice(0, 10);
@@ -75,10 +81,14 @@ function countCookielessHit(key: string, nowMs: number): number {
 
 export function decideAuthGuard(request: Request, now: Date = new Date()): GuardDecision {
   const url = new URL(request.url);
+  const country = (request.headers.get("cf-ipcountry") ?? "").toUpperCase();
+
+  // Hard geo-block: every CN request to the login surfaces gets a 403,
+  // regardless of cookies, referrer, method or hit count.
+  if (BLOCKED_PATHS.has(url.pathname) && BLOCKED_COUNTRIES.has(country)) return "block";
+
   if (!GUARDED_PATHS.has(url.pathname)) return "allow";
   if (!isDocumentRequest(request)) return "allow";
-
-  const country = (request.headers.get("cf-ipcountry") ?? "").toUpperCase();
   if (!CHALLENGED_COUNTRIES.has(country)) return "allow";
 
   // Anyone arriving from our own site (internal link) or already carrying our
@@ -104,6 +114,17 @@ export function decideAuthGuard(request: Request, now: Date = new Date()): Guard
   return "challenge";
 }
 
+/** 403 for geo-blocked regions. */
+export function authBlockResponse(): Response {
+  return new Response("Access denied.", {
+    status: 403,
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "no-store",
+      "x-robots-tag": "noindex, nofollow",
+    },
+  });
+}
 
 export function authChallengeResponse(url: string, now: Date = new Date()): Response {
   const token = guardToken(now);
