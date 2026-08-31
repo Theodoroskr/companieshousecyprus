@@ -2,7 +2,7 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-import { authChallengeResponse, decideAuthGuard } from "./lib/auth-edge-guard";
+import { authBlockResponse, authChallengeResponse, decideAuthGuard } from "./lib/auth-edge-guard";
 import { inspectRequest, wafDenyResponse } from "./lib/waf";
 
 // Application WAF: 403s known login-probe paths (/wp-admin, .env, ...),
@@ -15,10 +15,15 @@ const wafMiddleware = createMiddleware().server(async ({ next, request }) => {
   return next();
 });
 
-// Blocks the cookieless data-centre botnet that hammers /auth: those clients
-// never run JS, so they loop on the interstitial instead of hitting the app.
+// Geo-blocks CN on the login surfaces outright, and blocks the cookieless
+// data-centre botnet elsewhere: those clients never run JS, so they loop on
+// the interstitial instead of hitting the app.
 const authBotGuard = createMiddleware().server(async ({ next, request }) => {
-  if (decideAuthGuard(request) === "challenge") {
+  const decision = decideAuthGuard(request);
+  if (decision === "block") {
+    return authBlockResponse();
+  }
+  if (decision === "challenge") {
     return authChallengeResponse(request.url);
   }
   return next();
