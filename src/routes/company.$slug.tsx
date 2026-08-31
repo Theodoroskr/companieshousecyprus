@@ -9,7 +9,7 @@ import { PRODUCTS, formatPrice } from "@/lib/products";
 import { COMPANY_PAGE_COPY } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
-import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, officialNameDisplay, resolveAddressDisplay } from "@/lib/format";
+import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
@@ -221,13 +221,10 @@ export const Route = createFileRoute("/company/$slug")({
     }
 
     const businessName = isBusinessName(c);
-    const visibleOfficials = data.officials.filter((o) => !o.suppressed && o.person_name);
-    const directorNames = businessName
-      ? []
-      : visibleOfficials
-          .filter((o) => (o.position_en ?? "").toLowerCase().includes("director"))
-          .map((o) => officialNameDisplay(o.person_name)?.primary ?? (o.person_name as string))
-          .slice(0, 3);
+    // Officer names are not published on the free public page — they are
+    // released in the purchased reports/certificates only.
+    const directorNames: string[] = [];
+
     const faq = buildCompanyFaqs({
       name: c.name,
       officialNo: displayOfficialNo(c),
@@ -742,9 +739,10 @@ function CompanyPage() {
             ) : officials.length > 0 ? (
               <>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Current directors and the secretary of {company.name} as recorded in our copy of the register. For a
-                  version certified by the Registrar — accepted by banks, KYC teams and courts — order the Certificate
-                  of Directors &amp; Secretary.
+                  {company.name} has {officials.length} officer{officials.length === 1 ? "" : "s"} on record in our copy
+                  of the register. Individual names are not published on this free page — they are released in the
+                  Certificate of Directors &amp; Secretary, certified by the Registrar and accepted by banks, KYC teams
+                  and courts.
                 </p>
                 <ul className="mt-4 divide-y">
                   {officials.map((official, index) => {
@@ -755,20 +753,13 @@ function CompanyPage() {
                         : null;
                     return (
                       <li key={index} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
-                        {(() => {
-                          if (official.suppressed || !official.person_name) {
-                            return <span className="italic text-muted-foreground">Name withheld on request</span>;
-                          }
-                          const display = officialNameDisplay(official.person_name);
-                          return (
-                            <span className="font-medium">
-                              {display?.primary ?? official.person_name}
-                              {display?.original ? (
-                                <span className="ml-2 text-xs font-normal text-muted-foreground">{display.original}</span>
-                              ) : null}
-                            </span>
-                          );
-                        })()}
+                        {official.suppressed ? (
+                          <span className="italic text-muted-foreground">Name withheld on request</span>
+                        ) : (
+                          <span className="select-none font-medium tracking-wide text-muted-foreground/80 blur-[0.6px]">
+                            {maskName(official.person_name)}
+                          </span>
+                        )}
 
                         <span className="text-xs font-semibold uppercase tracking-widest text-copper">
                           {position}
@@ -782,6 +773,8 @@ function CompanyPage() {
                     );
                   })}
                 </ul>
+
+
 
                 <div className="mt-5 rounded-lg border border-copper/30 bg-copper/5 p-5">
                   <p className="font-display font-semibold">Need a certified copy?</p>
