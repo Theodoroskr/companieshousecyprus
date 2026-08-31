@@ -774,10 +774,7 @@ function CompanyPage() {
                   })}
                 </ul>
 
-                      </li>
-                    );
-                  })}
-                </ul>
+
 
                 <div className="mt-5 rounded-lg border border-copper/30 bg-copper/5 p-5">
                   <p className="font-display font-semibold">Need a certified copy?</p>
