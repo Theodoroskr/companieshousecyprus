@@ -69,39 +69,46 @@ async function resolveStoredSlug(
   supabase: ReturnType<typeof getServerClient>,
   input: string,
 ): Promise<string | null> {
-  const candidates = storedSlugCandidates(input, (v) => normaliseCompanyKey("", v)?.slug ?? null);
+  // Slug → registry key is a stable mapping and is resolved up to three times
+  // per company page render (profile, related, similar), so memoise it.
+  return cached(`slugkey:${input}`, 60 * 60_000, async () => {
+    const candidates = storedSlugCandidates(input, (v) => normaliseCompanyKey("", v)?.slug ?? null);
 
-  if (candidates.length > 0) {
-    const { data } = await supabase.from("companies").select("slug").in("slug", candidates).limit(1);
-    if (data?.[0]?.slug) return data[0].slug;
-  }
-  // Fall back to the canonical / historic name-based slug lookup.
-  const { data: resolved } = await supabase.rpc("resolve_company_slug", {
-    _input: (input ?? "").trim().toLowerCase(),
+    if (candidates.length > 0) {
+      const { data } = await supabase.from("companies").select("slug").in("slug", candidates).limit(1);
+      if (data?.[0]?.slug) return data[0].slug;
+    }
+    // Fall back to the canonical / historic name-based slug lookup.
+    const { data: resolved } = await supabase.rpc("resolve_company_slug", {
+      _input: (input ?? "").trim().toLowerCase(),
+    });
+    return (resolved as string | null) ?? null;
   });
-  return (resolved as string | null) ?? null;
 }
 
 export const getCompanyBySlug = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const supabase = getServerClient();
-    const slug = await resolveStoredSlug(supabase, data.slug);
-    if (!slug) throw new Error(`Company not found: ${data.slug}`);
-    const { data: company, error } = await supabase
-      .from("companies")
-      .select(COMPANY_COLUMNS)
-      .eq("slug", slug)
-      .single();
-    if (error || !company) {
-      throw new Error(`Company not found: ${data.slug}`);
-    }
-    // Officials come through the RPC so GDPR-suppressed names are withheld
-    // server-side and never reach the SSR HTML.
-    const { data: officials } = await supabase.rpc("company_officials_public", { p_slug: slug });
-    return { company, officials: officials ?? [] };
+  .handler(async ({ data }) =>
+    // The company row, its officials (accounts/filings years included) are
+    // identical for every visitor: memoise the whole payload per isolate so a
+    // repeat render never touches the backend.
+    cached(`company:${data.slug}`, 15 * 60_000, async () => {
+      const supabase = getServerClient();
+      const slug = await resolveStoredSlug(supabase, data.slug);
+      if (!slug) throw new Error(`Company not found: ${data.slug}`);
+      const [{ data: company, error }, { data: officials }] = await Promise.all([
+        supabase.from("companies").select(COMPANY_COLUMNS).eq("slug", slug).single(),
+        // Officials come through the RPC so GDPR-suppressed names are withheld
+        // server-side and never reach the SSR HTML.
+        supabase.rpc("company_officials_public", { p_slug: slug }),
+      ]);
+      if (error || !company) {
+        throw new Error(`Company not found: ${data.slug}`);
+      }
+      return { company, officials: officials ?? [] };
+    }),
+  );
 
-  });
 
 
 export const getRelatedCompanies = createServerFn({ method: "GET" })
