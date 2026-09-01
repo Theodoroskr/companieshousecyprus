@@ -7,6 +7,7 @@ import {
   DIRECTORY_SIGNALS,
   getDirectorySignal,
 } from "@/lib/directory-signals";
+import { cached } from "@/lib/server-cache";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
