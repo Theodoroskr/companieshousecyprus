@@ -343,15 +343,30 @@ export const getDistricts = createServerFn({ method: "GET" }).handler(async () =
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 
+/**
+ * Row count of `companies`.
+ *
+ * An exact COUNT(*) over 570k+ rows is a parallel sequential scan and was by
+ * far the heaviest recurring query on the database. The count is only ever
+ * displayed as a rounded "571,000+" figure, so it reads the planner statistic
+ * instead and is cached per worker for an hour.
+ */
+async function readCompanyCount(): Promise<number | null> {
+  return cached("stats:companyCount", 60 * 60_000, async () => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase.rpc("companies_row_estimate");
+    if (error) throw new Error(error.message);
+    const value = Number(data);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  });
+}
+
 export const getCompanyCount = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const supabase = getServerClient();
-    const { count, error } = await supabase.from("companies").select("*", { count: "exact", head: true });
-    if (error) throw new Error(error.message);
-    return count ?? null;
+    return await readCompanyCount();
   } catch (error) {
     // The count is decorative. Bulk imports can briefly put the database under
-    // enough load for an exact count to time out; that must not blank the home page.
+    // enough load for the read to fail; that must not blank the home page.
     console.error(error);
     return null;
   }
@@ -363,43 +378,43 @@ export const getCompanyCount = createServerFn({ method: "GET" }).handler(async (
  *
  * Never throws: a database hiccup returns nulls so callers can degrade to a
  * label instead of breaking the page or printing a stale/false figure.
- * - count       -> exact row count of `companies`
- * - lastRefresh -> finish time of the most recent successful registry import,
- *                  falling back to the newest `companies.updated_at`
  */
-export const getRegistryStats = createServerFn({ method: "GET" }).handler(async () => {
-  let count: number | null = null;
-  let lastRefresh: string | null = null;
-  try {
-    const supabase = getServerClient();
-    const [countRes, importRes, updatedRes] = await Promise.all([
-      supabase.from("companies").select("*", { count: "exact", head: true }),
-      supabase
-        .from("import_runs")
-        .select("finished_at")
-        .eq("status", "completed")
-        .not("finished_at", "is", null)
-        .order("finished_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("companies")
-        .select("updated_at")
-        .not("updated_at", "is", null)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-    if (!countRes.error) count = countRes.count ?? null;
-    lastRefresh =
-      (!importRes.error && importRes.data?.finished_at) ||
-      (!updatedRes.error && updatedRes.data?.updated_at) ||
-      null;
-  } catch {
-    // Fall through with nulls — statistics are decorative, never load-bearing.
-  }
-  return { count, lastRefresh };
-});
+export const getRegistryStats = createServerFn({ method: "GET" }).handler(async () =>
+  cached("stats:registry", 15 * 60_000, async () => {
+    let count: number | null = null;
+    let lastRefresh: string | null = null;
+    try {
+      const supabase = getServerClient();
+      const [countRes, importRes, updatedRes] = await Promise.all([
+        readCompanyCount().catch(() => null),
+        supabase
+          .from("import_runs")
+          .select("finished_at")
+          .eq("status", "completed")
+          .not("finished_at", "is", null)
+          .order("finished_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("companies")
+          .select("updated_at")
+          .not("updated_at", "is", null)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      count = countRes;
+      lastRefresh =
+        (!importRes.error && importRes.data?.finished_at) ||
+        (!updatedRes.error && updatedRes.data?.updated_at) ||
+        null;
+    } catch {
+      // Fall through with nulls — statistics are decorative, never load-bearing.
+    }
+    return { count, lastRefresh };
+  }),
+);
+
 
 export const getSitemapChunk = createServerFn({ method: "GET" })
   .validator((data: { n: number }) => data)
