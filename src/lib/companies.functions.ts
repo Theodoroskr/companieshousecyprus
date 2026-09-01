@@ -191,7 +191,7 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
       }
     }
 
-    return { byAddress, addressCount, byOfficial, addressFull: base?.address_full ?? null };
+    return { byAddress, addressCount, addressCountCapped, byOfficial, addressFull: base?.address_full ?? null };
     }),
   );
 
