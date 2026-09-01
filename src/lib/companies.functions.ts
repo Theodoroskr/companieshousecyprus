@@ -284,19 +284,23 @@ export const listCompaniesByLetter = createServerFn({ method: "GET" })
     const letter = data.letter.toUpperCase().replace(/[^A-Z]/g, "");
     if (!letter) throw new Error("Invalid letter");
     const page = Math.max(1, data.page);
-    // ILIKE 'X%' cannot use the (upper(left(name,1)), name) index and took
-    // ~18s per page; the helper filters on the indexed expression instead.
-    const { data: res, error } = await supabase.rpc("companies_by_letter_page", {
-      p_letter: letter[0]!,
-      p_limit: PAGE_SIZE,
-      p_offset: (page - 1) * PAGE_SIZE,
+    // Listing pages are identical for every visitor: cache the resolved page
+    // per worker isolate so a backend latency blip cannot land on TTFB.
+    return cached(`letter:${letter[0]}:${page}`, 5 * 60_000, async () => {
+      // ILIKE 'X%' cannot use the (upper(left(name,1)), name) index and took
+      // ~18s per page; the helper filters on the indexed expression instead.
+      const { data: res, error } = await supabase.rpc("companies_by_letter_page", {
+        p_letter: letter[0]!,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE,
+      });
+      if (error) throw error;
+      const list = (res ?? []) as Array<CompanyListItem & { total_matches: number }>;
+      return {
+        rows: list.map(({ total_matches: _t, ...rest }) => rest as CompanyListItem),
+        count: Number(list[0]?.total_matches ?? 0),
+      };
     });
-    if (error) throw error;
-    const list = (res ?? []) as Array<CompanyListItem & { total_matches: number }>;
-    return {
-      rows: list.map(({ total_matches: _t, ...rest }) => rest as CompanyListItem),
-      count: Number(list[0]?.total_matches ?? 0),
-    };
   });
 
 export const listCompaniesByDistrict = createServerFn({ method: "GET" })
