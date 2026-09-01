@@ -63,6 +63,10 @@ function countFor(byStatus: Map<string, number>, statuses: string[]): number {
 }
 
 export async function readDirectoryOverview() {
+  return cached("directory:overview", 5 * 60_000, loadDirectoryOverview);
+}
+
+async function loadDirectoryOverview() {
   const supabase = getServerClient();
   const [{ byStatus, refreshedAt }, sanctions] = await Promise.all([
     readSignalCounts(supabase),
