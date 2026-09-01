@@ -6,6 +6,7 @@ import { displayOfficialNo } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { companyCanonicalSlug } from "@/lib/slug";
+import { setDirectoryPageCacheHeaders } from "@/lib/http-cache";
 
 const districtQueryOptions = (district: string, page: number) =>
   queryOptions({

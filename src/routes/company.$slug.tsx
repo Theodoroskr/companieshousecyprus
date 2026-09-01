@@ -15,6 +15,7 @@ import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } f
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
 import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
+import { setCompanyPageCacheHeaders, setNoStoreHeaders } from "@/lib/http-cache";
 
 
 function RelatedCompanies({ slug }: { slug: string }) {

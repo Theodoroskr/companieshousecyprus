@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getDirectoryOverview } from "@/lib/directory.functions";
 import { DIRECTORY_GROUP_LABELS, type DirectorySignal } from "@/lib/directory-signals";
 import { ShieldAlert } from "lucide-react";
+import { setDirectoryPageCacheHeaders } from "@/lib/http-cache";
 
 const SITE_URL = "https://companieshousecyprus.com";
 

@@ -10,6 +10,7 @@ import { displayOfficialNo } from "@/lib/format";
 import { CopyGuard } from "@/components/copy-guard";
 import { Button } from "@/components/ui/button";
 import { companyCanonicalSlug } from "@/lib/slug";
+import { setDirectoryPageCacheHeaders } from "@/lib/http-cache";
 
 const SITE_URL = "https://companieshousecyprus.com";
 /** Beyond this depth pagination pages are thin duplicates — keep them out of the index. */
