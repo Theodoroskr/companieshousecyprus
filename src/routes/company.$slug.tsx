@@ -83,8 +83,11 @@ function RelatedCompanies({ slug }: { slug: string }) {
                 </Link>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-sm text-muted-foreground">{displayOfficialNo(row)}</span>
-                  <span className="text-sm text-muted-foreground">via {row.via}</span>
+                  <span className="text-sm text-muted-foreground">
+                    via {row.type_code === "B" ? "a shared owner" : "a shared officer"}
+                  </span>
                 </div>
+
               </li>
             ))}
           </ul>
