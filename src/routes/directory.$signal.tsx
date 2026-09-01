@@ -33,10 +33,7 @@ export const Route = createFileRoute("/directory/$signal")({
   loader: async ({ params, deps, context }) => {
     if (!getDirectorySignal(params.signal)) throw notFound();
     await context.queryClient.ensureQueryData(signalQueryOptions(params.signal, deps.page));
-    if (import.meta.env.SSR) {
-      const { setDirectoryPageCacheHeaders } = await import("@/lib/http-cache.server");
-      setDirectoryPageCacheHeaders();
-    }
+    setDirectoryPageCacheHeaders();
   },
 
   head: ({ params, match }) => {

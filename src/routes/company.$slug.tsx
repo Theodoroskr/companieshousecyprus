@@ -190,10 +190,7 @@ export const Route = createFileRoute("/company/$slug")({
     try {
       data = await context.queryClient.ensureQueryData(companyQueryOptions(params.slug));
     } catch {
-      if (import.meta.env.SSR) {
-        const { setNoStoreHeaders } = await import("@/lib/http-cache.server");
-        setNoStoreHeaders();
-      }
+      setNoStoreHeaders();
       // Unknown company: a real 404 (not a 500) so crawlers drop it cleanly.
       throw notFound();
     }
@@ -212,13 +209,10 @@ export const Route = createFileRoute("/company/$slug")({
       });
     }
 
-    if (import.meta.env.SSR) {
-      const { setCompanyPageCacheHeaders } = await import("@/lib/http-cache.server");
-      setCompanyPageCacheHeaders({
+    setCompanyPageCacheHeaders({
         slug: c.slug,
         updatedAt: c.updated_at ?? null,
       });
-    }
 
     const businessName = isBusinessName(c);
     // Officer names are not published on the free public page — they are
