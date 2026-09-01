@@ -6,10 +6,9 @@ import {
   DIRECTORY_PAGE_SIZE,
   getDirectorySignal,
 } from "@/lib/directory-signals";
-import { displayOfficialNo } from "@/lib/format";
 import { CopyGuard } from "@/components/copy-guard";
 import { Button } from "@/components/ui/button";
-import { companyCanonicalSlug } from "@/lib/slug";
+import { CompanyList } from "@/components/company-list";
 import { setDirectoryPageCacheHeaders } from "@/lib/http-cache";
 
 const SITE_URL = "https://companieshousecyprus.com";
@@ -119,7 +118,7 @@ function DirectorySignalPage() {
   return (
     <div>
       <section className="surface-deep grid-dots">
-        <div className="mx-auto max-w-7xl px-4 py-12">
+        <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
           <nav className="flex flex-wrap items-center gap-2 text-xs text-primary-foreground/60">
             <Link to="/" className="hover:text-primary-foreground">Cyprus company search</Link>
             <span>/</span>
@@ -127,7 +126,7 @@ function DirectorySignalPage() {
             <span>/</span>
             <span className="text-primary-foreground/90">{signal.title}</span>
           </nav>
-          <h1 className="mt-5 text-3xl font-bold md:text-4xl">{signal.title}</h1>
+          <h1 className="mt-4 text-2xl font-bold sm:text-3xl md:text-4xl">{signal.title}</h1>
           <p className="mt-3 max-w-3xl text-primary-foreground/75">{signal.detail}</p>
           <p className="mt-3 text-sm text-primary-foreground/70">
             {data.count.toLocaleString()} companies
@@ -136,35 +135,9 @@ function DirectorySignalPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:py-10">
         <CopyGuard>
-          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-panel">
-            {data.rows.length === 0 && (
-              <li className="p-10 text-center text-muted-foreground">No companies in this section.</li>
-            )}
-            {data.rows.map((company) => (
-              <li key={company.slug} className="transition-colors hover:bg-muted/50">
-                <Link
-                  to="/company/$slug"
-                  params={{ slug: companyCanonicalSlug(company) }}
-                  className="flex flex-wrap items-center justify-between gap-3 p-4"
-                >
-                  <span>
-                    <span className="block font-medium">{company.name}</span>
-                    <span className="mt-1 block text-sm text-muted-foreground">
-                      {displayOfficialNo(company)}
-                      {company.district_en && ` · ${company.district_en}`}
-                    </span>
-                  </span>
-                  {company.status_en && (
-                    <span className="rounded-full border bg-muted px-3 py-1 text-xs text-muted-foreground">
-                      {company.status_en}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <CompanyList rows={data.rows} emptyLabel="No companies in this section." />
         </CopyGuard>
         <p className="mt-3 text-xs text-muted-foreground">
           Registry status data is provided for individual look-ups only. Systematic copying, scraping
@@ -172,13 +145,13 @@ function DirectorySignalPage() {
         </p>
 
         {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-8 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button asChild variant="outline" disabled={page <= 1}>
               <Link to="/directory/$signal" params={{ signal: slug }} search={{ page: Math.max(1, page - 1) }}>
                 Previous
               </Link>
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-center text-sm text-muted-foreground">
               Page {page} of {totalPages.toLocaleString()}
             </span>
             <Button asChild variant="outline" disabled={page >= totalPages}>
