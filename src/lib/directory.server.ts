@@ -95,7 +95,15 @@ export async function readDirectorySignalPage(slugParam: string, pageParam: numb
   const signal = getDirectorySignal(slugParam);
   if (!signal) throw new Error(`Unknown directory signal: ${slugParam}`);
   const page = Math.min(Math.max(1, Math.floor(pageParam) || 1), DIRECTORY_MAX_PAGE);
+  return cached(`directory:signal:${signal.slug}:${page}`, 5 * 60_000, () =>
+    loadDirectorySignalPage(signal, page),
+  );
+}
 
+async function loadDirectorySignalPage(
+  signal: NonNullable<ReturnType<typeof getDirectorySignal>>,
+  page: number,
+) {
   const supabase = getServerClient();
   const [{ byStatus, refreshedAt }, listed] = await Promise.all([
     readSignalCounts(supabase),
