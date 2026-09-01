@@ -165,7 +165,9 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     ).slice(0, 8);
 
 
-    let byOfficial: Array<CompanyListItem & { via: string }> = [];
+    // Names are never returned to the client; only the fact that a shared
+    // officer exists is exposed publicly.
+    let byOfficial: CompanyListItem[] = [];
     if (names.length > 0) {
       const { data: links } = await supabase
         .from("officials")
@@ -173,23 +175,21 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
         .in("person_name", names)
         .neq("slug", slug)
         .limit(60);
-      const viaBySlug = new Map<string, string>();
+      const relatedSlugs = new Set<string>();
       for (const l of links ?? []) {
-        if (l.slug && !viaBySlug.has(l.slug)) viaBySlug.set(l.slug, l.person_name ?? "");
+        if (l.slug) relatedSlugs.add(l.slug);
       }
-      const slugs = Array.from(viaBySlug.keys()).slice(0, 8);
+      const slugs = Array.from(relatedSlugs).slice(0, 8);
       if (slugs.length > 0) {
         const { data: rows } = await supabase
           .from("companies")
           .select(select)
           .in("slug", slugs)
           .order("name", { ascending: true });
-        byOfficial = ((rows ?? []) as CompanyListItem[]).map((r) => ({
-          ...r,
-          via: viaBySlug.get(r.slug) ?? "",
-        }));
+        byOfficial = (rows ?? []) as CompanyListItem[];
       }
     }
+
 
     return { byAddress, addressCount, addressCountCapped, byOfficial, addressFull: base?.address_full ?? null };
     }),
