@@ -2062,6 +2062,10 @@ export type Database = {
         Returns: number
       }
       resolve_company_slug: { Args: { _input: string }; Returns: string }
+      sanctions_import_watchdog: {
+        Args: { _stall_minutes?: number }
+        Returns: Json
+      }
       sanctions_publish_import: {
         Args: { _import_id: string }
         Returns: {

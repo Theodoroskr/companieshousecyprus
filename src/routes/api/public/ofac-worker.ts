@@ -11,20 +11,31 @@ async function run(request: Request) {
   if (unauthorized) return unauthorized;
 
   const { runOfacStreamingImport } = await import("@/lib/sanctions.server");
-  try {
-    const result = await runOfacStreamingImport();
-    return Response.json(result, {
-      status: result.status === "failed" ? 500 : 200,
-      headers: { "cache-control": "no-store" },
-    });
-  } catch (error) {
+  const force =
+    new URL(request.url).searchParams.get("force") === "1" ||
+    (await request
+      .clone()
+      .json()
+      .then((b: unknown) => Boolean((b as { force?: boolean } | null)?.force))
+      .catch(() => false));
+
+  // The 126 MB parse takes far longer than the platform's HTTP request budget
+  // (the gateway cuts the connection at ~45s with a 502). Kick the import off
+  // and answer immediately so the caller's disconnect never interrupts it; the
+  // import row's heartbeat reports progress and the database watchdog closes
+  // the run if it really does die.
+  void runOfacStreamingImport({ force }).catch((error) => {
     console.error("[ofac-worker] import failed", error);
-    return Response.json(
-      { status: "failed", message: error instanceof Error ? error.message : "import failed" },
-      { status: 500 },
-    );
-  }
+  });
+
+
+
+  return Response.json(
+    { status: "started", message: "OFAC import started in the background." },
+    { status: 202, headers: { "cache-control": "no-store" } },
+  );
 }
+
 
 export const Route = createFileRoute("/api/public/ofac-worker")({
   server: {
