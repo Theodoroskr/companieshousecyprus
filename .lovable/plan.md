@@ -27,9 +27,9 @@ deliberately kept out of phase 1.
 
 **Phase 1 — live status/name check (simple, reliable)**
 
-1. `src/lib/drcor.server.ts` — fetch the search URL for a given registration number,
-   parse the result table, return rows of `{ name, prefix, number, type, nameStatus,
-   orgStatus }`.
+1. `src/lib/drcor.server.ts` — fetch the English search URL (`cultureInfo=en-AU`) for a
+   given registration number, parse the result table, return rows of `{ name, prefix,
+   number, type, nameStatus, orgStatus }`.
 2. `src/lib/drcor.functions.ts` — `refreshCompanyFromRegistrar` server fn, admin-only
    (`requireSupabaseAuth` + role check), rate limited.
 3. Compare against our stored row and show a diff: name changed, status changed, new
