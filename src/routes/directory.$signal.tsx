@@ -10,6 +10,7 @@ import { displayOfficialNo } from "@/lib/format";
 import { CopyGuard } from "@/components/copy-guard";
 import { Button } from "@/components/ui/button";
 import { companyCanonicalSlug } from "@/lib/slug";
+import { setDirectoryPageCacheHeaders } from "@/lib/http-cache";
 
 const SITE_URL = "https://companieshousecyprus.com";
 /** Beyond this depth pagination pages are thin duplicates — keep them out of the index. */
@@ -33,10 +34,7 @@ export const Route = createFileRoute("/directory/$signal")({
   loader: async ({ params, deps, context }) => {
     if (!getDirectorySignal(params.signal)) throw notFound();
     await context.queryClient.ensureQueryData(signalQueryOptions(params.signal, deps.page));
-    if (import.meta.env.SSR) {
-      const { setDirectoryPageCacheHeaders } = await import("@/lib/http-cache.server");
-      setDirectoryPageCacheHeaders();
-    }
+    setDirectoryPageCacheHeaders();
   },
 
   head: ({ params, match }) => {

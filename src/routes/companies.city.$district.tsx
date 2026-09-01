@@ -6,6 +6,7 @@ import { displayOfficialNo } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { companyCanonicalSlug } from "@/lib/slug";
+import { setDirectoryPageCacheHeaders } from "@/lib/http-cache";
 
 const districtQueryOptions = (district: string, page: number) =>
   queryOptions({
@@ -15,10 +16,7 @@ const districtQueryOptions = (district: string, page: number) =>
 
 export const Route = createFileRoute("/companies/city/$district")({
   loader: async ({ params, context }) => {
-    if (typeof window === "undefined") {
-      const { setDirectoryPageCacheHeaders } = await import("@/lib/http-cache.server");
-      setDirectoryPageCacheHeaders();
-    }
+    setDirectoryPageCacheHeaders();
     await context.queryClient.ensureQueryData(districtQueryOptions(params.district, 1));
   },
 
