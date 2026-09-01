@@ -5,6 +5,7 @@ import { normalizeCompanySlug, storedSlugCandidates } from "@/lib/slug";
 import { normaliseCompanyKey } from "@/lib/registrar-mapping";
 
 import { searchVariants } from "@/lib/format";
+import { cached } from "@/lib/server-cache";
 
 const PAGE_SIZE = 50;
 // Cap on how many matching rows the search helper materialises before
