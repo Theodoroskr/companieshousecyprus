@@ -58,13 +58,13 @@ function DirectoryIndex() {
   return (
     <div>
       <section className="surface-deep grid-dots">
-        <div className="mx-auto max-w-7xl px-4 py-12">
+        <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
           <nav className="flex items-center gap-2 text-xs text-primary-foreground/60">
             <Link to="/" className="hover:text-primary-foreground">Cyprus company search</Link>
             <span>/</span>
             <span className="text-primary-foreground/90">Directory</span>
           </nav>
-          <h1 className="mt-5 text-3xl font-bold md:text-4xl">Directory</h1>
+          <h1 className="mt-4 text-2xl font-bold sm:text-3xl md:text-4xl">Directory</h1>
           <p className="mt-3 max-w-3xl text-primary-foreground/75">
             Browse the Cyprus register by signal. Each section lists the companies carrying that
             signal in their public registry record, sourced from the Department of Registrar of
@@ -78,7 +78,7 @@ function DirectoryIndex() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:py-10">
         {groups.map((group) => {
           const signals = data.signals.filter((signal) => signal.group === group);
           if (signals.length === 0) return null;

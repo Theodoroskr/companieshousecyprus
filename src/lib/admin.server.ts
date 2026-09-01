@@ -67,18 +67,24 @@ export async function claimFirstAdminForUser(userId: string) {
 }
 
 export async function readStats() {
-  const supabase = adminClient();
-  const [companies, officials, withOfficials] = await Promise.all([
-    supabase.from("companies").select("slug", { count: "exact", head: true }),
-    supabase.from("officials").select("id", { count: "exact", head: true }),
-    supabase.from("companies").select("slug", { count: "exact", head: true }).gt("officials_count", 0),
-  ]);
-  return {
-    companies: companies.count ?? 0,
-    officials: officials.count ?? 0,
-    companiesWithOfficials: withOfficials.count ?? 0,
-  };
+  const { cached } = await import("@/lib/server-cache");
+  // Three exact counts over 571k+ companies and 1M+ officials ran on every
+  // admin dashboard render. Cached for 10 minutes — these are informational.
+  return cached("admin:stats", 10 * 60_000, async () => {
+    const supabase = adminClient();
+    const [companies, officials, withOfficials] = await Promise.all([
+      supabase.from("companies").select("slug", { count: "exact", head: true }),
+      supabase.from("officials").select("id", { count: "exact", head: true }),
+      supabase.from("companies").select("slug", { count: "exact", head: true }).gt("officials_count", 0),
+    ]);
+    return {
+      companies: companies.count ?? 0,
+      officials: officials.count ?? 0,
+      companiesWithOfficials: withOfficials.count ?? 0,
+    };
+  });
 }
+
 
 export async function createRun(input: {
   kind: string;

@@ -59,9 +59,11 @@ function RelatedCompanies({ slug }: { slug: string }) {
           </ul>
           {data && data.addressCount > byAddress.length && (
             <p className="mt-2 text-sm text-muted-foreground">
-              {data.addressCount} entities in total share this address.
+              {data.addressCount}
+              {data.addressCountCapped ? "+" : ""} entities in total share this address.
             </p>
           )}
+
         </div>
       )}
 
