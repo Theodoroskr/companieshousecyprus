@@ -327,16 +327,21 @@ export const listCompaniesByDistrict = createServerFn({ method: "GET" })
     const district = data.district.trim();
     if (!district) throw new Error("Invalid district");
     const page = Math.max(1, data.page);
-    const res = await supabase
-      .from("companies")
-      .select(
-        "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality",
-        { count: "exact" },
-      )
-      .eq("district_en", district)
-      .order("name", { ascending: true })
-      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    return { rows: (res.data ?? []) as CompanyListItem[], count: res.count ?? 0 };
+    // Same page for every visitor: memoise per worker isolate so heavy traffic
+    // costs at most one backend round-trip per district page per TTL window.
+    return cached(`district:${district.toLowerCase()}:${page}`, 5 * 60_000, async () => {
+      const res = await supabase
+        .from("companies")
+        .select(
+          "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality",
+          { count: "exact" },
+        )
+        .eq("district_en", district)
+        .order("name", { ascending: true })
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+      return { rows: (res.data ?? []) as CompanyListItem[], count: res.count ?? 0 };
+    });
+
   });
 
 export const getDistricts = createServerFn({ method: "GET" }).handler(async () => {
