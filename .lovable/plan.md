@@ -1,21 +1,22 @@
 # On-demand refresh from the official registrar (DRCOR)
 
-## What I verified just now
+## What I verified
 
-I fetched the exact URL you sent. It works as a plain GET — no login, no form posting:
+Two GET variants of the URL you sent work with no login and no form posting:
 
-`SearchResults.aspx?name=%25&number=4404&searchtype=optStartMatch&index=1&tname=%25&sc=0`
+- Greek: `SearchResults.aspx?name=%25&number=4404&searchtype=optStartMatch&index=1&tname=%25&sc=0`
+- English: same URL plus `&cultureInfo=en-AU`
 
-It returned, for number 4404:
+The English version returns clean labels, for number 4404:
 
-- HOT PANTS BOUTIQUE — EE 4404 — Business name — Last name — Registered
-- INFOCREDIT GROUP LIMITED — HE 4404 — Company — Last name — Registered
-- MECOS INFOCREDIT LIMITED — HE 4404 — Company — Previous name — Registered
-- MECOS LIMITED — HE 4404 — Company — Previous name — Registered
+- HOT PANTS BOUTIQUE — EE 4404 — Business Name — Current Name — Active
+- INFOCREDIT GROUP LIMITED — HE 4404 — Limited Company — Current Name — Active
+- MECOS INFOCREDIT LIMITED — HE 4404 — Limited Company — Previous Name — Active
+- MECOS LIMITED — HE 4404 — Limited Company — Previous Name — Active
 
-plus a "Last updated 01/09/2026" stamp. So yes: swapping `number=` gives us live
-name, type, name status (current vs previous) and organisation status per registration
-number, straight from a URL.
+plus a "Last Updated 01/09/2026" stamp. So swapping `number=` gives us live name, type,
+name status (current vs previous) and organisation status per registration number,
+straight from a URL, in English for reliable parsing.
 
 One limit found: the "Select" link into the full company detail page is an ASP.NET
 postback, not a normal URL. So address, registration date, directors and filings are
