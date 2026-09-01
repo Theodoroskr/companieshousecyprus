@@ -1030,6 +1030,30 @@ export async function runOfacStreamingImport(
     // a dropped connection continues with `Range: bytes=<received>-`.
     const reader = bodyStream.getReader();
 
+    // Heartbeat: the run has been dying silently mid-parse, so persist progress
+    // as it goes. A stalled run then shows exactly how far it got before it was
+    // cut off instead of an empty "parsing" row.
+    let lastHeartbeatAt = 0;
+    const heartbeat = async (note: string) => {
+      lastHeartbeatAt = Date.now();
+      await supabase
+        .from("sanctions_imports")
+        .update({
+          diagnostic_details: {
+            stage: "parsing",
+            note,
+            transport: relay ? "database-relay" : "direct",
+            bytesRead: fileSizeBytes,
+            recordsParsed: parsed,
+            chunksRead: chunkIndex,
+            elapsedMs: Date.now() - parseStartedAt,
+            rssMb: nodeRssMb(),
+            heartbeatAt: new Date().toISOString(),
+          } as never,
+        } as never)
+        .eq("id", importId!);
+    };
+
     let chunkIndex = 0;
     for (;;) {
       const { done, value } = await reader.read();
@@ -1044,7 +1068,10 @@ export async function runOfacStreamingImport(
       }
       chunkIndex += 1;
       if (chunkIndex % 16 === 0) sampleRss();
+      if (Date.now() - lastHeartbeatAt > 10_000) await heartbeat("streaming");
     }
+    await heartbeat("stream-drained");
+
     const tail = parser.finish();
     for (const record of tail.records) await stageRecord(record);
     await flush();
