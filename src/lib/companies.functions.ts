@@ -177,34 +177,38 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     }
 
     return { byAddress, addressCount, byOfficial, addressFull: base?.address_full ?? null };
-  });
+    }),
+  );
 
 // SSR "People also viewed": same district and entity type, so the strip is
 // indexable internal linking between company profiles (not personalised).
 export const getSimilarCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const supabase = getServerClient();
-    const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
+  .handler(async ({ data }) =>
+    cached(`similar:${data.slug}`, 30 * 60_000, async () => {
+      const supabase = getServerClient();
+      const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
 
-    const { data: base } = await supabase
-      .from("companies")
-      .select("slug, district_en, type_code")
-      .eq("slug", slug)
-      .single();
-    if (!base?.district_en || !base.type_code) return { similar: [] as CompanyListItem[] };
+      const { data: base } = await supabase
+        .from("companies")
+        .select("slug, district_en, type_code")
+        .eq("slug", slug)
+        .single();
+      if (!base?.district_en || !base.type_code) return { similar: [] as CompanyListItem[] };
 
-    const { data: rows } = await supabase
-      .from("companies")
-      .select("slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality")
-      .eq("district_en", base.district_en)
-      .eq("type_code", base.type_code)
-      .neq("slug", slug)
-      .order("name", { ascending: true })
-      .limit(9);
+      const { data: rows } = await supabase
+        .from("companies")
+        .select("slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality")
+        .eq("district_en", base.district_en)
+        .eq("type_code", base.type_code)
+        .neq("slug", slug)
+        .order("name", { ascending: true })
+        .limit(9);
 
-    return { similar: (rows ?? []) as CompanyListItem[] };
-  });
+      return { similar: (rows ?? []) as CompanyListItem[] };
+    }),
+  );
+
 
 
 const COMPANY_TYPE_CODES = ["C", "B", "P", "O", "N"] as const;
