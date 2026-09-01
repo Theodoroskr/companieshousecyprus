@@ -106,11 +106,16 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
 
 export const getRelatedCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
+  .handler(async ({ data }) =>
+    // Same-address / shared-officer lookups are identical for every visitor and
+    // were the single biggest source of repeated database CPU, so they are
+    // memoised per company for 30 minutes.
+    cached(`related:${data.slug}`, 30 * 60_000, async () => {
     const supabase = getServerClient();
     // Callers pass the canonical name-based slug, so resolve it to the stored
     // registry key exactly like getCompanyBySlug does.
     const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
+
     const select =
       "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
 
@@ -172,34 +177,38 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
     }
 
     return { byAddress, addressCount, byOfficial, addressFull: base?.address_full ?? null };
-  });
+    }),
+  );
 
 // SSR "People also viewed": same district and entity type, so the strip is
 // indexable internal linking between company profiles (not personalised).
 export const getSimilarCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const supabase = getServerClient();
-    const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
+  .handler(async ({ data }) =>
+    cached(`similar:${data.slug}`, 30 * 60_000, async () => {
+      const supabase = getServerClient();
+      const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
 
-    const { data: base } = await supabase
-      .from("companies")
-      .select("slug, district_en, type_code")
-      .eq("slug", slug)
-      .single();
-    if (!base?.district_en || !base.type_code) return { similar: [] as CompanyListItem[] };
+      const { data: base } = await supabase
+        .from("companies")
+        .select("slug, district_en, type_code")
+        .eq("slug", slug)
+        .single();
+      if (!base?.district_en || !base.type_code) return { similar: [] as CompanyListItem[] };
 
-    const { data: rows } = await supabase
-      .from("companies")
-      .select("slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality")
-      .eq("district_en", base.district_en)
-      .eq("type_code", base.type_code)
-      .neq("slug", slug)
-      .order("name", { ascending: true })
-      .limit(9);
+      const { data: rows } = await supabase
+        .from("companies")
+        .select("slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality")
+        .eq("district_en", base.district_en)
+        .eq("type_code", base.type_code)
+        .neq("slug", slug)
+        .order("name", { ascending: true })
+        .limit(9);
 
-    return { similar: (rows ?? []) as CompanyListItem[] };
-  });
+      return { similar: (rows ?? []) as CompanyListItem[] };
+    }),
+  );
+
 
 
 const COMPANY_TYPE_CODES = ["C", "B", "P", "O", "N"] as const;
@@ -334,15 +343,30 @@ export const getDistricts = createServerFn({ method: "GET" }).handler(async () =
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 
+/**
+ * Row count of `companies`.
+ *
+ * An exact COUNT(*) over 570k+ rows is a parallel sequential scan and was by
+ * far the heaviest recurring query on the database. The count is only ever
+ * displayed as a rounded "571,000+" figure, so it reads the planner statistic
+ * instead and is cached per worker for an hour.
+ */
+async function readCompanyCount(): Promise<number | null> {
+  return cached("stats:companyCount", 60 * 60_000, async () => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase.rpc("companies_row_estimate");
+    if (error) throw new Error(error.message);
+    const value = Number(data);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  });
+}
+
 export const getCompanyCount = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const supabase = getServerClient();
-    const { count, error } = await supabase.from("companies").select("*", { count: "exact", head: true });
-    if (error) throw new Error(error.message);
-    return count ?? null;
+    return await readCompanyCount();
   } catch (error) {
     // The count is decorative. Bulk imports can briefly put the database under
-    // enough load for an exact count to time out; that must not blank the home page.
+    // enough load for the read to fail; that must not blank the home page.
     console.error(error);
     return null;
   }
@@ -354,43 +378,64 @@ export const getCompanyCount = createServerFn({ method: "GET" }).handler(async (
  *
  * Never throws: a database hiccup returns nulls so callers can degrade to a
  * label instead of breaking the page or printing a stale/false figure.
- * - count       -> exact row count of `companies`
- * - lastRefresh -> finish time of the most recent successful registry import,
- *                  falling back to the newest `companies.updated_at`
  */
-export const getRegistryStats = createServerFn({ method: "GET" }).handler(async () => {
-  let count: number | null = null;
-  let lastRefresh: string | null = null;
-  try {
-    const supabase = getServerClient();
-    const [countRes, importRes, updatedRes] = await Promise.all([
-      supabase.from("companies").select("*", { count: "exact", head: true }),
-      supabase
-        .from("import_runs")
-        .select("finished_at")
-        .eq("status", "completed")
-        .not("finished_at", "is", null)
-        .order("finished_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("companies")
-        .select("updated_at")
-        .not("updated_at", "is", null)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-    if (!countRes.error) count = countRes.count ?? null;
-    lastRefresh =
-      (!importRes.error && importRes.data?.finished_at) ||
-      (!updatedRes.error && updatedRes.data?.updated_at) ||
-      null;
-  } catch {
-    // Fall through with nulls — statistics are decorative, never load-bearing.
-  }
-  return { count, lastRefresh };
-});
+export const getRegistryStats = createServerFn({ method: "GET" }).handler(async () =>
+  cached("stats:registry", 15 * 60_000, async () => {
+    let count: number | null = null;
+    let lastRefresh: string | null = null;
+    try {
+      const supabase = getServerClient();
+      const [countRes, importRes, updatedRes] = await Promise.all([
+        readCompanyCount().catch(() => null),
+        supabase
+          .from("import_runs")
+          .select("finished_at")
+          .eq("status", "completed")
+          .not("finished_at", "is", null)
+          .order("finished_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("companies")
+          .select("updated_at")
+          .not("updated_at", "is", null)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      count = countRes;
+      lastRefresh =
+        (!importRes.error && importRes.data?.finished_at) ||
+        (!updatedRes.error && updatedRes.data?.updated_at) ||
+        null;
+    } catch {
+      // Fall through with nulls — statistics are decorative, never load-bearing.
+    }
+    return { count, lastRefresh };
+  }),
+);
+
+
+/**
+ * First slug of a sitemap chunk. Resolving it needs one deep OFFSET scan, which
+ * was one of the most expensive recurring queries, so the boundary slug (a few
+ * bytes) is memoised per worker rather than the whole 50k-row chunk.
+ */
+async function sitemapChunkStartSlug(
+  supabase: ReturnType<typeof getServerClient>,
+  n: number,
+): Promise<string | null> {
+  if (n === 0) return null;
+  return cached(`sitemap:start:${n}`, 6 * 60 * 60_000, async () => {
+    const { data, error } = await supabase
+      .from("companies")
+      .select("slug")
+      .order("slug", { ascending: true })
+      .range(n * SITEMAP_CHUNK_SIZE - 1, n * SITEMAP_CHUNK_SIZE - 1);
+    if (error) throw error;
+    return data?.[0]?.slug ?? null;
+  });
+}
 
 export const getSitemapChunk = createServerFn({ method: "GET" })
   .validator((data: { n: number }) => data)
@@ -398,22 +443,20 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const n = Math.max(0, data.n);
     // PostgREST caps a single response at 1,000 rows, so the chunk is filled
-    // by paging internally. Only the first page uses a deep OFFSET; the rest
-    // use a keyset cursor on the slug primary key, which stays fast.
+    // by paging internally with a keyset cursor on the slug primary key.
     const PAGE = 1_000;
-    const start = n * SITEMAP_CHUNK_SIZE;
     const rows: { slug: string; canonicalSlug: string; lastmod: string | null }[] = [];
-    let cursor: string | null = null;
+    let cursor: string | null = await sitemapChunkStartSlug(supabase, n);
+    if (n > 0 && !cursor) return { n, rows, hasMore: false };
 
     while (rows.length < SITEMAP_CHUNK_SIZE) {
       const limit = Math.min(PAGE, SITEMAP_CHUNK_SIZE - rows.length);
       let query = supabase
         .from("companies")
         .select("slug, canonical_slug, content_updated_at")
-        .order("slug", { ascending: true });
-      query = cursor
-        ? query.gt("slug", cursor).limit(limit)
-        : query.range(start, start + limit - 1);
+        .order("slug", { ascending: true })
+        .limit(limit);
+      if (cursor) query = query.gt("slug", cursor);
 
       const { data: page, error } = await query;
       if (error) throw error;
@@ -428,6 +471,7 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
       if (batch.length < limit) break;
       cursor = batch[batch.length - 1]!.slug;
     }
+
 
     return {
       n,

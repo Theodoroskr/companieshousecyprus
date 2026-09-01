@@ -2010,6 +2010,7 @@ export type Database = {
           name: string
         }[]
       }
+      companies_row_estimate: { Args: never; Returns: number }
       company_official_names_public: {
         Args: { p_limit?: number; p_slug: string }
         Returns: {
