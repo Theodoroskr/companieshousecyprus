@@ -134,17 +134,25 @@ export const getRelatedCompanies = createServerFn({ method: "GET" })
 
     let byAddress: CompanyListItem[] = [];
     let addressCount = 0;
+    let addressCountCapped = false;
     if (base?.address_full) {
+      // No exact count: counting every company at a shared address was a
+      // full-table scan on the busiest query in the app. We over-fetch a
+      // small window instead (index-only on address_full, name) and show
+      // "40+" once the window is full.
       const res = await supabase
         .from("companies")
-        .select(select, { count: "exact" })
+        .select(select)
         .eq("address_full", base.address_full)
         .neq("slug", slug)
         .order("name", { ascending: true })
-        .limit(8);
-      byAddress = (res.data ?? []) as CompanyListItem[];
-      addressCount = res.count ?? byAddress.length;
+        .limit(41);
+      const rows = (res.data ?? []) as CompanyListItem[];
+      addressCountCapped = rows.length > 40;
+      addressCount = addressCountCapped ? 40 : rows.length;
+      byAddress = rows.slice(0, 8);
     }
+
 
     // Suppressed names are excluded so they can never surface as a
     // "shared official" link on another company page.
