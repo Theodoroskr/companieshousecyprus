@@ -106,11 +106,16 @@ export const getCompanyBySlug = createServerFn({ method: "GET" })
 
 export const getRelatedCompanies = createServerFn({ method: "GET" })
   .validator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
+  .handler(async ({ data }) =>
+    // Same-address / shared-officer lookups are identical for every visitor and
+    // were the single biggest source of repeated database CPU, so they are
+    // memoised per company for 30 minutes.
+    cached(`related:${data.slug}`, 30 * 60_000, async () => {
     const supabase = getServerClient();
     // Callers pass the canonical name-based slug, so resolve it to the stored
     // registry key exactly like getCompanyBySlug does.
     const slug = (await resolveStoredSlug(supabase, data.slug)) ?? normalizeCompanySlug(data.slug);
+
     const select =
       "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality" as const;
 
