@@ -416,28 +416,47 @@ export const getRegistryStats = createServerFn({ method: "GET" }).handler(async 
 );
 
 
+/**
+ * First slug of a sitemap chunk. Resolving it needs one deep OFFSET scan, which
+ * was one of the most expensive recurring queries, so the boundary slug (a few
+ * bytes) is memoised per worker rather than the whole 50k-row chunk.
+ */
+async function sitemapChunkStartSlug(
+  supabase: ReturnType<typeof getServerClient>,
+  n: number,
+): Promise<string | null> {
+  if (n === 0) return null;
+  return cached(`sitemap:start:${n}`, 6 * 60 * 60_000, async () => {
+    const { data, error } = await supabase
+      .from("companies")
+      .select("slug")
+      .order("slug", { ascending: true })
+      .range(n * SITEMAP_CHUNK_SIZE - 1, n * SITEMAP_CHUNK_SIZE - 1);
+    if (error) throw error;
+    return data?.[0]?.slug ?? null;
+  });
+}
+
 export const getSitemapChunk = createServerFn({ method: "GET" })
   .validator((data: { n: number }) => data)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const n = Math.max(0, data.n);
     // PostgREST caps a single response at 1,000 rows, so the chunk is filled
-    // by paging internally. Only the first page uses a deep OFFSET; the rest
-    // use a keyset cursor on the slug primary key, which stays fast.
+    // by paging internally with a keyset cursor on the slug primary key.
     const PAGE = 1_000;
-    const start = n * SITEMAP_CHUNK_SIZE;
     const rows: { slug: string; canonicalSlug: string; lastmod: string | null }[] = [];
-    let cursor: string | null = null;
+    let cursor: string | null = await sitemapChunkStartSlug(supabase, n);
+    if (n > 0 && !cursor) return { n, rows, hasMore: false };
 
     while (rows.length < SITEMAP_CHUNK_SIZE) {
       const limit = Math.min(PAGE, SITEMAP_CHUNK_SIZE - rows.length);
       let query = supabase
         .from("companies")
         .select("slug, canonical_slug, content_updated_at")
-        .order("slug", { ascending: true });
-      query = cursor
-        ? query.gt("slug", cursor).limit(limit)
-        : query.range(start, start + limit - 1);
+        .order("slug", { ascending: true })
+        .limit(limit);
+      if (cursor) query = query.gt("slug", cursor);
 
       const { data: page, error } = await query;
       if (error) throw error;
@@ -452,6 +471,7 @@ export const getSitemapChunk = createServerFn({ method: "GET" })
       if (batch.length < limit) break;
       cursor = batch[batch.length - 1]!.slug;
     }
+
 
     return {
       n,
