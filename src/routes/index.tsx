@@ -167,9 +167,10 @@ function HomePage() {
 
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Free Cyprus company search from official Registrar data — look up status, registration number, type and
-            registered office. Order Company Profile Reports, Credit Reports, Sanctions Snapshots and official
-            certificates with digital delivery. Independent service, not the Registrar.
+            Searching for Cyprus Companies House? Look up any of 571,000+ official Registrar of Companies records free —
+            status, HE registration number, company type and registered office. Order Company Profile Reports, Credit
+            Reports, Sanctions Snapshots and official certificates with digital delivery. Independent service, not the
+            Registrar.
           </p>
 
 
