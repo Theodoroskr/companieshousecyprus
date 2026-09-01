@@ -7,6 +7,7 @@ import {
   DIRECTORY_SIGNALS,
   getDirectorySignal,
 } from "@/lib/directory-signals";
+import { cached } from "@/lib/server-cache";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -63,6 +64,10 @@ function countFor(byStatus: Map<string, number>, statuses: string[]): number {
 }
 
 export async function readDirectoryOverview() {
+  return cached("directory:overview", 5 * 60_000, loadDirectoryOverview);
+}
+
+async function loadDirectoryOverview() {
   const supabase = getServerClient();
   const [{ byStatus, refreshedAt }, sanctions] = await Promise.all([
     readSignalCounts(supabase),
@@ -90,7 +95,15 @@ export async function readDirectorySignalPage(slugParam: string, pageParam: numb
   const signal = getDirectorySignal(slugParam);
   if (!signal) throw new Error(`Unknown directory signal: ${slugParam}`);
   const page = Math.min(Math.max(1, Math.floor(pageParam) || 1), DIRECTORY_MAX_PAGE);
+  return cached(`directory:signal:${signal.slug}:${page}`, 5 * 60_000, () =>
+    loadDirectorySignalPage(signal, page),
+  );
+}
 
+async function loadDirectorySignalPage(
+  signal: NonNullable<ReturnType<typeof getDirectorySignal>>,
+  page: number,
+) {
   const supabase = getServerClient();
   const [{ byStatus, refreshedAt }, listed] = await Promise.all([
     readSignalCounts(supabase),
