@@ -1,54 +1,63 @@
 # On-demand refresh from the official registrar (DRCOR)
 
-## Short answer
+## What I verified just now
 
-Yes — technically we can fetch that DRCOR page on request. It is a public, unauthenticated
-search page, so a server-side fetch for a single company (triggered by a user or an admin)
-is feasible. What is not advisable is bulk crawling: DRCOR is an ASP.NET WebForms app
-(ViewState, postbacks, session cookies, throttling) and mass scraping would be slow,
-fragile and likely to get the IP blocked. It would also go beyond what the site's terms
-allow.
+I fetched the exact URL you sent. It works as a plain GET — no login, no form posting:
 
-So the realistic shape is: **on-demand, one company at a time, cached**.
+`SearchResults.aspx?name=%25&number=4404&searchtype=optStartMatch&index=1&tname=%25&sc=0`
 
-## What it would do
+It returned, for number 4404:
 
-1. On a company profile, an admin (phase 1) sees a "Refresh from registrar" action.
-2. The server fetches the DRCOR search result for that registration number, follows through
-   to the company detail page, and parses: name, type, status, status date, registration
-   date, registered address.
-3. Differences vs our stored row are shown as a diff. Applying the diff updates the company
-   row and bumps `content_updated_at` (which already triggers IndexNow requeue).
-4. Every attempt is logged (who, when, outcome, raw snippet) so we can audit and detect
-   layout changes.
+- HOT PANTS BOUTIQUE — EE 4404 — Business name — Last name — Registered
+- INFOCREDIT GROUP LIMITED — HE 4404 — Company — Last name — Registered
+- MECOS INFOCREDIT LIMITED — HE 4404 — Company — Previous name — Registered
+- MECOS LIMITED — HE 4404 — Company — Previous name — Registered
 
-Officials/directors are on a separate DRCOR tab and can be added later once the basic flow
-is proven stable.
+plus a "Last updated 01/09/2026" stamp. So yes: swapping `number=` gives us live
+name, type, name status (current vs previous) and organisation status per registration
+number, straight from a URL.
+
+One limit found: the "Select" link into the full company detail page is an ASP.NET
+postback, not a normal URL. So address, registration date, directors and filings are
+**not** reachable by simple GET — that step needs session + ViewState emulation and is
+deliberately kept out of phase 1.
+
+## What to build
+
+**Phase 1 — live status/name check (simple, reliable)**
+
+1. `src/lib/drcor.server.ts` — fetch the search URL for a given registration number,
+   parse the result table, return rows of `{ name, prefix, number, type, nameStatus,
+   orgStatus }`.
+2. `src/lib/drcor.functions.ts` — `refreshCompanyFromRegistrar` server fn, admin-only
+   (`requireSupabaseAuth` + role check), rate limited.
+3. Compare against our stored row and show a diff: name changed, status changed, new
+   previous names, or business name vs company mismatch.
+4. Applying the diff updates the company and bumps `content_updated_at`, which already
+   requeues the page in IndexNow.
+
+**Phase 2 (later, only if phase 1 proves stable)** — ViewState/postback emulation to open
+the detail page for address, registration date and officials.
 
 ## Guardrails
 
-- Server-only. Never called from the browser directly.
-- Hard rate limit: 1 request per company per hour, and a global cap (e.g. 30/hour) so we
-  never look like a crawler.
-- Result cached ~24h; repeated clicks return the cached snapshot.
-- Timeouts (10s) and graceful failure — the page still renders our stored data if DRCOR is
-  down or changes layout.
-- Admin-only to begin with. Exposing it to end users (e.g. as a paid "live registry check")
-  is a separate decision.
+- Server-side only; never called from the browser.
+- 1 fetch per company per hour, global cap around 30/hour, 10s timeout.
+- Result cached ~24h; repeat clicks read the cache.
+- Failures degrade silently — the page keeps showing our stored data.
+- Every attempt logged for audit and to detect layout changes.
 
 ## Technical notes
 
-- New `src/lib/drcor.server.ts`: session bootstrap (GET search page for cookies +
-  `__VIEWSTATE`), POST the search, parse results with a light HTML parser, map to our
-  company shape.
-- New `src/lib/drcor.functions.ts`: `refreshCompanyFromRegistrar` server fn, guarded by
-  `requireSupabaseAuth` + admin role check, with rate limiting.
 - New table `public.registrar_fetches` (company key, requested_by, status, parsed payload,
-  error, created_at) with RLS + GRANTs limited to admins/service_role.
-- Admin UI: a refresh button and diff panel on the company page for admins only.
-- No changes to the existing ETL/import flows; this is additive.
+  error, fetched_at) with RLS + GRANTs for admins/service_role only.
+- Light HTML parsing of the results table; strict row-shape validation so a layout change
+  fails loudly instead of writing junk.
+- Admin UI: a "Refresh from registrar" button plus a diff panel on the company page,
+  visible to admins only.
+- Existing bulk import/ETL flows untouched — this is additive and per-company.
 
 ## Open question
 
-Should the refresh stay admin-only, or should visitors be able to trigger a live check
-(free, or as a small paid add-on)? Admin-only is the safe start.
+Admin-only to start, or eventually let visitors trigger a live check (free, or a small
+paid "live registry verification" add-on)? Admin-only is the safe first step.
