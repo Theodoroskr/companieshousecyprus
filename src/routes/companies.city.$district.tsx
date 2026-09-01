@@ -15,8 +15,13 @@ const districtQueryOptions = (district: string, page: number) =>
 
 export const Route = createFileRoute("/companies/city/$district")({
   loader: async ({ params, context }) => {
+    if (typeof window === "undefined") {
+      const { setDirectoryPageCacheHeaders } = await import("@/lib/http-cache.server");
+      setDirectoryPageCacheHeaders();
+    }
     await context.queryClient.ensureQueryData(districtQueryOptions(params.district, 1));
   },
+
   head: ({ params }) => {
     const name = params.district.charAt(0).toUpperCase() + params.district.slice(1);
     const title = `Companies registered in ${name}, Cyprus | Companies House Cyprus`;
