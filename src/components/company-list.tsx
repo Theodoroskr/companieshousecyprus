@@ -42,7 +42,7 @@ export function CompanyList({
         >
           <Link
             to="/company/$slug"
-            params={{ slug: companyCanonicalSlug(company as never) }}
+            params={{ slug: companyCanonicalSlug(company) }}
             className="flex flex-col gap-1.5 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4"
           >
             <span className="min-w-0">
@@ -50,7 +50,7 @@ export function CompanyList({
                 {company.name}
               </span>
               <span className="mt-1 block truncate text-xs text-muted-foreground sm:text-sm">
-                {displayOfficialNo(company as never)}
+                {displayOfficialNo(company)}
                 {company.district_en && ` · ${company.district_en}`}
               </span>
             </span>
