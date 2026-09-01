@@ -1,29 +1,54 @@
-# Registry Activity Feed
+# On-demand refresh from the official registrar (DRCOR)
 
-A public, crawlable page showing the most recent registry activity, with every entry linking to its company profile. Because the database has no filing-level records, the feed is built from the dates we do hold: registration date, status date and last content update.
+## Short answer
 
-## What the page shows
+Yes — technically we can fetch that DRCOR page on request. It is a public, unauthenticated
+search page, so a server-side fetch for a single company (triggered by a user or an admin)
+is feasible. What is not advisable is bulk crawling: DRCOR is an ASP.NET WebForms app
+(ViewState, postbacks, session cookies, throttling) and mass scraping would be slow,
+fragile and likely to get the IP blocked. It would also go beyond what the site's terms
+allow.
 
-Path: `/registry-activity`, plus paginated pages `/registry-activity/2`, `/3`, …
+So the realistic shape is: **on-demand, one company at a time, cached**.
 
-Two tabs (same page, no JS routing needed — separate query params):
-- **Newly registered** — companies ordered by `registration_date` desc.
-- **Status changes** — companies whose `status_date` is most recent (strike-offs, dissolutions, reinstatements), showing old-to-new status wording where available.
+## What it would do
 
-Each row: company name (canonical link), registration number, type, status badge, district, and the relevant date. Reuses the existing shared company list component and mobile-friendly row layout used by the directory and A–Z pages.
+1. On a company profile, an admin (phase 1) sees a "Refresh from registrar" action.
+2. The server fetches the DRCOR search result for that registration number, follows through
+   to the company detail page, and parses: name, type, status, status date, registration
+   date, registered address.
+3. Differences vs our stored row are shown as a diff. Applying the diff updates the company
+   row and bumps `content_updated_at` (which already triggers IndexNow requeue).
+4. Every attempt is logged (who, when, outcome, raw snippet) so we can audit and detect
+   layout changes.
 
-## Why it's worth building
+Officials/directors are on a separate DRCOR tab and can be added later once the basic flow
+is proven stable.
 
-- A page whose content changes every day, giving crawlers a fresh entry point into new company URLs.
-- Feeds newly registered companies straight into the IndexNow queue.
-- Internal links from the directory and footer spread crawl equity to profiles that currently only appear deep in sitemap chunks.
+## Guardrails
+
+- Server-only. Never called from the browser directly.
+- Hard rate limit: 1 request per company per hour, and a global cap (e.g. 30/hour) so we
+  never look like a crawler.
+- Result cached ~24h; repeated clicks return the cached snapshot.
+- Timeouts (10s) and graceful failure — the page still renders our stored data if DRCOR is
+  down or changes layout.
+- Admin-only to begin with. Exposing it to end users (e.g. as a paid "live registry check")
+  is a separate decision.
 
 ## Technical notes
 
-- New security-definer RPC `registry_activity_page(p_mode text, p_limit int, p_offset int)` returning canonical slug, name, official_no, type, status, district and the sort date. Grants to `service_role` only, called from the server loader like the existing directory RPCs.
-- Supporting indexes on `companies (registration_date desc)` and `companies (status_date desc)` filtered to non-null, so paging stays off the CPU.
-- Server-side cache with a 10-minute TTL plus stale-while-revalidate, and HTTP cache headers, matching `src/lib/http-cache.ts` usage on the district pages.
-- Pagination capped at 20 pages (1,000 entries) to avoid deep-offset scans; deeper pages return `noindex`.
-- Route metadata: unique title/description, canonical per page, `ItemList` JSON-LD, `prev`/`next` links. Page 1 added to the pages sitemap.
-- Footer and `/directory` link to the feed.
-- No officer names anywhere on the page, in line with the public masking rules.
+- New `src/lib/drcor.server.ts`: session bootstrap (GET search page for cookies +
+  `__VIEWSTATE`), POST the search, parse results with a light HTML parser, map to our
+  company shape.
+- New `src/lib/drcor.functions.ts`: `refreshCompanyFromRegistrar` server fn, guarded by
+  `requireSupabaseAuth` + admin role check, with rate limiting.
+- New table `public.registrar_fetches` (company key, requested_by, status, parsed payload,
+  error, created_at) with RLS + GRANTs limited to admins/service_role.
+- Admin UI: a refresh button and diff panel on the company page for admins only.
+- No changes to the existing ETL/import flows; this is additive.
+
+## Open question
+
+Should the refresh stay admin-only, or should visitors be able to trigger a live check
+(free, or as a small paid add-on)? Admin-only is the safe start.
