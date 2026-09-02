@@ -22,6 +22,15 @@ import {
   buildHomeHead,
 } from "@/lib/home-head";
 import { homeWebsiteJsonLd, homeOrganizationJsonLd } from "@/lib/home-jsonld";
+import iso9001Asset from "@/assets/eurocert-iso-9001.png.asset.json";
+import iso27001Asset from "@/assets/eurocert-iso-27001.png.asset.json";
+import iso22301Asset from "@/assets/eurocert-iso-22301.png.asset.json";
+
+const HOME_CERTIFICATIONS = [
+  { asset: iso9001Asset, code: "ISO 9001", label: "Quality Management", alt: "EUROCERT certified management system — ISO 9001:2015" },
+  { asset: iso27001Asset, code: "ISO/IEC 27001", label: "Information Security Management", alt: "EUROCERT certified management system — ISO/IEC 27001:2023" },
+  { asset: iso22301Asset, code: "ISO 22301", label: "Business Continuity Management", alt: "EUROCERT certified management system — ISO 22301:2019" },
+];
 
 const homeQueryOptions = () =>
   queryOptions({
