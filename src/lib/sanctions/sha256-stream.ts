@@ -28,6 +28,22 @@ export class StreamingSha256 {
   private totalLen = 0;
   private readonly w = new Int32Array(64);
 
+  static restore(state: { h: number[]; block: number[]; blockLen: number; totalLen: number }): StreamingSha256 {
+    const hash = new StreamingSha256();
+    if (state.h.length !== 8 || state.blockLen < 0 || state.blockLen > 63 || state.block.length !== 64) {
+      throw new Error("Invalid SHA-256 checkpoint");
+    }
+    hash.h = state.h.map((value) => value | 0);
+    hash.block.set(state.block);
+    hash.blockLen = state.blockLen;
+    hash.totalLen = state.totalLen;
+    return hash;
+  }
+
+  checkpoint(): { h: number[]; block: number[]; blockLen: number; totalLen: number } {
+    return { h: [...this.h], block: [...this.block], blockLen: this.blockLen, totalLen: this.totalLen };
+  }
+
   update(data: Uint8Array): void {
     this.totalLen += data.byteLength;
     let offset = 0;
