@@ -544,6 +544,270 @@ export type Database = {
         }
         Relationships: []
       }
+      ofac_entries: {
+        Row: {
+          entry_id: string
+          job_id: string
+          payload: Json
+          processed_at: string | null
+          profile_id: string | null
+        }
+        Insert: {
+          entry_id: string
+          job_id: string
+          payload: Json
+          processed_at?: string | null
+          profile_id?: string | null
+        }
+        Update: {
+          entry_id?: string
+          job_id?: string
+          payload?: Json
+          processed_at?: string | null
+          profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_entries_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ofac_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ofac_id_documents: {
+        Row: {
+          document_id: string
+          identity_id: string
+          job_id: string
+          payload: Json
+        }
+        Insert: {
+          document_id: string
+          identity_id: string
+          job_id: string
+          payload: Json
+        }
+        Update: {
+          document_id?: string
+          identity_id?: string
+          job_id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_id_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ofac_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ofac_import_jobs: {
+        Row: {
+          aircraft_count: number
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          entity_count: number
+          file_size_bytes: number
+          force_run: boolean
+          hash_state: Json
+          id: string
+          import_id: string
+          last_error: string | null
+          lease_until: string | null
+          next_chunk: number
+          parsed_entries: number
+          parser_state: Json
+          person_count: number
+          phase: string
+          relay_job_id: string
+          ship_count: number
+          staged_entries: number
+          updated_at: string
+          wallet_count: number
+        }
+        Insert: {
+          aircraft_count?: number
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          entity_count?: number
+          file_size_bytes?: number
+          force_run?: boolean
+          hash_state?: Json
+          id?: string
+          import_id: string
+          last_error?: string | null
+          lease_until?: string | null
+          next_chunk?: number
+          parsed_entries?: number
+          parser_state?: Json
+          person_count?: number
+          phase?: string
+          relay_job_id: string
+          ship_count?: number
+          staged_entries?: number
+          updated_at?: string
+          wallet_count?: number
+        }
+        Update: {
+          aircraft_count?: number
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          entity_count?: number
+          file_size_bytes?: number
+          force_run?: boolean
+          hash_state?: Json
+          id?: string
+          import_id?: string
+          last_error?: string | null
+          lease_until?: string | null
+          next_chunk?: number
+          parsed_entries?: number
+          parser_state?: Json
+          person_count?: number
+          phase?: string
+          relay_job_id?: string
+          ship_count?: number
+          staged_entries?: number
+          updated_at?: string
+          wallet_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_import_jobs_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: true
+            referencedRelation: "sanctions_imports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ofac_import_jobs_relay_job_id_fkey"
+            columns: ["relay_job_id"]
+            isOneToOne: true
+            referencedRelation: "sanctions_relay_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ofac_locations: {
+        Row: {
+          job_id: string
+          location_id: string
+          payload: Json
+        }
+        Insert: {
+          job_id: string
+          location_id: string
+          payload: Json
+        }
+        Update: {
+          job_id?: string
+          location_id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_locations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ofac_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ofac_parties: {
+        Row: {
+          job_id: string
+          payload: Json
+          profile_id: string
+        }
+        Insert: {
+          job_id: string
+          payload: Json
+          profile_id: string
+        }
+        Update: {
+          job_id?: string
+          payload?: Json
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_parties_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ofac_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ofac_reference_values: {
+        Row: {
+          job_id: string
+          label: string
+          ref_id: string
+          set_name: string
+        }
+        Insert: {
+          job_id: string
+          label: string
+          ref_id: string
+          set_name: string
+        }
+        Update: {
+          job_id?: string
+          label?: string
+          ref_id?: string
+          set_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_reference_values_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ofac_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ofac_relationships: {
+        Row: {
+          entry_id: string
+          former: boolean
+          job_id: string
+          related_profile_id: string
+          relationship_id: string
+        }
+        Insert: {
+          entry_id: string
+          former?: boolean
+          job_id: string
+          related_profile_id: string
+          relationship_id: string
+        }
+        Update: {
+          entry_id?: string
+          former?: boolean
+          job_id?: string
+          related_profile_id?: string
+          relationship_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofac_relationships_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ofac_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       officials: {
         Row: {
           id: number
@@ -2050,6 +2314,15 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_support_or_admin: { Args: { _user_id: string }; Returns: boolean }
       normalize_person_name: { Args: { _name: string }; Returns: string }
+      ofac_acquire_job_lease: {
+        Args: { _job_id: string; _seconds?: number }
+        Returns: boolean
+      }
+      ofac_cleanup_finished_jobs: {
+        Args: { _retention?: string }
+        Returns: number
+      }
+      ofac_release_job_lease: { Args: { _job_id: string }; Returns: undefined }
       refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
