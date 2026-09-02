@@ -247,6 +247,16 @@ function AdminOrdersPage() {
         )}
       </div>
 
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">Status key:</span>
+        {STATUSES.map((status) => (
+          <span key={status} className="flex items-center gap-1.5">
+            <StatusBadge status={status} />
+            <span className="capitalize">{status.replace(/_/g, " ")}</span>
+          </span>
+        ))}
+      </div>
+
       {message && <p className="mt-4 rounded-md border bg-card p-3 text-sm">{message}</p>}
 
 
