@@ -35,7 +35,7 @@ describe("homepage JSON-LD", () => {
   });
 
   it("entity names match the site title brand", () => {
-    const brand = HOME_TITLE.split(/[|:]/)[0]!.trim();
+    const brand = HOME_TITLE.split(/[|:—]/)[0]!.trim();
     expect(homeWebsiteJsonLd().name).toBe(brand);
     expect(homeOrganizationJsonLd().name).toBe(brand);
   });
