@@ -558,6 +558,47 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Trust / certifications */}
+      <section className="mx-auto max-w-7xl px-4 py-16" aria-labelledby="home-trust">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Trust</p>
+        <h2 id="home-trust" className="mt-3 text-3xl font-bold text-foreground">
+          Operated by Infocredit Group, certified since 1972
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Companies House Cyprus is run by Infocredit Group Ltd, a Cyprus business-information company established in
+          1972. Its management systems are independently audited and certified by EUROCERT. These certifications
+          relate to Infocredit Group Ltd, not to this website.
+        </p>
+        <ul className="mt-8 grid gap-4 sm:grid-cols-3">
+          {HOME_CERTIFICATIONS.map((cert) => (
+            <li key={cert.code} className="flex items-center gap-3 rounded-xl border bg-card p-5 shadow-panel">
+              <img
+                src={cert.asset.url}
+                alt={cert.alt}
+                width={64}
+                height={64}
+                className="h-14 w-auto rounded-md bg-background p-1"
+                loading="lazy"
+              />
+              <span className="text-sm">
+                <span className="block font-display font-semibold text-card-foreground">{cert.code}</span>
+                <span className="text-muted-foreground">{cert.label}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/certifications">View our certifications</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/about">About Companies House Cyprus</Link>
+          </Button>
+        </div>
+      </section>
+
+
+
       {/* FAQ */}
       <section className="mx-auto max-w-3xl px-4 py-20">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">FAQ</p>
