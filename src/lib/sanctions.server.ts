@@ -494,6 +494,17 @@ async function loadOfacRefs(supabase: AnyClient, jobId: string) {
 
 async function persistOfacBlocks(supabase: AnyClient, jobId: string, blocksFound: ReturnType<typeof consumeOfacChunk>["blocks"]): Promise<void> {
   const refs = await loadOfacRefs(supabase, jobId);
+  const locations: unknown[] = [];
+  const documents: unknown[] = [];
+  const parties: unknown[] = [];
+  const relationships: unknown[] = [];
+  const entries: unknown[] = [];
+  const upsertBatches = async (table: "ofac_locations" | "ofac_id_documents" | "ofac_parties" | "ofac_relationships" | "ofac_entries", rows: unknown[], onConflict: string) => {
+    for (let index = 0; index < rows.length; index += 300) {
+      const { error } = await supabase.from(table).upsert(rows.slice(index, index + 300) as never, { onConflict });
+      if (error) throw new Error(`OFAC ${table} checkpoint failed: ${error.message}`);
+    }
+  };
   for (const block of blocksFound) {
     if (block.kind === "reference") {
       if (block.values.length > 0) {
@@ -517,39 +528,29 @@ async function persistOfacBlocks(supabase: AnyClient, jobId: string, blocksFound
     }
     if (block.section === "Locations") {
       const parsed = parseLocationBlock(block, refs.locPartTypes, refs.countries);
-      if (parsed) {
-        const { error } = await supabase.from("ofac_locations").upsert({ job_id: jobId, location_id: parsed.id, payload: parsed.info } as never);
-        if (error) throw new Error(`OFAC location checkpoint failed: ${error.message}`);
-      }
+      if (parsed) locations.push({ job_id: jobId, location_id: parsed.id, payload: parsed.info });
     } else if (block.section === "IDRegDocuments") {
       const parsed = parseIdRegDocumentBlock(block, refs.docTypes, refs.countries);
       const documentId = block.attrs["ID"];
-      if (parsed?.identityId && documentId) {
-        const { error } = await supabase.from("ofac_id_documents").upsert({ job_id: jobId, document_id: documentId, identity_id: parsed.identityId, payload: parsed } as never);
-        if (error) throw new Error(`OFAC document checkpoint failed: ${error.message}`);
-      }
+      if (parsed?.identityId && documentId) documents.push({ job_id: jobId, document_id: documentId, identity_id: parsed.identityId, payload: parsed });
     } else if (block.section === "DistinctParties") {
       const parsed = parseParty(block);
-      if (parsed) {
-        const { error } = await supabase.from("ofac_parties").upsert({ job_id: jobId, profile_id: parsed.profileId, payload: parsed } as never);
-        if (error) throw new Error(`OFAC party checkpoint failed: ${error.message}`);
-      }
+      if (parsed) parties.push({ job_id: jobId, profile_id: parsed.profileId, payload: parsed });
     } else if (block.section === "ProfileRelationships") {
       const relationshipId = block.attrs["ID"];
       const entryId = block.attrs["SanctionsEntryID"];
       const related = block.attrs["To-ProfileID"];
-      if (relationshipId && entryId && related) {
-        const { error } = await supabase.from("ofac_relationships").upsert({ job_id: jobId, relationship_id: relationshipId, entry_id: entryId, related_profile_id: related, former: block.attrs["Former"] === "true" } as never);
-        if (error) throw new Error(`OFAC relationship checkpoint failed: ${error.message}`);
-      }
+      if (relationshipId && entryId && related) relationships.push({ job_id: jobId, relationship_id: relationshipId, entry_id: entryId, related_profile_id: related, former: block.attrs["Former"] === "true" });
     } else if (block.section === "SanctionsEntries") {
       const entryId = block.attrs["ID"];
-      if (entryId) {
-        const { error } = await supabase.from("ofac_entries").upsert({ job_id: jobId, entry_id: entryId, profile_id: block.attrs["ProfileID"] ?? null, payload: block } as never);
-        if (error) throw new Error(`OFAC entry checkpoint failed: ${error.message}`);
-      }
+      if (entryId) entries.push({ job_id: jobId, entry_id: entryId, profile_id: block.attrs["ProfileID"] ?? null, payload: block });
     }
   }
+  await upsertBatches("ofac_locations", locations, "job_id,location_id");
+  await upsertBatches("ofac_id_documents", documents, "job_id,document_id");
+  await upsertBatches("ofac_parties", parties, "job_id,profile_id");
+  await upsertBatches("ofac_relationships", relationships, "job_id,relationship_id");
+  await upsertBatches("ofac_entries", entries, "job_id,entry_id");
 }
 
 async function assembleOfacBatch(supabase: AnyClient, job: { id: string; import_id: string; staged_entries: number }): Promise<number> {
@@ -602,7 +603,17 @@ async function assembleOfacBatch(supabase: AnyClient, job: { id: string; import_
     else counts.entity_count += 1;
     if (row.payload.identifiers.some((item) => item.identifier_type === "digital_currency_address")) counts.wallet_count += 1;
   }
-  await supabase.from("ofac_import_jobs").update({ staged_entries: job.staged_entries + staged.length, ...counts, updated_at: now } as never).eq("id", job.id);
+  const current = await supabase.from("ofac_import_jobs").select("person_count, entity_count, ship_count, aircraft_count, wallet_count").eq("id", job.id).single();
+  if (current.error || !current.data) throw new Error(current.error?.message ?? "OFAC counters could not be loaded");
+  await supabase.from("ofac_import_jobs").update({
+    staged_entries: job.staged_entries + staged.length,
+    person_count: current.data.person_count + counts.person_count,
+    entity_count: current.data.entity_count + counts.entity_count,
+    ship_count: current.data.ship_count + counts.ship_count,
+    aircraft_count: current.data.aircraft_count + counts.aircraft_count,
+    wallet_count: current.data.wallet_count + counts.wallet_count,
+    updated_at: now,
+  } as never).eq("id", job.id);
   return entries.length;
 }
 
@@ -683,8 +694,14 @@ export async function runOfacImportSlice(options: { force?: boolean } = {}): Pro
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected OFAC slice failure";
     const importId = job?.["import_id"] ? String(job["import_id"]) : null;
-    if (job?.["id"]) await supabase.from("ofac_import_jobs").update({ attempts: Number(job["attempts"] ?? 0) + 1, last_error: message, lease_until: null, updated_at: new Date().toISOString() }).eq("id", String(job["id"]));
-    if (importId) await supabase.from("sanctions_imports").update({ error_message: message, diagnostic_details: { stage: "slice-error", message, heartbeatAt: new Date().toISOString() } as never }).eq("id", importId);
+    const attempts = Number(job?.["attempts"] ?? 0) + 1;
+    const terminal = attempts >= 3;
+    if (job?.["id"]) await supabase.from("ofac_import_jobs").update({ attempts, phase: terminal ? "failed" : job["phase"], completed_at: terminal ? new Date().toISOString() : null, last_error: message, lease_until: null, updated_at: new Date().toISOString() } as never).eq("id", String(job["id"]));
+    if (importId) {
+      if (terminal) await failImport(supabase, importId, message, { stage: "slice-error", attempts });
+      else await supabase.from("sanctions_imports").update({ error_message: message, diagnostic_details: { stage: "slice-error", message, attempts, heartbeatAt: new Date().toISOString() } as never }).eq("id", importId);
+    }
+    if (terminal) await (supabase.rpc as never as (name: string, args: Record<string, unknown>) => Promise<unknown>)("sanctions_unlock", { _source_code: OFAC_SOURCE_CODE });
     return { status: "failed", importId, message };
   }
 }

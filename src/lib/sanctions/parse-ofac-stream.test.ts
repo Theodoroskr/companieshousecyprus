@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseOfac } from "@/lib/sanctions/parse-ofac";
 import { OfacStreamParser } from "@/lib/sanctions/parse-ofac-stream";
 import { StreamingSha256 } from "@/lib/sanctions/sha256-stream";
+import { consumeOfacChunk, finishOfacCheckpoint, type OfacCheckpoint } from "@/lib/sanctions/ofac-checkpoint";
 import type { SanctionsRecord } from "@/lib/sanctions/parse";
 
 const DOC = `<?xml version="1.0"?>
@@ -112,5 +113,30 @@ describe("StreamingSha256", () => {
     const digest = await crypto.subtle.digest("SHA-256", whole.buffer as ArrayBuffer);
     const expectedHex = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
     expect(h.digestHex()).toBe(expectedHex);
+  });
+
+  it("continues from a serialized checkpoint", () => {
+    const first = new TextEncoder().encode("checkpoint-");
+    const second = new TextEncoder().encode("safe");
+    const original = new StreamingSha256();
+    original.update(first);
+    const resumed = StreamingSha256.restore(original.checkpoint());
+    resumed.update(second);
+    const uninterrupted = new StreamingSha256();
+    uninterrupted.update(new TextEncoder().encode("checkpoint-safe"));
+    expect(resumed.digestHex()).toBe(uninterrupted.digestHex());
+  });
+});
+
+describe("OFAC parser checkpoints", () => {
+  it("retains a block split across separate worker slices", () => {
+    let state: OfacCheckpoint = { buffer: "", sawRoot: false, rootClosed: false, section: null };
+    const split = DOC.indexOf("ABBAS") + 2;
+    const first = consumeOfacChunk(state, DOC.slice(0, split));
+    state = first.state;
+    const second = consumeOfacChunk(state, DOC.slice(split));
+    finishOfacCheckpoint(second.state);
+    const entries = [...first.blocks, ...second.blocks].filter((block) => block.kind === "child" && block.section === "SanctionsEntries");
+    expect(entries).toHaveLength(2);
   });
 });
