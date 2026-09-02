@@ -8,11 +8,11 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_STYLES: Record<string, string> = {
   awaiting_payment:
-    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50",
+    "bg-red-100 text-red-800 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/50",
   paid:
-    "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/50",
+    "bg-red-100 text-red-800 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/50",
   processing:
-    "bg-copper/10 text-copper border-copper/20 dark:bg-copper/15 dark:text-copper dark:border-copper/30",
+    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50",
   delivered:
     "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50",
   cancelled:
