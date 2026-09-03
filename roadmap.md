@@ -5,3 +5,4 @@
 
 - [x] Fix stalled OFAC SDN import (background worker + heartbeat + DB watchdog, 2026-09-01)
 - [x] Replace request-bound OFAC import with bounded, database-checkpointed slices
+- [x] Apostille follow-up billing: add-on product, admin "Bill apostille" action, payment-request email

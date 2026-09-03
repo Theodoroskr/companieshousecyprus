@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileSearch, Loader2, RefreshCw, Upload } from "lucide-react";
+import { Download, FileSearch, Loader2, RefreshCw, Send, Stamp, Upload } from "lucide-react";
 import {
   adminDocumentUrl,
   adminFulfilItem,
@@ -12,6 +12,8 @@ import {
   adminSetOrderStatus,
   adminDeleteItemDocument,
   adminUploadItemDocument,
+  adminCreateApostilleOrder,
+  adminResendPaymentRequest,
 } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
@@ -90,6 +92,8 @@ function AdminOrdersPage() {
   const uploadDocument = useServerFn(adminUploadItemDocument);
   const documentUrl = useServerFn(adminDocumentUrl);
   const deleteDocument = useServerFn(adminDeleteItemDocument);
+  const createApostille = useServerFn(adminCreateApostilleOrder);
+  const resendPaymentRequest = useServerFn(adminResendPaymentRequest);
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
   const [notify, setNotify] = useState(true);
@@ -167,6 +171,27 @@ function AdminOrdersPage() {
       void invalidate();
     },
     onError: (error) => setMessage(error instanceof Error ? error.message : "Fulfilment failed"),
+  });
+
+  const apostilleMutation = useMutation({
+    mutationFn: (input: { reference: string; itemId: string; quantity: number }) =>
+      createApostille({ data: input }),
+    onSuccess: (result) => {
+      setMessage(
+        result.emailed
+          ? `Apostille order ${result.reference} created — payment link emailed to the client.`
+          : `Apostille order ${result.reference} created, but the email could not be sent. Resend it from the new order.`,
+      );
+      void invalidate();
+    },
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Could not create the apostille order"),
+  });
+
+  const paymentRequestMutation = useMutation({
+    mutationFn: (reference: string) => resendPaymentRequest({ data: { reference } }),
+    onSuccess: (result) =>
+      setMessage(result.emailed ? "Payment request resent." : "The payment request email could not be sent."),
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Could not resend the payment request"),
   });
 
   const today = todayISO();
@@ -295,6 +320,40 @@ function AdminOrdersPage() {
                     </option>
                   ))}
                 </select>
+                {(order.order_items ?? []).some((item) => item.product_slug !== "apostille-certification") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={apostilleMutation.isPending}
+                    onClick={() => {
+                      const first = (order.order_items ?? [])[0];
+                      if (!first) return;
+                      const raw = window.prompt("How many certificates need an apostille?", "1");
+                      if (raw === null) return;
+                      const quantity = Math.max(1, Math.min(20, Number(raw) || 1));
+                      apostilleMutation.mutate({ reference: order.reference, itemId: first.id, quantity });
+                    }}
+                  >
+                    {apostilleMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Stamp className="size-4" />}
+                    Bill apostille
+                  </Button>
+                )}
+                {order.status === "awaiting_payment" &&
+                  (order.order_items ?? []).some((item) => item.product_slug === "apostille-certification") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={paymentRequestMutation.isPending}
+                      onClick={() => paymentRequestMutation.mutate(order.reference)}
+                    >
+                      {paymentRequestMutation.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Send className="size-4" />
+                      )}
+                      Resend payment link
+                    </Button>
+                  )}
               </div>
             </div>
 

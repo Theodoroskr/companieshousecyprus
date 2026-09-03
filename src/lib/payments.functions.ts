@@ -18,6 +18,8 @@ type OrderItemRow = {
 const cents = (value: number) => Math.round(value * 100);
 
 function lookupKeyForProductSlug(slug: string): string {
+  // The apostille add-on is billed through the existing apostille Stripe price.
+  if (slug === 'apostille-certification') return 'apostille-service';
   return slug;
 }
 

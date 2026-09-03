@@ -166,3 +166,33 @@ export async function sendOrderDeliveredEmail(
     console.error("Order delivered email failed", order.reference, error);
   }
 }
+
+/** Sent when the office raises a follow-up charge (e.g. an apostille) and asks the client to pay. */
+export async function sendPaymentRequestEmail(input: {
+  reference: string;
+  accessToken: string;
+  email: string;
+  fullName?: string | null;
+  sourceReference?: string | null;
+  description: string;
+  company?: string | null;
+  subtotalCents: number;
+  vatCents: number;
+  totalCents: number;
+}) {
+  await sendTemplateEmail("payment-request", input.email, {
+    idempotencyKey: `payment-request-${input.reference}`,
+    sendOfficeCopy: true,
+    templateData: {
+      fullName: input.fullName ?? undefined,
+      reference: input.reference,
+      sourceReference: input.sourceReference ?? null,
+      description: input.description,
+      company: input.company ?? null,
+      subtotal: euro(input.subtotalCents),
+      vat: euro(input.vatCents),
+      total: euro(input.totalCents),
+      payUrl: `${SITE_URL}/order/${input.reference}?token=${input.accessToken}`,
+    },
+  });
+}
