@@ -243,7 +243,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     h1: "Certificate of Good Standing Cyprus",
     title: "Certificate of Good Standing Cyprus | Order Online",
     description:
-      "What a Cyprus certificate of good standing proves, when banks and authorities require it, how to order one from the Registrar and typical turnaround and apostille options.",
+      "What a Cyprus certificate of good standing proves, when banks and authorities ask for one, how to order it from the Registrar, plus turnaround and apostille.",
     intro:
       "A certificate of good standing is issued by the Cyprus Registrar of Companies and confirms that a company exists, is on the register and has no pending strike-off or dissolution recorded against it at the date of issue.",
     sections: [
@@ -290,7 +290,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     h1: "Cyprus Company Documents and Certificates",
     title: "Cyprus Company Documents & Certificates | What to Order",
     description:
-      "Which official Cyprus company documents exist — incorporation, shareholders, directors, registered office, good standing, charges — what each proves and how to order them.",
+      "Official Cyprus company documents — incorporation, shareholders, directors, registered office, good standing and charges: what each proves and how to order.",
     intro:
       "Cyprus company documents are issued by the Registrar of Companies. Each certificate proves one specific fact, so choosing the right one avoids a rejected file and a second order.",
     sections: [
