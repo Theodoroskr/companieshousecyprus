@@ -1137,3 +1137,99 @@ export async function documentUrlForToken(itemId: string, reference: string, tok
   if (!path) throw new Error("Document not found");
   return signOrderDocument(path);
 }
+
+/** Slug of the apostille add-on used for follow-up billing. */
+export const APOSTILLE_FOLLOW_UP_SLUG = "apostille-certification";
+
+async function paymentRequestPayload(reference: string) {
+  const supabase = ordersClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      "reference, access_token, email, full_name, notes, subtotal_cents, vat_cents, total_cents, status, order_items(product_name, quantity, company_name, company_number)",
+    )
+    .eq("reference", reference)
+    .maybeSingle();
+  if (error || !data) throw new Error(error?.message ?? "Order not found");
+  const item = (data.order_items ?? [])[0];
+  const sourceReference = /order (CHC-[A-Z0-9-]+)/i.exec(data.notes ?? "")?.[1] ?? null;
+  return { order: data, item, sourceReference };
+}
+
+/**
+ * Raises a separate, payable order for an apostille on an already-issued
+ * certificate, and emails the client a payment link.
+ */
+export async function createApostilleFollowUpOrder(input: {
+  sourceReference: string;
+  quantity?: number;
+  itemId?: string | null;
+  notify?: boolean;
+}) {
+  const supabase = ordersClient();
+  const { data: source, error } = await supabase
+    .from("orders")
+    .select(
+      "id, reference, full_name, email, firm, vat_number, phone, user_id, order_items(id, product_name, company_slug, company_name, company_number)",
+    )
+    .eq("reference", input.sourceReference.trim())
+    .maybeSingle();
+  if (error || !source) throw new Error(error?.message ?? "Original order not found");
+
+  const items = source.order_items ?? [];
+  const item = (input.itemId ? items.find((row) => row.id === input.itemId) : items[0]) ?? items[0];
+  const quantity = Math.min(20, Math.max(1, Math.round(input.quantity || 1)));
+
+  const created = await placeOrder({
+    fullName: source.full_name,
+    email: source.email,
+    firm: source.firm,
+    vatNumber: source.vat_number,
+    phone: source.phone,
+    userId: source.user_id,
+    notes: `Apostille requested for order ${source.reference}${item?.product_name ? ` — ${item.product_name}` : ""}.`,
+    items: [
+      {
+        productSlug: APOSTILLE_FOLLOW_UP_SLUG,
+        companySlug: item?.company_slug ?? null,
+        companyName: item?.company_name ?? null,
+        companyNumber: item?.company_number ?? null,
+        quantity,
+      },
+    ],
+  });
+
+  let emailed = false;
+  if (input.notify !== false) {
+    emailed = await sendApostillePaymentRequest(created.reference);
+  }
+
+  return { ...created, emailed };
+}
+
+/** (Re)sends the payment-request email for a follow-up order. Returns false when the send fails. */
+export async function sendApostillePaymentRequest(reference: string) {
+  const { order, item, sourceReference } = await paymentRequestPayload(reference);
+  if (!order.email || !order.access_token) return false;
+  try {
+    const { sendPaymentRequestEmail } = await import("@/lib/order-emails.server");
+    await sendPaymentRequestEmail({
+      reference: order.reference,
+      accessToken: order.access_token,
+      email: order.email,
+      fullName: order.full_name,
+      sourceReference,
+      description: `${item?.product_name ?? "Apostille certification"}${
+        (item?.quantity ?? 1) > 1 ? ` × ${item?.quantity}` : ""
+      }`,
+      company: [item?.company_name, item?.company_number].filter(Boolean).join(" · ") || null,
+      subtotalCents: order.subtotal_cents ?? 0,
+      vatCents: order.vat_cents ?? 0,
+      totalCents: order.total_cents ?? 0,
+    });
+    return true;
+  } catch (sendError) {
+    console.error("Payment request email failed", reference, sendError);
+    return false;
+  }
+}
