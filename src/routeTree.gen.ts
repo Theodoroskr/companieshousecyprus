@@ -82,7 +82,7 @@ import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as RoRegistrulComertuluiCipruRouteImport } from './routes/ro/registrul-comertului-cipru'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
-import { Route as StatisticsCompanyNamesRouteImport } from './routes/statistics.company-names'
+import { Route as StatisticsCompanyNamesRouteImport } from './routes/statistics_.company-names'
 import { Route as UkCyprusCompaniesHouseRouteImport } from './routes/uk/cyprus-companies-house'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
@@ -505,9 +505,9 @@ const SolutionsKybForBanksRoute = SolutionsKybForBanksRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatisticsCompanyNamesRoute = StatisticsCompanyNamesRouteImport.update({
-  id: '/company-names',
-  path: '/company-names',
-  getParentRoute: () => StatisticsRoute,
+  id: '/statistics_/company-names',
+  path: '/statistics/company-names',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const UkCyprusCompaniesHouseRoute = UkCyprusCompaniesHouseRouteImport.update({
   id: '/uk/cyprus-companies-house',
@@ -761,7 +761,7 @@ export interface FileRoutesByFullPath {
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
   '/sitemaps.xml': typeof SitemapsDotxmlRoute
-  '/statistics': typeof StatisticsRouteWithChildren
+  '/statistics': typeof StatisticsRoute
   '/terms': typeof TermsRoute
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -873,7 +873,7 @@ export interface FileRoutesByTo {
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
   '/sitemaps.xml': typeof SitemapsDotxmlRoute
-  '/statistics': typeof StatisticsRouteWithChildren
+  '/statistics': typeof StatisticsRoute
   '/terms': typeof TermsRoute
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -986,7 +986,7 @@ export interface FileRoutesById {
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
   '/sitemaps.xml': typeof SitemapsDotxmlRoute
-  '/statistics': typeof StatisticsRouteWithChildren
+  '/statistics': typeof StatisticsRoute
   '/terms': typeof TermsRoute
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1010,7 +1010,7 @@ export interface FileRoutesById {
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
-  '/statistics/company-names': typeof StatisticsCompanyNamesRoute
+  '/statistics_/company-names': typeof StatisticsCompanyNamesRoute
   '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/directory/': typeof DirectoryIndexRoute
@@ -1348,7 +1348,7 @@ export interface FileRouteTypes {
     | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
-    | '/statistics/company-names'
+    | '/statistics_/company-names'
     | '/uk/cyprus-companies-house'
     | '/checkout/'
     | '/directory/'
@@ -1438,7 +1438,7 @@ export interface RootRouteChildren {
   Sitemap_indexDotxmlRoute: typeof Sitemap_indexDotxmlRoute
   Sitemap_indexDotxmlDotgzRoute: typeof Sitemap_indexDotxmlDotgzRoute
   SitemapsDotxmlRoute: typeof SitemapsDotxmlRoute
-  StatisticsRoute: typeof StatisticsRouteWithChildren
+  StatisticsRoute: typeof StatisticsRoute
   TermsRoute: typeof TermsRoute
   WpSitemapDotxmlRoute: typeof WpSitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -1461,6 +1461,7 @@ export interface RootRouteChildren {
   RoRegistrulComertuluiCipruRoute: typeof RoRegistrulComertuluiCipruRoute
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
+  StatisticsCompanyNamesRoute: typeof StatisticsCompanyNamesRoute
   UkCyprusCompaniesHouseRoute: typeof UkCyprusCompaniesHouseRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   DirectoryIndexRoute: typeof DirectoryIndexRoute
@@ -1999,12 +2000,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SolutionsKybForBanksRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/statistics/company-names': {
-      id: '/statistics/company-names'
-      path: '/company-names'
+    '/statistics_/company-names': {
+      id: '/statistics_/company-names'
+      path: '/statistics/company-names'
       fullPath: '/statistics/company-names'
       preLoaderRoute: typeof StatisticsCompanyNamesRouteImport
-      parentRoute: typeof StatisticsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/uk/cyprus-companies-house': {
       id: '/uk/cyprus-companies-house'
@@ -2325,18 +2326,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface StatisticsRouteChildren {
-  StatisticsCompanyNamesRoute: typeof StatisticsCompanyNamesRoute
-}
-
-const StatisticsRouteChildren: StatisticsRouteChildren = {
-  StatisticsCompanyNamesRoute: StatisticsCompanyNamesRoute,
-}
-
-const StatisticsRouteWithChildren = StatisticsRoute._addFileChildren(
-  StatisticsRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -2384,7 +2373,7 @@ const rootRouteChildren: RootRouteChildren = {
   Sitemap_indexDotxmlRoute: Sitemap_indexDotxmlRoute,
   Sitemap_indexDotxmlDotgzRoute: Sitemap_indexDotxmlDotgzRoute,
   SitemapsDotxmlRoute: SitemapsDotxmlRoute,
-  StatisticsRoute: StatisticsRouteWithChildren,
+  StatisticsRoute: StatisticsRoute,
   TermsRoute: TermsRoute,
   WpSitemapDotxmlRoute: WpSitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
@@ -2408,6 +2397,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoRegistrulComertuluiCipruRoute: RoRegistrulComertuluiCipruRoute,
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
+  StatisticsCompanyNamesRoute: StatisticsCompanyNamesRoute,
   UkCyprusCompaniesHouseRoute: UkCyprusCompaniesHouseRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   DirectoryIndexRoute: DirectoryIndexRoute,

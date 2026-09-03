@@ -40,7 +40,7 @@ const DESCRIPTION =
 const SHARE_TEXT =
   "Cyprus company name statistics: the most common words and industry patterns across 570k+ registered entities";
 
-export const Route = createFileRoute("/statistics/company-names")({
+export const Route = createFileRoute("/statistics_/company-names")({
   loader: () => getCompanyNameStats(),
   head: () => ({
     meta: [
