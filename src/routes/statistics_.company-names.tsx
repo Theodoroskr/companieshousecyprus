@@ -7,7 +7,6 @@ import {
   Download,
   Languages,
   Link2,
-  RefreshCw,
   Type,
 } from "lucide-react";
 import {
@@ -24,7 +23,6 @@ import {
   Legend,
 } from "recharts";
 import {
-  formatComputedAt,
   industrySignals,
   letterDistribution,
 } from "@/lib/company-name-stats";
@@ -214,12 +212,10 @@ function CompanyNameStatsPage() {
           </p>
           {stats && (
             <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs text-primary-foreground/80">
-              <RefreshCw className="size-3.5" />
-              <time dateTime={stats.computed_at}>
-                Computed {formatComputedAt(stats.computed_at)}
-              </time>
+              <BarChart3 className="size-3.5" />
+              <span>{stats.total.toLocaleString("en-GB")} registered entities</span>
               <span aria-hidden="true">·</span>
-              <span>{stats.total.toLocaleString("en-GB")} names analysed</span>
+              <span>Cyprus company registry</span>
             </p>
           )}
         </div>
@@ -295,7 +291,7 @@ function CompanyNameStatsPage() {
             <ChartCard
               id="words"
               title="Most common words in company names"
-              description="Top 25 words after removing legal suffixes (Ltd, ΛΤΔ, ΕΠΕ…) and generic terms, with the share of all entities containing each word."
+              description="The 25 words that appear most often in registered Cyprus entity names."
               filename="cyprus-company-names-common-words.svg"
               chartRef={wordsRef}
               height={420}
@@ -323,7 +319,7 @@ function CompanyNameStatsPage() {
             <ChartCard
               id="industries"
               title="Industry signals in names"
-              description="How many entity names contain words associated with each line of business (English and Greek terms combined)."
+              description="Entity names associated with each line of business."
               filename="cyprus-company-names-industries.svg"
               chartRef={industryRef}
             >
@@ -342,7 +338,7 @@ function CompanyNameStatsPage() {
             <ChartCard
               id="letters"
               title="First letter of company names"
-              description="Distribution of the initial letter, with Greek look-alike letters (Α, Β, Ε…) merged into their Latin equivalents."
+              description="Distribution of the initial letter of registered entity names."
               filename="cyprus-company-names-first-letters.svg"
               chartRef={lettersRef}
             >
@@ -414,9 +410,8 @@ function CompanyNameStatsPage() {
         </section>
 
         <p className="mt-8 text-xs text-muted-foreground">
-          Source: names of all entities registered with the Department of Registrar of Companies
-          and Intellectual Property, Cyprus, as indexed by Companies House Cyprus. Looking for
-          registration trends instead?{" "}
+          Source: Department of Registrar of Companies and Intellectual Property, Cyprus.
+          Looking for registration trends instead?{" "}
           <Link to="/statistics" className="font-medium text-copper hover:underline">
             See monthly registration statistics
           </Link>
