@@ -2275,6 +2275,7 @@ export type Database = {
         }[]
       }
       companies_row_estimate: { Args: never; Returns: number }
+      company_name_stats: { Args: never; Returns: Json }
       company_official_names_public: {
         Args: { p_limit?: number; p_slug: string }
         Returns: {
