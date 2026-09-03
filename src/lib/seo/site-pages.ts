@@ -51,6 +51,7 @@ export const STATIC_PAGES: SitemapPage[] = [
   { path: "/about", priority: "0.5", changefreq: "yearly" },
   { path: "/certifications", priority: "0.5", changefreq: "yearly" },
   { path: "/resources", priority: "0.5", changefreq: "monthly" },
+  { path: "/statistics", priority: "0.7", changefreq: "monthly" },
   { path: "/faq", priority: "0.5", changefreq: "monthly" },
   { path: "/contact", priority: "0.5", changefreq: "yearly" },
   { path: "/terms", priority: "0.3", changefreq: "yearly" },

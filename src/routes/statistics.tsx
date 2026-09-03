@@ -370,7 +370,7 @@ function StatisticsPage() {
           Source: Department of Registrar of Companies and Intellectual Property, Cyprus.
           Figures cover {STATISTICS_PERIOD} and are published monthly. Looking up a specific
           entity?{" "}
-          <Link to="/search" className="font-medium text-copper hover:underline">
+          <Link to="/search" search={{ q: "", page: 1 }} className="font-medium text-copper hover:underline">
             Search the Cyprus company registry
           </Link>
           .
