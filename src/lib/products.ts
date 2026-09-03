@@ -1,4 +1,4 @@
-export type ProductCategory = "certificate" | "report" | "pack";
+export type ProductCategory = "certificate" | "report" | "pack" | "service";
 
 export type Product = {
   slug: string;
@@ -19,6 +19,8 @@ export type Product = {
   certificateCount?: number;
   /** Portion of the price that is subject to VAT (e.g. the report element inside a bundle). */
   vatablePrice?: number;
+  /** Hidden from the public catalogue — raised by the office as a follow-up order only. */
+  internalOnly?: boolean;
 };
 
 export const CURRENCY = "EUR";
@@ -352,6 +354,29 @@ export const PRODUCTS: Product[] = [
     ],
     typicalUse: "High-risk onboarding, litigation support, M&A, complex AML escalations.",
   },
+  {
+    slug: "apostille-certification",
+    name: "Apostille certification",
+    eyebrow: "Add-on service",
+    headline: "Apostille for a Cyprus Registrar certificate",
+    tagline: "Apostille certification of an already issued Registrar certificate, for official use abroad.",
+    price: 100,
+    delivery: "3–5 business days",
+    category: "service",
+    taxCode: "txcd_10103001",
+    internalOnly: true,
+    certificateCount: 0,
+    vatablePrice: 100,
+    description: [
+      "An Apostille certifies the authenticity of signatures and seals on documents issued in Cyprus, enabling their official recognition abroad in countries that accept Apostille certification.",
+      "This add-on is raised by our office when a certificate has already been issued and the Apostille is requested afterwards.",
+    ],
+    includes: [
+      { title: "Apostille by the competent Cyprus authority", detail: "Certification of the issued Registrar certificate." },
+      { title: "Courier or digital return", detail: "Apostilled document returned to you once certified." },
+    ],
+    typicalUse: "Using a Cyprus certificate before a foreign authority, bank, notary or court.",
+  },
 ];
 
 
@@ -363,4 +388,10 @@ export const CATEGORY_LABEL: Record<ProductCategory, string> = {
   certificate: "Registrar certificates",
   report: "Intelligence reports",
   pack: "Bundles",
+  service: "Add-on services",
 };
+
+/** Products shown in the public catalogue (pricing page, navigation, footer). */
+export const PUBLIC_PRODUCTS: Product[] = PRODUCTS.filter((product) => !product.internalOnly);
+
+export const APOSTILLE_PRODUCT_SLUG = "apostille-certification";
