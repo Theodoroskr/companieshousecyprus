@@ -136,6 +136,11 @@ export function SiteFooter() {
                 Registry statistics
               </Link>
             </li>
+            <li>
+              <Link to="/statistics" className="text-muted-foreground hover:text-foreground">
+                Statistics dashboard
+              </Link>
+            </li>
 
             <li>
               <Link to="/international" className="text-muted-foreground hover:text-foreground">
