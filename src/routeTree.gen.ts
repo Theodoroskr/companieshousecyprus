@@ -82,6 +82,7 @@ import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as RoRegistrulComertuluiCipruRouteImport } from './routes/ro/registrul-comertului-cipru'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
+import { Route as StatisticsCompanyNamesRouteImport } from './routes/statistics_.company-names'
 import { Route as UkCyprusCompaniesHouseRouteImport } from './routes/uk/cyprus-companies-house'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
@@ -503,6 +504,11 @@ const SolutionsKybForBanksRoute = SolutionsKybForBanksRouteImport.update({
   path: '/solutions/kyb-for-banks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatisticsCompanyNamesRoute = StatisticsCompanyNamesRouteImport.update({
+  id: '/statistics_/company-names',
+  path: '/statistics/company-names',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UkCyprusCompaniesHouseRoute = UkCyprusCompaniesHouseRouteImport.update({
   id: '/uk/cyprus-companies-house',
   path: '/uk/cyprus-companies-house',
@@ -779,6 +785,7 @@ export interface FileRoutesByFullPath {
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
+  '/statistics/company-names': typeof StatisticsCompanyNamesRoute
   '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/directory/': typeof DirectoryIndexRoute
@@ -889,6 +896,7 @@ export interface FileRoutesByTo {
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
+  '/statistics/company-names': typeof StatisticsCompanyNamesRoute
   '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout': typeof CheckoutIndexRoute
   '/directory': typeof DirectoryIndexRoute
@@ -1002,6 +1010,7 @@ export interface FileRoutesById {
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
+  '/statistics_/company-names': typeof StatisticsCompanyNamesRoute
   '/uk/cyprus-companies-house': typeof UkCyprusCompaniesHouseRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/directory/': typeof DirectoryIndexRoute
@@ -1115,6 +1124,7 @@ export interface FileRouteTypes {
     | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
+    | '/statistics/company-names'
     | '/uk/cyprus-companies-house'
     | '/checkout/'
     | '/directory/'
@@ -1225,6 +1235,7 @@ export interface FileRouteTypes {
     | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
+    | '/statistics/company-names'
     | '/uk/cyprus-companies-house'
     | '/checkout'
     | '/directory'
@@ -1337,6 +1348,7 @@ export interface FileRouteTypes {
     | '/ro/registrul-comertului-cipru'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
+    | '/statistics_/company-names'
     | '/uk/cyprus-companies-house'
     | '/checkout/'
     | '/directory/'
@@ -1449,6 +1461,7 @@ export interface RootRouteChildren {
   RoRegistrulComertuluiCipruRoute: typeof RoRegistrulComertuluiCipruRoute
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
+  StatisticsCompanyNamesRoute: typeof StatisticsCompanyNamesRoute
   UkCyprusCompaniesHouseRoute: typeof UkCyprusCompaniesHouseRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   DirectoryIndexRoute: typeof DirectoryIndexRoute
@@ -1987,6 +2000,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SolutionsKybForBanksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/statistics_/company-names': {
+      id: '/statistics_/company-names'
+      path: '/statistics/company-names'
+      fullPath: '/statistics/company-names'
+      preLoaderRoute: typeof StatisticsCompanyNamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/uk/cyprus-companies-house': {
       id: '/uk/cyprus-companies-house'
       path: '/uk/cyprus-companies-house'
@@ -2377,6 +2397,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoRegistrulComertuluiCipruRoute: RoRegistrulComertuluiCipruRoute,
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
+  StatisticsCompanyNamesRoute: StatisticsCompanyNamesRoute,
   UkCyprusCompaniesHouseRoute: UkCyprusCompaniesHouseRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   DirectoryIndexRoute: DirectoryIndexRoute,

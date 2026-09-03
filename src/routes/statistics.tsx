@@ -368,10 +368,14 @@ function StatisticsPage() {
 
         <p className="mt-8 text-xs text-muted-foreground">
           Source: Department of Registrar of Companies and Intellectual Property, Cyprus.
-          Figures cover {STATISTICS_PERIOD} and are published monthly. Looking up a specific
-          entity?{" "}
+          Figures cover {STATISTICS_PERIOD} and are published monthly. Curious what company
+          names reveal?{" "}
+          <Link to="/statistics/company-names" className="font-medium text-copper hover:underline">
+            Explore company name statistics
+          </Link>
+          , or{" "}
           <Link to="/search" search={{ q: "", page: 1 }} className="font-medium text-copper hover:underline">
-            Search the Cyprus company registry
+            search the Cyprus company registry
           </Link>
           .
         </p>
