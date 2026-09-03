@@ -12,6 +12,12 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import {
+  REGISTRY_STATISTICS as DATA,
+  STATISTIC_SERIES,
+  statisticTotal as total,
+  type StatisticSeriesKey,
+} from "@/lib/registry-statistics";
 
 const TITLE = "Registry statistics & resources — Companies House Cyprus";
 const DESCRIPTION =
@@ -31,13 +37,6 @@ export const Route = createFileRoute("/resources")({
   }),
   component: ResourcesPage,
 });
-
-import {
-  REGISTRY_STATISTICS as DATA,
-  STATISTIC_SERIES,
-  statisticTotal as total,
-  type StatisticSeriesKey,
-} from "@/lib/registry-statistics";
 
 const SERIES_ICONS: Record<StatisticSeriesKey, typeof Building2> = {
   companies: Building2,
