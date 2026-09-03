@@ -55,6 +55,7 @@ import { Route as Sitemap1DotxmlRouteImport } from './routes/sitemap1[.]xml'
 import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[.]xml'
 import { Route as Sitemap_indexDotxmlDotgzRouteImport } from './routes/sitemap_index[.]xml[.]gz'
 import { Route as SitemapsDotxmlRouteImport } from './routes/sitemaps[.]xml'
+import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WpSitemapDotxmlRouteImport } from './routes/wp-sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -359,6 +360,11 @@ const Sitemap_indexDotxmlDotgzRoute =
 const SitemapsDotxmlRoute = SitemapsDotxmlRouteImport.update({
   id: '/sitemaps.xml',
   path: '/sitemaps.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatisticsRoute = StatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -749,6 +755,7 @@ export interface FileRoutesByFullPath {
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
   '/sitemaps.xml': typeof SitemapsDotxmlRoute
+  '/statistics': typeof StatisticsRoute
   '/terms': typeof TermsRoute
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -859,6 +866,7 @@ export interface FileRoutesByTo {
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
   '/sitemaps.xml': typeof SitemapsDotxmlRoute
+  '/statistics': typeof StatisticsRoute
   '/terms': typeof TermsRoute
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -970,6 +978,7 @@ export interface FileRoutesById {
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_index.xml.gz': typeof Sitemap_indexDotxmlDotgzRoute
   '/sitemaps.xml': typeof SitemapsDotxmlRoute
+  '/statistics': typeof StatisticsRoute
   '/terms': typeof TermsRoute
   '/wp-sitemap.xml': typeof WpSitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -1082,6 +1091,7 @@ export interface FileRouteTypes {
     | '/sitemap_index.xml'
     | '/sitemap_index.xml.gz'
     | '/sitemaps.xml'
+    | '/statistics'
     | '/terms'
     | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
@@ -1192,6 +1202,7 @@ export interface FileRouteTypes {
     | '/sitemap_index.xml'
     | '/sitemap_index.xml.gz'
     | '/sitemaps.xml'
+    | '/statistics'
     | '/terms'
     | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
@@ -1302,6 +1313,7 @@ export interface FileRouteTypes {
     | '/sitemap_index.xml'
     | '/sitemap_index.xml.gz'
     | '/sitemaps.xml'
+    | '/statistics'
     | '/terms'
     | '/wp-sitemap.xml'
     | '/.mcp/list-tools'
@@ -1414,6 +1426,7 @@ export interface RootRouteChildren {
   Sitemap_indexDotxmlRoute: typeof Sitemap_indexDotxmlRoute
   Sitemap_indexDotxmlDotgzRoute: typeof Sitemap_indexDotxmlDotgzRoute
   SitemapsDotxmlRoute: typeof SitemapsDotxmlRoute
+  StatisticsRoute: typeof StatisticsRoute
   TermsRoute: typeof TermsRoute
   WpSitemapDotxmlRoute: typeof WpSitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -1783,6 +1796,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemaps.xml'
       fullPath: '/sitemaps.xml'
       preLoaderRoute: typeof SitemapsDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistics': {
+      id: '/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof StatisticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -2333,6 +2353,7 @@ const rootRouteChildren: RootRouteChildren = {
   Sitemap_indexDotxmlRoute: Sitemap_indexDotxmlRoute,
   Sitemap_indexDotxmlDotgzRoute: Sitemap_indexDotxmlDotgzRoute,
   SitemapsDotxmlRoute: SitemapsDotxmlRoute,
+  StatisticsRoute: StatisticsRoute,
   TermsRoute: TermsRoute,
   WpSitemapDotxmlRoute: WpSitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
