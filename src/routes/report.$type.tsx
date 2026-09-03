@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/report/$type")({
   loader: ({ params }) => {
     const product = PRODUCTS_BY_SLUG[params.type];
-    if (!product) throw notFound();
+    if (!product || product.internalOnly) throw notFound();
     return { product };
   },
   head: ({ loaderData }) => {
@@ -52,7 +52,7 @@ function ReportPage() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
 
-  const related = PRODUCTS.filter((item) => item.slug !== product.slug).slice(0, 3);
+  const related = PRODUCTS.filter((item) => item.slug !== product.slug && !item.internalOnly).slice(0, 3);
 
   return (
     <div>
