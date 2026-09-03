@@ -492,6 +492,13 @@ async function loadOfacRefs(supabase: AnyClient, jobId: string) {
   };
 }
 
+/** Removes intermediate rows from an earlier attempt so a restarted job starts clean. */
+async function clearOfacJobWorkspace(supabase: AnyClient, jobId: string): Promise<void> {
+  for (const table of ["ofac_reference_values", "ofac_locations", "ofac_id_documents", "ofac_parties", "ofac_relationships", "ofac_entries"] as const) {
+    await supabase.from(table).delete().eq("job_id", jobId);
+  }
+}
+
 async function persistOfacBlocks(supabase: AnyClient, jobId: string, blocksFound: ReturnType<typeof consumeOfacChunk>["blocks"]): Promise<void> {
   const refs = await loadOfacRefs(supabase, jobId);
   const locations: unknown[] = [];
@@ -633,12 +640,52 @@ export async function runOfacImportSlice(options: { force?: boolean } = {}): Pro
         const recent = await supabase.from("sanctions_imports").select("completed_at").eq("source_id", source.id).in("status", ["completed", "unchanged"]).gte("completed_at", since).limit(1);
         if (recent.data && recent.data.length > 0) return { status: "skipped", message: "OFAC data is already fresh." };
       }
+      // A previous run for this relay file may have ended in `failed`. The row is
+      // kept (relay_job_id is UNIQUE), so restart it in place instead of inserting
+      // a duplicate — with a cooldown so a hard failure cannot spin every 5 minutes.
+      const existing = await supabase.from("ofac_import_jobs").select("*").eq("relay_job_id", relay.data.id).maybeSingle();
+      if (existing.data && String(existing.data.phase) === "completed") {
+        await markRelayConsumed(supabase, String(relay.data.id));
+        return { status: "skipped", message: "This OFAC relay file has already been imported." };
+      }
+      if (existing.data) {
+        const lastTouched = Date.parse(String(existing.data.updated_at ?? existing.data.created_at ?? 0));
+        if (Number.isFinite(lastTouched) && Date.now() - lastTouched < 30 * 60 * 1000 && !options.force) {
+          return { status: "skipped", message: "The previous OFAC run failed; waiting before retrying." };
+        }
+      }
       const createdImport = await supabase.from("sanctions_imports").insert({ source_id: source.id, status: "parsing" }).select("id").single();
       if (createdImport.error || !createdImport.data) throw new Error(createdImport.error?.message ?? "Could not create OFAC import");
-      const createdJob = await supabase.from("ofac_import_jobs").insert({ import_id: createdImport.data.id, relay_job_id: relay.data.id, force_run: Boolean(options.force) }).select("*").single();
-      if (createdJob.error || !createdJob.data) throw new Error(createdJob.error?.message ?? "Could not create OFAC checkpoint");
-      job = createdJob.data as Record<string, unknown>;
+      const reset = {
+        import_id: createdImport.data.id,
+        relay_job_id: relay.data.id,
+        force_run: Boolean(options.force),
+        phase: "parsing",
+        next_chunk: 0,
+        parser_state: {},
+        hash_state: {},
+        file_size_bytes: 0,
+        parsed_entries: 0,
+        staged_entries: 0,
+        person_count: 0,
+        entity_count: 0,
+        ship_count: 0,
+        aircraft_count: 0,
+        wallet_count: 0,
+        attempts: 0,
+        lease_until: null,
+        last_error: null,
+        completed_at: null,
+        updated_at: new Date().toISOString(),
+      };
+      const upserted = existing.data
+        ? await supabase.from("ofac_import_jobs").update(reset as never).eq("id", String(existing.data.id)).select("*").single()
+        : await supabase.from("ofac_import_jobs").insert(reset as never).select("*").single();
+      if (upserted.error || !upserted.data) throw new Error(upserted.error?.message ?? "Could not create OFAC checkpoint");
+      if (existing.data) await clearOfacJobWorkspace(supabase, String(existing.data.id));
+      job = upserted.data as Record<string, unknown>;
     }
+
     const jobId = String(job["id"]);
     const importId = String(job["import_id"]);
     const lease = await (supabase.rpc as never as (name: string, args: Record<string, unknown>) => Promise<{ data: boolean | null; error: { message: string } | null }>)("ofac_acquire_job_lease", { _job_id: jobId, _seconds: 120 });
@@ -663,14 +710,14 @@ export async function runOfacImportSlice(options: { force?: boolean } = {}): Pro
         const newNext = nextChunk + 1;
         const finished = newNext >= Number(relay.data.chunk_count);
         if (finished) finishOfacCheckpoint(consumed.state);
-        await supabase.from("ofac_import_jobs").update({ next_chunk: newNext, parser_state: consumed.state, hash_state: hasher.checkpoint(), file_size_bytes: Number(job["file_size_bytes"] ?? 0) + Number(chunk.data.byte_length), phase: finished ? "assembling" : "parsing", updated_at: new Date().toISOString(), lease_until: null } as never).eq("id", jobId);
+        await supabase.from("ofac_import_jobs").update({ next_chunk: newNext, parser_state: consumed.state, hash_state: hasher.checkpoint(), file_size_bytes: Number(job["file_size_bytes"] ?? 0) + Number(chunk.data.byte_length), phase: finished ? "assembling" : "parsing", attempts: 0, updated_at: new Date().toISOString(), lease_until: null } as never).eq("id", jobId);
         await supabase.from("sanctions_imports").update({ diagnostic_details: { stage: finished ? "assembling" : "parsing", nextChunk: newNext, totalChunks: relay.data.chunk_count, heartbeatAt: new Date().toISOString(), parser: "ofac-checkpoint-v1" } as never }).eq("id", importId);
         return { status: finished ? "ready_to_publish" : "processing", importId, nextChunk: newNext, message: finished ? "OFAC relay parsing completed; assembly is queued." : `Processed OFAC relay chunk ${newNext}/${relay.data.chunk_count}.` };
       }
       if (phase === "assembling") {
         const processed = await assembleOfacBatch(supabase, { id: jobId, import_id: importId, staged_entries: Number(job["staged_entries"] ?? 0) });
         if (processed > 0) return { status: "processing", importId, staged: Number(job["staged_entries"] ?? 0) + processed, message: `Assembled ${processed} OFAC entries.` };
-        await supabase.from("ofac_import_jobs").update({ phase: "publishing", lease_until: null, updated_at: new Date().toISOString() }).eq("id", jobId);
+        await supabase.from("ofac_import_jobs").update({ phase: "publishing", attempts: 0, lease_until: null, updated_at: new Date().toISOString() } as never).eq("id", jobId);
         return { status: "ready_to_publish", importId, message: "OFAC records are staged and ready to publish." };
       }
       const current = await supabase.from("ofac_import_jobs").select("*").eq("id", jobId).single();
