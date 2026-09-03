@@ -377,3 +377,36 @@ export const mySnapshot = createServerFn({ method: "POST" })
     const { snapshotForOwner } = await import("@/lib/orders.server");
     return snapshotForOwner(data.itemId.trim(), context.userId, email);
   });
+
+/** Admin/support: raise a separate payable apostille order for an existing order. */
+export const adminCreateApostilleOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; itemId?: string | null; quantity?: number; notify?: boolean }) => {
+    if (!data.reference?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { createApostilleFollowUpOrder } = await import("@/lib/orders.server");
+    return createApostilleFollowUpOrder({
+      sourceReference: data.reference.trim(),
+      itemId: data.itemId ?? null,
+      quantity: data.quantity ?? 1,
+      notify: data.notify !== false,
+    });
+  });
+
+/** Admin/support: resend the payment-request email for a follow-up order. */
+export const adminResendPaymentRequest = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string }) => {
+    if (!data.reference?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { sendApostillePaymentRequest } = await import("@/lib/orders.server");
+    return { emailed: await sendApostillePaymentRequest(data.reference.trim()) };
+  });
