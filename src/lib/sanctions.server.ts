@@ -492,6 +492,13 @@ async function loadOfacRefs(supabase: AnyClient, jobId: string) {
   };
 }
 
+/** Removes intermediate rows from an earlier attempt so a restarted job starts clean. */
+async function clearOfacJobWorkspace(supabase: AnyClient, jobId: string): Promise<void> {
+  for (const table of ["ofac_reference_values", "ofac_locations", "ofac_id_documents", "ofac_parties", "ofac_relationships", "ofac_entries"] as const) {
+    await supabase.from(table).delete().eq("job_id", jobId);
+  }
+}
+
 async function persistOfacBlocks(supabase: AnyClient, jobId: string, blocksFound: ReturnType<typeof consumeOfacChunk>["blocks"]): Promise<void> {
   const refs = await loadOfacRefs(supabase, jobId);
   const locations: unknown[] = [];
