@@ -13,7 +13,9 @@ const SENDER_DOMAIN = "notify.companieshousecyprus.com"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // Can be the root domain when display_from_root is enabled — this is cosmetic only.
 const FROM_DOMAIN = "notify.companieshousecyprus.com"
-// Office copy is sent only for document-ready emails.
+// Office copy is sent for every transactional email so the team always sees
+// what customers are being sent. It is skipped only when the office inbox is
+// already the primary recipient.
 const OFFICE_COPY = "info@companieshousecyprus.com"
 
 export type SendTemplateEmailResult =
@@ -25,7 +27,7 @@ export interface SendTemplateEmailOptions {
   /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
   idempotencyKey?: string
   replyTo?: string
-  /** Send an office copy to info@companieshousecyprus.com. Used for document-ready emails only. */
+  /** Legacy flag — the office copy is now sent automatically. Kept for compatibility. */
   sendOfficeCopy?: boolean
   /** Additional copy (BCC-style) recipients, each receiving an identical copy. */
   extraCopies?: string[]
