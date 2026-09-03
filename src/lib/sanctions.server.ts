@@ -710,14 +710,14 @@ export async function runOfacImportSlice(options: { force?: boolean } = {}): Pro
         const newNext = nextChunk + 1;
         const finished = newNext >= Number(relay.data.chunk_count);
         if (finished) finishOfacCheckpoint(consumed.state);
-        await supabase.from("ofac_import_jobs").update({ next_chunk: newNext, parser_state: consumed.state, hash_state: hasher.checkpoint(), file_size_bytes: Number(job["file_size_bytes"] ?? 0) + Number(chunk.data.byte_length), phase: finished ? "assembling" : "parsing", updated_at: new Date().toISOString(), lease_until: null } as never).eq("id", jobId);
+        await supabase.from("ofac_import_jobs").update({ next_chunk: newNext, parser_state: consumed.state, hash_state: hasher.checkpoint(), file_size_bytes: Number(job["file_size_bytes"] ?? 0) + Number(chunk.data.byte_length), phase: finished ? "assembling" : "parsing", attempts: 0, updated_at: new Date().toISOString(), lease_until: null } as never).eq("id", jobId);
         await supabase.from("sanctions_imports").update({ diagnostic_details: { stage: finished ? "assembling" : "parsing", nextChunk: newNext, totalChunks: relay.data.chunk_count, heartbeatAt: new Date().toISOString(), parser: "ofac-checkpoint-v1" } as never }).eq("id", importId);
         return { status: finished ? "ready_to_publish" : "processing", importId, nextChunk: newNext, message: finished ? "OFAC relay parsing completed; assembly is queued." : `Processed OFAC relay chunk ${newNext}/${relay.data.chunk_count}.` };
       }
       if (phase === "assembling") {
         const processed = await assembleOfacBatch(supabase, { id: jobId, import_id: importId, staged_entries: Number(job["staged_entries"] ?? 0) });
         if (processed > 0) return { status: "processing", importId, staged: Number(job["staged_entries"] ?? 0) + processed, message: `Assembled ${processed} OFAC entries.` };
-        await supabase.from("ofac_import_jobs").update({ phase: "publishing", lease_until: null, updated_at: new Date().toISOString() }).eq("id", jobId);
+        await supabase.from("ofac_import_jobs").update({ phase: "publishing", attempts: 0, lease_until: null, updated_at: new Date().toISOString() } as never).eq("id", jobId);
         return { status: "ready_to_publish", importId, message: "OFAC records are staged and ready to publish." };
       }
       const current = await supabase.from("ofac_import_jobs").select("*").eq("id", jobId).single();
