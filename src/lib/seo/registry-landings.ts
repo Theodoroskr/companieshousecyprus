@@ -337,7 +337,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
     slug: "cyprus-company-strike-off",
     label: "Cyprus company strike off",
     h1: "Cyprus Company Strike Off and Restoration",
-    title: "Cyprus Company Strike Off | Check Status and Restore",
+    title: "Cyprus Company Strike Off and Restoration | Check It",
     description:
       "What strike off means on the Cyprus register, why companies are struck off, how to check whether a company is in strike-off proceedings, and how restoration works.",
     intro:
