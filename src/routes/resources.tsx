@@ -32,36 +32,22 @@ export const Route = createFileRoute("/resources")({
   component: ResourcesPage,
 });
 
-type Row = {
-  month: string;
-  companies: number;
-  partnerships: number;
-  businessNames: number;
-  overseas: number;
-  seEeig: number;
+import {
+  REGISTRY_STATISTICS as DATA,
+  STATISTIC_SERIES,
+  statisticTotal as total,
+  type StatisticSeriesKey,
+} from "@/lib/registry-statistics";
+
+const SERIES_ICONS: Record<StatisticSeriesKey, typeof Building2> = {
+  companies: Building2,
+  partnerships: Users,
+  businessNames: Store,
+  overseas: Globe2,
+  seEeig: Globe2,
 };
 
-const DATA: Row[] = [
-  { month: "01/26", companies: 910, partnerships: 8, businessNames: 111, overseas: 27, seEeig: 1 },
-  { month: "02/26", companies: 1420, partnerships: 9, businessNames: 157, overseas: 3, seEeig: 0 },
-  { month: "03/26", companies: 1745, partnerships: 7, businessNames: 144, overseas: 7, seEeig: 0 },
-  { month: "04/26", companies: 1448, partnerships: 9, businessNames: 134, overseas: 8, seEeig: 1 },
-  { month: "05/26", companies: 1489, partnerships: 4, businessNames: 130, overseas: 8, seEeig: 1 },
-  { month: "06/26", companies: 1527, partnerships: 6, businessNames: 180, overseas: 7, seEeig: 0 },
-  { month: "07/26", companies: 1540, partnerships: 8, businessNames: 192, overseas: 2, seEeig: 0 },
-];
-
-const SERIES = [
-  { key: "companies" as const, label: "Companies", greek: "Εγγραφή Εταιρειών", color: "var(--chart-1)", icon: Building2 },
-  { key: "partnerships" as const, label: "Partnerships", greek: "Εγγραφή Συνεταιρισμών", color: "var(--chart-2)", icon: Users },
-  { key: "businessNames" as const, label: "Business Names", greek: "Εγγραφή Εμπορικών Επωνυμιών", color: "var(--chart-3)", icon: Store },
-  { key: "overseas" as const, label: "Overseas Companies", greek: "Εγγραφή Αλλοδαπών Εταιρειών", color: "var(--chart-4)", icon: Globe2 },
-  { key: "seEeig" as const, label: "SE & EEIG", greek: "Εγγραφή Ευρωπαϊκών Εταιρειών και ΕΟΟΣ", color: "var(--chart-5)", icon: Globe2 },
-];
-
-function total(key: keyof Omit<Row, "month">) {
-  return DATA.reduce((sum, row) => sum + row[key], 0);
-}
+const SERIES = STATISTIC_SERIES.map((s) => ({ ...s, icon: SERIES_ICONS[s.key] }));
 
 function ResourcesPage() {
   const grandTotal = SERIES.reduce((sum, s) => sum + total(s.key), 0);
