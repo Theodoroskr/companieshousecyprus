@@ -185,7 +185,203 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
       },
     ],
   },
+  {
+    slug: "cyprus-beneficial-owner-register",
+    label: "Cyprus beneficial owner register",
+    h1: "Cyprus Beneficial Owner (UBO) Register",
+    title: "Cyprus Beneficial Owner Register (UBO) | Access Explained",
+    description:
+      "How the Cyprus UBO register works: who must file beneficial ownership, who can access it after the 2022 CJEU ruling, and what ownership data you can obtain instead.",
+    intro:
+      "Cyprus keeps a central register of beneficial owners of companies and other legal entities, maintained by the Department of Registrar of Companies and Intellectual Property. Access is restricted, so this page explains who can see what, and which ownership evidence is available to everyone else.",
+    sections: [
+      {
+        heading: "Who must be registered as a beneficial owner",
+        body: "A beneficial owner is the natural person who ultimately owns or controls the entity. Cyprus companies, partnerships and European entities registered in Cyprus must file and keep these details current with the Registrar.",
+        bullets: [
+          "Natural persons holding more than 25% of shares or voting rights",
+          "Persons exercising control through other means",
+          "Senior managing officials, where no owner can be identified",
+          "Changes must be filed within the deadline set by the Registrar",
+        ],
+      },
+      {
+        heading: "Who can access the UBO register",
+        body: "Following the Court of Justice of the European Union ruling of 22 November 2022 (joined cases C-37/20 and C-601/20), general public access to EU beneficial ownership registers was invalidated. Cyprus restricted access accordingly: competent authorities and obliged entities carrying out customer due diligence retain access, while general public access is no longer open.",
+      },
+      {
+        heading: "What ownership information you can still obtain",
+        body: "Legal ownership filed with the Registrar remains obtainable in document form. A shareholders certificate or a company structure report sets out the registered shareholders and shareholdings, which is what most banks, notaries and counterparties actually ask for.",
+        bullets: [
+          "Certificate of Shareholders issued by the Registrar",
+          "Company structure report showing shareholdings",
+          "Directors and secretary certificate for control at board level",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is the Cyprus UBO register public?",
+        answer:
+          "No. Since the CJEU ruling of November 2022, general public access to the Cyprus beneficial ownership register has been withdrawn. Competent authorities and obliged entities performing due diligence retain access.",
+      },
+      {
+        question: "How can I find who owns a Cyprus company?",
+        answer:
+          "Order a Certificate of Shareholders or a company structure report. Both are produced from Registrar filings and show the registered shareholders and their shareholdings.",
+      },
+      {
+        question: "Is beneficial ownership the same as shareholding?",
+        answer:
+          "Not always. A shareholder can be a nominee or a corporate entity, while a beneficial owner is the natural person who ultimately owns or controls the company.",
+      },
+    ],
+  },
+  {
+    slug: "certificate-of-good-standing-cyprus",
+    label: "Certificate of good standing Cyprus",
+    h1: "Certificate of Good Standing Cyprus",
+    title: "Certificate of Good Standing Cyprus | Order Online",
+    description:
+      "What a Cyprus certificate of good standing proves, when banks and authorities ask for one, how to order it from the Registrar, plus turnaround and apostille.",
+    intro:
+      "A certificate of good standing is issued by the Cyprus Registrar of Companies and confirms that a company exists, is on the register and has no pending strike-off or dissolution recorded against it at the date of issue.",
+    sections: [
+      {
+        heading: "What the certificate confirms",
+        body: "The certificate is a point-in-time statement of legal standing, not a financial opinion.",
+        bullets: [
+          "The company is registered and remains on the register",
+          "It is not in the process of being struck off or dissolved",
+          "The registered name and registration number as recorded",
+          "The date on which standing is certified",
+        ],
+      },
+      {
+        heading: "When you will be asked for one",
+        body: "Banks opening corporate accounts, foreign registries accepting a Cyprus parent, tender authorities, payment providers and counterparties in cross-border transactions commonly require a recent certificate — usually issued within the last three to six months.",
+      },
+      {
+        heading: "Ordering, turnaround and apostille",
+        body: "Find the company, add the certificate to your basket and pay online. The certified document issued by the Registrar is emailed to you and stored in your account, typically within one to two business days. Where the certificate is used abroad, an apostille can be added so it is accepted under the Hague Convention.",
+      },
+    ],
+    faqs: [
+      {
+        question: "How long is a Cyprus certificate of good standing valid?",
+        answer:
+          "There is no statutory expiry. In practice most banks and authorities accept a certificate issued within the last three to six months.",
+      },
+      {
+        question: "Does a certificate of good standing show the directors?",
+        answer:
+          "No. It confirms legal standing only. Directors and secretary are certified in a separate certificate.",
+      },
+      {
+        question: "Can I get an apostille on the certificate?",
+        answer:
+          "Yes. An apostille can be added for use abroad under the Hague Convention, and is ordered alongside the certificate.",
+      },
+    ],
+  },
+  {
+    slug: "cyprus-company-documents",
+    label: "Cyprus company documents",
+    h1: "Cyprus Company Documents and Certificates",
+    title: "Cyprus Company Documents & Certificates | What to Order",
+    description:
+      "Official Cyprus company documents — incorporation, shareholders, directors, registered office, good standing and charges: what each proves and how to order.",
+    intro:
+      "Cyprus company documents are issued by the Registrar of Companies. Each certificate proves one specific fact, so choosing the right one avoids a rejected file and a second order.",
+    sections: [
+      {
+        heading: "The certificates the Registrar issues",
+        body: "Each document is certified separately and can be ordered on its own.",
+        bullets: [
+          "Certificate of Incorporation — the company exists and when it was registered",
+          "Certificate of Shareholders — registered shareholders and shareholdings",
+          "Certificate of Directors and Secretary — the board and secretary on record",
+          "Certificate of Registered Office — the official address",
+          "Certificate of Good Standing — the company remains on the register",
+          "Certificate of No Charges — no registered charges recorded",
+        ],
+      },
+      {
+        heading: "Choosing the right document",
+        body: "Banks usually ask for incorporation, shareholders, directors and registered office together. Lenders and buyers add a charges search. Foreign registries and tenders usually ask for good standing, often with an apostille.",
+      },
+      {
+        heading: "Delivery and certified copies",
+        body: "Documents are issued by the Registrar, delivered digitally and stored in your account. Where a wet-ink or apostilled copy is needed for use abroad, that can be added to the same order.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Are Cyprus company documents available free?",
+        answer:
+          "Searching the register and viewing a company profile is free. Certificates carry Registrar fees and are paid products.",
+      },
+      {
+        question: "Which documents do banks ask for most often?",
+        answer:
+          "Incorporation, shareholders, directors and secretary, and registered office — frequently together with a certificate of good standing.",
+      },
+      {
+        question: "Can documents be issued in English?",
+        answer:
+          "The Registrar issues certificates in Greek, and certified English versions can be requested where they are required abroad.",
+      },
+    ],
+  },
+  {
+    slug: "cyprus-company-strike-off",
+    label: "Cyprus company strike off",
+    h1: "Cyprus Company Strike Off and Restoration",
+    title: "Cyprus Company Strike Off and Restoration | Check It",
+    description:
+      "What strike off means on the Cyprus register, why companies are struck off, how to check whether a company is in strike-off proceedings, and how restoration works.",
+    intro:
+      "Strike off is the removal of a company from the Cyprus register. It can be voluntary, at the members' request, or initiated by the Registrar where a company appears to be dormant or non-compliant.",
+    sections: [
+      {
+        heading: "Why companies are struck off",
+        body: "The Registrar can begin strike-off proceedings where a company no longer appears to be carrying on business or has failed to keep its filings current.",
+        bullets: [
+          "Annual returns or accounts not filed",
+          "Annual levy or Registrar fees unpaid",
+          "The company is dormant and the members apply voluntarily",
+          "No response to Registrar correspondence",
+        ],
+      },
+      {
+        heading: "What strike off means for counterparties",
+        body: "A struck-off company ceases to exist as a legal person and cannot contract, invoice or hold assets — assets remaining at dissolution can pass to the Republic. Checking registry status before payment or onboarding is the cheapest control available.",
+      },
+      {
+        heading: "Restoration to the register",
+        body: "A dissolved Cyprus company can be restored by court application within the statutory period, generally on the application of a member, creditor or the liquidator, once outstanding filings and fees are brought up to date.",
+      },
+    ],
+    faqs: [
+      {
+        question: "How do I check whether a Cyprus company has been struck off?",
+        answer:
+          "Search the company and read its registry status. Strike off, dissolved and liquidation are shown exactly as recorded by the Registrar.",
+      },
+      {
+        question: "Can a struck-off Cyprus company be restored?",
+        answer:
+          "Yes, by court application within the statutory period, normally after outstanding filings and fees are settled.",
+      },
+      {
+        question: "Is strike off the same as liquidation?",
+        answer:
+          "No. Liquidation is a formal winding-up process run by a liquidator. Strike off is administrative removal from the register without a full winding up.",
+      },
+    ],
+  },
 ];
+
 
 export function getRegistryLanding(slug: string): RegistryLanding | undefined {
   return REGISTRY_LANDINGS.find((landing) => landing.slug === slug);
