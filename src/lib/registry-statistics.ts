@@ -56,8 +56,8 @@ export function statisticsGrandTotal(): number {
 export function latestTrend(key: StatisticSeriesKey): number | null {
   const rows = REGISTRY_STATISTICS;
   if (rows.length < 2) return null;
-  const prev = rows[rows.length - 2][key];
-  const curr = rows[rows.length - 1][key];
+  const prev = rows[rows.length - 2]?.[key] ?? 0;
+  const curr = rows[rows.length - 1]?.[key] ?? 0;
   if (prev <= 0) return null;
   return ((curr - prev) / prev) * 100;
 }
