@@ -7,7 +7,6 @@ import {
   Download,
   Languages,
   Link2,
-  RefreshCw,
   Type,
 } from "lucide-react";
 import {
@@ -24,7 +23,6 @@ import {
   Legend,
 } from "recharts";
 import {
-  formatComputedAt,
   industrySignals,
   letterDistribution,
 } from "@/lib/company-name-stats";
