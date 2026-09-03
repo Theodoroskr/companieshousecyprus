@@ -82,12 +82,12 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  const shouldCopyOffice = options.sendOfficeCopy === true
-
-  const copyTargets = [
-    ...(shouldCopyOffice ? [OFFICE_COPY] : []),
+  // The office inbox always receives a copy, unless it is the primary recipient
+  // (e.g. contact-inquiry, sitemap alerts). This is effectively a CC to info@.
+  const copyTargets = Array.from(new Set([
+    ...(recipient !== OFFICE_COPY ? [OFFICE_COPY] : []),
     ...(options.extraCopies ?? []),
-  ]
+  ]))
 
   const idempotencyKey = options.idempotencyKey
     ? sanitizeIdempotencyKey(options.idempotencyKey)
