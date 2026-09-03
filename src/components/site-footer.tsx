@@ -141,6 +141,11 @@ export function SiteFooter() {
                 Statistics dashboard
               </Link>
             </li>
+            <li>
+              <Link to="/statistics/company-names" className="text-muted-foreground hover:text-foreground">
+                Company name statistics
+              </Link>
+            </li>
 
             <li>
               <Link to="/international" className="text-muted-foreground hover:text-foreground">
