@@ -383,7 +383,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
   {
     slug: "cyprus-annual-return-he32",
     label: "Cyprus annual return (HE32)",
-    h1: "Cyprus Annual Return (HE32)",
+    h1: "Cyprus Annual Return HE32",
     title: "Cyprus Annual Return HE32 | Deadlines and Filing Check",
     description:
       "What the Cyprus HE32 annual return contains, when it is due, what happens if it is filed late, and how to check a company's filing position on the register.",
@@ -481,7 +481,7 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
   {
     slug: "certificate-of-shareholders-cyprus",
     label: "Certificate of shareholders Cyprus",
-    h1: "Certificate of Shareholders (Cyprus)",
+    h1: "Certificate of Shareholders Cyprus",
     title: "Certificate of Shareholders Cyprus | Order Online",
     description:
       "What a Cyprus certificate of shareholders proves, what it contains, when banks and notaries ask for one, and how to order it with apostille for use abroad.",
