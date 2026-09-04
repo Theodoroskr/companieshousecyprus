@@ -380,6 +380,207 @@ export const REGISTRY_LANDINGS: RegistryLanding[] = [
       },
     ],
   },
+  {
+    slug: "cyprus-annual-return-he32",
+    label: "Cyprus annual return (HE32)",
+    h1: "Cyprus Annual Return HE32",
+    title: "Cyprus Annual Return HE32 | Deadlines and Filing Check",
+    description:
+      "What the Cyprus HE32 annual return contains, when it is due, what happens if it is filed late, and how to check a company's filing position on the register.",
+    intro:
+      "The HE32 is the annual return every Cyprus company files with the Department of Registrar of Companies and Intellectual Property. It confirms the company's officers, registered office and share capital position as at the return date, and is filed together with the financial statements for the corresponding year.",
+    sections: [
+      {
+        heading: "What the HE32 contains",
+        body: "The annual return is a snapshot of the company's constitutional position, not a set of accounts. The financial statements are filed alongside it.",
+        bullets: [
+          "Registered office address at the return date",
+          "Directors and company secretary in office",
+          "Issued share capital and the shareholder list",
+          "Transfers of shares since the previous return",
+        ],
+      },
+      {
+        heading: "When the annual return is due",
+        body: "A Cyprus company draws up its annual return as at a date within the calendar year and files it with the Registrar within the statutory period after that date, with the audited financial statements for the preceding year attached. A newly incorporated company's first return follows its first financial period rather than its incorporation date.",
+      },
+      {
+        heading: "What happens if the HE32 is late",
+        body: "Late filing attracts Registrar penalties that accrue over time, and a persistent failure to file is one of the grounds on which the Registrar begins strike-off proceedings. A company that has fallen behind is often visible from its registry status before any formal action appears.",
+      },
+      {
+        heading: "Checking a company's filing position",
+        body: "Search the company on this site and read its registry status and recorded officials. Where you need the filed record itself — the officers, shareholders and capital as registered — a structure report sets it out in a single document you can download.",
+      },
+    ],
+    faqs: [
+      {
+        question: "What is the HE32 form in Cyprus?",
+        answer:
+          "HE32 is the annual return form filed by Cyprus companies with the Registrar of Companies. It records the officers, registered office, share capital and shareholders as at the return date.",
+      },
+      {
+        question: "Does every Cyprus company have to file an annual return?",
+        answer:
+          "Yes. Every registered company must file an annual return each year, including dormant companies, together with the financial statements for the corresponding period.",
+      },
+      {
+        question: "What is the penalty for filing the HE32 late?",
+        answer:
+          "The Registrar applies a late filing charge that increases with the delay, and continued non-filing can lead to strike-off proceedings against the company.",
+      },
+    ],
+  },
+  {
+    slug: "cyprus-company-annual-levy",
+    label: "Cyprus company annual levy",
+    h1: "Cyprus Company Annual Levy",
+    title: "Cyprus Company Annual Levy | Who Pays and What Happens",
+    description:
+      "Who owes the Cyprus annual company levy, when it is payable, what non-payment means for a company's standing, and how to check a company's registry status.",
+    intro:
+      "The annual levy is a fixed yearly charge payable by companies registered in Cyprus to keep the company in good standing on the register. It is separate from corporation tax and from the Registrar's filing fees.",
+    sections: [
+      {
+        heading: "Who has to pay",
+        body: "The levy applies to companies incorporated under the Cyprus Companies Law. Whether a particular company or group is liable in a given year, and at what amount, depends on the rules in force for that year — a Cyprus accountant or corporate administrator can confirm the current position.",
+      },
+      {
+        heading: "Why non-payment matters",
+        body: "Unpaid levies leave a company out of good standing, which is exactly what a certificate of good standing is designed to evidence.",
+        bullets: [
+          "A certificate of good standing may be refused",
+          "Interest and surcharges accrue on the outstanding amount",
+          "Persistent non-payment can contribute to strike-off proceedings",
+          "Banks and counterparties routinely ask for evidence of standing",
+        ],
+      },
+      {
+        heading: "Checking a company before you deal with it",
+        body: "Registry status on a company profile shows whether a company is active, in strike off, dissolved or in liquidation. Where a counterparty or bank requires formal proof, a certificate of good standing issued by the Registrar is the document that carries weight.",
+      },
+    ],
+    faqs: [
+      {
+        question: "What is the Cyprus annual company levy?",
+        answer:
+          "It is a fixed annual charge payable by companies registered in Cyprus to remain in good standing on the register. It is separate from corporation tax.",
+      },
+      {
+        question: "What happens if the annual levy is not paid?",
+        answer:
+          "Surcharges accrue, a certificate of good standing may be refused, and prolonged non-payment can contribute to the company being struck off the register.",
+      },
+      {
+        question: "Can I see whether a company has paid its levy?",
+        answer:
+          "Payment records are not published. What you can check is the company's registry status, and you can order a certificate of good standing, which is only issued for a company in good standing.",
+      },
+    ],
+  },
+  {
+    slug: "certificate-of-shareholders-cyprus",
+    label: "Certificate of shareholders Cyprus",
+    h1: "Certificate of Shareholders Cyprus",
+    title: "Certificate of Shareholders Cyprus | Order Online",
+    description:
+      "What a Cyprus certificate of shareholders proves, what it contains, when banks and notaries ask for one, and how to order it with apostille for use abroad.",
+    intro:
+      "A certificate of shareholders is an official Registrar document listing the registered members of a Cyprus company and their shareholdings. Banks, notaries and foreign authorities ask for it when they need documentary proof of who owns a company, rather than a screenshot of a search result.",
+    sections: [
+      {
+        heading: "What the certificate shows",
+        body: "The certificate reflects the shareholder register as held by the Registrar on the date of issue.",
+        bullets: [
+          "Company name and registration number",
+          "Each registered shareholder as recorded",
+          "Number and class of shares held",
+          "Date of issue and Registrar certification",
+        ],
+      },
+      {
+        heading: "Registered shareholders and beneficial owners",
+        body: "The certificate names the shareholders on the register. Where shares are held through a nominee or a corporate holder, the ultimate individuals are recorded separately in the beneficial owner register, which has restricted access. The two documents answer different questions and are often requested together.",
+      },
+      {
+        heading: "Use abroad and apostille",
+        body: "For use outside Cyprus, a certificate normally needs an apostille under the Hague Convention. Apostille is available as an add-on when you order, and adds processing time because the document is certified by the Republic after the Registrar issues it.",
+      },
+      {
+        heading: "How to order",
+        body: "Find the company through the search, then order the structure report or the certificate you need. Documents are delivered digitally to your account once issued, with the apostilled original dispatched where that option is selected.",
+      },
+    ],
+    faqs: [
+      {
+        question: "What is a certificate of shareholders in Cyprus?",
+        answer:
+          "It is an official document issued by the Registrar of Companies listing a Cyprus company's registered shareholders and their shareholdings as at the date of issue.",
+      },
+      {
+        question: "Does the certificate show the beneficial owners?",
+        answer:
+          "No. It shows the registered shareholders. Ultimate beneficial owners are held in the separate beneficial owner register, which has restricted access.",
+      },
+      {
+        question: "Can I get an apostille on the certificate?",
+        answer:
+          "Yes. Apostille certification for use abroad can be added to the order; it is processed after the Registrar issues the certificate and adds to the delivery time.",
+      },
+    ],
+  },
+  {
+    slug: "cyprus-company-name-approval",
+    label: "Cyprus company name approval",
+    h1: "Cyprus Company Name Approval",
+    title: "Cyprus Company Name Approval | Rules and Name Check",
+    description:
+      "How Cyprus company name approval works, which names the Registrar refuses, how long approval lasts, and how to check whether a name is already taken.",
+    intro:
+      "Before a Cyprus company can be incorporated, its proposed name must be approved by the Department of Registrar of Companies and Intellectual Property. Approval is a separate step from incorporation and is the most common cause of delay when setting up.",
+    sections: [
+      {
+        heading: "How approval works",
+        body: "You submit the proposed name to the Registrar, which checks it against the existing register and its naming rules and either approves or refuses it. An approved name is reserved for a limited period, within which the incorporation documents must be filed. Submitting two or three alternatives in order of preference is standard practice.",
+      },
+      {
+        heading: "Names the Registrar refuses",
+        body: "Refusal usually comes down to one of a small number of grounds.",
+        bullets: [
+          "Identical or confusingly similar to a name already on the register",
+          "Misleading as to the company's activities, size or status",
+          "Words implying state, royal or regulatory connection without consent",
+          "Regulated terms such as bank, insurance or trustee without a licence",
+          "Names considered offensive or contrary to public policy",
+        ],
+      },
+      {
+        heading: "Checking a name before you apply",
+        body: "Search the register first. If a close match already exists, the Registrar is likely to refuse. Browsing the words that recur most across the register also helps — a name built from very common terms is far more likely to collide than a distinctive one.",
+      },
+      {
+        heading: "After approval",
+        body: "Once the name is approved, the incorporation documents are filed within the reservation period. Approval of a name is not a trade mark and does not by itself give rights against a similar brand.",
+      },
+    ],
+    faqs: [
+      {
+        question: "How long does Cyprus company name approval take?",
+        answer:
+          "Standard examination normally takes a few working days, and an accelerated examination is available for an additional Registrar fee.",
+      },
+      {
+        question: "How long is an approved name reserved?",
+        answer:
+          "An approved name is held for a limited period, during which the incorporation documents must be filed. If they are not, the name is released and must be re-applied for.",
+      },
+      {
+        question: "Can I check whether a company name is already taken in Cyprus?",
+        answer:
+          "Yes. Search the register by name here — if an identical or very similar name is already registered, the Registrar is likely to refuse your application.",
+      },
+    ],
+  },
 ];
 
 
