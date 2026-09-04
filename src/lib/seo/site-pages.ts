@@ -43,6 +43,7 @@ export const STATIC_PAGES: SitemapPage[] = [
   { path: "/guides", priority: "0.6", changefreq: "monthly" },
   { path: "/guides/register-company-cyprus", priority: "0.9", changefreq: "monthly" },
   { path: "/guides/companies-house-cyprus", priority: "0.9", changefreq: "monthly" },
+  { path: "/guides/cyprus-company-landscape-2026", priority: "0.9", changefreq: "monthly" },
   { path: "/company-set-up/", priority: "0.9", changefreq: "monthly" },
   { path: "/pricing", priority: "0.8", changefreq: "monthly" },
   { path: "/solutions/kyb-for-banks", priority: "0.8", changefreq: "monthly" },
