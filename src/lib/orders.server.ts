@@ -1235,7 +1235,7 @@ export async function sendApostillePaymentRequest(
       vatCents: order.vat_cents ?? 0,
       totalCents: order.total_cents ?? 0,
     });
-    return true;
+    return result.sent;
   } catch (sendError) {
     console.error("Payment request email failed", reference, sendError);
     return false;
