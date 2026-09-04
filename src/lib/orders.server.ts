@@ -1207,13 +1207,21 @@ export async function createApostilleFollowUpOrder(input: {
   return { ...created, emailed };
 }
 
-/** (Re)sends the payment-request email for a follow-up order. Returns false when the send fails. */
-export async function sendApostillePaymentRequest(reference: string) {
+/**
+ * (Re)sends the payment-request email for a follow-up order. Returns false when
+ * the send fails or the recipient is suppressed. Resends use a fresh
+ * idempotency suffix so they are not deduped against the original send.
+ */
+export async function sendApostillePaymentRequest(
+  reference: string,
+  options: { resend?: boolean } = {},
+) {
   const { order, item, sourceReference } = await paymentRequestPayload(reference);
   if (!order.email || !order.access_token) return false;
   try {
     const { sendPaymentRequestEmail } = await import("@/lib/order-emails.server");
-    await sendPaymentRequestEmail({
+    const result = await sendPaymentRequestEmail({
+      idempotencySuffix: options.resend ? `resend-${Date.now()}` : null,
       reference: order.reference,
       accessToken: order.access_token,
       email: order.email,
