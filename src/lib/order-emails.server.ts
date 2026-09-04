@@ -199,4 +199,5 @@ export async function sendPaymentRequestEmail(input: {
       payUrl: `${SITE_URL}/order/${input.reference}?token=${input.accessToken}`,
     },
   });
+  return result;
 }
