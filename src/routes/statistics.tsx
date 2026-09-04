@@ -371,7 +371,7 @@ function StatisticsPage() {
           Figures cover {STATISTICS_PERIOD} and are published monthly. Curious what company
           names reveal?{" "}
           <Link to="/statistics/company-names" className="font-medium text-copper hover:underline">
-            Explore company name statistics
+            Explore activities statistics
           </Link>
           , or{" "}
           <Link to="/search" search={{ q: "", page: 1 }} className="font-medium text-copper hover:underline">

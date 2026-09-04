@@ -32,11 +32,11 @@ import { SITE_URL } from "@/lib/seo/registry-landings";
 import { toast } from "sonner";
 
 const PAGE_URL = `${SITE_URL}/statistics/company-names`;
-const TITLE = "Cyprus company name statistics — trends & patterns | Companies House Cyprus";
+const TITLE = "Cyprus activities statistics — trends & patterns | Companies House Cyprus";
 const DESCRIPTION =
   "What do 570,000+ Cyprus company names reveal? Most common words, industry keywords, language split, first letters and name lengths across the entire Cyprus company registry.";
 const SHARE_TEXT =
-  "Cyprus company name statistics: the most common words and industry patterns across 570k+ registered entities";
+  "Cyprus activities statistics: the most common words and industry patterns across 570k+ registered entities";
 
 export const Route = createFileRoute("/statistics_/company-names")({
   loader: () => getCompanyNameStats(),
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/statistics_/company-names")({
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
             { "@type": "ListItem", position: 2, name: "Statistics", item: `${SITE_URL}/statistics` },
-            { "@type": "ListItem", position: 3, name: "Company name statistics", item: PAGE_URL },
+            { "@type": "ListItem", position: 3, name: "Activities statistics", item: PAGE_URL },
           ],
         }),
       },
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/statistics_/company-names")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Dataset",
-          name: "Cyprus company name statistics",
+          name: "Cyprus activities statistics",
           description: DESCRIPTION,
           url: PAGE_URL,
           license: "https://creativecommons.org/licenses/by/4.0/",
@@ -203,7 +203,7 @@ function CompanyNameStatsPage() {
             <span>Free statistics dashboard</span>
           </div>
           <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-            Cyprus company name statistics
+            Cyprus activities statistics
           </h1>
           <p className="mt-3 max-w-2xl text-sm/6 text-primary-foreground/80">
             What the names of {formatEntityCount(stats?.total)} registered Cyprus entities reveal:
