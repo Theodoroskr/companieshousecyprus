@@ -185,6 +185,24 @@ export type Database = {
         }
         Relationships: []
       }
+      company_name_stats_cache: {
+        Row: {
+          computed_at: string
+          id: number
+          payload: Json
+        }
+        Insert: {
+          computed_at?: string
+          id?: number
+          payload: Json
+        }
+        Update: {
+          computed_at?: string
+          id?: number
+          payload?: Json
+        }
+        Relationships: []
+      }
       company_slug_history: {
         Row: {
           created_at: string
@@ -2324,6 +2342,7 @@ export type Database = {
         Returns: number
       }
       ofac_release_job_lease: { Args: { _job_id: string }; Returns: undefined }
+      refresh_company_name_stats: { Args: never; Returns: undefined }
       refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
