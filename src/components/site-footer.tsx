@@ -143,7 +143,7 @@ export function SiteFooter() {
             </li>
             <li>
               <Link to="/statistics/company-names" className="text-muted-foreground hover:text-foreground">
-                Company name statistics
+                Activities statistics
               </Link>
             </li>
 
