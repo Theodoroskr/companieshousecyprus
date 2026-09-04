@@ -408,5 +408,5 @@ export const adminResendPaymentRequest = createServerFn({ method: "POST" })
     const { assertSupport } = await import("@/lib/admin.server");
     await assertSupport(context.userId);
     const { sendApostillePaymentRequest } = await import("@/lib/orders.server");
-    return { emailed: await sendApostillePaymentRequest(data.reference.trim()) };
+    return { emailed: await sendApostillePaymentRequest(data.reference.trim(), { resend: true }) };
   });

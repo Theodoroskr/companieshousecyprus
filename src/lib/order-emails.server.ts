@@ -179,9 +179,13 @@ export async function sendPaymentRequestEmail(input: {
   subtotalCents: number;
   vatCents: number;
   totalCents: number;
+  /** Distinguishes a manual resend from the original send so it is not deduped away. */
+  idempotencySuffix?: string | null;
 }) {
-  await sendTemplateEmail("payment-request", input.email, {
-    idempotencyKey: `payment-request-${input.reference}`,
+  const result = await sendTemplateEmail("payment-request", input.email, {
+    idempotencyKey: `payment-request-${input.reference}${
+      input.idempotencySuffix ? `-${input.idempotencySuffix}` : ""
+    }`,
     sendOfficeCopy: true,
     templateData: {
       fullName: input.fullName ?? undefined,
@@ -195,4 +199,5 @@ export async function sendPaymentRequestEmail(input: {
       payUrl: `${SITE_URL}/order/${input.reference}?token=${input.accessToken}`,
     },
   });
+  return result;
 }
