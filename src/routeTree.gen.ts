@@ -73,6 +73,7 @@ import { Route as FrRegistreCommerceChypreRouteImport } from './routes/fr/regist
 import { Route as GrGemiKyprouRouteImport } from './routes/gr/gemi-kyprou'
 import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as GuidesCompaniesHouseCyprusRouteImport } from './routes/guides.companies-house-cyprus'
+import { Route as GuidesCyprusCompanyLandscape2026RouteImport } from './routes/guides.cyprus-company-landscape-2026'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as IlCyprusCompanyRegistryRouteImport } from './routes/il/cyprus-company-registry'
 import { Route as ItRegistroImpreseCiproRouteImport } from './routes/it/registro-imprese-cipro'
@@ -457,6 +458,12 @@ const GuidesCompaniesHouseCyprusRoute =
     path: '/guides/companies-house-cyprus',
     getParentRoute: () => rootRouteImport,
   } as any)
+const GuidesCyprusCompanyLandscape2026Route =
+  GuidesCyprusCompanyLandscape2026RouteImport.update({
+    id: '/guides/cyprus-company-landscape-2026',
+    path: '/guides/cyprus-company-landscape-2026',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const GuidesRegisterCompanyCyprusRoute =
   GuidesRegisterCompanyCyprusRouteImport.update({
     id: '/guides/register-company-cyprus',
@@ -776,6 +783,7 @@ export interface FileRoutesByFullPath {
   '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
   '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
+  '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
@@ -887,6 +895,7 @@ export interface FileRoutesByTo {
   '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
   '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
+  '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
@@ -1001,6 +1010,7 @@ export interface FileRoutesById {
   '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
   '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
+  '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
@@ -1115,6 +1125,7 @@ export interface FileRouteTypes {
     | '/fr/registre-commerce-chypre'
     | '/gr/gemi-kyprou'
     | '/guides/companies-house-cyprus'
+    | '/guides/cyprus-company-landscape-2026'
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
@@ -1226,6 +1237,7 @@ export interface FileRouteTypes {
     | '/fr/registre-commerce-chypre'
     | '/gr/gemi-kyprou'
     | '/guides/companies-house-cyprus'
+    | '/guides/cyprus-company-landscape-2026'
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
@@ -1339,6 +1351,7 @@ export interface FileRouteTypes {
     | '/fr/registre-commerce-chypre'
     | '/gr/gemi-kyprou'
     | '/guides/companies-house-cyprus'
+    | '/guides/cyprus-company-landscape-2026'
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
@@ -1452,6 +1465,7 @@ export interface RootRouteChildren {
   FrRegistreCommerceChypreRoute: typeof FrRegistreCommerceChypreRoute
   GrGemiKyprouRoute: typeof GrGemiKyprouRoute
   GuidesCompaniesHouseCyprusRoute: typeof GuidesCompaniesHouseCyprusRoute
+  GuidesCyprusCompanyLandscape2026Route: typeof GuidesCyprusCompanyLandscape2026Route
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   IlCyprusCompanyRegistryRoute: typeof IlCyprusCompanyRegistryRoute
   ItRegistroImpreseCiproRoute: typeof ItRegistroImpreseCiproRoute
@@ -1937,6 +1951,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesCompaniesHouseCyprusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/cyprus-company-landscape-2026': {
+      id: '/guides/cyprus-company-landscape-2026'
+      path: '/guides/cyprus-company-landscape-2026'
+      fullPath: '/guides/cyprus-company-landscape-2026'
+      preLoaderRoute: typeof GuidesCyprusCompanyLandscape2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/register-company-cyprus': {
       id: '/guides/register-company-cyprus'
       path: '/guides/register-company-cyprus'
@@ -2388,6 +2409,7 @@ const rootRouteChildren: RootRouteChildren = {
   FrRegistreCommerceChypreRoute: FrRegistreCommerceChypreRoute,
   GrGemiKyprouRoute: GrGemiKyprouRoute,
   GuidesCompaniesHouseCyprusRoute: GuidesCompaniesHouseCyprusRoute,
+  GuidesCyprusCompanyLandscape2026Route: GuidesCyprusCompanyLandscape2026Route,
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   IlCyprusCompanyRegistryRoute: IlCyprusCompanyRegistryRoute,
   ItRegistroImpreseCiproRoute: ItRegistroImpreseCiproRoute,

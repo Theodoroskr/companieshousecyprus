@@ -26,6 +26,11 @@ export const Route = createFileRoute("/guides/")({
 
 const GUIDES = [
   {
+    to: "/guides/cyprus-company-landscape-2026" as const,
+    title: "The Cyprus Company Landscape in 2026",
+    body: "A data-driven analysis of the Cyprus register: 571,218 entities, activity and status mix, new-formation trends, geography and the industries names reveal.",
+  },
+  {
     to: "/guides/companies-house-cyprus" as const,
     title: "Companies House Cyprus Explained: the Cyprus Company Register",
     body: "Who keeps the Cyprus register, what it records, how to search by name or HE number, registry number prefixes, certificate turnaround, and how the Cyprus register differs from UK Companies House.",
