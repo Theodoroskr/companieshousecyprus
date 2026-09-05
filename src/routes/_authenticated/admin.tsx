@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 const ADMIN_LINKS = [
   { to: "/admin", label: "Dashboard", support: true },
   { to: "/admin/orders", label: "Orders", support: true },
+  { to: "/admin/monitoring", label: "Monitoring", support: true },
 
   { to: "/admin/import", label: "Imports", support: false },
   { to: "/admin/products", label: "Products", support: false },
@@ -20,7 +21,7 @@ const ADMIN_LINKS = [
   { to: "/admin/sitemap", label: "Sitemap", support: false },
 ] as const;
 
-const SUPPORT_ALLOWED_PREFIXES = ["/admin/orders", "/admin/emails", "/admin/reports"];
+const SUPPORT_ALLOWED_PREFIXES = ["/admin/orders", "/admin/emails", "/admin/reports", "/admin/monitoring"];
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async ({ context }) => {

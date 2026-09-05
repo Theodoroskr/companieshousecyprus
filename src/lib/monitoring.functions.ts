@@ -193,3 +193,66 @@ export const cancelCompanyWatch = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
+
+/* ---------------- Admin / support control module ---------------- */
+
+export const adminGetMonitoring = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { adminMonitoringData } = await import("@/lib/monitoring.server");
+    return adminMonitoringData();
+  });
+
+export const adminExtendPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z.object({ entitlementId: z.string().uuid(), months: z.number().int().min(1).max(24) }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { adminExtendEntitlement } = await import("@/lib/monitoring.server");
+    return adminExtendEntitlement(data.entitlementId, data.months);
+  });
+
+export const adminCancelPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ entitlementId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { adminCancelEntitlement } = await import("@/lib/monitoring.server");
+    return adminCancelEntitlement(data.entitlementId);
+  });
+
+export const adminStopCompanyWatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ watchId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { adminStopWatch } = await import("@/lib/monitoring.server");
+    return adminStopWatch(data.watchId);
+  });
+
+export const adminTriggerWatchCheck = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ watchId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { runMonitoringCheck } = await import("@/lib/monitoring.server");
+    return runMonitoringCheck({ watchId: data.watchId });
+  });
+
+export const adminResendAlert = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ watchId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { adminResendWatchAlert } = await import("@/lib/monitoring.server");
+    return adminResendWatchAlert(data.watchId);
+  });
