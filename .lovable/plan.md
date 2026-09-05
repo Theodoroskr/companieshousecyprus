@@ -1,32 +1,47 @@
-# New product ideas for Companies House Cyprus
+# New products: Company Monitoring, Complete Certificate Pack, add-on services
 
-## Goal
-Expand the product catalogue with offerings that reuse existing registry data and order infrastructure, prioritised by revenue potential and effort.
+## What we're building
 
-## Proposed products (prioritised)
+### 1. Company Monitoring (subscription)
+A paid watchlist. A customer adds Cyprus companies to a watchlist and gets an email whenever the registry record changes.
 
-### Phase 1 — build now
-1. **Company Monitoring subscription (€99/year)**
-   - Watch a company; email alert on status change, director/secretary change, address change, strike-off.
-   - Reuses the existing change-feed data and email system.
-   - Recurring revenue; strongest differentiator vs competitors.
-2. **Certified translation add-on (€90)**
-   - Hidden/internal product like the apostille add-on: admin bills it from an order, customer pays online.
-   - Already offered "on request" — just makes it orderable.
+- Price: €99 per year, per company watched (VAT 19% on top).
+- Alerts on: status change (e.g. active → strike-off), directors/secretary change, registered office change, name change.
+- Customer sees a "Monitoring" section in their account: companies watched, last checked, recent alerts, and a button to stop monitoring.
+- A "Monitor this company" button on each company page and in the pricing catalogue.
+- Daily check against the registry data we already refresh; one alert email per company per day at most.
 
-### Phase 2 — next
-3. **Charges & Mortgages Certificate (€40)** — Registrar-certified list of registered charges; frequently requested by banks.
-4. **Complete Certificate Pack (€260)** — all 8 Registrar certificates in one indexed bundle for notaries/M&A.
-5. **Historical Company Report (€95)** — previous names, officers, addresses and filings over time.
+### 2. Complete Certificate Pack (one-off)
+Every Registrar certificate we offer, in one indexed bundle.
 
-### Phase 3 — later / lead generation
-6. **Free name-availability check** — public tool, feeds the company-formation enquiry form (SEO + leads).
-7. **Bulk new-registrations data feed (B2B, priced on enquiry)** — monthly export for CRM/lead-gen firms.
+- Price: €260 (vs €330 bought separately).
+- Contents: Good Standing, Incorporation, Directors & Secretary, Shareholders, Registered Office, Capital, Memorandum & Articles.
+- Delivered as a single paginated PDF plus the individual files, same fulfilment path as the existing KYB pack.
+
+### 3. Add-on services (orderable, not just "on request")
+Services the office currently handles manually, shown as a proper "Add-on services" section on the pricing page and offered at checkout for certificate orders:
+
+- Apostille certification — €100 (already exists internally; make it visible and orderable alongside certificates).
+- Certified translation (Greek ↔ English) — €90 per document.
+- Courier delivery of hard copies — €35.
+
+Each add-on can also still be raised by staff as a follow-up order with a payment link, exactly like the apostille flow today.
 
 ## Technical notes
-- Phase 1 monitoring needs: `company_watchers` table (with GRANTs + RLS), a checker job on the existing cron worker comparing the change feed, alert email template, account page section to manage watched companies, and a Stripe subscription/one-off product via the existing payments sync.
-- Translation add-on follows the exact pattern of the existing internal `apostille-certification` product (hidden product, admin "Bill translation" action, payment-request email).
-- Each product entry goes in `src/lib/products.ts` with tax code `txcd_10103001`, then synced via /admin/products.
 
-## Step for this change
-Confirm which products to build. Recommendation: Phase 1 (Monitoring + translation add-on).
+- **Products**: add `company-monitoring`, `complete-certificate-pack`, `certified-translation`, `courier-delivery` to `src/lib/products.ts` with tax code `txcd_10103001`; flip `apostille-certification` from `internalOnly` to public. Add-ons get a new `addOn: true` flag so the pricing page groups them and the cart offers them next to eligible certificate items. Sync to Stripe via `/admin/products`; monitoring uses a yearly recurring price.
+- **Monitoring schema** (single migration, with GRANTs then RLS):
+  - `company_watches` — user_id, company_slug, status, started_at, expires_at, last_checked_at, stripe subscription reference. RLS scoped to `auth.uid()`; service_role full access.
+  - `company_watch_alerts` — watch_id, change_type, previous_value, new_value, detected_at, emailed_at. Owner-read only.
+  - `company_watch_snapshots` — the last-seen field values per watched company, used for diffing.
+- **Monitoring job**: a new key in `job_state` plus a pg_cron entry hitting an `/api/public/*` route (secret-checked like the existing cron jobs) that diffs `companies` + `company_officials_public` against the snapshot, writes alerts, and sends one digest email per watch.
+- **Email**: new `company-watch-alert` template registered in `src/lib/email-templates/registry.ts`, sent through the existing `send-email.ts` (office copy already applies).
+- **Checkout**: monitoring is a Stripe subscription — the webhook activates/expires `company_watches`; all reads filter on `environment`. Pack and add-ons follow the existing one-off order path; the pack maps to `certificateCount: 7` for service-fee/VAT maths.
+- **Account UI**: new Monitoring panel under `/account`, plus "Monitor this company" CTA on company pages.
+
+## Order of work
+1. Migration for the three monitoring tables.
+2. Product catalogue entries + pricing page grouping for add-ons.
+3. Checkout/webhook wiring (subscription for monitoring, one-off for pack and add-ons).
+4. Daily diff job + alert email.
+5. Account monitoring panel and company-page CTA.
