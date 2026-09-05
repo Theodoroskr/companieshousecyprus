@@ -327,5 +327,6 @@ export async function sendTestMonitoringAlert(recipient: string) {
       accountUrl: `${SITE_URL}/account/monitoring`,
     },
   });
-  return { ok: Boolean(result?.sent), reason: result?.reason ?? null };
+  const reason = result && "reason" in result ? (result as { reason?: string }).reason ?? null : null;
+  return { ok: Boolean(result?.sent), reason };
 }
