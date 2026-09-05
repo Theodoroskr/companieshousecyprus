@@ -166,6 +166,37 @@ function MonitoringPage() {
             </div>
           </section>
 
+          {entitlements.length > 0 && (
+            <section className="rounded-xl border bg-card p-5">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Your plans</h2>
+              <ul className="divide-y">
+                {entitlements.map((plan) => {
+                  const expired = new Date(plan.expires_at).getTime() < Date.now();
+                  return (
+                    <li key={plan.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          Company Monitoring — up to {plan.watch_limit} companies
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {expired
+                            ? `Expired ${formatDate(plan.expires_at)}`
+                            : `Cover until ${formatDate(plan.expires_at)}`}
+                          {isRenewable(plan) && !expired && " · renewal open"}
+                        </p>
+                      </div>
+                      {isRenewable(plan) && (
+                        <Button size="sm" variant={expired ? "default" : "outline"} onClick={onRenew}>
+                          <RefreshCw className="mr-1 size-4" /> Renew 12 months — €99
+                        </Button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
           {activeEntitlements.length === 0 ? (
             <div className="rounded-xl border bg-card p-10 text-center">
               <PackageSearch className="mx-auto size-8 text-muted-foreground" />
