@@ -9,6 +9,7 @@ import { template as guideLeadConfirmationTemplate } from './guide-lead-confirma
 import { template as sitemapAlertTemplate } from './sitemap-alert'
 import { template as paymentRequestTemplate } from './payment-request'
 import { template as companyWatchAlertTemplate } from './company-watch-alert'
+import { template as registrySyncReportTemplate } from './registry-sync-report'
 
 
 
@@ -36,6 +37,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'sitemap-alert': sitemapAlertTemplate,
   'payment-request': paymentRequestTemplate,
   'company-watch-alert': companyWatchAlertTemplate,
-
-
+  'registry-sync-report': registrySyncReportTemplate,
 }
