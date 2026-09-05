@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { trackEvent } from '@/lib/analytics';
+import { useCart } from '@/lib/cart';
 
 const TITLE = 'Payment status — Companies House Cyprus';
 const DESCRIPTION = 'Confirm your payment and view your order.';
@@ -31,20 +32,27 @@ export const Route = createFileRoute('/checkout/return')({
 function CheckoutReturnPage() {
   const { session_id: sessionId, order_reference: reference, order_token: token } = Route.useSearch();
   const navigate = useNavigate();
+  const { clear } = useCart();
+  const cartCleared = useRef(false);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<'paid' | 'open' | 'unpaid' | 'no_payment_required' | 'error' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // After a successful payment, take the client straight to their orders page.
+  // After a successful payment, empty the basket and take the client straight
+  // to their orders page. Clearing only happens once payment is confirmed.
   useEffect(() => {
     if (status === 'paid' || status === 'no_payment_required') {
+      if (!cartCleared.current) {
+        cartCleared.current = true;
+        clear();
+      }
       const timer = setTimeout(() => {
         void navigate({ to: '/account/orders', replace: true });
       }, 1500);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [status, navigate]);
+  }, [status, navigate, clear]);
 
   useEffect(() => {
     if (!sessionId) {
