@@ -14,6 +14,7 @@ All three were last published 31 Jul 2026 — matching our data (registrations t
 - Full import history recorded in the existing `import_runs` table (same as manual uploads), so admin staff can see who triggered what and when.
 - GDPR-compliant officer handling: official names are imported raw, then the existing suppression rules, masking, and transliteration pipelines run unchanged.
 - Automatic monitoring alerts: after a company is updated, if any watched fields change, existing company-watch alerts are generated and emailed just like today.
+- A verification email to `info@companieshousecyprus.com` after each completed run (success or failure) with what changed, row counts, and any errors.
 
 ## How it works
 
@@ -33,9 +34,10 @@ All three were last published 31 Jul 2026 — matching our data (registrations t
 - **GDPR exclusions**: after officials are imported, we run the existing suppression pipeline. Suppressed person names stay hidden from public company pages; purchased reports and admin views keep the original name. No change to current logic.
 - **Transliteration**: reuses the existing `greekToLatin`, `cleanAddress`, and key-normalisation functions in `src/lib/registrar-mapping.ts` and `src/lib/format.ts`.
 - **Monitoring alerts**: company updates are written through the same upsert path; when an updated watched field differs from the latest snapshot, the existing watch-alert flow fires and emails the watcher.
+- **Completion email**: on success or failure, send a notification to `info@companieshousecyprus.com` summarising files checked, files imported, rows processed/failed, and any error details.
 
 ## Technical notes
 
 - Reuses `src/lib/registrar-mapping.ts`, `src/lib/admin.server.ts` import functions, and the OFAC-style checkpoint/lease pattern.
 - One migration: `registry_sync_state` table with GRANTs, RLS (admin read via `has_role`), plus cron schedule applied separately (contains the secret, so not in the migration).
-- Verification: run the endpoint manually once with current files — expect "no change detected"; then simulate a changed `Last-Modified` on a small slice to confirm the import path fires and monitoring alerts trigger for watched companies.
+- Verification: run the endpoint manually once with current files — expect "no change detected"; then simulate a changed `Last-Modified` on a small slice to confirm the import path fires, monitoring alerts trigger for watched companies, and the completion email reaches the office inbox.
