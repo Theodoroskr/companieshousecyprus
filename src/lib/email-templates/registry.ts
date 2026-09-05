@@ -8,6 +8,8 @@ import { template as guideLeadInternalTemplate } from './guide-lead-internal'
 import { template as guideLeadConfirmationTemplate } from './guide-lead-confirmation'
 import { template as sitemapAlertTemplate } from './sitemap-alert'
 import { template as paymentRequestTemplate } from './payment-request'
+import { template as companyWatchAlertTemplate } from './company-watch-alert'
+
 
 
 export interface TemplateEntry {
@@ -33,5 +35,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'guide-lead-confirmation': guideLeadConfirmationTemplate,
   'sitemap-alert': sitemapAlertTemplate,
   'payment-request': paymentRequestTemplate,
+  'company-watch-alert': companyWatchAlertTemplate,
+
 
 }

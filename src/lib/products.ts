@@ -21,6 +21,8 @@ export type Product = {
   vatablePrice?: number;
   /** Hidden from the public catalogue — raised by the office as a follow-up order only. */
   internalOnly?: boolean;
+  /** Shown in the "Add-on services" group and offered next to eligible certificate items. */
+  addOn?: boolean;
 };
 
 export const CURRENCY = "EUR";
@@ -364,7 +366,7 @@ export const PRODUCTS: Product[] = [
     delivery: "3–5 business days",
     category: "service",
     taxCode: "txcd_10103001",
-    internalOnly: true,
+    addOn: true,
     certificateCount: 0,
     vatablePrice: 100,
     description: [
@@ -376,6 +378,80 @@ export const PRODUCTS: Product[] = [
       { title: "Courier or digital return", detail: "Apostilled document returned to you once certified." },
     ],
     typicalUse: "Using a Cyprus certificate before a foreign authority, bank, notary or court.",
+  },
+  {
+    slug: "certified-translation",
+    name: "Certified Translation",
+    eyebrow: "Add-on service",
+    headline: "Certified translation of a Cyprus Registrar document",
+    tagline: "Official Greek ↔ English certified translation of a Registrar certificate or document.",
+    price: 90,
+    delivery: "3–5 business days",
+    category: "service",
+    taxCode: "txcd_10103001",
+    addOn: true,
+    certificateCount: 0,
+    vatablePrice: 90,
+    description: [
+      "A certified translation of a Cyprus Registrar certificate or document, prepared by a sworn translator and suitable for submission to foreign authorities, banks and courts.",
+    ],
+    includes: [
+      { title: "Sworn translator", detail: "Translation prepared and certified by a sworn translator." },
+      { title: "Greek ↔ English", detail: "Certified translation in either direction; other language pairs on request." },
+      { title: "Digital and hard copy", detail: "Certified PDF by email; hard copies available via courier." },
+    ],
+    typicalUse: "Cross-border filings, foreign bank onboarding, court and notary submissions.",
+  },
+  {
+    slug: "company-monitoring",
+    name: "Company Monitoring",
+    eyebrow: "Monitoring",
+    headline: "Know the moment a Cyprus company changes",
+    tagline: "Twelve months of registry monitoring for up to five companies — email alerts on status, officer, address and name changes.",
+    price: 99,
+    delivery: "Active within 24 hours",
+    category: "service",
+    taxCode: "txcd_10103001",
+    certificateCount: 0,
+    vatablePrice: 99,
+    description: [
+      "We check your chosen companies against the Cyprus registry every day and email you the moment something changes: status (including strike-off), directors and secretary, registered office, or company name.",
+      "One purchase covers up to five companies for twelve months. You choose which companies to watch from your account after checkout, and you can stop watching a company at any time.",
+    ],
+    includes: [
+      { title: "Up to 5 companies", detail: "One annual purchase covers five watched companies of your choice." },
+      { title: "Daily registry checks", detail: "Each watched company is compared against the registry every day." },
+      { title: "Change alerts by email", detail: "Status, officers, address and name changes, with the old and new value shown." },
+      { title: "12-month cover", detail: "Monitoring runs for a full year from payment; renew any time." },
+    ],
+    typicalUse: "Counterparty risk, portfolio oversight, compliance watchlists.",
+  },
+  {
+    slug: "complete-certificate-pack",
+    name: "Complete Certificate Pack",
+    eyebrow: "Bundle",
+    headline: "Every Registrar certificate, one order",
+    tagline: "All seven Registrar certificates for a company in a single indexed bundle — the complete certified file.",
+    price: 260,
+    delivery: "1–2 business days",
+    category: "pack",
+    taxCode: "txcd_10103001",
+    certificateCount: 7,
+    vatablePrice: 0,
+    description: [
+      "The complete certified file for a Cyprus company: every certificate the Registrar issues, ordered together and delivered as one indexed bundle with the individual files alongside.",
+    ],
+    includes: [
+      { title: "Certificate of Good Standing", detail: "Registrar-issued." },
+      { title: "Certificate of Incorporation", detail: "Founding certificate and name history." },
+      { title: "Certificate of Directors & Secretary", detail: "Registrar-issued." },
+      { title: "Certificate of Shareholders", detail: "Registrar-issued." },
+      { title: "Certificate of Registered Office", detail: "Registrar-issued." },
+      { title: "Certificate of Capital", detail: "Registrar-issued." },
+      { title: "Memorandum & Articles of Association", detail: "Certified constitutional documents." },
+      { title: "Single indexed bundle", detail: "Paginated PDF plus the individual certificate files." },
+    ],
+    typicalUse: "M&A data rooms, notary files, full corporate verification.",
   },
 ];
 

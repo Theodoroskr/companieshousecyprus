@@ -25,7 +25,7 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-const ORDER: ProductCategory[] = ["certificate", "report", "pack"];
+const ORDER: ProductCategory[] = ["certificate", "report", "pack", "service"];
 
 function PricingPage() {
   return (
@@ -48,7 +48,11 @@ function PricingPage() {
           <section key={category}>
             <div className="flex items-end justify-between gap-4 border-b pb-4">
               <h2 className="text-2xl font-semibold">{CATEGORY_LABEL[category]}</h2>
-              <p className="text-sm text-muted-foreground">Digital PDF · apostille available</p>
+              <p className="text-sm text-muted-foreground">
+                {category === "service"
+                  ? "Ordered alongside your certificates"
+                  : "Digital PDF · apostille available"}
+              </p>
             </div>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {PRODUCTS.filter((product) => product.category === category).map((product) => {
@@ -72,7 +76,9 @@ function PricingPage() {
                           ? "certificate only"
                           : product.category === "pack"
                             ? "report & certificates"
-                            : "report only"}
+                            : product.category === "service"
+                              ? "service"
+                              : "report only"}
                       </span>
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -116,6 +122,12 @@ function PricingPage() {
                 );
               })}
             </div>
+            {category === "service" && (
+              <p className="mt-6 text-sm text-muted-foreground">
+                Need hard copies? Courier delivery is available — the cost depends on the destination and the weight of
+                the documents. <Link to="/contact" className="underline underline-offset-2">Contact us</Link> for a quote with your order.
+              </p>
+            )}
           </section>
         ))}
 

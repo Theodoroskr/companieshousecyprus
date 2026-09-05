@@ -538,6 +538,19 @@ function CompanyPage() {
                   <FileCheck2 className="size-5 shrink-0" />
                 </a>
               </Button>
+              <AddToCartButton
+                productSlug="company-monitoring"
+                companySlug={company.slug}
+                companyName={company.name}
+                companyNumber={displayOfficialNo(company)}
+                label="Monitor this company"
+                variant="outline"
+                className="h-12 w-full rounded-xl border-primary-foreground/25 bg-primary-foreground/5 px-6 font-display text-sm font-bold text-primary-foreground backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-primary-foreground/10 hover:text-primary-foreground sm:h-14 sm:w-auto sm:px-8 sm:text-base"
+              />
+              <p className="w-full text-[11px] text-primary-foreground/50 sm:text-xs">
+                €99/year covers up to 5 companies — daily registry checks, email alerts on status, officer, address and
+                name changes.
+              </p>
             </div>
           </div>
 
