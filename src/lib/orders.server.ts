@@ -873,6 +873,41 @@ export async function markOrderPaid(orderId: string) {
   return { ok: true as const };
 }
 
+/**
+ * Mark the order delivered once every item on it has been fulfilled. Monitoring
+ * items fulfil instantly at payment time, so monitoring-only baskets become
+ * delivered immediately; mixed baskets wait for the slower fulfilment flows.
+ */
+async function markOrderDeliveredIfComplete(orderId: string) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, status, reference, access_token, full_name, email, delivered_at")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (!order || order.status === "delivered") return;
+
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("id, fulfilment_status")
+    .eq("order_id", orderId);
+  if (!items?.length) return;
+  if (!items.every((item) => item.fulfilment_status === "delivered")) return;
+
+  const deliveredAt = order.delivered_at ?? new Date().toISOString();
+  await supabase
+    .from("orders")
+    .update({ status: "delivered", delivered_at: deliveredAt })
+    .eq("id", orderId);
+
+  await notifyOrderDelivered(order.id, {
+    reference: order.reference,
+    access_token: order.access_token,
+    full_name: order.full_name,
+    email: order.email,
+  });
+}
+
 /** Look up the payment status at Revolut and reconcile the order (used on return from checkout). */
 export async function syncPayment(reference: string, token: string) {
   const supabase = ordersClient();
