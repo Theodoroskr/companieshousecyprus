@@ -87,14 +87,14 @@ export const searchCompaniesForWatch = createServerFn({ method: "GET" })
     if (!q) return [];
     const { data: rows } = await context.supabase
       .from("companies")
-      .select("slug, name, number, status_en")
+      .select("slug, name, official_no, status_en")
       .ilike("name", `%${q}%`)
       .order("name", { ascending: true })
       .limit(8);
     return (rows ?? []).map((r) => ({
       slug: r.slug,
       name: r.name,
-      number: r.number,
+      number: r.official_no,
       status: r.status_en,
     }));
   });
@@ -108,7 +108,7 @@ export const addCompanyWatch = createServerFn({ method: "POST" })
 
     const { data: company } = await context.supabase
       .from("companies")
-      .select("slug, name, number")
+      .select("slug, name, official_no")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!company) throw new Error("Company not found.");
@@ -144,7 +144,7 @@ export const addCompanyWatch = createServerFn({ method: "POST" })
       email,
       company_slug: company.slug,
       company_name: company.name,
-      company_number: company.number,
+      company_number: company.official_no,
       entitlement_id: chosen.id,
       expires_at: chosen.expires_at,
     });
