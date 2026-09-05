@@ -55,14 +55,15 @@ export async function createEntitlementsForOrder(orderId: string) {
 
   const { data: items } = await supabase
     .from("order_items")
-    .select("id, product_slug, quantity, fulfilment_status")
+    .select("id, product_slug, quantity, fulfilment_status, company_slug, company_name, company_number")
     .eq("order_id", orderId)
     .eq("product_slug", MONITORING_PRODUCT_SLUG);
 
   for (const item of items ?? []) {
     if (item.fulfilment_status === "delivered") continue;
     // One entitlement per item (quantity multiplies the watch limit).
-    const { error } = await supabase.from("monitoring_entitlements").insert({
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: entitlement, error } = await supabase.from("monitoring_entitlements").insert({
       user_id: order.user_id,
       email: order.email,
       status: "active",
