@@ -38,6 +38,10 @@ function safeRedirect(path: string | undefined): string | null {
   return path;
 }
 
+function isProductionHost(host: string): boolean {
+  return ["companieshousecyprus.com", "www.companieshousecyprus.com"].includes(host.toLowerCase());
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const { redirect } = Route.useSearch();
@@ -49,10 +53,19 @@ function AuthPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [siteKey, setSiteKey] = useState("");
+  const [isProdHost, setIsProdHost] = useState(false);
   const verifyChallenge = useServerFn(verifyAuthChallenge);
   const fetchSiteKey = useServerFn(getTurnstileSiteKey);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const prod = isProductionHost(window.location.host);
+    setIsProdHost(prod);
+    if (!prod) {
+      // Turnstile site keys are domain-restricted; skip the widget on preview/dev hosts.
+      setSiteKey("");
+      return;
+    }
     let active = true;
     fetchSiteKey().then(({ siteKey }) => {
       if (active) setSiteKey(siteKey);
