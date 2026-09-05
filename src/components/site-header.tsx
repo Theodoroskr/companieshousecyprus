@@ -17,10 +17,21 @@ import {
 
 
 
+function cleanSignInRedirect(path: string, searchStr: string): string {
+  try {
+    const url = new URL(path + searchStr, "http://localhost");
+    url.searchParams.delete("__lovable_sha");
+    url.searchParams.delete("__lovable_load_id");
+    return url.pathname + url.search;
+  } catch {
+    return path + searchStr;
+  }
+}
+
 export function SiteHeader() {
   const navigate = useNavigate();
   const location = useLocation();
-  const signInRedirect = location.pathname + location.searchStr;
+  const signInRedirect = cleanSignInRedirect(location.pathname, location.searchStr);
   const { count } = useCart();
   const account = useAccount();
   const [q, setQ] = useState("");
