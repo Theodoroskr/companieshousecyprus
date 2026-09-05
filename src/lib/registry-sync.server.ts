@@ -266,21 +266,22 @@ async function processOrganisationsSlice(supabase: Db, runId: string): Promise<b
   if (!chunk) return true;
 
   let failed = 0;
-  const mapped: CompanyImportRow[] = [];
+  // Keep each mapped row next to its raw CSV row so we can join addresses by
+  // ADDRESS_SEQ_NO from the staging table (the browser uploader uses an
+  // in-memory map instead — too large for one worker invocation).
+  const mapped: { company: CompanyImportRow; seq: string | null }[] = [];
   const seqs = new Set<string>();
   for (const row of chunk.rows) {
     const company = mapOrganisationRow(row);
     if (company) {
-      mapped.push(company);
-      const seq = row["ADDRESS_SEQ_NO"]?.trim();
+      const seq = row["ADDRESS_SEQ_NO"]?.trim() || null;
+      mapped.push({ company, seq });
       if (seq) seqs.add(seq);
     } else {
       failed += 1;
     }
   }
 
-  // Join addresses from the staging table (replaces the in-memory map the
-  // browser uploader uses — too large to hold in one worker invocation).
   const addresses = new Map<string, AddressRecord>();
   const seqList = [...seqs];
   for (let i = 0; i < seqList.length; i += 500) {
@@ -293,27 +294,13 @@ async function processOrganisationsSlice(supabase: Db, runId: string): Promise<b
       addresses.set(row.seq, row.payload as unknown as AddressRecord);
     }
   }
-  for (const company of mapped) {
-    const seq = (company as Record<string, unknown>)["__seq"] as string | undefined;
-    void seq;
-  }
-
-  // mapOrganisationRow already dropped ADDRESS_SEQ_NO; re-attach via a second
-  // pass over the raw rows so each company gets its staged address.
-  const bySlug = new Map<string, Record<string, string>>();
-  for (const row of chunk.rows) {
-    const company = mapOrganisationRow(row);
-    if (company) bySlug.set(company.slug, row);
-  }
-  for (const company of mapped) {
-    const raw = bySlug.get(company.slug);
-    const seq = raw?.["ADDRESS_SEQ_NO"]?.trim();
-    const address = seq ? addresses.get(seq) : undefined;
-    if (address) Object.assign(company, address);
+  for (const item of mapped) {
+    const address = item.seq ? addresses.get(item.seq) : undefined;
+    if (address) Object.assign(item.company, address);
   }
 
   for (let i = 0; i < mapped.length; i += COMPANY_UPSERT_BATCH) {
-    const batch = mapped.slice(i, i + COMPANY_UPSERT_BATCH);
+    const batch = mapped.slice(i, i + COMPANY_UPSERT_BATCH).map((m) => m.company);
     try {
       await upsertCompanies(runId, batch);
     } catch (error) {

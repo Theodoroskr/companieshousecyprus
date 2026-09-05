@@ -37,6 +37,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'sitemap-alert': sitemapAlertTemplate,
   'payment-request': paymentRequestTemplate,
   'company-watch-alert': companyWatchAlertTemplate,
-
-
+  'registry-sync-report': registrySyncReportTemplate,
 }
