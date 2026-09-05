@@ -308,3 +308,25 @@ export async function runMonitoringCheck() {
 
   return { ok: true as const, checked, alerted };
 }
+
+/**
+ * Sends a sample monitoring alert to one recipient so staff can verify the
+ * email pipeline end to end without waiting for a real registry change.
+ */
+export async function sendTestMonitoringAlert(recipient: string) {
+  const result = await sendTemplateEmail("company-watch-alert", recipient, {
+    idempotencyKey: `watch-alert-test-${Date.now()}`,
+    sendOfficeCopy: true,
+    templateData: {
+      company: "ADRANUS INVESTMENTS LIMITED · HE327816",
+      changes: [
+        { field: "Registry status", previous: "Active", current: "Active (test alert)" },
+        { field: "Registered address", previous: "Old address, Nicosia", current: "New address, Nicosia" },
+      ],
+      companyUrl: `${SITE_URL}/company/adranus-investments-limited`,
+      accountUrl: `${SITE_URL}/account/monitoring`,
+    },
+  });
+  const reason = result && "reason" in result ? (result as { reason?: string }).reason ?? null : null;
+  return { ok: Boolean(result?.sent), reason };
+}
