@@ -10,6 +10,7 @@ import type { Database, Json } from "@/integrations/supabase/types";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
 export const MONITORING_PRODUCT_SLUG = "company-monitoring";
+export const MONITORING_RENEWAL_SLUG = "monitoring-renewal";
 export const MONITORING_WATCH_LIMIT = 5;
 const JOB_KEY = "company_monitoring";
 const SITE_URL = "https://companieshousecyprus.com";
@@ -102,6 +103,100 @@ export async function createEntitlementsForOrder(orderId: string) {
       .update({
         fulfilment_status: "delivered",
         fulfilment_message: `Monitoring active for up to ${MONITORING_WATCH_LIMIT * Math.max(1, item.quantity)} companies until ${new Date(expiresAt).toLocaleDateString("en-GB")}`,
+        delivered_at: new Date().toISOString(),
+      })
+      .eq("id", item.id);
+  }
+}
+
+/**
+ * Extend the customer's existing entitlement by twelve months for each paid
+ * monitoring-renewal item. The extra year is added on top of the current
+ * cover end date (or from now if the plan has lapsed), watched companies
+ * carry over, and their cover dates move with the plan. If no entitlement
+ * exists yet, a fresh one is created instead.
+ */
+export async function renewEntitlementsForOrder(orderId: string) {
+  const supabase = client();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, user_id, email")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (!order) return;
+
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("id, product_slug, quantity, fulfilment_status")
+    .eq("order_id", orderId)
+    .eq("product_slug", MONITORING_RENEWAL_SLUG);
+
+  for (const item of items ?? []) {
+    if (item.fulfilment_status === "delivered") continue;
+
+    const { data: entitlement } = await supabase
+      .from("monitoring_entitlements")
+      .select("id, expires_at, watch_limit")
+      .or(order.user_id ? `user_id.eq.${order.user_id},email.eq.${order.email}` : `email.eq.${order.email}`)
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!entitlement) {
+      // No plan to renew — create a fresh entitlement so the customer still
+      // gets what they paid for.
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      const { error } = await supabase.from("monitoring_entitlements").insert({
+        user_id: order.user_id,
+        email: order.email,
+        status: "active",
+        watch_limit: MONITORING_WATCH_LIMIT * Math.max(1, item.quantity),
+        order_id: order.id,
+        order_item_id: item.id,
+        expires_at: expiresAt,
+      });
+      await supabase
+        .from("order_items")
+        .update(
+          error
+            ? { fulfilment_status: "failed", fulfilment_message: error.message }
+            : {
+                fulfilment_status: "delivered",
+                fulfilment_message: `Monitoring plan started (no existing plan found) — active until ${new Date(expiresAt).toLocaleDateString("en-GB")}`,
+                delivered_at: new Date().toISOString(),
+              },
+        )
+        .eq("id", item.id);
+      continue;
+    }
+
+    const base = Math.max(Date.now(), new Date(entitlement.expires_at).getTime());
+    const newExpiresAt = new Date(base + 365 * 24 * 60 * 60 * 1000 * Math.max(1, item.quantity)).toISOString();
+    const { error } = await supabase
+      .from("monitoring_entitlements")
+      .update({ status: "active", expires_at: newExpiresAt, updated_at: new Date().toISOString() })
+      .eq("id", entitlement.id);
+
+    if (error) {
+      await supabase
+        .from("order_items")
+        .update({ fulfilment_status: "failed", fulfilment_message: error.message })
+        .eq("id", item.id);
+      continue;
+    }
+
+    // Move the cover end date of this plan's watches with the renewal.
+    await supabase
+      .from("company_watches")
+      .update({ status: "active", expires_at: newExpiresAt, updated_at: new Date().toISOString() })
+      .eq("entitlement_id", entitlement.id)
+      .eq("status", "active");
+
+    await supabase
+      .from("order_items")
+      .update({
+        fulfilment_status: "delivered",
+        fulfilment_message: `Monitoring renewed — cover extended until ${new Date(newExpiresAt).toLocaleDateString("en-GB")}`,
         delivered_at: new Date().toISOString(),
       })
       .eq("id", item.id);

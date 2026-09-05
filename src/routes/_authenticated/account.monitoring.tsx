@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { BellRing, Building2, Clock, Eye, Loader2, PackageSearch, Search, XCircle } from "lucide-react";
+import { BellRing, Building2, Clock, Eye, Loader2, PackageSearch, RefreshCw, Search, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useCart } from "@/lib/cart";
 import {
   addCompanyWatch,
   cancelCompanyWatch,
@@ -41,8 +42,16 @@ function MonitoringPage() {
   const addWatch = useServerFn(addCompanyWatch);
   const cancelWatch = useServerFn(cancelCompanyWatch);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { addItem } = useCart();
 
   const overview = useQuery({ queryKey: ["my-monitoring"], queryFn: () => load() });
+
+  const onRenew = () => {
+    addItem({ productSlug: "monitoring-renewal", companySlug: null, companyName: null, companyNumber: null });
+    toast.success("Monitoring renewal added to your basket.");
+    navigate({ to: "/cart" });
+  };
 
   const [term, setTerm] = useState("");
   const [hits, setHits] = useState<CompanyHit[]>([]);
@@ -101,6 +110,10 @@ function MonitoringPage() {
   const watches = overview.data?.watches ?? [];
   const alerts = overview.data?.alerts ?? [];
   const activeEntitlements = entitlements.filter((e) => e.status === "active");
+  const RENEWAL_WINDOW_DAYS = 45;
+  const isRenewable = (e: (typeof entitlements)[number]) =>
+    e.status !== "active" ||
+    new Date(e.expires_at).getTime() - Date.now() < RENEWAL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   const activeWatches = watches.filter((w) => w.status === "active");
   const freeSlots = activeEntitlements.reduce(
     (sum, e) => sum + Math.max(0, e.watch_limit - e.watches_used),
@@ -152,6 +165,37 @@ function MonitoringPage() {
               <p className="mt-1 text-2xl font-bold tracking-tight">{freeSlots}</p>
             </div>
           </section>
+
+          {entitlements.length > 0 && (
+            <section className="rounded-xl border bg-card p-5">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Your plans</h2>
+              <ul className="divide-y">
+                {entitlements.map((plan) => {
+                  const expired = new Date(plan.expires_at).getTime() < Date.now();
+                  return (
+                    <li key={plan.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          Company Monitoring — up to {plan.watch_limit} companies
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {expired
+                            ? `Expired ${formatDate(plan.expires_at)}`
+                            : `Cover until ${formatDate(plan.expires_at)}`}
+                          {isRenewable(plan) && !expired && " · renewal open"}
+                        </p>
+                      </div>
+                      {isRenewable(plan) && (
+                        <Button size="sm" variant={expired ? "default" : "outline"} onClick={onRenew}>
+                          <RefreshCw className="mr-1 size-4" /> Renew 12 months — €99
+                        </Button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
 
           {activeEntitlements.length === 0 ? (
             <div className="rounded-xl border bg-card p-10 text-center">

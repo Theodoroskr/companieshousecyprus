@@ -162,7 +162,7 @@ function CheckoutPage() {
 
 
   // Products that are not tied to a specific company at checkout time.
-  const COMPANY_FREE_SLUGS = new Set(['company-monitoring']);
+  const COMPANY_FREE_SLUGS = new Set(['company-monitoring', 'monitoring-renewal']);
 
   const itemsNeedingCompany = items
     .map((item, index) => ({ item, index, product: PRODUCTS_BY_SLUG[item.productSlug] }))

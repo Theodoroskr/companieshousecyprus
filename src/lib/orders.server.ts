@@ -858,6 +858,14 @@ export async function markOrderPaid(orderId: string) {
       console.error("Monitoring entitlement creation failed", orderId, err);
     }
   }
+  if ((items ?? []).some((item) => item.product_slug === "monitoring-renewal")) {
+    try {
+      const { renewEntitlementsForOrder } = await import("@/lib/monitoring.server");
+      await renewEntitlementsForOrder(orderId);
+    } catch (err) {
+      console.error("Monitoring renewal failed", orderId, err);
+    }
+  }
   return { ok: true as const };
 }
 
