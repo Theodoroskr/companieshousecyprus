@@ -10,12 +10,18 @@ export type WatchRow = {
   status: string;
   expires_at: string;
   last_checked_at: string | null;
+  registry_status: string | null;
+  registry_type: string | null;
+  registry_address: string | null;
+  alert_count: number;
+  last_change_at: string | null;
 };
 
 export type AlertRow = {
   id: string;
   watch_id: string;
   field_label: string;
+  change_type: string;
   previous_value: string | null;
   new_value: string | null;
   detected_at: string;
@@ -44,8 +50,6 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
 
-    const entitlementIds = (entitlements ?? []).map((e) => e.id);
-
     const { data: watches } = await context.supabase
       .from("company_watches")
       .select("id, company_slug, company_name, company_number, status, expires_at, last_checked_at, entitlement_id")
@@ -53,14 +57,26 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
 
     const watchIds = (watches ?? []).map((w) => w.id);
+    const slugs = Array.from(new Set((watches ?? []).map((w) => w.company_slug)));
+
+    const { data: companies } = slugs.length
+      ? await context.supabase
+          .from("companies")
+          .select("slug, status_en, type_en, address_full")
+          .in("slug", slugs)
+      : { data: [] as { slug: string; status_en: string | null; type_en: string | null; address_full: string | null }[] };
+
     const { data: alerts } = watchIds.length
       ? await context.supabase
           .from("company_watch_alerts")
-          .select("id, watch_id, field_label, previous_value, new_value, detected_at")
+          .select("id, watch_id, field_label, change_type, previous_value, new_value, detected_at")
           .in("watch_id", watchIds)
           .order("detected_at", { ascending: false })
-          .limit(50)
+          .limit(200)
       : { data: [] as AlertRow[] };
+
+    const alertRows = (alerts ?? []) as AlertRow[];
+    const companyBySlug = new Map((companies ?? []).map((c) => [c.slug, c]));
 
     return {
       entitlements: (entitlements ?? []).map((e) => ({
@@ -72,12 +88,22 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
           (w) => w.entitlement_id === e.id && w.status === "active",
         ).length,
       })),
-      watches: (watches ?? []).map(({ entitlement_id: _e, ...w }) => w),
-      alerts: (alerts ?? []) as AlertRow[],
-      // reference to avoid lint noise
-      ...(entitlementIds.length ? {} : {}),
+      watches: (watches ?? []).map(({ entitlement_id: _e, ...w }) => {
+        const company = companyBySlug.get(w.company_slug);
+        const own = alertRows.filter((a) => a.watch_id === w.id);
+        return {
+          ...w,
+          registry_status: company?.status_en ?? null,
+          registry_type: company?.type_en ?? null,
+          registry_address: company?.address_full ?? null,
+          alert_count: own.length,
+          last_change_at: own[0]?.detected_at ?? null,
+        };
+      }),
+      alerts: alertRows,
     };
   });
+
 
 export const searchCompaniesForWatch = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
