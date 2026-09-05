@@ -110,6 +110,10 @@ function MonitoringPage() {
   const watches = overview.data?.watches ?? [];
   const alerts = overview.data?.alerts ?? [];
   const activeEntitlements = entitlements.filter((e) => e.status === "active");
+  const RENEWAL_WINDOW_DAYS = 45;
+  const isRenewable = (e: (typeof entitlements)[number]) =>
+    e.status !== "active" ||
+    new Date(e.expires_at).getTime() - Date.now() < RENEWAL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   const activeWatches = watches.filter((w) => w.status === "active");
   const freeSlots = activeEntitlements.reduce(
     (sum, e) => sum + Math.max(0, e.watch_limit - e.watches_used),
