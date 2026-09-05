@@ -145,6 +145,11 @@ function AuthPage() {
       <h1 className="text-2xl font-bold tracking-tight">{heading}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{intro}</p>
       <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg border bg-card p-6">
+        {!isProdHost && (
+          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+            Human verification is disabled in preview mode.
+          </p>
+        )}
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
