@@ -48,6 +48,11 @@ const STATUS_TONE: Record<string, string> = {
   completed: "bg-emerald-100 text-emerald-800",
   unchanged: "bg-sky-100 text-sky-800",
   failed: "bg-red-100 text-red-800",
+  source_unavailable: "bg-amber-100 text-amber-900",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  source_unavailable: "source unavailable",
 };
 
 interface WorkerPerf {
@@ -149,6 +154,7 @@ function SanctionsDataPage() {
     mutationFn: () => runSanctionsImportNow({ data: { sourceCode: selectedSource, force: true } }),
     onSuccess: (result) => {
       if (result.status === "failed") toast.error(result.message);
+      else if (result.status === "source_unavailable") toast.warning(result.message);
       else if (result.status === "skipped") toast.info(result.message);
       else if (result.status === "unchanged") toast.info("Source file unchanged — dataset kept as is.");
       else
@@ -419,7 +425,7 @@ function SanctionsDataPage() {
                     <tr key={row.id} className="border-t">
                       <td className="py-2">{fmt(row.started_at)}</td>
                       <td>
-                        <Badge className={STATUS_TONE[row.status] ?? "bg-muted text-foreground"}>{row.status}</Badge>
+                        <Badge className={STATUS_TONE[row.status] ?? "bg-muted text-foreground"}>{STATUS_LABEL[row.status] ?? row.status}</Badge>
                       </td>
                       <td>{row.record_count?.toLocaleString("en-GB") ?? "—"}</td>
                       <td>{row.added_count}</td>

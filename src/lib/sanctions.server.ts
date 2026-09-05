@@ -68,7 +68,7 @@ export async function fetchSanctionsSource(
   sourceUrl: string,
   options: { attemptsPerUrl?: number } = {},
 ): Promise<{ response: Response | null; urlUsed: string | null; attempts: Array<{ url: string; outcome: string }> }> {
-  const attemptsPerUrl = options.attemptsPerUrl ?? 3;
+  const attemptsPerUrl = options.attemptsPerUrl ?? 4;
   const urls = [sourceUrl, ...(SOURCE_FALLBACK_URLS[sourceCode] ?? []).filter((u) => u !== sourceUrl)];
   const attempts: Array<{ url: string; outcome: string }> = [];
 
@@ -90,7 +90,7 @@ export async function fetchSanctionsSource(
       } catch (error) {
         attempts.push({ url, outcome: error instanceof Error ? error.message : "network error" });
       }
-      if (attempt < attemptsPerUrl) await sleep(1000 * 2 ** (attempt - 1));
+      if (attempt < attemptsPerUrl) await sleep(Math.min(15000, 1500 * 2 ** (attempt - 1)));
     }
   }
   return { response: null, urlUsed: null, attempts };
@@ -448,9 +448,27 @@ async function failImport(supabase: AnyClient, importId: string, message: string
     .eq("id", importId);
 }
 
+/**
+ * Records a run that could not start because the *publisher's* website was
+ * temporarily unavailable (connection failure or 5xx after retries). This is
+ * not an import failure: the stored dataset is untouched and the next
+ * scheduled run simply tries again, so it must not raise a feed alarm.
+ */
+async function deferImport(supabase: AnyClient, importId: string, message: string, diagnostics?: unknown) {
+  await supabase
+    .from("sanctions_imports")
+    .update({
+      status: "source_unavailable",
+      completed_at: new Date().toISOString(),
+      error_message: message.slice(0, 2000),
+      diagnostic_details: (diagnostics ?? null) as never,
+    })
+    .eq("id", importId);
+}
+
 export type ImportOutcome = {
   importId: string | null;
-  status: "completed" | "unchanged" | "failed" | "skipped";
+  status: "completed" | "unchanged" | "failed" | "skipped" | "source_unavailable";
   message: string;
   recordCount?: number;
   parsedCount?: number;
@@ -801,20 +819,28 @@ export async function runSanctionsImport(
     await supabase.from("sanctions_imports").update({ status: "downloading" }).eq("id", importId);
     const { response, urlUsed, attempts: downloadAttempts } = await fetchSanctionsSource(sourceCode, source.source_url);
     if (!response) {
-      const detail = "Source is unreachable (network/TLS failure after retries).";
-      await failImport(supabase, importId, detail, { stage: "download", downloadAttempts });
-      return { importId, status: "failed", message: detail };
+      const detail = "The publisher's website did not respond (network/TLS failure after retries). The stored list is unchanged; the next scheduled run will retry.";
+      await deferImport(supabase, importId, detail, { stage: "download", downloadAttempts });
+      return { importId, status: "source_unavailable", message: detail };
     }
     const finalHost = response.url ? new URL(response.url).host : null;
     if (response.status !== 200) {
-      const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
-      await failImport(supabase, importId, detail, {
+      const transient = isTransientStatus(response.status);
+      const detail = transient
+        ? `The publisher's website is temporarily unavailable (HTTP ${response.status} ${response.statusText}). The stored list is unchanged; the next scheduled run will retry.`
+        : `Source returned HTTP ${response.status} ${response.statusText}`;
+      const diagnostics = {
         stage: "download",
         status: response.status,
         finalHost,
         urlUsed,
         downloadAttempts,
-      });
+      };
+      if (transient) {
+        await deferImport(supabase, importId, detail, diagnostics);
+        return { importId, status: "source_unavailable", message: detail };
+      }
+      await failImport(supabase, importId, detail, diagnostics);
       return { importId, status: "failed", message: detail };
     }
 
@@ -1222,20 +1248,28 @@ export async function runOfacStreamingImport(
       const response = direct.response;
       downloadAttempts = direct.attempts;
       if (!response) {
-        const detail = "Source is unreachable (network/TLS failure after retries) and no relayed copy is ready yet.";
-        await failImport(supabase, importId, detail, { stage: "download", downloadAttempts, relay: "pending" });
-        return { importId, status: "failed", message: detail };
+        const detail = "The publisher's website did not respond (network/TLS failure after retries) and no relayed copy is ready yet. The next scheduled run will retry.";
+        await deferImport(supabase, importId, detail, { stage: "download", downloadAttempts, relay: "pending" });
+        return { importId, status: "source_unavailable", message: detail };
       }
       finalHost = response.url ? new URL(response.url).host : null;
       if (response.status !== 200) {
-        const detail = `Source returned HTTP ${response.status} ${response.statusText}`;
-        await failImport(supabase, importId, detail, {
+        const transient = isTransientStatus(response.status);
+        const detail = transient
+          ? `The publisher's website is temporarily unavailable (HTTP ${response.status} ${response.statusText}). The next scheduled run will retry.`
+          : `Source returned HTTP ${response.status} ${response.statusText}`;
+        const diagnostics = {
           stage: "download",
           status: response.status,
           finalHost,
           urlUsed: direct.urlUsed,
           downloadAttempts,
-        });
+        };
+        if (transient) {
+          await deferImport(supabase, importId, detail, diagnostics);
+          return { importId, status: "source_unavailable", message: detail };
+        }
+        await failImport(supabase, importId, detail, diagnostics);
         return { importId, status: "failed", message: detail };
       }
       contentType = response.headers.get("content-type") ?? "";
@@ -1713,6 +1747,11 @@ export async function readSanctionsDashboard(sourceCode = EU_SOURCE_CODE) {
   const recentTwo = history.slice(0, 2);
   if (recentTwo.length === 2 && recentTwo.every((i) => i.status === "failed")) {
     warnings.push("The last two update attempts failed.");
+  }
+  if (lastAttempt?.status === "source_unavailable") {
+    warnings.push(
+      "The publisher's website is temporarily unavailable — the stored list is unchanged and the next scheduled run will retry.",
+    );
   }
   const previousSuccess = history.filter((i) => i.status === "completed")[1] ?? null;
   if (lastSuccess?.record_count && previousSuccess?.record_count) {

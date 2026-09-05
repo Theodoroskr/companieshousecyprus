@@ -19,6 +19,8 @@ async function run(request: Request) {
     for (const sourceCode of sources) {
       const result = await runSanctionsImport({ sourceCode });
       results[sourceCode] = result;
+      // A temporarily unavailable publisher is not a job failure — the next
+      // scheduled run retries and the stored dataset stays intact.
       if (result.status === "failed") anyFailed = true;
     }
     return Response.json(results, {

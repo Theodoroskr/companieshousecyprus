@@ -1,0 +1,2 @@
+ALTER TABLE public.sanctions_imports DROP CONSTRAINT sanctions_imports_status_check;
+ALTER TABLE public.sanctions_imports ADD CONSTRAINT sanctions_imports_status_check CHECK (status = ANY (ARRAY['started'::text, 'downloading'::text, 'validating'::text, 'parsing'::text, 'staging'::text, 'completed'::text, 'unchanged'::text, 'failed'::text, 'source_unavailable'::text]));
