@@ -425,7 +425,7 @@ function SanctionsDataPage() {
                     <tr key={row.id} className="border-t">
                       <td className="py-2">{fmt(row.started_at)}</td>
                       <td>
-                        <Badge className={STATUS_TONE[row.status] ?? "bg-muted text-foreground"}>{row.status}</Badge>
+                        <Badge className={STATUS_TONE[row.status] ?? "bg-muted text-foreground"}>{STATUS_LABEL[row.status] ?? row.status}</Badge>
                       </td>
                       <td>{row.record_count?.toLocaleString("en-GB") ?? "—"}</td>
                       <td>{row.added_count}</td>
