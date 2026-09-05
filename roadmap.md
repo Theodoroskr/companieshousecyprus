@@ -6,4 +6,4 @@
 - [x] Fix stalled OFAC SDN import (background worker + heartbeat + DB watchdog, 2026-09-01)
 - [x] Replace request-bound OFAC import with bounded, database-checkpointed slices
 - [x] Apostille follow-up billing: add-on product, admin "Bill apostille" action, payment-request email
-- [ ] Company Monitoring (5 companies, €99/yr) + Complete Certificate Pack (€260) + public add-on services (apostille €100, translation €90, courier €35)
+- [ ] Company Monitoring (5 companies, €99/yr) + Complete Certificate Pack (€260) + public add-on services (apostille €100, translation €90; courier = note only, price depends on region/weight)
