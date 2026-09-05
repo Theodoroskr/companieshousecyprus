@@ -138,7 +138,12 @@ function MyOrdersPage() {
             payment and delivery progress.
           </p>
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/account/monitoring">Company monitoring</Link>
+          </Button>
+          <SignOutButton />
+        </div>
       </header>
 
       {orders.length > 0 && (

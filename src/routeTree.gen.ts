@@ -86,6 +86,7 @@ import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb
 import { Route as StatisticsCompanyNamesRouteImport } from './routes/statistics_.company-names'
 import { Route as UkCyprusCompaniesHouseRouteImport } from './routes/uk/cyprus-companies-house'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AuthenticatedAccountMonitoringRouteImport } from './routes/_authenticated/account.monitoring'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
@@ -528,6 +529,12 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedAccountMonitoringRoute =
+  AuthenticatedAccountMonitoringRouteImport.update({
+    id: '/account/monitoring',
+    path: '/account/monitoring',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAccountOrdersRoute =
   AuthenticatedAccountOrdersRouteImport.update({
     id: '/account/orders',
@@ -805,6 +812,7 @@ export interface FileRoutesByFullPath {
   '/directory/': typeof DirectoryIndexRoute
   '/guides/': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/account/monitoring': typeof AuthenticatedAccountMonitoringRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -918,6 +926,7 @@ export interface FileRoutesByTo {
   '/directory': typeof DirectoryIndexRoute
   '/guides': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/account/monitoring': typeof AuthenticatedAccountMonitoringRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -1034,6 +1043,7 @@ export interface FileRoutesById {
   '/directory/': typeof DirectoryIndexRoute
   '/guides/': typeof GuidesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/account/monitoring': typeof AuthenticatedAccountMonitoringRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
@@ -1150,6 +1160,7 @@ export interface FileRouteTypes {
     | '/directory/'
     | '/guides/'
     | '/.mcp/invoke-tool/$tool'
+    | '/account/monitoring'
     | '/account/orders'
     | '/admin/api4all'
     | '/admin/emails'
@@ -1263,6 +1274,7 @@ export interface FileRouteTypes {
     | '/directory'
     | '/guides'
     | '/.mcp/invoke-tool/$tool'
+    | '/account/monitoring'
     | '/account/orders'
     | '/admin/api4all'
     | '/admin/emails'
@@ -1378,6 +1390,7 @@ export interface FileRouteTypes {
     | '/directory/'
     | '/guides/'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/account/monitoring'
     | '/_authenticated/account/orders'
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/emails'
@@ -2055,6 +2068,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/account/monitoring': {
+      id: '/_authenticated/account/monitoring'
+      path: '/account/monitoring'
+      fullPath: '/account/monitoring'
+      preLoaderRoute: typeof AuthenticatedAccountMonitoringRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/account/orders': {
       id: '/_authenticated/account/orders'
       path: '/account/orders'
@@ -2350,6 +2370,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAccountMonitoringRoute: typeof AuthenticatedAccountMonitoringRoute
   AuthenticatedAccountOrdersRoute: typeof AuthenticatedAccountOrdersRoute
   AuthenticatedAccountReportsItemIdRoute: typeof AuthenticatedAccountReportsItemIdRoute
   AuthenticatedAccountScreeningItemIdRoute: typeof AuthenticatedAccountScreeningItemIdRoute
@@ -2357,6 +2378,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAccountMonitoringRoute: AuthenticatedAccountMonitoringRoute,
   AuthenticatedAccountOrdersRoute: AuthenticatedAccountOrdersRoute,
   AuthenticatedAccountReportsItemIdRoute:
     AuthenticatedAccountReportsItemIdRoute,
