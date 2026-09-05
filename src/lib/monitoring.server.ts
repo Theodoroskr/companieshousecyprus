@@ -217,19 +217,30 @@ export async function runMonitoringCheck() {
         (change) => !watch.last_alert_at || new Date(watch.last_alert_at).getTime() < Date.now() - 23 * 60 * 60 * 1000,
       );
       if (changes.length > 0) {
+        // Fall back to the account email when the watch row has none stored.
+        let recipient = watch.email as string | null;
+        if (!recipient && watch.user_id) {
+          const { data: account } = await supabase.auth.admin.getUserById(watch.user_id);
+          recipient = account?.user?.email ?? null;
+          if (recipient) {
+            await supabase.from("company_watches").update({ email: recipient }).eq("id", watch.id);
+          }
+        }
+
+        const willEmail = alertable.length > 0 && Boolean(recipient);
         const rows = changes.map((change) => ({
           watch_id: watch.id,
           change_type: change.change_type,
           field_label: change.field_label,
           previous_value: change.previous_value,
           new_value: change.new_value,
-          emailed_at: alertable.length > 0 ? now : null,
+          emailed_at: willEmail ? now : null,
         }));
         await supabase.from("company_watch_alerts").insert(rows);
 
-        if (alertable.length > 0 && watch.email) {
+        if (willEmail && recipient) {
           try {
-            await sendTemplateEmail("company-watch-alert", watch.email, {
+            const result = await sendTemplateEmail("company-watch-alert", recipient, {
               idempotencyKey: `watch-alert-${watch.id}-${now.slice(0, 10)}`,
               sendOfficeCopy: true,
               templateData: {
@@ -243,11 +254,25 @@ export async function runMonitoringCheck() {
                 accountUrl: `${SITE_URL}/account/monitoring`,
               },
             });
-            await supabase
-              .from("company_watches")
-              .update({ last_alert_at: now })
-              .eq("id", watch.id);
-            alerted += 1;
+            if (result?.sent) {
+              await supabase
+                .from("company_watches")
+                .update({ last_alert_at: now })
+                .eq("id", watch.id);
+              alerted += 1;
+            } else {
+              // Suppressed recipient: stop retrying, but record that nothing was delivered.
+              console.warn("Watch alert not delivered", watch.id, result?.reason);
+              await supabase
+                .from("company_watch_alerts")
+                .update({ emailed_at: null })
+                .eq("watch_id", watch.id)
+                .eq("emailed_at", now);
+              await supabase
+                .from("company_watches")
+                .update({ last_alert_at: now })
+                .eq("id", watch.id);
+            }
           } catch (err) {
             console.error("Watch alert email failed", watch.id, err);
             // Keep emailed_at null so the alert is retried on the next run.
