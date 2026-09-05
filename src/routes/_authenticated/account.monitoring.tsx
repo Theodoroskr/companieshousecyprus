@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { BellRing, Building2, Eye, Loader2, PackageSearch, Search, XCircle } from "lucide-react";
+import { BellRing, Building2, Clock, Eye, Loader2, PackageSearch, Search, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   addCompanyWatch,
@@ -48,6 +48,7 @@ function MonitoringPage() {
   const [hits, setHits] = useState<CompanyHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [logFilter, setLogFilter] = useState<string>("all");
 
   useEffect(() => {
     const q = term.trim();
@@ -105,6 +106,7 @@ function MonitoringPage() {
     (sum, e) => sum + Math.max(0, e.watch_limit - e.watches_used),
     0,
   );
+  const visibleAlerts = logFilter === "all" ? alerts : alerts.filter((a) => a.watch_id === logFilter);
   const watchName = (id: string) => watches.find((w) => w.id === id)?.company_name ?? "Company";
 
   return (
