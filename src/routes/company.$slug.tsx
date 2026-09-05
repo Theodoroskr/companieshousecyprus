@@ -481,8 +481,8 @@ function CompanyPage() {
           </nav>
 
 
-          <div className="mt-6 flex flex-col gap-6 sm:mt-8 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
-            <div className="min-w-0 flex-1">
+          <div className="mt-6 flex flex-col gap-6 sm:mt-8">
+            <div className="min-w-0">
               <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${statusTone(company.status_group)}`}>
                   {company.status_en ?? "Unknown status"}
@@ -493,7 +493,7 @@ function CompanyPage() {
                   </span>
                 )}
               </div>
-              <h1 className="max-w-3xl font-display text-2xl font-bold tracking-tight break-words sm:text-3xl md:text-4xl lg:text-5xl">{company.name}</h1>
+              <h1 className="max-w-5xl break-words font-display text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl lg:text-5xl">{company.name}</h1>
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-primary-foreground/70 sm:text-sm">
                 <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 shrink-0 text-copper" />{displayOfficialNo(company)}</span>
                 {registrationDate && (
@@ -505,7 +505,7 @@ function CompanyPage() {
               </p>
             </div>
 
-            <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center lg:max-w-[46%] lg:justify-end">
+            <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <Button
                 asChild
                 size="lg"
