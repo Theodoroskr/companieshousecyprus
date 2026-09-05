@@ -388,21 +388,24 @@ export async function runMonitoringCheck(options?: { watchId?: string }) {
     checked += 1;
   }
 
-  // Expire entitlements and watches past their end date.
-  await supabase
-    .from("monitoring_entitlements")
-    .update({ status: "expired", updated_at: now })
-    .eq("status", "active")
-    .lt("expires_at", now);
-  await supabase
-    .from("company_watches")
-    .update({ status: "expired", updated_at: now })
-    .eq("status", "active")
-    .lt("expires_at", now);
+  // Expire entitlements and watches past their end date (skipped for
+  // single-watch manual checks — the expiry sweep belongs to the daily run).
+  if (!options?.watchId) {
+    await supabase
+      .from("monitoring_entitlements")
+      .update({ status: "expired", updated_at: now })
+      .eq("status", "active")
+      .lt("expires_at", now);
+    await supabase
+      .from("company_watches")
+      .update({ status: "expired", updated_at: now })
+      .eq("status", "active")
+      .lt("expires_at", now);
 
-  await supabase
-    .from("job_state")
-    .upsert({ key: JOB_KEY, last_run_at: now, updated_at: now, paused: false }, { onConflict: "key" });
+    await supabase
+      .from("job_state")
+      .upsert({ key: JOB_KEY, last_run_at: now, updated_at: now, paused: false }, { onConflict: "key" });
+  }
 
   return { ok: true as const, checked, alerted };
 }
