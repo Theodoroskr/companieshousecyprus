@@ -849,6 +849,15 @@ export async function markOrderPaid(orderId: string) {
       /* fulfilment failures are recorded on the item itself */
     }
   }
+
+  if ((items ?? []).some((item) => item.product_slug === "company-monitoring")) {
+    try {
+      const { createEntitlementsForOrder } = await import("@/lib/monitoring.server");
+      await createEntitlementsForOrder(orderId);
+    } catch (err) {
+      console.error("Monitoring entitlement creation failed", orderId, err);
+    }
+  }
   return { ok: true as const };
 }
 

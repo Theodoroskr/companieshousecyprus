@@ -106,6 +106,7 @@ import { Route as ApiPublicChangeFeedRouteImport } from './routes/api/public/cha
 import { Route as ApiPublicCompanyLookupRouteImport } from './routes/api/public/company-lookup'
 import { Route as ApiPublicContentBackfillRouteImport } from './routes/api/public/content-backfill'
 import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/indexnow'
+import { Route as ApiPublicMonitorCheckRouteImport } from './routes/api/public/monitor-check'
 import { Route as ApiPublicOfacWorkerRouteImport } from './routes/api/public/ofac-worker'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
@@ -638,6 +639,11 @@ const ApiPublicIndexnowRoute = ApiPublicIndexnowRouteImport.update({
   path: '/api/public/indexnow',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMonitorCheckRoute = ApiPublicMonitorCheckRouteImport.update({
+  id: '/api/public/monitor-check',
+  path: '/api/public/monitor-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOfacWorkerRoute = ApiPublicOfacWorkerRouteImport.update({
   id: '/api/public/ofac-worker',
   path: '/api/public/ofac-worker',
@@ -818,6 +824,7 @@ export interface FileRoutesByFullPath {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/content-backfill': typeof ApiPublicContentBackfillRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
+  '/api/public/monitor-check': typeof ApiPublicMonitorCheckRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
@@ -930,6 +937,7 @@ export interface FileRoutesByTo {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/content-backfill': typeof ApiPublicContentBackfillRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
+  '/api/public/monitor-check': typeof ApiPublicMonitorCheckRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
@@ -1045,6 +1053,7 @@ export interface FileRoutesById {
   '/api/public/company-lookup': typeof ApiPublicCompanyLookupRoute
   '/api/public/content-backfill': typeof ApiPublicContentBackfillRoute
   '/api/public/indexnow': typeof ApiPublicIndexnowRoute
+  '/api/public/monitor-check': typeof ApiPublicMonitorCheckRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
@@ -1160,6 +1169,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/content-backfill'
     | '/api/public/indexnow'
+    | '/api/public/monitor-check'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
@@ -1272,6 +1282,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/content-backfill'
     | '/api/public/indexnow'
+    | '/api/public/monitor-check'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
@@ -1386,6 +1397,7 @@ export interface FileRouteTypes {
     | '/api/public/company-lookup'
     | '/api/public/content-backfill'
     | '/api/public/indexnow'
+    | '/api/public/monitor-check'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
     | '/api/public/revolut-webhook'
@@ -1488,6 +1500,7 @@ export interface RootRouteChildren {
   ApiPublicCompanyLookupRoute: typeof ApiPublicCompanyLookupRoute
   ApiPublicContentBackfillRoute: typeof ApiPublicContentBackfillRoute
   ApiPublicIndexnowRoute: typeof ApiPublicIndexnowRoute
+  ApiPublicMonitorCheckRoute: typeof ApiPublicMonitorCheckRoute
   ApiPublicOfacWorkerRoute: typeof ApiPublicOfacWorkerRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
@@ -2182,6 +2195,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIndexnowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/monitor-check': {
+      id: '/api/public/monitor-check'
+      path: '/api/public/monitor-check'
+      fullPath: '/api/public/monitor-check'
+      preLoaderRoute: typeof ApiPublicMonitorCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ofac-worker': {
       id: '/api/public/ofac-worker'
       path: '/api/public/ofac-worker'
@@ -2432,6 +2452,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCompanyLookupRoute: ApiPublicCompanyLookupRoute,
   ApiPublicContentBackfillRoute: ApiPublicContentBackfillRoute,
   ApiPublicIndexnowRoute: ApiPublicIndexnowRoute,
+  ApiPublicMonitorCheckRoute: ApiPublicMonitorCheckRoute,
   ApiPublicOfacWorkerRoute: ApiPublicOfacWorkerRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
