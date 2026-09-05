@@ -168,7 +168,7 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link to="/auth" className="text-muted-foreground hover:text-foreground">
+              <Link to="/auth" activeOptions={{ exact: true, includeSearch: false }} className="text-muted-foreground hover:text-foreground">
                 Sign in
               </Link>
             </li>

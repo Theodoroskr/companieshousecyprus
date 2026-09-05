@@ -12,6 +12,16 @@ import { getTurnstileSiteKey, verifyAuthChallenge } from "@/lib/auth-guard.funct
 
 
 
+function AuthPending() {
+  return (
+    <div className="mx-auto max-w-md px-4 py-16">
+      <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+      <div className="mt-2 h-4 w-3/4 animate-pulse rounded bg-muted" />
+      <div className="mt-8 h-64 animate-pulse rounded-lg bg-muted" />
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): { redirect?: string | undefined } => ({
@@ -28,6 +38,7 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  pendingComponent: AuthPending,
   component: AuthPage,
 });
 
@@ -36,6 +47,10 @@ function safeRedirect(path: string | undefined): string | null {
   if (!path.startsWith("/") || path.startsWith("//")) return null;
   if (path.startsWith("/auth")) return null;
   return path;
+}
+
+function isProductionHost(host: string): boolean {
+  return ["companieshousecyprus.com", "www.companieshousecyprus.com"].includes(host.toLowerCase());
 }
 
 function AuthPage() {
@@ -49,10 +64,19 @@ function AuthPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [siteKey, setSiteKey] = useState("");
+  const [isProdHost, setIsProdHost] = useState(false);
   const verifyChallenge = useServerFn(verifyAuthChallenge);
   const fetchSiteKey = useServerFn(getTurnstileSiteKey);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const prod = isProductionHost(window.location.host);
+    setIsProdHost(prod);
+    if (!prod) {
+      // Turnstile site keys are domain-restricted; skip the widget on preview/dev hosts.
+      setSiteKey("");
+      return;
+    }
     let active = true;
     fetchSiteKey().then(({ siteKey }) => {
       if (active) setSiteKey(siteKey);
@@ -132,6 +156,11 @@ function AuthPage() {
       <h1 className="text-2xl font-bold tracking-tight">{heading}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{intro}</p>
       <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg border bg-card p-6">
+        {!isProdHost && (
+          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+            Human verification is disabled in preview mode.
+          </p>
+        )}
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -177,11 +206,13 @@ function AuthPage() {
             short while — request another one if it stops working.
           </p>
         )}
-        <Turnstile siteKey={siteKey} action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        {isProdHost && (
+          <Turnstile siteKey={siteKey} action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        )}
         <Button
           type="submit"
           className="w-full"
-          disabled={busy || (Boolean(siteKey) && !captchaToken)}
+          disabled={busy || (isProdHost && Boolean(siteKey) && !captchaToken)}
         >
 
 
