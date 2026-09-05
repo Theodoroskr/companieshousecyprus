@@ -258,15 +258,18 @@ function diffFields(previous: SnapshotFields, current: SnapshotFields) {
  * Daily check: for every active watch, compare the company against its stored
  * snapshot, record alerts, refresh the snapshot, and email one alert per watch.
  */
-export async function runMonitoringCheck() {
+export async function runMonitoringCheck(options?: { watchId?: string }) {
   const supabase = client();
   const now = new Date().toISOString();
 
-  const { data: watches, error } = await supabase
+  let query = supabase
     .from("company_watches")
     .select("id, user_id, email, company_slug, company_name, company_number, last_alert_at")
     .eq("status", "active");
+  if (options?.watchId) query = query.eq("id", options.watchId);
+  const { data: watches, error } = await query;
   if (error) return { ok: false as const, error: error.message };
+
 
   let checked = 0;
   let alerted = 0;
