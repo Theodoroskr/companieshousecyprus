@@ -388,7 +388,7 @@ function nextPhase(job: JobRow, current: FileKey): FileKey | null {
   );
   const ordered = PHASE_ORDER.filter((k) => changed.includes(k));
   const index = ordered.indexOf(current);
-  return index >= 0 && index + 1 < ordered.length ? ordered[index + 1] : null;
+  return index >= 0 && index + 1 < ordered.length ? (ordered[index + 1] ?? null) : null;
 }
 
 async function collectRunSummaries(supabase: Db, runIds: Record<string, string>) {
@@ -497,15 +497,12 @@ async function detectionDue(supabase: Db): Promise<boolean> {
 async function detectAndMaybeStart(supabase: Db) {
   const checkedAt = new Date().toISOString();
   const changed: FileKey[] = [];
-  const headers: Record<string, { lastModified: string | null; etag: string | null; size: number | null }> = {};
 
   for (const file of FILES) {
     const response = await fetch(file.url, { method: "HEAD" });
     if (!response.ok) throw new Error(`Portal header check failed (${response.status}) for ${file.key}`);
     const lastModified = response.headers.get("last-modified");
-    const etag = response.headers.get("etag");
     const size = Number(response.headers.get("content-length") ?? 0) || null;
-    headers[file.key] = { lastModified, etag, size };
 
     const { data: state } = await supabase
       .from("registry_sync_state")
