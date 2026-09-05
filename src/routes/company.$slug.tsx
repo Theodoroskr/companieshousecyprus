@@ -505,7 +505,7 @@ function CompanyPage() {
               </p>
             </div>
 
-            <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center lg:max-w-[46%] lg:justify-end">
               <Button
                 asChild
                 size="lg"
