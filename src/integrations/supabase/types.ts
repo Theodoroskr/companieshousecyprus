@@ -232,6 +232,155 @@ export type Database = {
           },
         ]
       }
+      company_watch_alerts: {
+        Row: {
+          change_type: string
+          created_at: string
+          detected_at: string
+          emailed_at: string | null
+          field_label: string
+          id: string
+          new_value: string | null
+          previous_value: string | null
+          watch_id: string
+        }
+        Insert: {
+          change_type: string
+          created_at?: string
+          detected_at?: string
+          emailed_at?: string | null
+          field_label: string
+          id?: string
+          new_value?: string | null
+          previous_value?: string | null
+          watch_id: string
+        }
+        Update: {
+          change_type?: string
+          created_at?: string
+          detected_at?: string
+          emailed_at?: string | null
+          field_label?: string
+          id?: string
+          new_value?: string | null
+          previous_value?: string | null
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_watch_alerts_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "company_watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_watch_snapshots: {
+        Row: {
+          captured_at: string
+          company_slug: string
+          fields: Json
+          updated_at: string
+        }
+        Insert: {
+          captured_at?: string
+          company_slug: string
+          fields?: Json
+          updated_at?: string
+        }
+        Update: {
+          captured_at?: string
+          company_slug?: string
+          fields?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_watch_snapshots_company_slug_fkey"
+            columns: ["company_slug"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      company_watches: {
+        Row: {
+          company_name: string
+          company_number: string | null
+          company_slug: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          last_alert_at: string | null
+          last_checked_at: string | null
+          order_id: string | null
+          order_item_id: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name: string
+          company_number?: string | null
+          company_slug: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          last_alert_at?: string | null
+          last_checked_at?: string | null
+          order_id?: string | null
+          order_item_id?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string
+          company_number?: string | null
+          company_slug?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          last_alert_at?: string | null
+          last_checked_at?: string | null
+          order_id?: string | null
+          order_item_id?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_watches_company_slug_fkey"
+            columns: ["company_slug"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "company_watches_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_watches_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       directory_signal_counts: {
         Row: {
           company_count: number
