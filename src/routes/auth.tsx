@@ -12,6 +12,16 @@ import { getTurnstileSiteKey, verifyAuthChallenge } from "@/lib/auth-guard.funct
 
 
 
+function AuthPending() {
+  return (
+    <div className="mx-auto max-w-md px-4 py-16">
+      <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+      <div className="mt-2 h-4 w-3/4 animate-pulse rounded bg-muted" />
+      <div className="mt-8 h-64 animate-pulse rounded-lg bg-muted" />
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): { redirect?: string | undefined } => ({
@@ -28,6 +38,7 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  pendingComponent: AuthPending,
   component: AuthPage,
 });
 
