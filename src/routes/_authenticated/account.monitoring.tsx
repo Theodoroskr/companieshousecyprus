@@ -204,60 +204,127 @@ function MonitoringPage() {
               </h2>
               <ul className="divide-y">
                 {watches.map((watch) => (
-                  <li key={watch.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                    <div className="min-w-0">
-                      <Link
-                        to="/company/$slug"
-                        params={{ slug: watch.company_slug }}
-                        className="block truncate text-sm font-medium underline-offset-2 hover:underline"
-                      >
-                        {watch.company_name}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        {[watch.company_number, `until ${formatDate(watch.expires_at)}`].filter(Boolean).join(" · ")}
-                        {watch.status !== "active" ? ` · ${watch.status}` : ""}
+                  <li key={watch.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          to="/company/$slug"
+                          params={{ slug: watch.company_slug }}
+                          className="truncate text-sm font-medium underline-offset-2 hover:underline"
+                        >
+                          {watch.company_name}
+                        </Link>
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                            watch.status === "active"
+                              ? "border-copper/40 bg-copper/10 text-copper"
+                              : "border-border bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {watch.status === "active" ? "Watching" : watch.status}
+                        </span>
+                        {watch.registry_status && (
+                          <span className="rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground">
+                            Registry: {watch.registry_status}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {[
+                          watch.company_number,
+                          watch.registry_type,
+                          `cover until ${formatDate(watch.expires_at)}`,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                      {watch.registry_address && (
+                        <p className="mt-1 truncate text-xs text-muted-foreground">{watch.registry_address}</p>
+                      )}
+                      <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="size-3.5" />
+                          Last checked: {watch.last_checked_at ? formatDate(watch.last_checked_at) : "awaiting first check"}
+                        </span>
+                        <span>
+                          {watch.alert_count > 0
+                            ? `${watch.alert_count} change${watch.alert_count === 1 ? "" : "s"} · last ${formatDate(
+                                watch.last_change_at as string,
+                              )}`
+                            : "No changes recorded"}
+                        </span>
                       </p>
                     </div>
-                    {watch.status === "active" && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-muted-foreground"
-                        disabled={busy === watch.id}
-                        onClick={() => onCancel(watch.id)}
-                      >
-                        {busy === watch.id ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <>
-                            <XCircle className="mr-1 size-4" /> Stop watching
-                          </>
-                        )}
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {watch.alert_count > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setLogFilter(logFilter === watch.id ? "all" : watch.id)}
+                        >
+                          {logFilter === watch.id ? "Show all changes" : "View changelog"}
+                        </Button>
+                      )}
+                      {watch.status === "active" && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground"
+                          disabled={busy === watch.id}
+                          onClick={() => onCancel(watch.id)}
+                        >
+                          {busy === watch.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <>
+                              <XCircle className="mr-1 size-4" /> Stop watching
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
             </section>
           )}
 
-          {alerts.length > 0 && (
+          {watches.length > 0 && (
             <section className="rounded-xl border bg-card p-5">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                <BellRing className="size-4" /> Recent change alerts
-              </h2>
-              <ul className="divide-y">
-                {alerts.map((alert) => (
-                  <li key={alert.id} className="py-3 text-sm">
-                    <p className="font-medium">{watchName(alert.watch_id)}</p>
-                    <p className="mt-0.5 text-muted-foreground">
-                      {alert.field_label}: {alert.previous_value || "—"} →{" "}
-                      <span className="font-medium text-foreground">{alert.new_value || "—"}</span>
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{formatDate(alert.detected_at)}</p>
-                  </li>
-                ))}
-              </ul>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  <BellRing className="size-4" /> Changelog
+                </h2>
+                {logFilter !== "all" && (
+                  <Button size="sm" variant="ghost" onClick={() => setLogFilter("all")}>
+                    Clear filter: {watchName(logFilter)}
+                  </Button>
+                )}
+              </div>
+              {visibleAlerts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No registry changes recorded yet. We check every watched company daily and log anything that moves.
+                </p>
+              ) : (
+                <ol className="relative space-y-4 border-l pl-5">
+                  {visibleAlerts.map((alert) => (
+                    <li key={alert.id} className="relative text-sm">
+                      <span className="absolute -left-[1.4rem] top-1.5 size-2 rounded-full bg-copper" />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{watchName(alert.watch_id)}</p>
+                        <span className="rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground">
+                          {alert.field_label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{formatDate(alert.detected_at)}</span>
+                      </div>
+                      <p className="mt-1 text-muted-foreground">
+                        {alert.previous_value || "—"} →{" "}
+                        <span className="font-medium text-foreground">{alert.new_value || "—"}</span>
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </section>
           )}
 
@@ -267,6 +334,7 @@ function MonitoringPage() {
               No companies watched yet — use the search above to add your first company.
             </div>
           )}
+
 
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <Eye className="size-4" /> Alerts reflect the public registry; names of officers are shown as filed.
