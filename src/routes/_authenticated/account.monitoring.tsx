@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { BellRing, Building2, Clock, Eye, Loader2, PackageSearch, Search, XCircle } from "lucide-react";
+import { BellRing, Building2, Clock, Eye, Loader2, PackageSearch, RefreshCw, Search, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useCart } from "@/lib/cart";
 import {
   addCompanyWatch,
   cancelCompanyWatch,
@@ -41,8 +42,16 @@ function MonitoringPage() {
   const addWatch = useServerFn(addCompanyWatch);
   const cancelWatch = useServerFn(cancelCompanyWatch);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { addItem } = useCart();
 
   const overview = useQuery({ queryKey: ["my-monitoring"], queryFn: () => load() });
+
+  const onRenew = () => {
+    addItem({ productSlug: "monitoring-renewal", companySlug: null, companyName: null, companyNumber: null });
+    toast.success("Monitoring renewal added to your basket.");
+    navigate({ to: "/cart" });
+  };
 
   const [term, setTerm] = useState("");
   const [hits, setHits] = useState<CompanyHit[]>([]);
