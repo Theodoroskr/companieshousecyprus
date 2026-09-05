@@ -105,7 +105,7 @@ function passwordStrength(password: string) {
 
 
 function CheckoutPage() {
-  const { items, subtotal, serviceFee, apostilleFee, vat, total, clear, setApostille } = useCart();
+  const { items, subtotal, serviceFee, apostilleFee, vat, total, setApostille } = useCart();
   const account = useAccount();
   const loadMyOrders = useServerFn(listMyOrders);
   const [profile, setProfile] = useState<Record<string, string>>({});
