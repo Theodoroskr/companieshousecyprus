@@ -174,9 +174,9 @@ function CheckoutPage() {
     return (
       <div className='mx-auto max-w-2xl px-4 py-24 text-center'>
         <CheckCircle2 className='mx-auto size-12 text-olive' />
-        <h1 className='mt-6 text-3xl font-bold'>Order request received</h1>
+        <h1 className='mt-6 text-3xl font-bold'>Order saved — payment pending</h1>
         <p className='mt-3 text-muted-foreground'>
-          Reference <span className='font-mono font-semibold text-foreground'>{placed.reference}</span>. Complete the secure payment below to start production.
+          Reference <span className='font-mono font-semibold text-foreground'>{placed.reference}</span>. Your basket is kept until payment is confirmed. Complete the secure payment below to start production.
         </p>
         <div className='mt-8 flex flex-wrap justify-center gap-3'>
           <Button onClick={() => openCheckout(placed)}>
