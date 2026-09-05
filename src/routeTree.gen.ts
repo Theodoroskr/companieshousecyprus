@@ -93,6 +93,7 @@ import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminGdprRouteImport } from './routes/_authenticated/admin.gdpr'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
+import { Route as AuthenticatedAdminMonitoringRouteImport } from './routes/_authenticated/admin.monitoring'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin.products'
 import { Route as AuthenticatedAdminSanctionsDataRouteImport } from './routes/_authenticated/admin.sanctions-data'
@@ -570,6 +571,12 @@ const AuthenticatedAdminImportRoute =
     path: '/import',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminMonitoringRoute =
+  AuthenticatedAdminMonitoringRouteImport.update({
+    id: '/monitoring',
+    path: '/monitoring',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminOrdersRoute =
   AuthenticatedAdminOrdersRouteImport.update({
     id: '/orders',
@@ -824,6 +831,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/gdpr': typeof AuthenticatedAdminGdprRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
+  '/admin/monitoring': typeof AuthenticatedAdminMonitoringRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
@@ -939,6 +947,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/gdpr': typeof AuthenticatedAdminGdprRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
+  '/admin/monitoring': typeof AuthenticatedAdminMonitoringRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
@@ -1057,6 +1066,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/gdpr': typeof AuthenticatedAdminGdprRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
+  '/_authenticated/admin/monitoring': typeof AuthenticatedAdminMonitoringRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/sanctions-data': typeof AuthenticatedAdminSanctionsDataRoute
@@ -1175,6 +1185,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/gdpr'
     | '/admin/import'
+    | '/admin/monitoring'
     | '/admin/orders'
     | '/admin/products'
     | '/admin/sanctions-data'
@@ -1290,6 +1301,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/gdpr'
     | '/admin/import'
+    | '/admin/monitoring'
     | '/admin/orders'
     | '/admin/products'
     | '/admin/sanctions-data'
@@ -1407,6 +1419,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/emails'
     | '/_authenticated/admin/gdpr'
     | '/_authenticated/admin/import'
+    | '/_authenticated/admin/monitoring'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/sanctions-data'
@@ -2130,6 +2143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminImportRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/monitoring': {
+      id: '/_authenticated/admin/monitoring'
+      path: '/monitoring'
+      fullPath: '/admin/monitoring'
+      preLoaderRoute: typeof AuthenticatedAdminMonitoringRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/orders': {
       id: '/_authenticated/admin/orders'
       path: '/orders'
@@ -2355,6 +2375,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminGdprRoute: typeof AuthenticatedAdminGdprRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
+  AuthenticatedAdminMonitoringRoute: typeof AuthenticatedAdminMonitoringRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminSanctionsDataRoute: typeof AuthenticatedAdminSanctionsDataRoute
@@ -2372,6 +2393,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminGdprRoute: AuthenticatedAdminGdprRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
+  AuthenticatedAdminMonitoringRoute: AuthenticatedAdminMonitoringRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedAdminSanctionsDataRoute: AuthenticatedAdminSanctionsDataRoute,

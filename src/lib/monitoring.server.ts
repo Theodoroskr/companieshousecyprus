@@ -258,15 +258,18 @@ function diffFields(previous: SnapshotFields, current: SnapshotFields) {
  * Daily check: for every active watch, compare the company against its stored
  * snapshot, record alerts, refresh the snapshot, and email one alert per watch.
  */
-export async function runMonitoringCheck() {
+export async function runMonitoringCheck(options?: { watchId?: string }) {
   const supabase = client();
   const now = new Date().toISOString();
 
-  const { data: watches, error } = await supabase
+  let query = supabase
     .from("company_watches")
     .select("id, user_id, email, company_slug, company_name, company_number, last_alert_at")
     .eq("status", "active");
+  if (options?.watchId) query = query.eq("id", options.watchId);
+  const { data: watches, error } = await query;
   if (error) return { ok: false as const, error: error.message };
+
 
   let checked = 0;
   let alerted = 0;
@@ -385,21 +388,24 @@ export async function runMonitoringCheck() {
     checked += 1;
   }
 
-  // Expire entitlements and watches past their end date.
-  await supabase
-    .from("monitoring_entitlements")
-    .update({ status: "expired", updated_at: now })
-    .eq("status", "active")
-    .lt("expires_at", now);
-  await supabase
-    .from("company_watches")
-    .update({ status: "expired", updated_at: now })
-    .eq("status", "active")
-    .lt("expires_at", now);
+  // Expire entitlements and watches past their end date (skipped for
+  // single-watch manual checks — the expiry sweep belongs to the daily run).
+  if (!options?.watchId) {
+    await supabase
+      .from("monitoring_entitlements")
+      .update({ status: "expired", updated_at: now })
+      .eq("status", "active")
+      .lt("expires_at", now);
+    await supabase
+      .from("company_watches")
+      .update({ status: "expired", updated_at: now })
+      .eq("status", "active")
+      .lt("expires_at", now);
 
-  await supabase
-    .from("job_state")
-    .upsert({ key: JOB_KEY, last_run_at: now, updated_at: now, paused: false }, { onConflict: "key" });
+    await supabase
+      .from("job_state")
+      .upsert({ key: JOB_KEY, last_run_at: now, updated_at: now, paused: false }, { onConflict: "key" });
+  }
 
   return { ok: true as const, checked, alerted };
 }
@@ -424,4 +430,267 @@ export async function sendTestMonitoringAlert(recipient: string) {
   });
   const reason = result && "reason" in result ? (result as { reason?: string }).reason ?? null : null;
   return { ok: Boolean(result?.sent), reason };
+}
+
+/* ------------------------------------------------------------------ */
+/* Admin / support back-office helpers. Callers must verify the user  */
+/* with assertSupport() before invoking any of these.                 */
+/* ------------------------------------------------------------------ */
+
+export type AdminEntitlement = {
+  id: string;
+  email: string;
+  user_id: string | null;
+  status: string;
+  watch_limit: number;
+  expires_at: string;
+  created_at: string;
+  order_reference: string | null;
+  watches_used: number;
+  alerts_sent: number;
+};
+
+export type AdminWatch = {
+  id: string;
+  entitlement_id: string | null;
+  email: string;
+  company_slug: string;
+  company_name: string;
+  company_number: string | null;
+  status: string;
+  expires_at: string;
+  started_at: string;
+  last_checked_at: string | null;
+  last_alert_at: string | null;
+  registry_status: string | null;
+  alert_count: number;
+  undelivered_count: number;
+};
+
+export type AdminAlert = {
+  id: string;
+  watch_id: string;
+  company_name: string;
+  customer_email: string;
+  field_label: string;
+  change_type: string;
+  previous_value: string | null;
+  new_value: string | null;
+  detected_at: string;
+  emailed_at: string | null;
+};
+
+export async function adminMonitoringData(): Promise<{
+  entitlements: AdminEntitlement[];
+  watches: AdminWatch[];
+  alerts: AdminAlert[];
+}> {
+  const supabase = client();
+
+  const [{ data: entitlements }, { data: watches }, { data: alerts }] = await Promise.all([
+    supabase
+      .from("monitoring_entitlements")
+      .select("id, email, user_id, status, watch_limit, expires_at, created_at, order_id")
+      .order("created_at", { ascending: false })
+      .limit(500),
+    supabase
+      .from("company_watches")
+      .select("id, entitlement_id, email, company_slug, company_name, company_number, status, expires_at, started_at, last_checked_at, last_alert_at")
+      .order("created_at", { ascending: false })
+      .limit(1000),
+    supabase
+      .from("company_watch_alerts")
+      .select("id, watch_id, field_label, change_type, previous_value, new_value, detected_at, emailed_at")
+      .order("detected_at", { ascending: false })
+      .limit(500),
+  ]);
+
+  const orderIds = Array.from(new Set((entitlements ?? []).map((e) => e.order_id).filter(Boolean))) as string[];
+  const { data: orders } = orderIds.length
+    ? await supabase.from("orders").select("id, reference").in("id", orderIds)
+    : { data: [] as { id: string; reference: string }[] };
+  const orderRef = new Map((orders ?? []).map((o) => [o.id, o.reference]));
+
+  const slugs = Array.from(new Set((watches ?? []).map((w) => w.company_slug)));
+  const { data: companies } = slugs.length
+    ? await supabase.from("companies").select("slug, status_en").in("slug", slugs)
+    : { data: [] as { slug: string; status_en: string | null }[] };
+  const statusBySlug = new Map((companies ?? []).map((c) => [c.slug, c.status_en]));
+
+  const watchRows = watches ?? [];
+  const watchById = new Map(watchRows.map((w) => [w.id, w]));
+  const alertRows = alerts ?? [];
+
+  const alertsByWatch = new Map<string, typeof alertRows>();
+  for (const alert of alertRows) {
+    const list = alertsByWatch.get(alert.watch_id) ?? [];
+    list.push(alert);
+    alertsByWatch.set(alert.watch_id, list);
+  }
+
+  return {
+    entitlements: (entitlements ?? []).map((e) => {
+      const own = watchRows.filter((w) => w.entitlement_id === e.id);
+      const ownAlerts = own.flatMap((w) => alertsByWatch.get(w.id) ?? []);
+      return {
+        id: e.id,
+        email: e.email,
+        user_id: e.user_id,
+        status: e.status,
+        watch_limit: e.watch_limit,
+        expires_at: e.expires_at,
+        created_at: e.created_at,
+        order_reference: e.order_id ? (orderRef.get(e.order_id) ?? null) : null,
+        watches_used: own.filter((w) => w.status === "active").length,
+        alerts_sent: ownAlerts.filter((a) => a.emailed_at).length,
+      };
+    }),
+    watches: watchRows.map((w) => {
+      const own = alertsByWatch.get(w.id) ?? [];
+      return {
+        id: w.id,
+        entitlement_id: w.entitlement_id,
+        email: w.email,
+        company_slug: w.company_slug,
+        company_name: w.company_name,
+        company_number: w.company_number,
+        status: w.status,
+        expires_at: w.expires_at,
+        started_at: w.started_at,
+        last_checked_at: w.last_checked_at,
+        last_alert_at: w.last_alert_at,
+        registry_status: statusBySlug.get(w.company_slug) ?? null,
+        alert_count: own.length,
+        undelivered_count: own.filter((a) => !a.emailed_at).length,
+      };
+    }),
+    alerts: alertRows.map((a) => {
+      const watch = watchById.get(a.watch_id);
+      return {
+        id: a.id,
+        watch_id: a.watch_id,
+        company_name: watch?.company_name ?? "Unknown company",
+        customer_email: watch?.email ?? "",
+        field_label: a.field_label,
+        change_type: a.change_type,
+        previous_value: a.previous_value,
+        new_value: a.new_value,
+        detected_at: a.detected_at,
+        emailed_at: a.emailed_at,
+      };
+    }),
+  };
+}
+
+/** Manually extend a plan's cover by N months (from its current end date). */
+export async function adminExtendEntitlement(entitlementId: string, months: number) {
+  const supabase = client();
+  const { data: ent } = await supabase
+    .from("monitoring_entitlements")
+    .select("id, expires_at, status")
+    .eq("id", entitlementId)
+    .maybeSingle();
+  if (!ent) throw new Error("Plan not found");
+
+  const base = Math.max(Date.now(), new Date(ent.expires_at).getTime());
+  const newExpiry = new Date(base);
+  newExpiry.setMonth(newExpiry.getMonth() + months);
+  const now = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("monitoring_entitlements")
+    .update({ status: "active", expires_at: newExpiry.toISOString(), updated_at: now })
+    .eq("id", ent.id);
+  if (error) throw new Error(error.message);
+
+  await supabase
+    .from("company_watches")
+    .update({ status: "active", expires_at: newExpiry.toISOString(), updated_at: now })
+    .eq("entitlement_id", ent.id)
+    .in("status", ["active", "expired"]);
+
+  return { ok: true as const, expires_at: newExpiry.toISOString() };
+}
+
+/** Cancel a plan and stop its watches (watches keep their history). */
+export async function adminCancelEntitlement(entitlementId: string) {
+  const supabase = client();
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("monitoring_entitlements")
+    .update({ status: "cancelled", updated_at: now })
+    .eq("id", entitlementId);
+  if (error) throw new Error(error.message);
+  await supabase
+    .from("company_watches")
+    .update({ status: "cancelled", updated_at: now })
+    .eq("entitlement_id", entitlementId)
+    .eq("status", "active");
+  return { ok: true as const };
+}
+
+/** Stop a single watch on behalf of the customer. */
+export async function adminStopWatch(watchId: string) {
+  const supabase = client();
+  const { error } = await supabase
+    .from("company_watches")
+    .update({ status: "cancelled", updated_at: new Date().toISOString() })
+    .eq("id", watchId);
+  if (error) throw new Error(error.message);
+  return { ok: true as const };
+}
+
+/** Re-send the most recent undelivered alert email for a watch. */
+export async function adminResendWatchAlert(watchId: string) {
+  const supabase = client();
+  const { data: watch } = await supabase
+    .from("company_watches")
+    .select("id, user_id, email, company_slug, company_name, company_number")
+    .eq("id", watchId)
+    .maybeSingle();
+  if (!watch) throw new Error("Watch not found");
+
+  const { data: pending } = await supabase
+    .from("company_watch_alerts")
+    .select("id, field_label, previous_value, new_value, detected_at")
+    .eq("watch_id", watchId)
+    .is("emailed_at", null)
+    .order("detected_at", { ascending: false })
+    .limit(20);
+  if (!pending || pending.length === 0) {
+    return { ok: false as const, reason: "No undelivered alerts for this watch" };
+  }
+
+  let recipient = watch.email as string | null;
+  if (!recipient && watch.user_id) {
+    const { data: account } = await supabase.auth.admin.getUserById(watch.user_id);
+    recipient = account?.user?.email ?? null;
+  }
+  if (!recipient) return { ok: false as const, reason: "No recipient email on the watch" };
+
+  const result = await sendTemplateEmail("company-watch-alert", recipient, {
+    idempotencyKey: `watch-alert-resend-${watchId}-${Date.now()}`,
+    sendOfficeCopy: true,
+    templateData: {
+      company: [watch.company_name, watch.company_number].filter(Boolean).join(" · "),
+      changes: pending.map((a) => ({
+        field: a.field_label,
+        previous: a.previous_value || "—",
+        current: a.new_value || "—",
+      })),
+      companyUrl: `${SITE_URL}/company/${watch.company_slug}`,
+      accountUrl: `${SITE_URL}/account/monitoring`,
+    },
+  });
+
+  if (result?.sent) {
+    const now = new Date().toISOString();
+    await supabase
+      .from("company_watch_alerts")
+      .update({ emailed_at: now })
+      .in("id", pending.map((a) => a.id));
+    return { ok: true as const, reason: null };
+  }
+  const reason = result && "reason" in result ? String((result as { reason?: string }).reason ?? "send failed") : "send failed";
+  return { ok: false as const, reason };
 }
