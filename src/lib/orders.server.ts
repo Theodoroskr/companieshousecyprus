@@ -866,6 +866,10 @@ export async function markOrderPaid(orderId: string) {
       console.error("Monitoring renewal failed", orderId, err);
     }
   }
+
+  // Monitoring plans are live the moment they're paid for, so a basket whose
+  // items all fulfilled instantly should show as delivered straight away.
+  await markOrderDeliveredIfComplete(orderId);
   return { ok: true as const };
 }
 
