@@ -1377,6 +1377,96 @@ export type Database = {
         }
         Relationships: []
       }
+      registry_address_stage: {
+        Row: {
+          payload: Json
+          seq: string
+          updated_at: string
+        }
+        Insert: {
+          payload: Json
+          seq: string
+          updated_at?: string
+        }
+        Update: {
+          payload?: Json
+          seq?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registry_sync_job: {
+        Row: {
+          attempts: number
+          error: string | null
+          files_changed: Json
+          finished_at: string | null
+          id: boolean
+          phase: string | null
+          run_ids: Json
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          error?: string | null
+          files_changed?: Json
+          finished_at?: string | null
+          id?: boolean
+          phase?: string | null
+          run_ids?: Json
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          error?: string | null
+          files_changed?: Json
+          finished_at?: string | null
+          id?: boolean
+          phase?: string | null
+          run_ids?: Json
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registry_sync_state: {
+        Row: {
+          etag: string | null
+          file_key: string
+          last_checked_at: string | null
+          last_modified: string | null
+          last_run_id: string | null
+          size: number | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          etag?: string | null
+          file_key: string
+          last_checked_at?: string | null
+          last_modified?: string | null
+          last_run_id?: string | null
+          size?: number | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          etag?: string | null
+          file_key?: string
+          last_checked_at?: string | null
+          last_modified?: string | null
+          last_run_id?: string | null
+          size?: number | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       sanctions_addresses: {
         Row: {
           city: string | null

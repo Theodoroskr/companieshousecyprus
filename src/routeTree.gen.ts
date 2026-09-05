@@ -110,6 +110,7 @@ import { Route as ApiPublicIndexnowRouteImport } from './routes/api/public/index
 import { Route as ApiPublicMonitorCheckRouteImport } from './routes/api/public/monitor-check'
 import { Route as ApiPublicOfacWorkerRouteImport } from './routes/api/public/ofac-worker'
 import { Route as ApiPublicOrderRemindersRouteImport } from './routes/api/public/order-reminders'
+import { Route as ApiPublicRegistrySyncRouteImport } from './routes/api/public/registry-sync'
 import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public/revolut-webhook'
 import { Route as ApiPublicSanctionsImportRouteImport } from './routes/api/public/sanctions-import'
 import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
@@ -661,6 +662,11 @@ const ApiPublicOrderRemindersRoute = ApiPublicOrderRemindersRouteImport.update({
   path: '/api/public/order-reminders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRegistrySyncRoute = ApiPublicRegistrySyncRouteImport.update({
+  id: '/api/public/registry-sync',
+  path: '/api/public/registry-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRevolutWebhookRoute = ApiPublicRevolutWebhookRouteImport.update({
   id: '/api/public/revolut-webhook',
   path: '/api/public/revolut-webhook',
@@ -835,6 +841,7 @@ export interface FileRoutesByFullPath {
   '/api/public/monitor-check': typeof ApiPublicMonitorCheckRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
+  '/api/public/registry-sync': typeof ApiPublicRegistrySyncRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
@@ -949,6 +956,7 @@ export interface FileRoutesByTo {
   '/api/public/monitor-check': typeof ApiPublicMonitorCheckRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
+  '/api/public/registry-sync': typeof ApiPublicRegistrySyncRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
@@ -1066,6 +1074,7 @@ export interface FileRoutesById {
   '/api/public/monitor-check': typeof ApiPublicMonitorCheckRoute
   '/api/public/ofac-worker': typeof ApiPublicOfacWorkerRoute
   '/api/public/order-reminders': typeof ApiPublicOrderRemindersRoute
+  '/api/public/registry-sync': typeof ApiPublicRegistrySyncRoute
   '/api/public/revolut-webhook': typeof ApiPublicRevolutWebhookRoute
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
@@ -1183,6 +1192,7 @@ export interface FileRouteTypes {
     | '/api/public/monitor-check'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
+    | '/api/public/registry-sync'
     | '/api/public/revolut-webhook'
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
@@ -1297,6 +1307,7 @@ export interface FileRouteTypes {
     | '/api/public/monitor-check'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
+    | '/api/public/registry-sync'
     | '/api/public/revolut-webhook'
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
@@ -1413,6 +1424,7 @@ export interface FileRouteTypes {
     | '/api/public/monitor-check'
     | '/api/public/ofac-worker'
     | '/api/public/order-reminders'
+    | '/api/public/registry-sync'
     | '/api/public/revolut-webhook'
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
@@ -1516,6 +1528,7 @@ export interface RootRouteChildren {
   ApiPublicMonitorCheckRoute: typeof ApiPublicMonitorCheckRoute
   ApiPublicOfacWorkerRoute: typeof ApiPublicOfacWorkerRoute
   ApiPublicOrderRemindersRoute: typeof ApiPublicOrderRemindersRoute
+  ApiPublicRegistrySyncRoute: typeof ApiPublicRegistrySyncRoute
   ApiPublicRevolutWebhookRoute: typeof ApiPublicRevolutWebhookRoute
   ApiPublicSanctionsImportRoute: typeof ApiPublicSanctionsImportRoute
   ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
@@ -2236,6 +2249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOrderRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/registry-sync': {
+      id: '/api/public/registry-sync'
+      path: '/api/public/registry-sync'
+      fullPath: '/api/public/registry-sync'
+      preLoaderRoute: typeof ApiPublicRegistrySyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/revolut-webhook': {
       id: '/api/public/revolut-webhook'
       path: '/api/public/revolut-webhook'
@@ -2477,6 +2497,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMonitorCheckRoute: ApiPublicMonitorCheckRoute,
   ApiPublicOfacWorkerRoute: ApiPublicOfacWorkerRoute,
   ApiPublicOrderRemindersRoute: ApiPublicOrderRemindersRoute,
+  ApiPublicRegistrySyncRoute: ApiPublicRegistrySyncRoute,
   ApiPublicRevolutWebhookRoute: ApiPublicRevolutWebhookRoute,
   ApiPublicSanctionsImportRoute: ApiPublicSanctionsImportRoute,
   ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
