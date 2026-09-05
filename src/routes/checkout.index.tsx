@@ -331,7 +331,8 @@ function CheckoutPage() {
                 const result = useAuthenticated
                   ? await placeOrderAsUser({ data: orderPayload })
                   : await placeOrder({ data: orderPayload });
-                clear();
+                // The cart is deliberately kept until Stripe confirms payment,
+                // so an abandoned or failed payment does not lose the selection.
                 setPlaced(result);
                 // Open Stripe embedded checkout immediately.
                 try {
