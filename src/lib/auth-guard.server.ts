@@ -53,6 +53,17 @@ function clientIp(): string | null {
   );
 }
 
+function requestHost(): string | null {
+  return readHeader("host") ?? readHeader("x-forwarded-host") ?? null;
+}
+
+function isProductionHost(): boolean {
+  const host = requestHost();
+  if (!host) return false;
+  const allowed = new Set(["companieshousecyprus.com", "www.companieshousecyprus.com"]);
+  return allowed.has(host.toLowerCase());
+}
+
 export function captchaConfigured(): boolean {
   return Boolean(process.env["TURNSTILE_SECRET_KEY"]);
 }
@@ -94,8 +105,14 @@ async function logAttempt(mode: AuthMode, outcome: "pass" | "fail" | "missing") 
   }
 }
 
-/** Verifies the Turnstile token (when configured) and records the attempt for bot analytics. */
+/** Verifies the Turnstile token (when configured) and records the attempt for bot analytics.
+ *  Preview/dev hosts don't have a Turnstile site key configured for their domain,
+ *  so the challenge is skipped there to keep sign-in usable in the Lovable preview. */
 export async function verifyAuthAttempt(mode: AuthMode, token: string | null) {
+  if (!isProductionHost()) {
+    await logAttempt(mode, "pass");
+    return { ok: true as const };
+  }
   const configured = captchaConfigured();
   const ok = await verifyTurnstile(token);
   await logAttempt(mode, ok ? "pass" : token ? "fail" : "missing");
