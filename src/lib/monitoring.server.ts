@@ -10,6 +10,7 @@ import type { Database, Json } from "@/integrations/supabase/types";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
 export const MONITORING_PRODUCT_SLUG = "company-monitoring";
+export const MONITORING_RENEWAL_SLUG = "monitoring-renewal";
 export const MONITORING_WATCH_LIMIT = 5;
 const JOB_KEY = "company_monitoring";
 const SITE_URL = "https://companieshousecyprus.com";
