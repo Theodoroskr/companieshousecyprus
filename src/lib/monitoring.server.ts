@@ -70,8 +70,10 @@ export async function createEntitlementsForOrder(orderId: string) {
       watch_limit: MONITORING_WATCH_LIMIT * Math.max(1, item.quantity),
       order_id: order.id,
       order_item_id: item.id,
-      expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+      expires_at: expiresAt,
+    })
+      .select("id")
+      .single();
     if (error) {
       await supabase
         .from("order_items")
@@ -79,11 +81,27 @@ export async function createEntitlementsForOrder(orderId: string) {
         .eq("id", item.id);
       continue;
     }
+
+    // If the monitoring was bought from a company page, start watching that
+    // company immediately; otherwise the customer chooses from their account.
+    if (item.company_slug && entitlement?.id) {
+      const { error: watchError } = await supabase.from("company_watches").insert({
+        user_id: order.user_id,
+        email: order.email,
+        company_slug: item.company_slug,
+        company_name: item.company_name ?? item.company_slug,
+        company_number: item.company_number,
+        entitlement_id: entitlement.id,
+        expires_at: expiresAt,
+      });
+      if (watchError) console.error("Auto-watch creation failed", item.id, watchError.message);
+    }
+
     await supabase
       .from("order_items")
       .update({
         fulfilment_status: "delivered",
-        fulfilment_message: `Monitoring active for up to ${MONITORING_WATCH_LIMIT * Math.max(1, item.quantity)} companies until ${new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString("en-GB")}`,
+        fulfilment_message: `Monitoring active for up to ${MONITORING_WATCH_LIMIT * Math.max(1, item.quantity)} companies until ${new Date(expiresAt).toLocaleDateString("en-GB")}`,
         delivered_at: new Date().toISOString(),
       })
       .eq("id", item.id);
