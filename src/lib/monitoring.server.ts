@@ -169,7 +169,7 @@ export async function runMonitoringCheck() {
 
   const { data: watches, error } = await supabase
     .from("company_watches")
-    .select("id, email, company_slug, company_name, company_number, last_alert_at")
+    .select("id, user_id, email, company_slug, company_name, company_number, last_alert_at")
     .eq("status", "active");
   if (error) return { ok: false as const, error: error.message };
 
