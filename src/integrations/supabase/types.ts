@@ -312,6 +312,7 @@ export type Database = {
           company_slug: string
           created_at: string
           email: string
+          entitlement_id: string | null
           expires_at: string
           id: string
           last_alert_at: string | null
@@ -329,6 +330,7 @@ export type Database = {
           company_slug: string
           created_at?: string
           email: string
+          entitlement_id?: string | null
           expires_at?: string
           id?: string
           last_alert_at?: string | null
@@ -346,6 +348,7 @@ export type Database = {
           company_slug?: string
           created_at?: string
           email?: string
+          entitlement_id?: string | null
           expires_at?: string
           id?: string
           last_alert_at?: string | null
@@ -364,6 +367,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "company_watches_entitlement_id_fkey"
+            columns: ["entitlement_id"]
+            isOneToOne: false
+            referencedRelation: "monitoring_entitlements"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "company_watches_order_id_fkey"
@@ -710,6 +720,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      monitoring_entitlements: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          order_id: string | null
+          order_item_id: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          watch_limit: number
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          watch_limit?: number
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          watch_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_entitlements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_entitlements_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ofac_entries: {
         Row: {
