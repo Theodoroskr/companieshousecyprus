@@ -161,9 +161,12 @@ function CheckoutPage() {
   const [companySummaryErrors, setCompanySummaryErrors] = useState<string[]>([]);
 
 
+  // Products that are not tied to a specific company at checkout time.
+  const COMPANY_FREE_SLUGS = new Set(['company-monitoring']);
+
   const itemsNeedingCompany = items
     .map((item, index) => ({ item, index, product: PRODUCTS_BY_SLUG[item.productSlug] }))
-    .filter(({ item }) => !item.companyName || !item.companyNumber);
+    .filter(({ item }) => !COMPANY_FREE_SLUGS.has(item.productSlug) && (!item.companyName || !item.companyNumber));
 
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
 
