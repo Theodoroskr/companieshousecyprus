@@ -195,11 +195,13 @@ function AuthPage() {
             short while — request another one if it stops working.
           </p>
         )}
-        <Turnstile siteKey={siteKey} action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        {isProdHost && (
+          <Turnstile siteKey={siteKey} action={mode} onToken={setCaptchaToken} resetKey={captchaNonce} />
+        )}
         <Button
           type="submit"
           className="w-full"
-          disabled={busy || (Boolean(siteKey) && !captchaToken)}
+          disabled={busy || (isProdHost && Boolean(siteKey) && !captchaToken)}
         >
 
 
