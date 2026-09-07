@@ -138,6 +138,9 @@ export const addCompanyWatch = createServerFn({ method: "POST" })
     const email = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
     if (!email) throw new Error("Your account has no email address.");
 
+    const { claimMonitoringForUser } = await import("@/lib/monitoring.server");
+    await claimMonitoringForUser(context.userId, email);
+
     const { data: company } = await context.supabase
       .from("companies")
       .select("slug, name, official_no")
