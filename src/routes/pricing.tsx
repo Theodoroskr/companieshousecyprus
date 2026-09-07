@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, ArrowRight, Receipt } from "lucide-react";
-import { PRODUCTS, CATEGORY_LABEL, formatPrice, type ProductCategory } from "@/lib/products";
+import { PUBLIC_PRODUCTS, CATEGORY_LABEL, formatPrice, type ProductCategory } from "@/lib/products";
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE } from "@/lib/pricing";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ function PricingPage() {
               </p>
             </div>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {PRODUCTS.filter((product) => product.category === category).map((product) => {
+              {PUBLIC_PRODUCTS.filter((product) => product.category === category).map((product) => {
                 const breakdown = priceBreakdown(product);
                 return (
                   <article
