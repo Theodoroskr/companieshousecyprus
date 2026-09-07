@@ -32,9 +32,9 @@ export const Route = createFileRoute("/companies/city/$district")({
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary" },
-        { property: "og:url", content: `/companies/city/${params.district.toLowerCase()}` },
+        { property: "og:url", content: `https://companieshousecyprus.com/companies/city/${params.district.toLowerCase()}` },
       ],
-      links: [{ rel: "canonical", href: `/companies/city/${params.district.toLowerCase()}` }],
+      links: [{ rel: "canonical", href: `https://companieshousecyprus.com/companies/city/${params.district.toLowerCase()}` }],
     };
   },
   component: DistrictPage,
