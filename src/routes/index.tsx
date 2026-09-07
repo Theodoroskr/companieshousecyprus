@@ -170,16 +170,16 @@ function HomePage() {
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-            Companies House Cyprus. <span className="text-gradient-copper">Free Registrar of Companies search.</span>
+            Cyprus Company Register. <span className="text-gradient-copper">Free Registrar of Companies search.</span>
           </h1>
 
 
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Searching for Cyprus Companies House? Look up any of 571,000+ official Registrar of Companies records free —
-            status, HE registration number, company type and registered office. Order Company Profile Reports, Credit
-            Reports, Sanctions Snapshots and official certificates with digital delivery. Independent service, not the
-            Registrar.
+            Companies House Cyprus is a search portal for the official Cyprus company register — look up any of
+            571,000+ Registrar of Companies Cyprus records free: status, HE registration number, company type and
+            registered office. Order Company Profile Reports, Credit Reports, Sanctions Snapshots and official
+            certificates with digital delivery. Independent service, not the Registrar.
           </p>
 
 
