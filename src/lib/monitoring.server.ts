@@ -694,3 +694,31 @@ export async function adminResendWatchAlert(watchId: string) {
   const reason = result && "reason" in result ? String((result as { reason?: string }).reason ?? "send failed") : "send failed";
   return { ok: false as const, reason };
 }
+
+/**
+ * Guest checkout leaves orders.user_id null, so monitoring bought before
+ * signing in is created with an email only. When the buyer signs in with the
+ * same email, attach those plans/watches to their account so the portal shows
+ * them.
+ */
+export async function claimMonitoringForUser(userId: string, email: string) {
+  const address = email.trim().toLowerCase();
+  if (!address) return { entitlements: 0, watches: 0 };
+  const supabase = client();
+
+  const { data: ents } = await supabase
+    .from("monitoring_entitlements")
+    .update({ user_id: userId, updated_at: new Date().toISOString() })
+    .is("user_id", null)
+    .ilike("email", address)
+    .select("id");
+
+  const { data: watches } = await supabase
+    .from("company_watches")
+    .update({ user_id: userId, updated_at: new Date().toISOString() })
+    .is("user_id", null)
+    .ilike("email", address)
+    .select("id");
+
+  return { entitlements: (ents ?? []).length, watches: (watches ?? []).length };
+}
