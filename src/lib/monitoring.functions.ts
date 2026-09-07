@@ -44,6 +44,12 @@ export type MonitoringOverview = {
 export const getMonitoringOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<MonitoringOverview> => {
+    const claimEmail = typeof context.claims["email"] === "string" ? (context.claims["email"] as string) : "";
+    if (claimEmail) {
+      const { claimMonitoringForUser } = await import("@/lib/monitoring.server");
+      await claimMonitoringForUser(context.userId, claimEmail);
+    }
+
     const { data: entitlements } = await context.supabase
       .from("monitoring_entitlements")
       .select("id, status, watch_limit, expires_at")
