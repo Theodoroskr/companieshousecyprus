@@ -1,7 +1,7 @@
 // Single source of truth for robots.txt. Keep in sync with public/robots.txt.
 export const ROBOTS_TXT = `# robots.txt for companieshousecyprus.com
 # Canonical company profiles: /company/<ID> and /company/<slug> (no query strings)
-# Parameterized variants (?utm_, ?page=, ?sort=, session ids) are excluded to avoid duplicates.
+# Query-string variants stay crawlable so Google can read their canonical/noindex tags.
 
 User-agent: *
 Allow: /
@@ -16,9 +16,6 @@ Disallow: /auth
 Disallow: /order/
 Disallow: /api/
 Disallow: /lovable/
-# Block parameterized / faceted variants of any path
-Disallow: /*?
-Allow: /$
 
 User-agent: Googlebot
 Allow: /
@@ -30,8 +27,6 @@ Disallow: /admin
 Disallow: /auth
 Disallow: /order/
 Disallow: /api/
-Disallow: /*?
-Allow: /$
 
 User-agent: Bingbot
 Allow: /
@@ -43,8 +38,6 @@ Disallow: /admin
 Disallow: /auth
 Disallow: /order/
 Disallow: /api/
-Disallow: /*?
-Allow: /$
 
 # Social preview fetchers (need unrestricted page access)
 User-agent: Twitterbot
@@ -62,7 +55,6 @@ Disallow: /account
 Disallow: /admin
 Disallow: /auth
 Disallow: /order/
-Disallow: /*?
 
 User-agent: ChatGPT-User
 Allow: /
@@ -75,14 +67,12 @@ Allow: /
 Disallow: /account
 Disallow: /admin
 Disallow: /order/
-Disallow: /*?
 
 User-agent: ClaudeBot
 Allow: /
 Disallow: /account
 Disallow: /admin
 Disallow: /order/
-Disallow: /*?
 
 User-agent: Claude-Web
 Allow: /
@@ -104,7 +94,6 @@ Allow: /
 Disallow: /account
 Disallow: /admin
 Disallow: /order/
-Disallow: /*?
 
 User-agent: BingPreview
 Allow: /

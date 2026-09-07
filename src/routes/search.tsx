@@ -79,7 +79,11 @@ export const Route = createFileRoute("/search")({
       { property: "og:description", content: "Search the Cyprus Registrar of Companies directory by company name or registration number." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      // Result permutations must not compete with company profiles in the index.
+      { name: "robots", content: "noindex, follow" },
+      { property: "og:url", content: "https://companieshousecyprus.com/search" },
     ],
+    links: [{ rel: "canonical", href: "https://companieshousecyprus.com/search" }],
   }),
   component: SearchPage,
 });
