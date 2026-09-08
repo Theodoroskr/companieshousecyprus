@@ -80,25 +80,28 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
       const lineItems: any[] = [];
 
       for (const item of items as OrderItemRow[]) {
+        const product = PRODUCTS.find((candidate) => candidate.slug === item.product_slug);
+        const certificates = product ? certificateUnits(product) : 0;
+
         const productPriceId = await resolvePriceId(stripe, lookupKeyForProductSlug(item.product_slug));
         lineItems.push({
           price: productPriceId,
           quantity: item.quantity,
         });
 
-        if ((item as { apostille?: boolean }).apostille) {
+        if (item.apostille && product && supportsApostille(product)) {
           const apostillePriceId = await resolvePriceId(stripe, 'apostille-service');
           lineItems.push({
             price: apostillePriceId,
-            quantity: item.quantity,
+            quantity: Math.max(1, certificates) * item.quantity,
           });
         }
 
-        if (item.product_slug.startsWith('certificate-') && item.product_slug !== 'certificate-service-fee') {
+        if (certificates > 0) {
           const feePriceId = await resolvePriceId(stripe, 'certificate-service-fee');
           lineItems.push({
             price: feePriceId,
-            quantity: item.quantity,
+            quantity: certificates * item.quantity,
           });
         }
       }
