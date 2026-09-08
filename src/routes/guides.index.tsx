@@ -26,6 +26,11 @@ export const Route = createFileRoute("/guides/")({
 
 const GUIDES = [
   {
+    to: "/guides/cyprus-company-formation" as const,
+    title: "Cyprus Company Formation: Steps, Costs and Documents (2026)",
+    body: "The practical formation walkthrough — Registrar steps from name approval to incorporation, government fees and annual costs, and the exact documents to prepare.",
+  },
+  {
     to: "/guides/cyprus-company-landscape-2026" as const,
     title: "The Cyprus Company Landscape in 2026",
     body: "A data-driven analysis of the Cyprus register: 571,218 entities, activity and status mix, new-formation trends, geography and the industries names reveal.",
