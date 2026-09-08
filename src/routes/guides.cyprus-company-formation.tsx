@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Building2, ClipboardList, FileText, Landmark, Search, Stamp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TITLE = "Cyprus Company Formation: Steps, Costs and Documents (2026)";
+const TITLE = "Cyprus Company Formation: Costs, Steps & Documents (2026)";
 const DESCRIPTION =
-  "How Cyprus company formation works in practice: the Registrar's steps from name approval to incorporation, the government fees and ongoing annual costs, and every document you need to prepare.";
+  "Company formation in Cyprus, step by step: Registrar name approval to incorporation, government fees and annual costs, and every document you need to prepare.";
+
 const CANONICAL = "https://companieshousecyprus.com/guides/cyprus-company-formation";
 const PUBLISHED = "2026-09-08";
 
@@ -173,13 +174,14 @@ function FormationGuide() {
             <span aria-current="page">Cyprus company formation</span>
           </nav>
           <h1 className="mt-4 max-w-3xl text-3xl sm:text-4xl">
-            Cyprus company formation: steps, costs and documents
+            Cyprus company formation: costs, steps and documents
           </h1>
           <p className="mt-4 max-w-2xl text-primary-foreground/80">
-            What forming a company in Cyprus actually involves — the Registrar's process from name
-            approval to certificate of incorporation, the government and professional costs, and the
-            paperwork to have ready before you start.
+            What company formation in Cyprus actually involves — the Registrar's process from name
+            approval to certificate of incorporation, the government and professional costs of forming
+            a company in Cyprus, and the paperwork to have ready before you start.
           </p>
+
           <p className="mt-6 text-sm text-primary-foreground/60">
             By Companies House Cyprus (Infocredit Group Limited, HE4404) · Published 8 September 2026
           </p>
