@@ -63,7 +63,7 @@ export const Route = createFileRoute("/name/$term")({
     <div className="mx-auto max-w-4xl px-4 py-16 text-center">
       <h1 className="text-3xl font-bold">Name not found</h1>
       <p className="mt-2 text-muted-foreground">
-        Try the <Link to="/search" className="underline">register search</Link> instead.
+        Try the <Link to="/search" search={{ q: "" }} className="underline">register search</Link> instead.
       </p>
     </div>
   ),
@@ -126,7 +126,7 @@ function NameClusterPage() {
             profile reports can be ordered from the same page and are issued from the Registrar of Companies.
           </p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
-            <Link to="/search" className="underline">Search the full register</Link>
+            <Link to="/search" search={{ q: "" }} className="underline">Search the full register</Link>
             <Link to="/pricing" className="underline">Certificates and reports</Link>
             <Link to="/cyprus-companies-registry" className="underline">About the Cyprus registry</Link>
           </div>
