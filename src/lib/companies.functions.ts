@@ -328,6 +328,35 @@ export const listCompaniesByLetter = createServerFn({ method: "GET" })
     });
   });
 
+/**
+ * Every registry entity whose name contains a curated brand word.
+ *
+ * Backs the /name/<term> landing pages. The trigram index on `name` makes the
+ * substring match cheap, and the result is capped because these clusters are
+ * only ever a handful of entities.
+ */
+export const listCompaniesByNameTerm = createServerFn({ method: "GET" })
+  .validator((data: { term: string }) => data)
+  .handler(async ({ data }) => {
+    const term = data.term.trim().toLowerCase().replace(/[^a-z0-9 -]/g, "");
+    if (!term) throw new Error("Invalid term");
+    return cached(`nameterm:${term}`, 30 * 60_000, async () => {
+      const supabase = getServerClient();
+      const { data: res, error } = await supabase
+        .from("companies")
+        .select(
+          "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality",
+        )
+        .ilike("name", `%${term}%`)
+        .order("name", { ascending: true })
+        .limit(100);
+      if (error) throw error;
+      const rows = (res ?? []) as CompanyListItem[];
+      return { rows, count: rows.length };
+    });
+  });
+
+
 export const listCompaniesByDistrict = createServerFn({ method: "GET" })
   .validator((data: { district: string; page: number }) => data)
   .handler(async ({ data }) => {
