@@ -140,6 +140,7 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
         customer_email: order.email,
         metadata: {
           order_reference: order.reference,
+          expected_total_cents: String(order.total_cents ?? 0),
         },
         payment_intent_data: {
           description: `Companies House Cyprus order ${order.reference}`,
@@ -147,7 +148,8 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
             order_reference: order.reference,
           },
         },
-        managed_payments: { enabled: true },
+        // We calculate and charge Cyprus VAT ourselves on the taxable lines, so
+        // no additional tax handling is applied on top of the session.
       } as any);
 
       return { clientSecret: session.client_secret ?? '' };
