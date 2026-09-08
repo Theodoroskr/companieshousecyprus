@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
 import Stripe from 'stripe';
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from '@/lib/stripe.server';
+import { PRODUCTS } from '@/lib/products';
+import { certificateUnits, supportsApostille } from '@/lib/pricing';
 
 export type StripeCheckoutResult =
   | { clientSecret: string }
