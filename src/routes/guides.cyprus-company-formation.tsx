@@ -313,7 +313,7 @@ function FormationGuide() {
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/company-set-up/">
+                <Link to="/company-set-up">
                   Get help with your formation
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                 </Link>
