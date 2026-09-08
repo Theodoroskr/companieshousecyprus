@@ -77,6 +77,7 @@ import { Route as GuidesCyprusCompanyLandscape2026RouteImport } from './routes/g
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as IlCyprusCompanyRegistryRouteImport } from './routes/il/cyprus-company-registry'
 import { Route as ItRegistroImpreseCiproRouteImport } from './routes/it/registro-imprese-cipro'
+import { Route as NameTermRouteImport } from './routes/name.$term'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as RegistryTopicRouteImport } from './routes/registry.$topic'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
@@ -484,6 +485,11 @@ const ItRegistroImpreseCiproRoute = ItRegistroImpreseCiproRouteImport.update({
   path: '/it/registro-imprese-cipro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NameTermRoute = NameTermRouteImport.update({
+  id: '/name/$term',
+  path: '/name/$term',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderReferenceRoute = OrderReferenceRouteImport.update({
   id: '/order/$reference',
   path: '/order/$reference',
@@ -813,6 +819,7 @@ export interface FileRoutesByFullPath {
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
+  '/name/$term': typeof NameTermRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
@@ -929,6 +936,7 @@ export interface FileRoutesByTo {
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
+  '/name/$term': typeof NameTermRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
@@ -1048,6 +1056,7 @@ export interface FileRoutesById {
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
+  '/name/$term': typeof NameTermRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
@@ -1167,6 +1176,7 @@ export interface FileRouteTypes {
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
+    | '/name/$term'
     | '/order/$reference'
     | '/registry/$topic'
     | '/report/$type'
@@ -1283,6 +1293,7 @@ export interface FileRouteTypes {
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
+    | '/name/$term'
     | '/order/$reference'
     | '/registry/$topic'
     | '/report/$type'
@@ -1401,6 +1412,7 @@ export interface FileRouteTypes {
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
+    | '/name/$term'
     | '/order/$reference'
     | '/registry/$topic'
     | '/report/$type'
@@ -1519,6 +1531,7 @@ export interface RootRouteChildren {
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   IlCyprusCompanyRegistryRoute: typeof IlCyprusCompanyRegistryRoute
   ItRegistroImpreseCiproRoute: typeof ItRegistroImpreseCiproRoute
+  NameTermRoute: typeof NameTermRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   RegistryTopicRoute: typeof RegistryTopicRoute
   ReportTypeRoute: typeof ReportTypeRoute
@@ -2031,6 +2044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ItRegistroImpreseCiproRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/name/$term': {
+      id: '/name/$term'
+      path: '/name/$term'
+      fullPath: '/name/$term'
+      preLoaderRoute: typeof NameTermRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order/$reference': {
       id: '/order/$reference'
       path: '/order/$reference'
@@ -2497,6 +2517,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   IlCyprusCompanyRegistryRoute: IlCyprusCompanyRegistryRoute,
   ItRegistroImpreseCiproRoute: ItRegistroImpreseCiproRoute,
+  NameTermRoute: NameTermRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   RegistryTopicRoute: RegistryTopicRoute,
   ReportTypeRoute: ReportTypeRoute,

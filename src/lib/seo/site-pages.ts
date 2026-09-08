@@ -6,6 +6,7 @@
  * chunked company sitemaps and are not listed here.
  */
 import { DIRECTORY_SIGNALS } from "@/lib/directory-signals";
+import { NAME_CLUSTERS, nameClusterPath } from "@/lib/seo/name-clusters";
 import { INTERNATIONAL_GUIDES, INTERNATIONAL_HUB_PATH } from "@/lib/seo/international-guides";
 import { REGISTRY_LANDINGS, registryLandingPath, SITE_URL } from "@/lib/seo/registry-landings";
 
@@ -40,6 +41,12 @@ export const STATIC_PAGES: SitemapPage[] = [
     priority: "0.7",
     changefreq: "weekly" as const,
   })),
+  ...NAME_CLUSTERS.map((cluster) => ({
+    path: nameClusterPath(cluster),
+    priority: "0.7",
+    changefreq: "weekly" as const,
+  })),
+
   { path: "/guides", priority: "0.6", changefreq: "monthly" },
   { path: "/guides/register-company-cyprus", priority: "0.9", changefreq: "monthly" },
   { path: "/guides/companies-house-cyprus", priority: "0.9", changefreq: "monthly" },
