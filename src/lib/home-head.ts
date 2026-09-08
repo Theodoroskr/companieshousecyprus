@@ -6,7 +6,7 @@ export const HOME_TITLE =
   "Companies House Cyprus — Cyprus Company Register Search (Free)";
 
 export const HOME_DESCRIPTION =
-  "Free Companies House Cyprus search: 571,000+ Cyprus company register records — status, HE number, type, registered office. Order certificates and reports.";
+  "Free Companies House Cyprus search, no account needed. 571,000+ register records in English and Greek: status, HE number, registered office, certificates.";
 
 
 
