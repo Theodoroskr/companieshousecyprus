@@ -174,13 +174,14 @@ function FormationGuide() {
             <span aria-current="page">Cyprus company formation</span>
           </nav>
           <h1 className="mt-4 max-w-3xl text-3xl sm:text-4xl">
-            Cyprus company formation: steps, costs and documents
+            Cyprus company formation: costs, steps and documents
           </h1>
           <p className="mt-4 max-w-2xl text-primary-foreground/80">
-            What forming a company in Cyprus actually involves — the Registrar's process from name
-            approval to certificate of incorporation, the government and professional costs, and the
-            paperwork to have ready before you start.
+            What company formation in Cyprus actually involves — the Registrar's process from name
+            approval to certificate of incorporation, the government and professional costs of forming
+            a company in Cyprus, and the paperwork to have ready before you start.
           </p>
+
           <p className="mt-6 text-sm text-primary-foreground/60">
             By Companies House Cyprus (Infocredit Group Limited, HE4404) · Published 8 September 2026
           </p>
