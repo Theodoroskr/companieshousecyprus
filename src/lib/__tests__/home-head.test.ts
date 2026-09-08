@@ -15,7 +15,7 @@ describe("homepage head metadata", () => {
       "Cyprus Company Formation & Free Company Register Search",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Company formation in Cyprus explained — steps, costs and documents — plus free Cyprus company register search across 571,000+ Registrar records and certificates.",
+      "Company formation in Cyprus explained — steps, costs and documents — plus free Cyprus company register search across 571,000+ Registrar records.",
     );
 
 

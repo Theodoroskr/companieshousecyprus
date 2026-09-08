@@ -6,7 +6,7 @@ export const HOME_TITLE =
   "Cyprus Company Formation & Free Company Register Search";
 
 export const HOME_DESCRIPTION =
-  "Company formation in Cyprus explained — steps, costs and documents — plus free Cyprus company register search across 571,000+ Registrar records and certificates.";
+  "Company formation in Cyprus explained — steps, costs and documents — plus free Cyprus company register search across 571,000+ Registrar records.";
 
 
 
