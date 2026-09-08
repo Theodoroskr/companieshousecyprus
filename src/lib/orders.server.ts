@@ -87,8 +87,11 @@ export async function placeOrder(input: PlaceOrderInput) {
   const subtotal = rows.reduce((sum, row) => sum + row.breakdown.documentPrice, 0);
   const serviceFee = rows.reduce((sum, row) => sum + row.breakdown.serviceFee, 0);
   const apostilleFee = rows.reduce((sum, row) => sum + row.breakdown.apostilleFee, 0);
-  const vat = Math.round((subtotal + serviceFee + apostilleFee) * 0.19 * 100) / 100;
-  const total = subtotal + serviceFee + apostilleFee + vat;
+  // VAT comes from the per-item breakdown: certificates are outside VAT, only
+  // the service fee, apostille and report content are taxable. Never re-apply a
+  // flat rate over the whole basket — that taxed certificates too.
+  const vat = Math.round(rows.reduce((sum, row) => sum + row.breakdown.vat, 0) * 100) / 100;
+  const total = Math.round(rows.reduce((sum, row) => sum + row.breakdown.total, 0) * 100) / 100;
 
   // Safeguard: if the same customer re-submits an identical basket that is still
   // awaiting payment, reuse that order instead of creating a duplicate.
