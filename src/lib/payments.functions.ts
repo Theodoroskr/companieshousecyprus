@@ -42,7 +42,9 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .select('id, reference, status, email, full_name, total_cents')
+        .select(
+          'id, reference, status, email, full_name, subtotal_cents, service_fee_cents, apostille_fee_cents, vat_cents, total_cents',
+        )
         .eq('reference', data.reference.trim().toUpperCase())
         .eq('access_token', data.token.trim())
         .maybeSingle();
@@ -56,10 +58,21 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
 
       const { data: items, error: itemsError } = await supabase
         .from('order_items')
-        .select('product_slug, product_name, company_name, company_number, quantity, apostille')
+        .select(
+          'product_slug, product_name, company_name, company_number, quantity, apostille, document_price_cents, service_fee_cents, apostille_fee_cents, vat_cents, total_cents',
+        )
         .eq('order_id', order.id);
       if (itemsError || !items || items.length === 0) {
         return { error: 'Order has no items' };
+      }
+
+      // Guard: the amount we are about to charge must equal the sum of the
+      // order lines. A mismatch means the stored totals are stale/wrong — block
+      // rather than charge the customer the wrong amount.
+      const lineTotal = (items as OrderItemRow[]).reduce((sum, item) => sum + (item.total_cents ?? 0), 0);
+      if ((order.total_cents ?? 0) !== lineTotal) {
+        console.error('Order total mismatch', order.reference, order.total_cents, lineTotal);
+        return { error: 'This order needs to be re-checked before payment. Please contact us.' };
       }
 
       const stripe = createStripeClient(data.environment);
@@ -88,6 +101,25 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
           });
         }
       }
+
+      // VAT is charged as its own line: 19% of the taxable components only
+      // (service fee, apostille, report content). Registrar certificate fees
+      // are outside VAT, so the amount comes from our own breakdown.
+      const vatCents = order.vat_cents ?? 0;
+      if (vatCents > 0) {
+        lineItems.push({
+          quantity: 1,
+          price_data: {
+            currency: 'eur',
+            unit_amount: vatCents,
+            product_data: {
+              name: 'VAT (19%) — service fee and reports',
+              tax_code: 'txcd_10103001',
+            },
+          },
+        });
+      }
+
 
       const clientOrigin = /^https?:\/\//.test(data.origin ?? '')
         ? (data.origin ?? '').replace(/\/+$/, '')
