@@ -15,8 +15,9 @@ describe("homepage head metadata", () => {
       "Companies House Cyprus — Cyprus Company Register Search (Free)",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Free Companies House Cyprus search: 571,000+ Cyprus company register records — status, HE number, type, registered office. Order certificates and reports online.",
+      "Free Companies House Cyprus search: 571,000+ Cyprus company register records — status, HE number, type, registered office. Order certificates and reports.",
     );
+
 
     expect(HOME_DESCRIPTION.length).toBeLessThanOrEqual(160);
 
