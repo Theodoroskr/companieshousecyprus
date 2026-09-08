@@ -13,6 +13,7 @@ type OrderItemRow = {
   company_name: string | null;
   company_number: string | null;
   quantity: number;
+  total_cents?: number | null;
 };
 
 const cents = (value: number) => Math.round(value * 100);
