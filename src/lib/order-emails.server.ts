@@ -31,14 +31,24 @@ export type OrderEmailItem = {
 };
 
 function totals(order: OrderEmailOrder) {
-  // Once the payment clears, Stripe's figures are authoritative: they are what
-  // the customer was actually charged.
-  const charged = typeof order.charged_total_cents === "number";
+  // Never mix the two sources. Our own breakdown (documents / service fee /
+  // VAT) only makes sense together; if the amount actually charged differs
+  // from it, show the charged figures alone so the lines always add up.
+  const chargedTotal = order.charged_total_cents;
+  const ourTotal = order.total_cents;
+  if (typeof chargedTotal === "number" && chargedTotal !== ourTotal) {
+    return {
+      subtotal: euro(order.charged_subtotal_cents),
+      serviceFee: undefined,
+      vat: euro(order.charged_tax_cents),
+      total: euro(chargedTotal),
+    };
+  }
   return {
-    subtotal: euro(charged ? order.charged_subtotal_cents : order.subtotal_cents),
+    subtotal: euro(order.subtotal_cents),
     serviceFee: euro(order.service_fee_cents),
-    vat: euro(charged ? order.charged_tax_cents : order.vat_cents),
-    total: euro(charged ? order.charged_total_cents : order.total_cents),
+    vat: euro(order.vat_cents),
+    total: euro(ourTotal),
   };
 }
 
