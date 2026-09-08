@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Building2, ClipboardList, FileText, Landmark, Search, Stamp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TITLE = "Cyprus Company Formation: Steps, Costs and Documents (2026)";
+const TITLE = "Cyprus Company Formation: Costs, Steps & Documents (2026)";
 const DESCRIPTION =
-  "How Cyprus company formation works in practice: the Registrar's steps from name approval to incorporation, the government fees and ongoing annual costs, and every document you need to prepare.";
+  "Company formation in Cyprus, step by step: Registrar name approval to incorporation, government fees and annual costs, and every document you need to prepare.";
+
 const CANONICAL = "https://companieshousecyprus.com/guides/cyprus-company-formation";
 const PUBLISHED = "2026-09-08";
 
