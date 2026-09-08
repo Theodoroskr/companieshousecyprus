@@ -3,10 +3,11 @@
 // so title, description and canonical URL cannot drift across builds.
 
 export const HOME_TITLE =
-  "Companies House Cyprus | Cyprus Company Register Search";
+  "Companies House Cyprus — Cyprus Company Register Search (Free)";
 
 export const HOME_DESCRIPTION =
-  "Search the Cyprus company register free: 571,000+ Registrar of Companies Cyprus records — status, HE number, company type, registered office. Instant results.";
+  "Free Companies House Cyprus search: 571,000+ Cyprus company register records — status, HE number, type, registered office. Order certificates and reports online.";
+
 
 
 
