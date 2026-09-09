@@ -180,10 +180,14 @@ function SearchPage() {
     <div>
       <section className="surface-deep grid-dots">
         <div className="mx-auto max-w-7xl px-4 py-12">
-          <h1 className="text-3xl font-bold md:text-4xl">Search the Cyprus register</h1>
+          <h1 className="text-3xl font-bold md:text-4xl">
+            Cyprus corporate registry search — the Cyprus company register
+          </h1>
           <p className="mt-3 max-w-2xl text-primary-foreground/75">
-            Free search across the full register — by company name or HE / registration number.
+            Free search across the full Cyprus company register — by company name or HE / registration number.
+            571,000+ records from the Department of Registrar of Companies, in English and Greek, no account needed.
           </p>
+
           <form
             className="mt-8 flex max-w-2xl flex-col gap-2 rounded-xl border border-white/15 bg-white/10 p-2 backdrop-blur sm:flex-row"
             onSubmit={(e) => {
