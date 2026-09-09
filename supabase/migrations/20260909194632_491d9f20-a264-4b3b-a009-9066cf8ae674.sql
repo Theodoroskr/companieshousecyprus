@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS companies_registration_date_idx ON public.companies USING btree (registration_date DESC);
+CREATE INDEX IF NOT EXISTS companies_status_date_idx ON public.companies USING btree (status_date DESC);

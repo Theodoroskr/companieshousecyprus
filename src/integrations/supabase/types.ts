@@ -2651,6 +2651,14 @@ export type Database = {
       refresh_directory_signal_counts: { Args: never; Returns: number }
       refresh_officials_count: { Args: never; Returns: number }
       refresh_sitemap_chunks: { Args: never; Returns: number }
+      registry_filing_days: {
+        Args: { _window_days?: number }
+        Returns: {
+          filing_date: string
+          registrations: number
+          status_changes: number
+        }[]
+      }
       reseed_indexnow_recent_companies: {
         Args: { _days?: number; _limit?: number }
         Returns: number
