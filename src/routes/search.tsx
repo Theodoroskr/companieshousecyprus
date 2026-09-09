@@ -70,21 +70,82 @@ export const Route = createFileRoute("/search")({
         deps.status ? deps.status.split(",") : [],
       ),
     );
+    return { hasQuery: deps.q.trim().length > 0 };
   },
-  head: () => ({
-    meta: [
-      { title: "Search Cyprus Companies | Companies House Cyprus" },
-      { name: "description", content: "Search the Cyprus Registrar of Companies directory by company name or registration number." },
-      { property: "og:title", content: "Search Cyprus Companies | Companies House Cyprus" },
-      { property: "og:description", content: "Search the Cyprus Registrar of Companies directory by company name or registration number." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      // Result permutations must not compete with company profiles in the index.
-      { name: "robots", content: "noindex, follow" },
-      { property: "og:url", content: "https://companieshousecyprus.com/search" },
-    ],
-    links: [{ rel: "canonical", href: "https://companieshousecyprus.com/search" }],
-  }),
+  head: ({ loaderData }) => {
+    const hasQuery = loaderData?.hasQuery ?? false;
+    const title = "Cyprus Corporate Registry Search — Cyprus Company Register";
+    const description =
+      "Search the Cyprus corporate registry free: 571,000+ company register records from the Registrar of Companies — HE number, status, officers and registered office.";
+    const url = "https://companieshousecyprus.com/search";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+        // Only the clean landing state is indexable; result permutations are not.
+        ...(hasQuery ? [{ name: "robots", content: "noindex, follow" }] : []),
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Companies House Cyprus",
+            url: "https://companieshousecyprus.com",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: {
+                "@type": "EntryPoint",
+                urlTemplate: "https://companieshousecyprus.com/search?q={search_term_string}",
+              },
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is the Cyprus corporate registry?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "The Cyprus corporate registry is the official record of companies, partnerships, business names and overseas companies kept by the Department of Registrar of Companies and Intellectual Property in Nicosia.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Is searching the Cyprus company register free?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Searching by company name or HE registration number is free and no account is required. Certificates and reports issued by the Registrar are paid.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Can I search the Cyprus register in Greek?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Names can be searched in Greek or in Latin transliteration, and both registered and struck-off entities are included.",
+                },
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
+
   component: SearchPage,
 });
 
