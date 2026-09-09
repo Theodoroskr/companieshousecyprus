@@ -24,6 +24,7 @@ export const STATIC_PAGES: SitemapPage[] = [
   HOME_PAGE,
   { path: "/search", priority: "0.8", changefreq: "weekly" },
   { path: "/cyprus-companies-registry", priority: "0.9", changefreq: "monthly" },
+  { path: "/cyprus-corporate-registry", priority: "0.9", changefreq: "daily" },
   ...REGISTRY_LANDINGS.map((landing) => ({
     path: registryLandingPath(landing),
     priority: "0.9",
