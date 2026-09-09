@@ -26,6 +26,11 @@ export const Route = createFileRoute("/guides/")({
 
 const GUIDES = [
   {
+    to: "/cyprus-corporate-registry" as const,
+    title: "Cyprus Corporate Registry: Search and Daily Filings",
+    body: "Search the register free, then follow filing activity day by day — new incorporations and status changes as recorded by the Registrar of Companies.",
+  },
+  {
     to: "/guides/cyprus-company-formation" as const,
     title: "Cyprus Company Formation: Steps, Costs and Documents (2026)",
     body: "The practical formation walkthrough — Registrar steps from name approval to incorporation, government fees and annual costs, and the exact documents to prepare.",
