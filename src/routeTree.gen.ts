@@ -23,6 +23,7 @@ import { Route as CompanySetUpRouteImport } from './routes/company-set-up'
 import { Route as CompanySitemapDotxmlRouteImport } from './routes/company-sitemap[.]xml'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CyprusCompaniesRegistryRouteImport } from './routes/cyprus-companies-registry'
+import { Route as CyprusCorporateRegistryRouteImport } from './routes/cyprus-corporate-registry'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as InternationalRouteImport } from './routes/international'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -195,6 +196,11 @@ const ContactRoute = ContactRouteImport.update({
 const CyprusCompaniesRegistryRoute = CyprusCompaniesRegistryRouteImport.update({
   id: '/cyprus-companies-registry',
   path: '/cyprus-companies-registry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CyprusCorporateRegistryRoute = CyprusCorporateRegistryRouteImport.update({
+  id: '/cyprus-corporate-registry',
+  path: '/cyprus-corporate-registry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -775,6 +781,7 @@ export interface FileRoutesByFullPath {
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
+  '/cyprus-corporate-registry': typeof CyprusCorporateRegistryRoute
   '/faq': typeof FaqRoute
   '/international': typeof InternationalRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -894,6 +901,7 @@ export interface FileRoutesByTo {
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
+  '/cyprus-corporate-registry': typeof CyprusCorporateRegistryRoute
   '/faq': typeof FaqRoute
   '/international': typeof InternationalRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -1014,6 +1022,7 @@ export interface FileRoutesById {
   '/company-sitemap.xml': typeof CompanySitemapDotxmlRoute
   '/contact': typeof ContactRoute
   '/cyprus-companies-registry': typeof CyprusCompaniesRegistryRoute
+  '/cyprus-corporate-registry': typeof CyprusCorporateRegistryRoute
   '/faq': typeof FaqRoute
   '/international': typeof InternationalRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -1135,6 +1144,7 @@ export interface FileRouteTypes {
     | '/company-sitemap.xml'
     | '/contact'
     | '/cyprus-companies-registry'
+    | '/cyprus-corporate-registry'
     | '/faq'
     | '/international'
     | '/llms.txt'
@@ -1254,6 +1264,7 @@ export interface FileRouteTypes {
     | '/company-sitemap.xml'
     | '/contact'
     | '/cyprus-companies-registry'
+    | '/cyprus-corporate-registry'
     | '/faq'
     | '/international'
     | '/llms.txt'
@@ -1373,6 +1384,7 @@ export interface FileRouteTypes {
     | '/company-sitemap.xml'
     | '/contact'
     | '/cyprus-companies-registry'
+    | '/cyprus-corporate-registry'
     | '/faq'
     | '/international'
     | '/llms.txt'
@@ -1494,6 +1506,7 @@ export interface RootRouteChildren {
   CompanySitemapDotxmlRoute: typeof CompanySitemapDotxmlRoute
   ContactRoute: typeof ContactRoute
   CyprusCompaniesRegistryRoute: typeof CyprusCompaniesRegistryRoute
+  CyprusCorporateRegistryRoute: typeof CyprusCorporateRegistryRoute
   FaqRoute: typeof FaqRoute
   InternationalRoute: typeof InternationalRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
@@ -1678,6 +1691,13 @@ declare module '@tanstack/react-router' {
       path: '/cyprus-companies-registry'
       fullPath: '/cyprus-companies-registry'
       preLoaderRoute: typeof CyprusCompaniesRegistryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cyprus-corporate-registry': {
+      id: '/cyprus-corporate-registry'
+      path: '/cyprus-corporate-registry'
+      fullPath: '/cyprus-corporate-registry'
+      preLoaderRoute: typeof CyprusCorporateRegistryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -2487,6 +2507,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompanySitemapDotxmlRoute: CompanySitemapDotxmlRoute,
   ContactRoute: ContactRoute,
   CyprusCompaniesRegistryRoute: CyprusCompaniesRegistryRoute,
+  CyprusCorporateRegistryRoute: CyprusCorporateRegistryRoute,
   FaqRoute: FaqRoute,
   InternationalRoute: InternationalRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
