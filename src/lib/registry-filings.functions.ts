@@ -118,41 +118,21 @@ export const getRegistryFilingsOverview = createServerFn({ method: "GET" }).hand
         return { latestDate: null, days: [], totalRegistrations: 0, totalStatusChanges: 0 };
       }
 
-      const from = shiftDays(latestDate, -WINDOW_DAYS);
+      const { data: rows } = await (supabase as any).rpc("registry_filing_days", {
+        _window_days: WINDOW_DAYS,
+      });
 
-      const [registrations, statusChanges] = await Promise.all([
-        supabase
-          .from("companies")
-          .select("registration_date")
-          .gte("registration_date", from)
-          .lte("registration_date", latestDate),
-        supabase
-          .from("companies")
-          .select("status_date")
-          .gte("status_date", from)
-          .lte("status_date", latestDate),
-      ]);
-
-      const byDate = new Map<string, FilingDay>();
-      const ensure = (date: string) => {
-        let entry = byDate.get(date);
-        if (!entry) {
-          entry = { date, registrations: 0, statusChanges: 0 };
-          byDate.set(date, entry);
-        }
-        return entry;
-      };
-
-      for (const row of registrations.data ?? []) {
-        const date = row.registration_date as string | null;
-        if (date) ensure(date).registrations += 1;
-      }
-      for (const row of statusChanges.data ?? []) {
-        const date = row.status_date as string | null;
-        if (date) ensure(date).statusChanges += 1;
-      }
-
-      const days = [...byDate.values()].sort((a, b) => (a.date < b.date ? 1 : -1));
+      const days: FilingDay[] = ((rows ?? []) as Array<{
+        filing_date: string;
+        registrations: number;
+        status_changes: number;
+      }>)
+        .map((row) => ({
+          date: row.filing_date,
+          registrations: Number(row.registrations ?? 0),
+          statusChanges: Number(row.status_changes ?? 0),
+        }))
+        .sort((a, b) => (a.date < b.date ? 1 : -1));
 
       return {
         latestDate,
