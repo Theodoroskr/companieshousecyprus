@@ -352,14 +352,49 @@ function SearchPage() {
           )}
         </div>
       ) : (
-        <div className="mx-auto max-w-7xl px-4 py-16 text-center">
-          <p className="text-lg font-medium text-foreground">Start your search</p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Enter a company name or HE / registration number above to find the entity you need.
+        <div className="mx-auto max-w-4xl px-4 py-14">
+          <h2 className="font-display text-2xl font-semibold">What the Cyprus corporate registry search covers</h2>
+          <p className="mt-3 text-muted-foreground">
+            Every entity on the Cyprus company register is included: private and public companies, partnerships,
+            business names and overseas companies filed with the Department of Registrar of Companies and Intellectual
+            Property in Nicosia. Each profile shows the registration (HE) number, incorporation date, registry status
+            and status date, entity type, registered office district and the officers on record.
           </p>
+
+          <h2 className="mt-10 font-display text-2xl font-semibold">How to search the Cyprus company register</h2>
+          <ul className="mt-3 space-y-2 text-muted-foreground">
+            <li>• Enter a full or partial company name — Greek or Latin spelling both work.</li>
+            <li>• Or enter the HE / registration number to jump straight to one entity.</li>
+            <li>• Narrow results by entity type and registry status, including struck-off and dissolved entities.</li>
+            <li>• Open any result for the full registry profile and to order certificates or reports.</li>
+          </ul>
+
+          <h2 className="mt-10 font-display text-2xl font-semibold">Frequently asked questions</h2>
+          <dl className="mt-3 space-y-4 text-muted-foreground">
+            <div>
+              <dt className="font-medium text-foreground">Is searching free?</dt>
+              <dd>Yes — search and company profiles are free, with no account. Only official certificates and reports issued by the Registrar are paid.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">How current is the data?</dt>
+              <dd>Records are refreshed from the official registry publications of the Registrar of Companies.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">Can I find struck-off companies?</dt>
+              <dd>Yes. Historic, struck-off, dissolved and companies in liquidation remain searchable.</dd>
+            </div>
+          </dl>
+
+          <div className="mt-10 flex flex-wrap gap-4 text-sm">
+            <Link to="/cyprus-companies-registry" className="underline">About the Cyprus companies registry</Link>
+            <Link to="/directory" className="underline">Browse the directory</Link>
+            <Link to="/statistics" className="underline">Registry statistics</Link>
+            <Link to="/pricing" className="underline">Certificates and reports</Link>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
 
