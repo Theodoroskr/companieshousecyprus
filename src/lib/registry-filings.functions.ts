@@ -73,12 +73,6 @@ const dateSchema = z
   .object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) })
   .strict();
 
-function shiftDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 type Row = {
   slug: string;
   name: string | null;
