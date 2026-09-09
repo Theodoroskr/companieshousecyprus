@@ -62,7 +62,7 @@ const FAQS = [
     a: "The timeframe depends on name approval, the company structure, document availability, due-diligence checks and processing by the relevant authorities. An estimated timeframe can be provided after the initial review.",
   },
   {
-    q: "What does the €1,700 starting price include?",
+    q: "What does the €1,500 starting price include?",
     a: "The precise inclusions will be confirmed in a written quotation. The final amount may depend on the ownership structure, business activity, government fees and optional professional services.",
   },
   {
@@ -244,11 +244,11 @@ export const Route = createFileRoute("/company-set-up")({
           offers: {
             "@type": "Offer",
             priceCurrency: "EUR",
-            price: "1700",
+            price: "1500",
             priceSpecification: {
               "@type": "PriceSpecification",
               priceCurrency: "EUR",
-              minPrice: "1700",
+              minPrice: "1500",
               valueAddedTaxIncluded: false,
             },
             url: CANONICAL,
@@ -312,7 +312,7 @@ function CompanySetUpPage() {
           <aside className="rounded-2xl border bg-card p-6 shadow-panel">
             <p className="text-sm font-medium text-muted-foreground">Company formation packages</p>
             <p className="mt-2 font-heading text-4xl">
-              From €1,700 <span className="text-lg text-muted-foreground">+ VAT</span>
+              From €1,500 <span className="text-lg text-muted-foreground">+ VAT</span>
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
               Final pricing depends on the company’s ownership structure, business activity and
@@ -392,7 +392,7 @@ function CompanySetUpPage() {
             <div className="mt-6 rounded-2xl border bg-card p-6 shadow-panel">
               <h3 className="font-heading text-lg">Cyprus Company Formation</h3>
               <p className="mt-2 font-heading text-4xl">
-                From €1,700 <span className="text-lg text-muted-foreground">+ VAT</span>
+                From €1,500 <span className="text-lg text-muted-foreground">+ VAT</span>
               </p>
               <p className="mt-3 text-sm text-muted-foreground">
                 The starting price applies to a standard company-formation case. The final fee may
