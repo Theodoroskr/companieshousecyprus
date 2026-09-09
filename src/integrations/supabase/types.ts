@@ -2637,7 +2637,6 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
-      is_support_or_admin: { Args: { _user_id: string }; Returns: boolean }
       normalize_person_name: { Args: { _name: string }; Returns: string }
       ofac_acquire_job_lease: {
         Args: { _job_id: string; _seconds?: number }
