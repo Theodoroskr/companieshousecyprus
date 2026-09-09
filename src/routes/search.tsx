@@ -70,21 +70,82 @@ export const Route = createFileRoute("/search")({
         deps.status ? deps.status.split(",") : [],
       ),
     );
+    return { hasQuery: deps.q.trim().length > 0 };
   },
-  head: () => ({
-    meta: [
-      { title: "Search Cyprus Companies | Companies House Cyprus" },
-      { name: "description", content: "Search the Cyprus Registrar of Companies directory by company name or registration number." },
-      { property: "og:title", content: "Search Cyprus Companies | Companies House Cyprus" },
-      { property: "og:description", content: "Search the Cyprus Registrar of Companies directory by company name or registration number." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      // Result permutations must not compete with company profiles in the index.
-      { name: "robots", content: "noindex, follow" },
-      { property: "og:url", content: "https://companieshousecyprus.com/search" },
-    ],
-    links: [{ rel: "canonical", href: "https://companieshousecyprus.com/search" }],
-  }),
+  head: ({ loaderData }) => {
+    const hasQuery = loaderData?.hasQuery ?? false;
+    const title = "Cyprus Corporate Registry Search — Cyprus Company Register";
+    const description =
+      "Search the Cyprus corporate registry free: 571,000+ company register records from the Registrar of Companies — HE number, status, officers and registered office.";
+    const url = "https://companieshousecyprus.com/search";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+        // Only the clean landing state is indexable; result permutations are not.
+        ...(hasQuery ? [{ name: "robots", content: "noindex, follow" }] : []),
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Companies House Cyprus",
+            url: "https://companieshousecyprus.com",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: {
+                "@type": "EntryPoint",
+                urlTemplate: "https://companieshousecyprus.com/search?q={search_term_string}",
+              },
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is the Cyprus corporate registry?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "The Cyprus corporate registry is the official record of companies, partnerships, business names and overseas companies kept by the Department of Registrar of Companies and Intellectual Property in Nicosia.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Is searching the Cyprus company register free?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Searching by company name or HE registration number is free and no account is required. Certificates and reports issued by the Registrar are paid.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Can I search the Cyprus register in Greek?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Names can be searched in Greek or in Latin transliteration, and both registered and struck-off entities are included.",
+                },
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
+
   component: SearchPage,
 });
 
@@ -119,10 +180,14 @@ function SearchPage() {
     <div>
       <section className="surface-deep grid-dots">
         <div className="mx-auto max-w-7xl px-4 py-12">
-          <h1 className="text-3xl font-bold md:text-4xl">Search the Cyprus register</h1>
+          <h1 className="text-3xl font-bold md:text-4xl">
+            Cyprus corporate registry search — the Cyprus company register
+          </h1>
           <p className="mt-3 max-w-2xl text-primary-foreground/75">
-            Free search across the full register — by company name or HE / registration number.
+            Free search across the full Cyprus company register — by company name or HE / registration number.
+            571,000+ records from the Department of Registrar of Companies, in English and Greek, no account needed.
           </p>
+
           <form
             className="mt-8 flex max-w-2xl flex-col gap-2 rounded-xl border border-white/15 bg-white/10 p-2 backdrop-blur sm:flex-row"
             onSubmit={(e) => {
@@ -287,14 +352,49 @@ function SearchPage() {
           )}
         </div>
       ) : (
-        <div className="mx-auto max-w-7xl px-4 py-16 text-center">
-          <p className="text-lg font-medium text-foreground">Start your search</p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Enter a company name or HE / registration number above to find the entity you need.
+        <div className="mx-auto max-w-4xl px-4 py-14">
+          <h2 className="font-display text-2xl font-semibold">What the Cyprus corporate registry search covers</h2>
+          <p className="mt-3 text-muted-foreground">
+            Every entity on the Cyprus company register is included: private and public companies, partnerships,
+            business names and overseas companies filed with the Department of Registrar of Companies and Intellectual
+            Property in Nicosia. Each profile shows the registration (HE) number, incorporation date, registry status
+            and status date, entity type, registered office district and the officers on record.
           </p>
+
+          <h2 className="mt-10 font-display text-2xl font-semibold">How to search the Cyprus company register</h2>
+          <ul className="mt-3 space-y-2 text-muted-foreground">
+            <li>• Enter a full or partial company name — Greek or Latin spelling both work.</li>
+            <li>• Or enter the HE / registration number to jump straight to one entity.</li>
+            <li>• Narrow results by entity type and registry status, including struck-off and dissolved entities.</li>
+            <li>• Open any result for the full registry profile and to order certificates or reports.</li>
+          </ul>
+
+          <h2 className="mt-10 font-display text-2xl font-semibold">Frequently asked questions</h2>
+          <dl className="mt-3 space-y-4 text-muted-foreground">
+            <div>
+              <dt className="font-medium text-foreground">Is searching free?</dt>
+              <dd>Yes — search and company profiles are free, with no account. Only official certificates and reports issued by the Registrar are paid.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">How current is the data?</dt>
+              <dd>Records are refreshed from the official registry publications of the Registrar of Companies.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">Can I find struck-off companies?</dt>
+              <dd>Yes. Historic, struck-off, dissolved and companies in liquidation remain searchable.</dd>
+            </div>
+          </dl>
+
+          <div className="mt-10 flex flex-wrap gap-4 text-sm">
+            <Link to="/cyprus-companies-registry" className="underline">About the Cyprus companies registry</Link>
+            <Link to="/directory" className="underline">Browse the directory</Link>
+            <Link to="/statistics" className="underline">Registry statistics</Link>
+            <Link to="/pricing" className="underline">Certificates and reports</Link>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
 
