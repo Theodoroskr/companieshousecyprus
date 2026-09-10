@@ -12,10 +12,10 @@ import {
 describe("homepage head metadata", () => {
   it("keeps the pinned title, description and canonical URL", () => {
     expect(HOME_TITLE).toBe(
-      "Companies House Cyprus — Free Company Register Search",
+      "Companies House Cyprus — Free Cyprus Company Search & Register",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Search the Cyprus company register free: 571,000+ Registrar records in English and Greek, no account needed. Independent service, not the Registrar.",
+      "Search Companies House Cyprus free — no account needed. Browse 571,000+ Cyprus company records and order official documents delivered digitally.",
     );
 
 

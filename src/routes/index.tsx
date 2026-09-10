@@ -170,18 +170,17 @@ function HomePage() {
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-            Cyprus company formation and <span className="text-gradient-copper">free Cyprus company register search.</span>
+            Companies House Cyprus: <span className="text-gradient-copper">free Cyprus company search, official documents delivered digitally.</span>
           </h1>
 
 
 
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Companies House Cyprus covers both sides of the register: how company formation in Cyprus works — name
-            approval, incorporation, costs and documents — and free search across 571,000+ Registrar of Companies
-            Cyprus records for status, HE registration number, company type and registered office. Order Company
-            Profile Reports, Credit Reports, Sanctions Snapshots and official certificates with digital delivery.
-            Independent service, not the Registrar.
+            Search the Cyprus company register free with no account required. Companies House Cyprus lets you check
+            status, registry number and registered office for any entity, then order official certificates, Company
+            Profile Reports, Credit Reports and Sanctions Snapshots with digital delivery. Independent service,
+            not the Registrar.
           </p>
 
           <Link
