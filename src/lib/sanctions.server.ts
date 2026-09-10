@@ -733,8 +733,21 @@ export async function runOfacImportSlice(options: { force?: boolean } = {}): Pro
         return { status: finished ? "ready_to_publish" : "processing", importId, nextChunk: newNext, message: finished ? "OFAC relay parsing completed; assembly is queued." : `Processed OFAC relay chunk ${newNext}/${relay.data.chunk_count}.` };
       }
       if (phase === "assembling") {
-        const processed = await assembleOfacBatch(supabase, { id: jobId, import_id: importId, staged_entries: Number(job["staged_entries"] ?? 0) });
-        if (processed > 0) return { status: "processing", importId, staged: Number(job["staged_entries"] ?? 0) + processed, message: `Assembled ${processed} OFAC entries.` };
+        const ASSEMBLY_TIME_BUDGET_MS = 25_000;
+        const MAX_ASSEMBLY_BATCHES = 100;
+        const batchStart = Date.now();
+        let totalProcessed = 0;
+        let batches = 0;
+        let currentStaged = Number(job["staged_entries"] ?? 0);
+        while (batches < MAX_ASSEMBLY_BATCHES && Date.now() - batchStart < ASSEMBLY_TIME_BUDGET_MS) {
+          const processed = await assembleOfacBatch(supabase, { id: jobId, import_id: importId, staged_entries: currentStaged });
+          if (processed === 0) break;
+          totalProcessed += processed;
+          batches++;
+          const { data: refreshed } = await supabase.from("ofac_import_jobs").select("staged_entries").eq("id", jobId).single();
+          currentStaged = Number(refreshed?.staged_entries ?? currentStaged);
+        }
+        if (totalProcessed > 0) return { status: "processing", importId, staged: currentStaged, message: `Assembled ${totalProcessed} OFAC entries.` };
         await supabase.from("ofac_import_jobs").update({ phase: "publishing", attempts: 0, lease_until: null, updated_at: new Date().toISOString() } as never).eq("id", jobId);
         return { status: "ready_to_publish", importId, message: "OFAC records are staged and ready to publish." };
       }
