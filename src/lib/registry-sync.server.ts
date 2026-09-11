@@ -44,6 +44,8 @@ const CHUNK_BYTES = 4 * 1024 * 1024; // 4 MiB per slice
 const TICK_BUDGET_MS = 25_000; // process slices for at most this long per invocation
 const DETECT_INTERVAL_MS = 6.5 * 24 * 60 * 60 * 1000; // weekly header check
 const MAX_ATTEMPTS = 6;
+const RANGE_MAX_RETRIES = 5;
+const RANGE_RETRY_BASE_MS = 500;
 const OFFICIALS_INSERT_BATCH = 500;
 const COMPANY_UPSERT_BATCH = 2_000;
 const ADDRESS_UPSERT_BATCH = 1_000;
@@ -144,12 +146,88 @@ function findLastNewline(bytes: Uint8Array, fromIndex: number) {
   return -1;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function isTransientDownloadStatus(status: number) {
+  return status === 408 || status === 429 || status >= 500;
+}
+
 async function fetchRange(url: string, start: number, endInclusive: number): Promise<Uint8Array> {
-  const response = await fetch(url, { headers: { Range: `bytes=${start}-${endInclusive}` } });
-  if (!response.ok && response.status !== 206) {
-    throw new Error(`Download failed (${response.status}) for ${url}`);
+  const expectedBytes = endInclusive - start + 1;
+  const parts: Uint8Array[] = [];
+  let receivedBytes = 0;
+  let retry = 0;
+  let validator: string | null = null;
+  let lastError = "Network connection lost";
+
+  while (receivedBytes < expectedBytes) {
+    const rangeStart = start + receivedBytes;
+    const headers: Record<string, string> = { Range: `bytes=${rangeStart}-${endInclusive}` };
+    if (validator && receivedBytes > 0) headers["If-Range"] = validator;
+
+    try {
+      const response = await fetch(url, { redirect: "follow", headers });
+      if (response.status !== 206 || !response.body) {
+        const transient = isTransientDownloadStatus(response.status);
+        await response.body?.cancel().catch(() => undefined);
+        if (!transient) {
+          throw new Error(`Range download was rejected (${response.status}) for ${url}`);
+        }
+        throw new Error(`Download failed (${response.status}) for ${url}`);
+      }
+
+      const contentRange = response.headers.get("content-range");
+      const returnedStart = contentRange?.match(/^bytes (\d+)-/i)?.[1];
+      if (returnedStart === undefined || Number(returnedStart) !== rangeStart) {
+        await response.body.cancel().catch(() => undefined);
+        throw new Error(`Range download resumed at the wrong byte for ${url}`);
+      }
+
+      const responseValidator = response.headers.get("etag") ?? response.headers.get("last-modified");
+      if (validator && responseValidator && responseValidator !== validator) {
+        await response.body.cancel().catch(() => undefined);
+        throw new Error(`Registry source changed during download for ${url}`);
+      }
+      validator ??= responseValidator;
+
+      const reader = response.body.getReader();
+      while (receivedBytes < expectedBytes) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!value || value.byteLength === 0) continue;
+        const remaining = expectedBytes - receivedBytes;
+        const part = value.byteLength > remaining ? value.slice(0, remaining) : value;
+        parts.push(part);
+        receivedBytes += part.byteLength;
+      }
+
+      if (receivedBytes >= expectedBytes) break;
+      lastError = `Download ended early after ${receivedBytes} of ${expectedBytes} bytes`;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      if (
+        lastError.startsWith("Range download was rejected") ||
+        lastError.startsWith("Range download resumed at the wrong byte") ||
+        lastError.startsWith("Registry source changed")
+      ) {
+        throw error;
+      }
+    }
+
+    retry += 1;
+    if (retry > RANGE_MAX_RETRIES) {
+      throw new Error(`Registry range download failed after ${RANGE_MAX_RETRIES} retries: ${lastError}`);
+    }
+    await sleep(Math.min(8_000, RANGE_RETRY_BASE_MS * 2 ** (retry - 1)));
   }
-  return new Uint8Array(await response.arrayBuffer());
+
+  const bytes = new Uint8Array(expectedBytes);
+  let offset = 0;
+  for (const part of parts) {
+    bytes.set(part, offset);
+    offset += part.byteLength;
+  }
+  return bytes;
 }
 
 async function readCsvHeader(url: string) {
@@ -550,6 +628,12 @@ async function continueJob(supabase: Db, job: JobRow) {
     job.phase = current;
   }
 
+  // A completed slice proves the source is reachable again. Do not let
+  // intermittent failures from earlier cron invocations accumulate until the
+  // otherwise healthy monthly refresh is permanently marked failed.
+  if ((job.attempts ?? 0) > 0 || job.error) {
+    await setJob(supabase, { attempts: 0, error: null });
+  }
   return { ok: true as const, status: "running" as const, phase: current };
 }
 
