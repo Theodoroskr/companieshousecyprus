@@ -105,6 +105,7 @@ Disallow: /admin
 Disallow: /order/
 
 Sitemap: https://companieshousecyprus.com/sitemap.xml
+Sitemap: https://companieshousecyprus.com/sitemaps/cyprus-corporate-registry.xml
 AI-sitemap: https://companieshousecyprus.com/llms.txt
 AI-policy: https://companieshousecyprus.com/ai.txt
 `;
