@@ -85,6 +85,7 @@ import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as RegistryTopicRouteImport } from './routes/registry.$topic'
 import { Route as ReportTypeRouteImport } from './routes/report.$type'
 import { Route as RoRegistrulComertuluiCipruRouteImport } from './routes/ro/registrul-comertului-cipru'
+import { Route as SitemapsCyprusCorporateRegistryDotxmlRouteImport } from './routes/sitemaps/cyprus-corporate-registry[.]xml'
 import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 import { Route as SolutionsKybForBanksRouteImport } from './routes/solutions.kyb-for-banks'
 import { Route as StatisticsCompanyNamesRouteImport } from './routes/statistics_.company-names'
@@ -531,6 +532,12 @@ const RoRegistrulComertuluiCipruRoute =
     path: '/ro/registrul-comertului-cipru',
     getParentRoute: () => rootRouteImport,
   } as any)
+const SitemapsCyprusCorporateRegistryDotxmlRoute =
+  SitemapsCyprusCorporateRegistryDotxmlRouteImport.update({
+    id: '/sitemaps/cyprus-corporate-registry.xml',
+    path: '/sitemaps/cyprus-corporate-registry.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SitemapsPagesDotxmlRoute = SitemapsPagesDotxmlRouteImport.update({
   id: '/sitemaps/pages.xml',
   path: '/sitemaps/pages.xml',
@@ -847,6 +854,7 @@ export interface FileRoutesByFullPath {
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
+  '/sitemaps/cyprus-corporate-registry.xml': typeof SitemapsCyprusCorporateRegistryDotxmlRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/statistics/company-names': typeof StatisticsCompanyNamesRoute
@@ -967,6 +975,7 @@ export interface FileRoutesByTo {
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
+  '/sitemaps/cyprus-corporate-registry.xml': typeof SitemapsCyprusCorporateRegistryDotxmlRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/statistics/company-names': typeof StatisticsCompanyNamesRoute
@@ -1090,6 +1099,7 @@ export interface FileRoutesById {
   '/registry/$topic': typeof RegistryTopicRoute
   '/report/$type': typeof ReportTypeRoute
   '/ro/registrul-comertului-cipru': typeof RoRegistrulComertuluiCipruRoute
+  '/sitemaps/cyprus-corporate-registry.xml': typeof SitemapsCyprusCorporateRegistryDotxmlRoute
   '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/solutions/kyb-for-banks': typeof SolutionsKybForBanksRoute
   '/statistics_/company-names': typeof StatisticsCompanyNamesRoute
@@ -1213,6 +1223,7 @@ export interface FileRouteTypes {
     | '/registry/$topic'
     | '/report/$type'
     | '/ro/registrul-comertului-cipru'
+    | '/sitemaps/cyprus-corporate-registry.xml'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/statistics/company-names'
@@ -1333,6 +1344,7 @@ export interface FileRouteTypes {
     | '/registry/$topic'
     | '/report/$type'
     | '/ro/registrul-comertului-cipru'
+    | '/sitemaps/cyprus-corporate-registry.xml'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/statistics/company-names'
@@ -1455,6 +1467,7 @@ export interface FileRouteTypes {
     | '/registry/$topic'
     | '/report/$type'
     | '/ro/registrul-comertului-cipru'
+    | '/sitemaps/cyprus-corporate-registry.xml'
     | '/sitemaps/pages.xml'
     | '/solutions/kyb-for-banks'
     | '/statistics_/company-names'
@@ -1577,6 +1590,7 @@ export interface RootRouteChildren {
   RegistryTopicRoute: typeof RegistryTopicRoute
   ReportTypeRoute: typeof ReportTypeRoute
   RoRegistrulComertuluiCipruRoute: typeof RoRegistrulComertuluiCipruRoute
+  SitemapsCyprusCorporateRegistryDotxmlRoute: typeof SitemapsCyprusCorporateRegistryDotxmlRoute
   SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   SolutionsKybForBanksRoute: typeof SolutionsKybForBanksRoute
   StatisticsCompanyNamesRoute: typeof StatisticsCompanyNamesRoute
@@ -2141,6 +2155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoRegistrulComertuluiCipruRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemaps/cyprus-corporate-registry.xml': {
+      id: '/sitemaps/cyprus-corporate-registry.xml'
+      path: '/sitemaps/cyprus-corporate-registry.xml'
+      fullPath: '/sitemaps/cyprus-corporate-registry.xml'
+      preLoaderRoute: typeof SitemapsCyprusCorporateRegistryDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemaps/pages.xml': {
       id: '/sitemaps/pages.xml'
       path: '/sitemaps/pages.xml'
@@ -2587,6 +2608,8 @@ const rootRouteChildren: RootRouteChildren = {
   RegistryTopicRoute: RegistryTopicRoute,
   ReportTypeRoute: ReportTypeRoute,
   RoRegistrulComertuluiCipruRoute: RoRegistrulComertuluiCipruRoute,
+  SitemapsCyprusCorporateRegistryDotxmlRoute:
+    SitemapsCyprusCorporateRegistryDotxmlRoute,
   SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   SolutionsKybForBanksRoute: SolutionsKybForBanksRoute,
   StatisticsCompanyNamesRoute: StatisticsCompanyNamesRoute,
