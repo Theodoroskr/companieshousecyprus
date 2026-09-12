@@ -59,6 +59,16 @@ export const Route = createFileRoute("/cyprus-corporate-registry")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "Cyprus Corporate Registry",
+          description: DESCRIPTION,
+          url: CANONICAL,
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
           "@type": "WebSite",
           name: "Companies House Cyprus",
           url: "https://companieshousecyprus.com/",
