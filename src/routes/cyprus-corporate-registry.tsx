@@ -377,6 +377,9 @@ function CorporateRegistryPage() {
             <Button asChild variant="outline">
               <Link to="/statistics">Registry statistics</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/guides/cyprus-he-number-lookup">HE number lookup guide</Link>
+            </Button>
           </div>
         </section>
       </div>
