@@ -15,7 +15,11 @@ const STEPS = [
   {
     title: "Open the registry search",
     body: "Go to the Companies House Cyprus search page. No account and no payment is required to search the register.",
-    link: { to: "/search" as const, label: "Open free search" },
+    link: {
+      to: "/search" as const,
+      search: { q: "", page: 1 },
+      label: "Open free search",
+    },
   },
   {
     title: "Enter the number exactly as issued",
@@ -115,7 +119,7 @@ function HeNumberLookupGuide() {
           </p>
           <div className="mt-6">
             <Button asChild size="lg">
-              <Link to="/search">
+              <Link to="/search" search={{ q: "", page: 1 }}>
                 <Search className="mr-2 h-4 w-4" aria-hidden="true" />
                 Run a free HE number lookup
               </Link>
