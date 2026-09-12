@@ -9,9 +9,9 @@ import {
   type FilingEntry,
 } from "@/lib/registry-filings.functions";
 
-const TITLE = "Cyprus Corporate Registry — Search and Daily Filings";
+const TITLE = "Cyprus Corporate Registry — Free Cyprus Company Register Search";
 const DESCRIPTION =
-  "Search the Cyprus corporate registry free, then browse registry filings day by day: new incorporations and status changes recorded by the Registrar of Companies.";
+  "Search the Cyprus corporate registry free — no account needed. The Cyprus company register with daily filings: new incorporations and status changes recorded by the Registrar of Companies.";
 const CANONICAL = "https://companieshousecyprus.com/cyprus-corporate-registry";
 
 const searchSchema = z.object({
@@ -53,6 +53,16 @@ export const Route = createFileRoute("/cyprus-corporate-registry")({
             { "@type": "ListItem", position: 1, name: "Home", item: "https://companieshousecyprus.com/" },
             { "@type": "ListItem", position: 2, name: "Cyprus corporate registry", item: CANONICAL },
           ],
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "Cyprus Corporate Registry",
+          description: DESCRIPTION,
+          url: CANONICAL,
         }),
       },
       {

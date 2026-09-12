@@ -404,7 +404,11 @@ function HomePage() {
               <Link to="/search" search={{ q: "", page: 1 }} className="text-accent underline">
                 run a Cyprus company search
               </Link>{" "}
-              straight away.
+              straight away, or browse the{" "}
+              <Link to="/cyprus-corporate-registry" className="text-accent underline">
+                Cyprus corporate registry
+              </Link>{" "}
+              day by day — new incorporations and status changes as they are recorded.
             </p>
           </div>
         </div>
