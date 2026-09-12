@@ -46,6 +46,11 @@ const GUIDES = [
     body: "Who keeps the Cyprus register, what it records, how to search by name or HE number, registry number prefixes, certificate turnaround, and how the Cyprus register differs from UK Companies House.",
   },
   {
+    to: "/guides/cyprus-he-number-lookup" as const,
+    title: "How to Look Up a Cyprus Company by HE Number",
+    body: "What the HE registration number is, what each registry prefix means, where to find the number, and the two-minute lookup that finds any Cyprus company exactly.",
+  },
+  {
     to: "/guides/register-company-cyprus" as const,
     title: "How to Register a Company in Cyprus: Complete 2026 Guide",
     body: "The incorporation process end to end — structures, required documents, indicative timelines, costs, tax and VAT registration, beneficial ownership, banking preparation and annual compliance.",
