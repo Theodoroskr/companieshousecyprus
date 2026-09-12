@@ -696,6 +696,30 @@ export async function runRegistrySyncTick(options?: { force?: boolean }) {
       await setJob(supabase, { attempts, error: message.slice(0, 1000) });
       return { ok: false as const, status: "retrying" as const, attempts, error: message };
     }
+
+    // Detection/check failures happen while the job is idle, so failJob()
+    // never runs and no report email is sent. Alert the office directly —
+    // deduped to one email per day so the 5-minute cron cannot flood the
+    // inbox while a source outage persists.
+    await sendFailureAlert(message);
     throw tickError;
+  }
+}
+
+async function sendFailureAlert(message: string) {
+  const day = new Date().toISOString().slice(0, 10);
+  try {
+    await sendTemplateEmail("registry-sync-report", OFFICE_EMAIL, {
+      templateData: {
+        status: "failed",
+        files: [],
+        error: `Source check failed before the refresh could start: ${message}`,
+        startedAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+      },
+      idempotencyKey: `registry-sync-detect-fail-${day}`,
+    });
+  } catch (error) {
+    console.error("registry-sync failure alert email failed:", error);
   }
 }
