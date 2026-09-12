@@ -155,7 +155,7 @@ function HeNumberLookupGuide() {
                 <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
                 {step.link ? (
                   <Button asChild variant="outline" size="sm" className="mt-3">
-                    <Link to={step.link.to}>
+                    <Link to={step.link.to} search={step.link.search}>
                       {step.link.label}
                       <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
                     </Link>
