@@ -325,6 +325,39 @@ function CorporateRegistryPage() {
           </p>
         </section>
 
+        <section>
+          <h2 className="font-heading text-2xl">Cyprus corporate registry FAQs</h2>
+          <div className="mt-5 space-y-4">
+            {FAQS.map((faq) => (
+              <details key={faq.q} className="rounded-lg border bg-card px-5 py-4">
+                <summary className="cursor-pointer font-medium">{faq.q}</summary>
+                <p className="mt-2 text-sm text-muted-foreground">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-xl border bg-muted/40 p-6">
+          <h2 className="font-heading text-xl">Privacy notice for search results</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Company profiles on this site are built from official public records published by the
+            Department of Registrar of Companies and Intellectual Property. Those records can
+            contain personal data about company officers. To respect GDPR, director, secretary and
+            shareholder names are masked in free public profiles and search results, and are
+            disclosed only inside purchased official reports where a legitimate basis for
+            processing exists. If your personal data appears in the registry and you have a
+            question about how it is displayed here, contact us and we will review it.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-4 text-sm">
+            <Link to="/privacy" className="font-medium text-copper hover:underline">
+              Read the full privacy policy
+            </Link>
+            <Link to="/contact" className="font-medium text-copper hover:underline">
+              Contact us about your data
+            </Link>
+          </div>
+        </section>
+
         <section className="rounded-xl border bg-card p-6">
           <h2 className="font-heading text-2xl">Official documents and reports</h2>
           <p className="mt-2 text-sm text-muted-foreground">
