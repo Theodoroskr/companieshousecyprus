@@ -76,6 +76,7 @@ import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as GuidesCompaniesHouseCyprusRouteImport } from './routes/guides.companies-house-cyprus'
 import { Route as GuidesCyprusCompanyFormationRouteImport } from './routes/guides.cyprus-company-formation'
 import { Route as GuidesCyprusCompanyLandscape2026RouteImport } from './routes/guides.cyprus-company-landscape-2026'
+import { Route as GuidesCyprusHeNumberLookupRouteImport } from './routes/guides.cyprus-he-number-lookup'
 import { Route as GuidesRegisterCompanyCyprusRouteImport } from './routes/guides.register-company-cyprus'
 import { Route as IlCyprusCompanyRegistryRouteImport } from './routes/il/cyprus-company-registry'
 import { Route as ItRegistroImpreseCiproRouteImport } from './routes/it/registro-imprese-cipro'
@@ -482,6 +483,12 @@ const GuidesCyprusCompanyLandscape2026Route =
     path: '/guides/cyprus-company-landscape-2026',
     getParentRoute: () => rootRouteImport,
   } as any)
+const GuidesCyprusHeNumberLookupRoute =
+  GuidesCyprusHeNumberLookupRouteImport.update({
+    id: '/guides/cyprus-he-number-lookup',
+    path: '/guides/cyprus-he-number-lookup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const GuidesRegisterCompanyCyprusRoute =
   GuidesRegisterCompanyCyprusRouteImport.update({
     id: '/guides/register-company-cyprus',
@@ -831,6 +838,7 @@ export interface FileRoutesByFullPath {
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/cyprus-company-formation': typeof GuidesCyprusCompanyFormationRoute
   '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
+  '/guides/cyprus-he-number-lookup': typeof GuidesCyprusHeNumberLookupRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
@@ -950,6 +958,7 @@ export interface FileRoutesByTo {
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/cyprus-company-formation': typeof GuidesCyprusCompanyFormationRoute
   '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
+  '/guides/cyprus-he-number-lookup': typeof GuidesCyprusHeNumberLookupRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
@@ -1072,6 +1081,7 @@ export interface FileRoutesById {
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/cyprus-company-formation': typeof GuidesCyprusCompanyFormationRoute
   '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
+  '/guides/cyprus-he-number-lookup': typeof GuidesCyprusHeNumberLookupRoute
   '/guides/register-company-cyprus': typeof GuidesRegisterCompanyCyprusRoute
   '/il/cyprus-company-registry': typeof IlCyprusCompanyRegistryRoute
   '/it/registro-imprese-cipro': typeof ItRegistroImpreseCiproRoute
@@ -1194,6 +1204,7 @@ export interface FileRouteTypes {
     | '/guides/companies-house-cyprus'
     | '/guides/cyprus-company-formation'
     | '/guides/cyprus-company-landscape-2026'
+    | '/guides/cyprus-he-number-lookup'
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
@@ -1313,6 +1324,7 @@ export interface FileRouteTypes {
     | '/guides/companies-house-cyprus'
     | '/guides/cyprus-company-formation'
     | '/guides/cyprus-company-landscape-2026'
+    | '/guides/cyprus-he-number-lookup'
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
@@ -1434,6 +1446,7 @@ export interface FileRouteTypes {
     | '/guides/companies-house-cyprus'
     | '/guides/cyprus-company-formation'
     | '/guides/cyprus-company-landscape-2026'
+    | '/guides/cyprus-he-number-lookup'
     | '/guides/register-company-cyprus'
     | '/il/cyprus-company-registry'
     | '/it/registro-imprese-cipro'
@@ -1555,6 +1568,7 @@ export interface RootRouteChildren {
   GuidesCompaniesHouseCyprusRoute: typeof GuidesCompaniesHouseCyprusRoute
   GuidesCyprusCompanyFormationRoute: typeof GuidesCyprusCompanyFormationRoute
   GuidesCyprusCompanyLandscape2026Route: typeof GuidesCyprusCompanyLandscape2026Route
+  GuidesCyprusHeNumberLookupRoute: typeof GuidesCyprusHeNumberLookupRoute
   GuidesRegisterCompanyCyprusRoute: typeof GuidesRegisterCompanyCyprusRoute
   IlCyprusCompanyRegistryRoute: typeof IlCyprusCompanyRegistryRoute
   ItRegistroImpreseCiproRoute: typeof ItRegistroImpreseCiproRoute
@@ -2064,6 +2078,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesCyprusCompanyLandscape2026RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/cyprus-he-number-lookup': {
+      id: '/guides/cyprus-he-number-lookup'
+      path: '/guides/cyprus-he-number-lookup'
+      fullPath: '/guides/cyprus-he-number-lookup'
+      preLoaderRoute: typeof GuidesCyprusHeNumberLookupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/register-company-cyprus': {
       id: '/guides/register-company-cyprus'
       path: '/guides/register-company-cyprus'
@@ -2557,6 +2578,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesCompaniesHouseCyprusRoute: GuidesCompaniesHouseCyprusRoute,
   GuidesCyprusCompanyFormationRoute: GuidesCyprusCompanyFormationRoute,
   GuidesCyprusCompanyLandscape2026Route: GuidesCyprusCompanyLandscape2026Route,
+  GuidesCyprusHeNumberLookupRoute: GuidesCyprusHeNumberLookupRoute,
   GuidesRegisterCompanyCyprusRoute: GuidesRegisterCompanyCyprusRoute,
   IlCyprusCompanyRegistryRoute: IlCyprusCompanyRegistryRoute,
   ItRegistroImpreseCiproRoute: ItRegistroImpreseCiproRoute,
