@@ -49,6 +49,12 @@ type RunState = { active: boolean; label: string; processed: number; failed: num
 
 const idleRun: RunState = { active: false, label: "", processed: 0, failed: 0, percent: 0 };
 
+const REGISTRY_FILE_LABELS: Record<string, string> = {
+  addresses: "Registered office addresses",
+  organisations: "Companies & organisations",
+  officials: "Directors & officials",
+};
+
 type ImportRunRow = Awaited<ReturnType<typeof listImportRuns>>[number];
 type DiagnosticResult = Awaited<ReturnType<typeof diagnoseCompanyNumber>>;
 
@@ -129,6 +135,22 @@ function AdminImportPage() {
       }
     })();
   }, []);
+
+  const activeRegistryRuns = runs.filter((r) => r.kind === "registry_auto" && r.status === "running");
+
+  // While the automated registry refresh is running, poll its progress.
+  useEffect(() => {
+    if (activeRegistryRuns.length === 0) return;
+    const timer = setInterval(async () => {
+      try {
+        setRuns(await listImportRuns());
+      } catch {
+        // Keep the last known progress on a transient fetch error.
+      }
+    }, 5000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRegistryRuns.length]);
 
   const runCompaniesImport = async () => {
     const orgFile = orgFileRef.current?.files?.[0];
@@ -406,6 +428,32 @@ function AdminImportPage() {
           </Button>
         </div>
       )}
+
+      {activeRegistryRuns.length > 0 && (
+        <div className="mt-6 rounded-lg border bg-card p-4">
+          <p className="text-sm font-medium">Automated registry refresh in progress</p>
+          <div className="mt-3 space-y-4">
+            {activeRegistryRuns.map((r) => {
+              const size = Number(r.file_size ?? 0);
+              const done = Number(r.bytes_processed ?? 0);
+              const percent = size > 0 ? Math.min(100, Math.round((done / size) * 100)) : 0;
+              return (
+                <div key={r.id}>
+                  <p className="text-sm text-muted-foreground">
+                    {REGISTRY_FILE_LABELS[r.mode] ?? r.filename ?? r.mode} · {percent}% downloaded
+                  </p>
+                  <Progress value={percent} className="mt-2" />
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {Number(r.rows_processed ?? 0).toLocaleString()} rows written
+                    {r.stage === "truncate" ? " · clearing existing officials…" : ""}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
 
       <section className="mt-8 rounded-lg border bg-card p-6">
         <h2 className="text-xl font-semibold">Check a registry number</h2>
