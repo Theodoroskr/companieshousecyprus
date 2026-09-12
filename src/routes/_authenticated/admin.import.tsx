@@ -136,6 +136,22 @@ function AdminImportPage() {
     })();
   }, []);
 
+  const activeRegistryRuns = runs.filter((r) => r.kind === "registry_auto" && r.status === "running");
+
+  // While the automated registry refresh is running, poll its progress.
+  useEffect(() => {
+    if (activeRegistryRuns.length === 0) return;
+    const timer = setInterval(async () => {
+      try {
+        setRuns(await listImportRuns());
+      } catch {
+        // Keep the last known progress on a transient fetch error.
+      }
+    }, 5000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRegistryRuns.length]);
+
   const runCompaniesImport = async () => {
     const orgFile = orgFileRef.current?.files?.[0];
     const addrFile = addrFileRef.current?.files?.[0];
