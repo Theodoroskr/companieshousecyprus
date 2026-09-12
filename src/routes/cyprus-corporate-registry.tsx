@@ -14,6 +14,45 @@ const DESCRIPTION =
   "Search the Cyprus corporate registry free — no account needed. The Cyprus company register with daily filings: new incorporations and status changes recorded by the Registrar of Companies.";
 const CANONICAL = "https://companieshousecyprus.com/cyprus-corporate-registry";
 
+const FAQS = [
+  {
+    q: "What is the Cyprus corporate registry?",
+    a: "The official register of companies and other legal entities in Cyprus, maintained by the Department of Registrar of Companies and Intellectual Property. It records every incorporated company, partnership, overseas company and business name, together with its registration number, status, registered office and filing history.",
+  },
+  {
+    q: "Is searching the Cyprus corporate registry free?",
+    a: "Yes. Searching by company name or HE number and viewing company profiles on this site is completely free and requires no account. Fees apply only when you order official Registrar certificates, structure reports or credit reports.",
+  },
+  {
+    q: "What can I find with a registry search?",
+    a: "A company profile shows the registered name, HE registration number, incorporation date, current registry status (registered, struck off, dissolved and so on), entity type and registered office district, plus the filing activity recorded for the entity.",
+  },
+  {
+    q: "Can I search in Greek as well as English?",
+    a: "Yes. The register matches names in both the Greek and Latin scripts, including transliterations, so you can search with the Greek spelling of a company name and still reach its profile.",
+  },
+  {
+    q: "What are the filings shown on this page?",
+    a: "Two kinds of registry activity per day: new registrations (entities newly entered on the register) and status changes (entities whose registry status was updated on that date). The data reflects the Registrar's published records up to the latest available update.",
+  },
+  {
+    q: "How current is the registry data?",
+    a: "Data is refreshed from the Registrar's published records on a regular cycle. The latest date covered is shown next to the filings totals on this page. Very recent incorporations may appear after a short delay while the official monthly export is processed.",
+  },
+  {
+    q: "Why are officer names not shown publicly?",
+    a: "Director, secretary and shareholder details are personal data. In line with GDPR we do not publish them openly in search results; they are disclosed only inside purchased official reports, where there is a legitimate basis for processing.",
+  },
+  {
+    q: "Is this the official government registry website?",
+    a: "No. Companies House Cyprus is an independent commercial service operated by Infocredit Group Ltd. We republish the Registrar's official open data for free searching and order official certificates and reports on your behalf. The official authority is the Department of Registrar of Companies and Intellectual Property.",
+  },
+  {
+    q: "How do I get official documents for a company I find here?",
+    a: "Open the company profile and choose the certificate or report you need — for example a certificate of good standing, certificate of directors and secretary, or a structure report. Documents are ordered online and delivered digitally once issued.",
+  },
+];
+
 const searchSchema = z.object({
   date: z
     .string()
