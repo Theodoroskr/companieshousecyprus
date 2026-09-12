@@ -506,17 +506,22 @@ async function sendReport(
     1,
     Math.round((new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 60000),
   );
-  await sendTemplateEmail("registry-sync-report", OFFICE_EMAIL, {
-    templateData: {
-      status,
-      files,
-      error: error ?? null,
-      startedAt,
-      finishedAt,
-      durationMin,
-    },
-    idempotencyKey: `registry-sync-${status}-${startedAt}`,
-  });
+  // Email must never break the sync job itself.
+  try {
+    await sendTemplateEmail("registry-sync-report", OFFICE_EMAIL, {
+      templateData: {
+        status,
+        files,
+        error: error ?? null,
+        startedAt,
+        finishedAt,
+        durationMin,
+      },
+      idempotencyKey: `registry-sync-${status}-${startedAt}`,
+    });
+  } catch (emailError) {
+    console.error(`registry-sync ${status} report email failed:`, emailError);
+  }
 }
 
 async function finalizeJob(supabase: Db, job: JobRow) {
