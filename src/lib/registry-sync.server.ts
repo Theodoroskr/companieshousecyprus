@@ -40,7 +40,7 @@ import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
 const JOB_KEY = "registry_sync";
 const OFFICE_EMAIL = "info@companieshousecyprus.com";
-const CHUNK_BYTES = 4 * 1024 * 1024; // 4 MiB per slice
+const CHUNK_BYTES = 1 * 1024 * 1024; // 1 MiB per slice — short transfers survive portal CDN drops better
 const TICK_BUDGET_MS = 25_000; // process slices for at most this long per invocation
 const DETECT_INTERVAL_MS = 6.5 * 24 * 60 * 60 * 1000; // weekly header check
 const MAX_ATTEMPTS = 6;

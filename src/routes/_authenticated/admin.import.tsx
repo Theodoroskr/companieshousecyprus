@@ -49,6 +49,12 @@ type RunState = { active: boolean; label: string; processed: number; failed: num
 
 const idleRun: RunState = { active: false, label: "", processed: 0, failed: 0, percent: 0 };
 
+const REGISTRY_FILE_LABELS: Record<string, string> = {
+  addresses: "Registered office addresses",
+  organisations: "Companies & organisations",
+  officials: "Directors & officials",
+};
+
 type ImportRunRow = Awaited<ReturnType<typeof listImportRuns>>[number];
 type DiagnosticResult = Awaited<ReturnType<typeof diagnoseCompanyNumber>>;
 
