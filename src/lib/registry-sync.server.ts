@@ -153,7 +153,7 @@ function isTransientDownloadStatus(status: number) {
 }
 
 async function fetchRange(url: string, start: number, endInclusive: number): Promise<Uint8Array> {
-  const expectedBytes = endInclusive - start + 1;
+  let expectedBytes = endInclusive - start + 1;
   const parts: Uint8Array[] = [];
   let receivedBytes = 0;
   let retry = 0;
@@ -167,7 +167,7 @@ async function fetchRange(url: string, start: number, endInclusive: number): Pro
 
     try {
       const response = await fetch(url, { redirect: "follow", headers });
-      if (response.status !== 206 || !response.body) {
+      if ((response.status !== 206 && response.status !== 200) || !response.body) {
         const transient = isTransientDownloadStatus(response.status);
         await response.body?.cancel().catch(() => undefined);
         if (!transient) {
@@ -176,11 +176,35 @@ async function fetchRange(url: string, start: number, endInclusive: number): Pro
         throw new Error(`Download failed (${response.status}) for ${url}`);
       }
 
+      if (response.status === 200) {
+        // Server ignored the Range header and sent the whole file. Only usable
+        // when we are at the beginning of our slice; slice out what we need.
+        if (rangeStart !== start || receivedBytes !== 0) {
+          await response.body.cancel().catch(() => undefined);
+          throw new Error(`Range download resumed at the wrong byte for ${url}`);
+        }
+        const whole = new Uint8Array(await response.arrayBuffer());
+        if (whole.byteLength <= start) {
+          throw new Error(`Range download was rejected (200) for ${url}: file smaller than requested offset`);
+        }
+        expectedBytes = Math.min(expectedBytes, whole.byteLength - start);
+        const part = whole.slice(start, start + expectedBytes);
+        parts.push(part);
+        receivedBytes += part.byteLength;
+        break;
+      }
+
       const contentRange = response.headers.get("content-range");
       const returnedStart = contentRange?.match(/^bytes (\d+)-/i)?.[1];
       if (returnedStart === undefined || Number(returnedStart) !== rangeStart) {
         await response.body.cancel().catch(() => undefined);
         throw new Error(`Range download resumed at the wrong byte for ${url}`);
+      }
+      // If the requested end runs past the file size, shrink the expectation
+      // to what the file actually contains instead of failing.
+      const total = contentRange?.match(/\/(\d+)$/)?.[1];
+      if (total !== undefined && Number(total) - start < expectedBytes) {
+        expectedBytes = Number(total) - start;
       }
 
       const responseValidator = response.headers.get("etag") ?? response.headers.get("last-modified");
