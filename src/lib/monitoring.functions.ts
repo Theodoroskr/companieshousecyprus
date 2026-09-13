@@ -50,17 +50,19 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
       await claimMonitoringForUser(context.userId, claimEmail);
     }
 
-    const { data: entitlements } = await context.supabase
+    const { data: entitlements, error: entitlementsError } = await context.supabase
       .from("monitoring_entitlements")
       .select("id, status, watch_limit, expires_at")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
+    if (entitlementsError) throw new Error(`Could not load monitoring plans: ${entitlementsError.message}`);
 
-    const { data: watches } = await context.supabase
+    const { data: watches, error: watchesError } = await context.supabase
       .from("company_watches")
       .select("id, company_slug, company_name, company_number, status, expires_at, last_checked_at, entitlement_id")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
+    if (watchesError) throw new Error(`Could not load watched companies: ${watchesError.message}`);
 
     const watchIds = (watches ?? []).map((w) => w.id);
     const slugs = Array.from(new Set((watches ?? []).map((w) => w.company_slug)));
@@ -72,14 +74,15 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
           .in("slug", slugs)
       : { data: [] as { slug: string; status_en: string | null; type_en: string | null; address_full: string | null }[] };
 
-    const { data: alerts } = watchIds.length
+    const { data: alerts, error: alertsError } = watchIds.length
       ? await context.supabase
           .from("company_watch_alerts")
           .select("id, watch_id, field_label, change_type, previous_value, new_value, detected_at")
           .in("watch_id", watchIds)
           .order("detected_at", { ascending: false })
           .limit(200)
-      : { data: [] as AlertRow[] };
+      : { data: [] as AlertRow[], error: null };
+    if (alertsError) throw new Error(`Could not load monitoring alerts: ${alertsError.message}`);
 
     const alertRows = (alerts ?? []) as AlertRow[];
     const companyBySlug = new Map((companies ?? []).map((c) => [c.slug, c]));
