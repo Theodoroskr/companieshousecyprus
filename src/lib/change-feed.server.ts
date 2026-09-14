@@ -146,8 +146,14 @@ export async function runDailyChangeFeed(): Promise<ChangeFeedRunSummary & { tru
   const notes: string[] = [];
   let status: "completed" | "failed" = "completed";
 
+  // Only a queueing failure must hold the window back; anything after it has
+  // already recorded the changed companies, so the window may advance.
+  let queued = false;
+
   try {
     enqueued = await enqueueForIndexNow(feed.items.map((item) => item.slug));
+    queued = true;
+
 
     // Chunk regeneration is a heavy full-table pass. The scheduled job runs it
     // in-database before calling us, so a timeout here is informational only.
