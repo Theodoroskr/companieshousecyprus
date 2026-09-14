@@ -32,7 +32,7 @@ import {
 import {
   closeRun,
   insertOfficials,
-  runRefreshOfficialsCount,
+  
   truncateOfficials,
   upsertCompanies,
 } from "@/lib/admin.server";
@@ -307,7 +307,18 @@ async function ensureRun(supabase: Db, job: JobRow, key: FileKey): Promise<strin
     .select("size")
     .eq("file_key", key)
     .single();
-  const size = Number(state?.size ?? 0);
+  let size = Number(state?.size ?? 0);
+  // A missing/zero recorded size would make every slice look "already done",
+  // silently completing the phase with zero rows (and, for officials, leaving
+  // the table truncated). Ask the portal for the real length instead.
+  if (!Number.isFinite(size) || size <= 0) {
+    const head = await fetch(file.url, { method: "HEAD" });
+    size = Number(head.headers.get("content-length") ?? 0);
+    if (!head.ok || !Number.isFinite(size) || size <= 0) {
+      throw new Error(`Could not determine file size for ${key} (${head.status})`);
+    }
+    await supabase.from("registry_sync_state").update({ size }).eq("file_key", key);
+  }
   const { data, error } = await supabase
     .from("import_runs")
     .insert({
@@ -547,7 +558,23 @@ async function finalizeJob(supabase: Db, job: JobRow) {
 
   if (officialsRan) {
     // Keep the cached per-company officials counts consistent with the reload.
-    await runRefreshOfficialsCount();
+    // One whole-table statement exceeds the database statement timeout after a
+    // full officials reload, so walk it in chunks (each chunk is its own
+    // statement and the walk is idempotent if a tick is interrupted).
+    let offset = 0;
+    for (let guard = 0; guard < 2000; guard += 1) {
+      const { data, error } = (await supabase.rpc("backfill_officials_count_chunk", {
+        start_offset: offset,
+        batch_size: 5000,
+      })) as unknown as {
+        data: { next_offset: number; updated: number }[] | null;
+        error: { message: string } | null;
+      };
+      if (error) throw new Error(error.message);
+      const next = Number(data?.[0]?.next_offset ?? offset);
+      if (next <= offset) break;
+      offset = next;
+    }
   }
 
   await setJob(supabase, {
