@@ -173,12 +173,16 @@ export async function runDailyChangeFeed(): Promise<ChangeFeedRunSummary & { tru
     indexNowStatus = result?.status ?? null;
     if (result && !result.ok) {
       notes.push(result.message ?? `IndexNow ${result.status}`);
-      if (result.status === "error" || result.status === "paused") status = "failed";
+      // Rate limiting has its own cooldown handling — the work is queued and
+      // will go out later, so the run itself is not a failure.
+      const rateLimited =
+        result.status === "cooling_down" || result.httpStatus === 429 || result.message?.includes("HTTP 429");
+      if (!rateLimited && (result.status === "error" || result.status === "paused")) status = "failed";
     }
     if (feed.truncated) notes.push(`window truncated at ${CHANGE_FEED_MAX_ITEMS} companies`);
   } catch (error) {
-    status = "failed";
     notes.push(error instanceof Error ? error.message : "daily change feed failed");
+    if (!queued) status = "failed";
   }
 
   const finishedAt = new Date().toISOString();
