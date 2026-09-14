@@ -78,27 +78,45 @@ export async function listChangedCompanies(options: {
   return { windowStart, windowEnd, items, truncated };
 }
 
+/**
+ * Slugs per request. A single `.in(...)` with thousands of values overflows the
+ * PostgREST request line and comes back as a bare `Bad Request`.
+ */
+const ENQUEUE_CHUNK = 500;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
 /** Queue only the slugs that are not already waiting for submission. */
 async function enqueueForIndexNow(slugs: string[]): Promise<number> {
   if (slugs.length === 0) return 0;
-  const { data: pending, error } = await supabaseAdmin
-    .from("indexnow_queue")
-    .select("slug")
-    .is("submitted_at", null)
-    .in("slug", slugs);
-  if (error) throw new Error(error.message);
-
-  const alreadyPending = new Set((pending ?? []).map((row) => row.slug));
-  const missing = slugs.filter((slug) => !alreadyPending.has(slug));
-  if (missing.length === 0) return 0;
-
   const now = new Date().toISOString();
-  const { error: upsertError } = await supabaseAdmin.from("indexnow_queue").upsert(
-    missing.map((slug) => ({ slug, queued_at: now, submitted_at: null, attempts: 0, last_error: null })),
-    { onConflict: "slug" },
-  );
-  if (upsertError) throw new Error(upsertError.message);
-  return missing.length;
+  let inserted = 0;
+
+  for (const batch of chunk(slugs, ENQUEUE_CHUNK)) {
+    const { data: pending, error } = await supabaseAdmin
+      .from("indexnow_queue")
+      .select("slug")
+      .is("submitted_at", null)
+      .in("slug", batch);
+    if (error) throw new Error(error.message);
+
+    const alreadyPending = new Set((pending ?? []).map((row) => row.slug));
+    const missing = batch.filter((slug) => !alreadyPending.has(slug));
+    if (missing.length === 0) continue;
+
+    const { error: upsertError } = await supabaseAdmin.from("indexnow_queue").upsert(
+      missing.map((slug) => ({ slug, queued_at: now, submitted_at: null, attempts: 0, last_error: null })),
+      { onConflict: "slug" },
+    );
+    if (upsertError) throw new Error(upsertError.message);
+    inserted += missing.length;
+  }
+
+  return inserted;
 }
 
 /**
@@ -128,8 +146,14 @@ export async function runDailyChangeFeed(): Promise<ChangeFeedRunSummary & { tru
   const notes: string[] = [];
   let status: "completed" | "failed" = "completed";
 
+  // Only a queueing failure must hold the window back; anything after it has
+  // already recorded the changed companies, so the window may advance.
+  let queued = false;
+
   try {
     enqueued = await enqueueForIndexNow(feed.items.map((item) => item.slug));
+    queued = true;
+
 
     // Chunk regeneration is a heavy full-table pass. The scheduled job runs it
     // in-database before calling us, so a timeout here is informational only.
@@ -149,12 +173,16 @@ export async function runDailyChangeFeed(): Promise<ChangeFeedRunSummary & { tru
     indexNowStatus = result?.status ?? null;
     if (result && !result.ok) {
       notes.push(result.message ?? `IndexNow ${result.status}`);
-      if (result.status === "error" || result.status === "paused") status = "failed";
+      // Rate limiting has its own cooldown handling — the work is queued and
+      // will go out later, so the run itself is not a failure.
+      const rateLimited =
+        result.status === "cooling_down" || result.httpStatus === 429 || result.message?.includes("HTTP 429");
+      if (!rateLimited && (result.status === "error" || result.status === "paused")) status = "failed";
     }
     if (feed.truncated) notes.push(`window truncated at ${CHANGE_FEED_MAX_ITEMS} companies`);
   } catch (error) {
-    status = "failed";
     notes.push(error instanceof Error ? error.message : "daily change feed failed");
+    if (!queued) status = "failed";
   }
 
   const finishedAt = new Date().toISOString();
