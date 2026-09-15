@@ -192,11 +192,14 @@ function CorporateRegistryPage() {
             <span className="mx-2">/</span>
             <span aria-current="page">Cyprus corporate registry</span>
           </nav>
-          <h1 className="mt-4 text-3xl sm:text-4xl">Cyprus corporate registry</h1>
+          <h1 className="mt-4 text-3xl sm:text-4xl">
+            Cyprus company search — the Cyprus corporate registry
+          </h1>
           <p className="mt-3 max-w-2xl text-primary-foreground/80">
-            Search every entity on the Cyprus register free of charge, and follow registry filings
-            day by day — new incorporations and status changes as recorded by the Department of
-            Registrar of Companies and Intellectual Property.
+            Free Cyprus company search by name or HE number across every entity on the Cyprus
+            corporate registry, in Nicosia, Limassol, Larnaca, Paphos, Famagusta and Kyrenia. Follow
+            registry filings day by day — new incorporations and status changes as recorded by the
+            Department of Registrar of Companies and Intellectual Property.
           </p>
 
           <form
