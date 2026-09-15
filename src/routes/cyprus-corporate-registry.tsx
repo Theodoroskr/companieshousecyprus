@@ -9,9 +9,9 @@ import {
   type FilingEntry,
 } from "@/lib/registry-filings.functions";
 
-const TITLE = "Cyprus Corporate Registry — Free Cyprus Company Register Search";
+const TITLE = "Cyprus Company Search — Free Cyprus Corporate Registry";
 const DESCRIPTION =
-  "Search the Cyprus corporate registry free — no account needed. The Cyprus company register with daily filings: new incorporations and status changes recorded by the Registrar of Companies.";
+  "Free Cyprus company search across the Cyprus corporate registry — Nicosia, Limassol, Larnaca, Paphos, Famagusta and Kyrenia. Daily filings, no account needed.";
 const CANONICAL = "https://companieshousecyprus.com/cyprus-corporate-registry";
 
 const FAQS = [
@@ -46,6 +46,10 @@ const FAQS = [
   {
     q: "Is this the official government registry website?",
     a: "No. Companies House Cyprus is an independent commercial service operated by Infocredit Group Ltd. We republish the Registrar's official open data for free searching and order official certificates and reports on your behalf. The official authority is the Department of Registrar of Companies and Intellectual Property.",
+  },
+  {
+    q: "Can I search Cyprus companies by city or district?",
+    a: "Yes. Every entity on the register carries the district of its registered office — Nicosia, Limassol, Larnaca, Paphos, Famagusta or Kyrenia — and you can browse the companies registered in each district, or filter a name search by district.",
   },
   {
     q: "How do I get official documents for a company I find here?",
@@ -188,11 +192,14 @@ function CorporateRegistryPage() {
             <span className="mx-2">/</span>
             <span aria-current="page">Cyprus corporate registry</span>
           </nav>
-          <h1 className="mt-4 text-3xl sm:text-4xl">Cyprus corporate registry</h1>
+          <h1 className="mt-4 text-3xl sm:text-4xl">
+            Cyprus company search — the Cyprus corporate registry
+          </h1>
           <p className="mt-3 max-w-2xl text-primary-foreground/80">
-            Search every entity on the Cyprus register free of charge, and follow registry filings
-            day by day — new incorporations and status changes as recorded by the Department of
-            Registrar of Companies and Intellectual Property.
+            Free Cyprus company search by name or HE number across every entity on the Cyprus
+            corporate registry, in Nicosia, Limassol, Larnaca, Paphos, Famagusta and Kyrenia. Follow
+            registry filings day by day — new incorporations and status changes as recorded by the
+            Department of Registrar of Companies and Intellectual Property.
           </p>
 
           <form
@@ -324,6 +331,29 @@ function CorporateRegistryPage() {
             Lists show up to 60 entities per date. Use the search above to find any other entity.
           </p>
         </section>
+
+        <section>
+          <h2 className="font-heading text-2xl">Cyprus company search by district</h2>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+            Each entity on the Cyprus corporate registry records the district of its registered
+            office. Browse the companies registered in each Cyprus district, or search by name above
+            and open any profile for its registered address.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {["nicosia", "limassol", "larnaca", "paphos", "famagusta", "kyrenia"].map((district) => (
+              <Link
+                key={district}
+                to="/companies/city/$district"
+                params={{ district }}
+                className="rounded-md border bg-card px-3 py-2 text-sm capitalize transition-colors hover:bg-muted/60"
+              >
+                Companies in {district}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+
 
         <section>
           <h2 className="font-heading text-2xl">Cyprus corporate registry FAQs</h2>
