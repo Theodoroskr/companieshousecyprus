@@ -48,6 +48,10 @@ const FAQS = [
     a: "No. Companies House Cyprus is an independent commercial service operated by Infocredit Group Ltd. We republish the Registrar's official open data for free searching and order official certificates and reports on your behalf. The official authority is the Department of Registrar of Companies and Intellectual Property.",
   },
   {
+    q: "Can I search Cyprus companies by city or district?",
+    a: "Yes. Every entity on the register carries the district of its registered office — Nicosia, Limassol, Larnaca, Paphos, Famagusta or Kyrenia — and you can browse the companies registered in each district, or filter a name search by district.",
+  },
+  {
     q: "How do I get official documents for a company I find here?",
     a: "Open the company profile and choose the certificate or report you need — for example a certificate of good standing, certificate of directors and secretary, or a structure report. Documents are ordered online and delivered digitally once issued.",
   },
