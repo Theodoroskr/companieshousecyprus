@@ -177,10 +177,10 @@ function HomePage() {
 
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Search the Cyprus company register free with no account required. Companies House Cyprus lets you check
-            status, registry number and registered office for any entity, then order official certificates, Company
-            Profile Reports, Credit Reports and Sanctions Snapshots with digital delivery. Independent service,
-            not the Registrar.
+            Free Cyprus company search in plain English — no account, no fees, instant results. Check status, registry
+            number and registered office for any entity, then order official certificates, Company Profile Reports,
+            Credit Reports and Sanctions Snapshots with same-day digital delivery. Independent service, not the
+            Registrar.
           </p>
 
           <Link
