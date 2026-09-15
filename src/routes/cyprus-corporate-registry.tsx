@@ -9,9 +9,9 @@ import {
   type FilingEntry,
 } from "@/lib/registry-filings.functions";
 
-const TITLE = "Cyprus Corporate Registry — Free Cyprus Company Register Search";
+const TITLE = "Cyprus Company Search — Free Cyprus Corporate Registry";
 const DESCRIPTION =
-  "Search the Cyprus corporate registry free — no account needed. The Cyprus company register with daily filings: new incorporations and status changes recorded by the Registrar of Companies.";
+  "Free Cyprus company search across the Cyprus corporate registry — Nicosia, Limassol, Larnaca, Paphos, Famagusta and Kyrenia. Daily filings, no account needed.";
 const CANONICAL = "https://companieshousecyprus.com/cyprus-corporate-registry";
 
 const FAQS = [
