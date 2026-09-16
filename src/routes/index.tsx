@@ -170,16 +170,16 @@ function HomePage() {
           </span>
 
           <h1 className="mt-8 text-4xl font-bold leading-[1.12] tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-            Companies House Cyprus: <span className="text-gradient-copper">free Cyprus company search, official documents delivered digitally.</span>
+            Companies House Cyprus: <span className="text-gradient-copper">search the Cyprus company register free, official documents delivered digitally.</span>
           </h1>
 
 
 
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
-            Free Cyprus company search in plain English — no account, no fees, instant results. Check status, registry
-            number and registered office for any entity, then order official certificates, Company Profile Reports,
-            Credit Reports and Sanctions Snapshots with same-day digital delivery. Independent service, not the
+            Search the Cyprus company register in plain English — no account, no fees, instant results. Check status,
+            registry number and registered office for any entity, then order official documents: certificates, Company
+            Profile Reports, Credit Reports and Sanctions Snapshots, delivered digitally. Independent service, not the
             Registrar.
           </p>
 
