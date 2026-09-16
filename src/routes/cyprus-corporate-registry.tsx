@@ -333,29 +333,6 @@ function CorporateRegistryPage() {
         </section>
 
         <section>
-          <h2 className="font-heading text-2xl">Cyprus company search by district</h2>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Each entity on the Cyprus corporate registry records the district of its registered
-            office. Browse the companies registered in each Cyprus district, or search by name above
-            and open any profile for its registered address.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {["nicosia", "limassol", "larnaca", "paphos", "famagusta", "kyrenia"].map((district) => (
-              <Link
-                key={district}
-                to="/companies/city/$district"
-                params={{ district }}
-                className="rounded-md border bg-card px-3 py-2 text-sm capitalize transition-colors hover:bg-muted/60"
-              >
-                Companies in {district}
-              </Link>
-            ))}
-          </div>
-        </section>
-
-
-
-        <section>
           <h2 className="font-heading text-2xl">Cyprus corporate registry FAQs</h2>
           <div className="mt-5 space-y-4">
             {FAQS.map((faq) => (
