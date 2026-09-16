@@ -49,7 +49,7 @@ const FAQS = [
   },
   {
     q: "Can I search Cyprus companies by city or district?",
-    a: "Yes. Every entity on the register carries the district of its registered office — Nicosia, Limassol, Larnaca, Paphos, Famagusta or Kyrenia — and you can browse the companies registered in each district, or filter a name search by district.",
+    a: "Yes. Every entity on the register carries the district of its registered office — Nicosia, Limassol, Larnaca, Paphos, Famagusta or Kyrenia — and you can filter a name search by district, or open any company profile to see its registered address.",
   },
   {
     q: "How do I get official documents for a company I find here?",
@@ -331,29 +331,6 @@ function CorporateRegistryPage() {
             Lists show up to 60 entities per date. Use the search above to find any other entity.
           </p>
         </section>
-
-        <section>
-          <h2 className="font-heading text-2xl">Cyprus company search by district</h2>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Each entity on the Cyprus corporate registry records the district of its registered
-            office. Browse the companies registered in each Cyprus district, or search by name above
-            and open any profile for its registered address.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {["nicosia", "limassol", "larnaca", "paphos", "famagusta", "kyrenia"].map((district) => (
-              <Link
-                key={district}
-                to="/companies/city/$district"
-                params={{ district }}
-                className="rounded-md border bg-card px-3 py-2 text-sm capitalize transition-colors hover:bg-muted/60"
-              >
-                Companies in {district}
-              </Link>
-            ))}
-          </div>
-        </section>
-
-
 
         <section>
           <h2 className="font-heading text-2xl">Cyprus corporate registry FAQs</h2>
