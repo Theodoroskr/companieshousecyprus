@@ -15,7 +15,7 @@ describe("homepage head metadata", () => {
       "Companies House Cyprus — Free Cyprus Company Register Search",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Search the Cyprus company register free — 571,000+ official Registrar records in English, no account needed. Order official documents and certificates, delivered digitally.",
+      "Search the Cyprus company register free — 571,000+ Registrar records in English, no account. Official documents and certificates delivered digitally, same day.",
     );
 
 
