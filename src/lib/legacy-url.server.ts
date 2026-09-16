@@ -42,10 +42,14 @@ export async function resolveLegacyCompanySlug(token: string | null): Promise<st
     const supabase = client();
     const { data } = await supabase
       .from("companies")
-      .select("slug")
+      .select("slug, canonical_slug")
       .in("slug", candidates)
       .limit(1);
-    return data?.[0]?.slug ?? null;
+    const row = data?.[0];
+    if (!row) return null;
+    // Redirect straight to the canonical name-based slug so Google sees a
+    // single hop instead of a chain (legacy -> key slug -> canonical slug).
+    return row.canonical_slug || row.slug;
   } catch (error) {
     console.error("legacy slug resolution failed", error);
     return null;
