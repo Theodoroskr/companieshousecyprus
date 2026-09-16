@@ -49,7 +49,7 @@ const FAQS = [
   },
   {
     q: "Can I search Cyprus companies by city or district?",
-    a: "Yes. Every entity on the register carries the district of its registered office — Nicosia, Limassol, Larnaca, Paphos, Famagusta or Kyrenia — and you can browse the companies registered in each district, or filter a name search by district.",
+    a: "Yes. Every entity on the register carries the district of its registered office — Nicosia, Limassol, Larnaca, Paphos, Famagusta or Kyrenia — and you can filter a name search by district, or open any company profile to see its registered address.",
   },
   {
     q: "How do I get official documents for a company I find here?",
