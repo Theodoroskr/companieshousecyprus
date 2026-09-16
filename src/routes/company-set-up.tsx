@@ -34,7 +34,7 @@ import { trackEvent } from "@/lib/analytics";
 const TITLE = "Register a Company in Cyprus | Company Formation";
 const DESCRIPTION =
   "Learn how to register a company in Cyprus, what documents are required and request assistance from a Cyprus company-formation professional.";
-const CANONICAL = "https://companieshousecyprus.com/company-set-up/";
+const CANONICAL = "https://companieshousecyprus.com/company-set-up";
 
 const FAQS = [
   {

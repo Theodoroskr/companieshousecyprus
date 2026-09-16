@@ -73,7 +73,7 @@ export const LEGACY_REGISTRY_REDIRECTS: Record<string, string> = {
   "/home": "/",
   "/index.php": "/",
   "/index.html": "/",
-  "/company-formation": "/company-set-up/",
+  "/company-formation": "/company-set-up",
   "/company-registration": "/guides/register-company-cyprus",
   "/register-a-company": "/guides/register-company-cyprus",
   "/register-company-cyprus": "/guides/register-company-cyprus",
