@@ -18,6 +18,7 @@ export const Route = createFileRoute("/report/$type")({
     }
     const { product } = loaderData;
     const title = `${product.name} for Cyprus companies — ${formatPrice(product.price)}`;
+    const url = `https://companieshousecyprus.com/report/${product.slug}`;
     return {
       meta: [
         { title },
@@ -26,11 +27,28 @@ export const Route = createFileRoute("/report/$type")({
         { property: "og:description", content: product.tagline },
         { property: "og:type", content: "product" },
         { name: "twitter:card", content: "summary_large_image" },
-        { property: "og:url", content: `/report/${product.slug}` },
+        { property: "og:url", content: url },
       ],
-      links: [{ rel: "canonical", href: `/report/${product.slug}` }],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(productJsonLd(product)),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Products", path: "/pricing" },
+              { name: product.name, path: `/report/${product.slug}` },
+            ]),
+          ),
+        },
+      ],
     };
   },
+
   notFoundComponent: ProductNotFound,
   component: ReportPage,
 });
