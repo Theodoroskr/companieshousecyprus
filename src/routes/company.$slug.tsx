@@ -339,6 +339,16 @@ export const Route = createFileRoute("/company/$slug")({
         },
         {
           type: "application/ld+json",
+          children: JSON.stringify(
+            companyProfilePageJsonLd(
+              { name: loaderData.name, officialNo: loaderData.officialNo, updatedAt: loaderData.updatedAt },
+              canonicalSlug,
+            ),
+          ),
+        },
+
+        {
+          type: "application/ld+json",
           children: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
