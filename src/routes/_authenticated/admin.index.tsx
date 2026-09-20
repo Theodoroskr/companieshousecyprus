@@ -154,7 +154,7 @@ function AdminDashboardPage() {
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight">Support dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            {orders.length} orders in the selected period ({allOrders.length} loaded).
+            {countedOrders.length} counted orders in the selected period ({orders.length - countedOrders.length} excluded: cancelled / awaiting payment · {allOrders.length} loaded).
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
