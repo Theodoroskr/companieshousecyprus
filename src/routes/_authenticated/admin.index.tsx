@@ -84,16 +84,19 @@ function AdminDashboardPage() {
     [allOrders, from, to],
   );
 
-  const open = orders.filter(isOpen);
-  const newOrders = orders.filter((o) => o.status === "paid" || o.status === "awaiting_payment");
-  const processing = orders.filter((o) => o.status === "processing");
+  const countedOrders = useMemo(
+    () => orders.filter((o) => o.status !== "cancelled" && o.status !== "awaiting_payment"),
+    [orders],
+  );
+
+  const open = countedOrders.filter(isOpen);
+  const newOrders = countedOrders.filter((o) => o.status === "paid");
+  const processing = countedOrders.filter((o) => o.status === "processing");
   const overdue = open.filter((o) => o.due_date && o.due_date < today);
   const dueToday = open.filter((o) => o.due_date === today);
-  const delivered = orders.filter((o) => o.status === "delivered");
+  const delivered = countedOrders.filter((o) => o.status === "delivered");
   const openValue = open.reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
-  const paidValue = orders
-    .filter((o) => o.status !== "awaiting_payment" && o.status !== "cancelled")
-    .reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
+  const paidValue = countedOrders.reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
   const missingDue = open.filter((o) => !o.due_date);
 
   const stats = useMemo(() => {
