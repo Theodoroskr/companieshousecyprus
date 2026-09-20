@@ -151,7 +151,46 @@ export const Route = createFileRoute("/search")({
             ],
           }),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://companieshousecyprus.com/" },
+              { "@type": "ListItem", position: 2, name: "Cyprus company register search", item: url },
+            ],
+          }),
+        },
+        // Result-set description for query states (noindex, but still parsed
+        // by crawlers and assistants that fetch the URL directly).
+        ...(hasQuery && (loaderData?.results.length ?? 0) > 0
+          ? [
+              {
+                type: "application/ld+json",
+                children: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "SearchResultsPage",
+                  url: `${url}?q=${encodeURIComponent(loaderData!.query)}`,
+                  name: `Cyprus company register results for “${loaderData!.query}”`,
+                  isPartOf: { "@type": "WebSite", "@id": "https://companieshousecyprus.com/#website" },
+                  mainEntity: {
+                    "@type": "ItemList",
+                    numberOfItems: loaderData!.total,
+                    itemListOrder: "https://schema.org/ItemListOrderAscending",
+                    itemListElement: loaderData!.results.map((row, index) => ({
+                      "@type": "ListItem",
+                      position: index + 1,
+                      name: row.name,
+                      url: `https://companieshousecyprus.com/company/${row.slug}`,
+                    })),
+                  },
+                }),
+              },
+            ]
+          : []),
       ],
+
     };
   },
 
