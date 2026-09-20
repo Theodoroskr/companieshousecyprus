@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
-import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
+import { companyOrganizationJsonLd, companyProfilePageJsonLd } from "@/lib/seo/company-jsonld";
 import { setCompanyPageCacheHeaders, setNoStoreHeaders } from "@/lib/http-cache";
 
 
