@@ -15,7 +15,7 @@ describe("homepage head metadata", () => {
       "Companies House Cyprus — Free Cyprus Company Search, No Account",
     );
     expect(HOME_DESCRIPTION).toBe(
-      "Search 571,000+ Cyprus companies free — instant results in English, no account needed. Official certificates and company reports delivered digitally, same day.",
+      "Companies House Cyprus: search 571,000+ companies free — instant results in English, no account needed. Official documents delivered digitally, same day.",
     );
     expect(HOME_DESCRIPTION).toContain("Companies House Cyprus");
 
