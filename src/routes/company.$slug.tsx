@@ -260,6 +260,8 @@ export const Route = createFileRoute("/company/$slug")({
       directorNames,
       faq,
       similar: similarData?.similar ?? [],
+      updatedAt: c.updated_at ? new Date(c.updated_at).toISOString() : null,
+
     };
   },
 
