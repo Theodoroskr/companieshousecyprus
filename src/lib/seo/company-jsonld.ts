@@ -93,3 +93,27 @@ export function companyOrganizationJsonLd(company: CompanyJsonLdInput, canonical
     },
   };
 }
+
+/**
+ * ProfilePage wrapper for a company page: tells Google what the page is,
+ * who publishes it and when the registry data was last refreshed.
+ */
+export function companyProfilePageJsonLd(
+  company: { name: string; officialNo?: string | null; updatedAt?: string | null },
+  canonicalSlug: string,
+) {
+  const url = `${SITE}/company/${canonicalSlug}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "@id": url,
+    url,
+    name: company.officialNo ? `${company.name} (${company.officialNo})` : company.name,
+    inLanguage: "en",
+    isPartOf: { "@type": "WebSite", "@id": `${SITE}/#website`, url: SITE, name: "Companies House Cyprus" },
+    mainEntity: { "@id": `${url}#organization` },
+    ...(company.updatedAt ? { dateModified: company.updatedAt } : {}),
+    publisher: { "@type": "Organization", "@id": `${SITE}/#organization`, name: "Companies House Cyprus", url: SITE },
+    about: { "@id": `${url}#organization` },
+  };
+}

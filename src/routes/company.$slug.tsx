@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
 import { companyDescription, companyTitle } from "@/lib/seo/company-meta";
-import { companyOrganizationJsonLd } from "@/lib/seo/company-jsonld";
+import { companyOrganizationJsonLd, companyProfilePageJsonLd } from "@/lib/seo/company-jsonld";
 import { setCompanyPageCacheHeaders, setNoStoreHeaders } from "@/lib/http-cache";
 
 
@@ -260,6 +260,8 @@ export const Route = createFileRoute("/company/$slug")({
       directorNames,
       faq,
       similar: similarData?.similar ?? [],
+      updatedAt: c.updated_at ? new Date(c.updated_at).toISOString() : null,
+
     };
   },
 
@@ -335,6 +337,16 @@ export const Route = createFileRoute("/company/$slug")({
           type: "application/ld+json",
           children: JSON.stringify(companyOrganizationJsonLd(loaderData, canonicalSlug)),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(
+            companyProfilePageJsonLd(
+              { name: loaderData.name, officialNo: loaderData.officialNo, updatedAt: loaderData.updatedAt },
+              canonicalSlug,
+            ),
+          ),
+        },
+
         {
           type: "application/ld+json",
           children: JSON.stringify({

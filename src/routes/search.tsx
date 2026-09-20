@@ -62,7 +62,7 @@ export const Route = createFileRoute("/search")({
     status: search.status ?? "",
   }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(
+    const data = await context.queryClient.ensureQueryData(
       searchQueryOptions(
         deps.q,
         deps.page,
@@ -70,10 +70,19 @@ export const Route = createFileRoute("/search")({
         deps.status ? deps.status.split(",") : [],
       ),
     );
-    return { hasQuery: deps.q.trim().length > 0 };
+    return {
+      hasQuery: deps.q.trim().length > 0,
+      query: deps.q.trim(),
+      total: data.count,
+      results: data.rows.slice(0, 10).map((row) => ({
+        name: row.name,
+        slug: companyCanonicalSlug(row),
+      })),
+    };
   },
   head: ({ loaderData }) => {
     const hasQuery = loaderData?.hasQuery ?? false;
+
     const title = "Cyprus Corporate Registry Search — Cyprus Company Register";
     const description =
       "Search the Cyprus corporate registry free: 571,000+ company register records from the Registrar of Companies — HE number, status, officers and registered office.";
@@ -142,7 +151,46 @@ export const Route = createFileRoute("/search")({
             ],
           }),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://companieshousecyprus.com/" },
+              { "@type": "ListItem", position: 2, name: "Cyprus company register search", item: url },
+            ],
+          }),
+        },
+        // Result-set description for query states (noindex, but still parsed
+        // by crawlers and assistants that fetch the URL directly).
+        ...(hasQuery && (loaderData?.results.length ?? 0) > 0
+          ? [
+              {
+                type: "application/ld+json",
+                children: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "SearchResultsPage",
+                  url: `${url}?q=${encodeURIComponent(loaderData!.query)}`,
+                  name: `Cyprus company register results for “${loaderData!.query}”`,
+                  isPartOf: { "@type": "WebSite", "@id": "https://companieshousecyprus.com/#website" },
+                  mainEntity: {
+                    "@type": "ItemList",
+                    numberOfItems: loaderData!.total,
+                    itemListOrder: "https://schema.org/ItemListOrderAscending",
+                    itemListElement: loaderData!.results.map((row, index) => ({
+                      "@type": "ListItem",
+                      position: index + 1,
+                      name: row.name,
+                      url: `https://companieshousecyprus.com/company/${row.slug}`,
+                    })),
+                  },
+                }),
+              },
+            ]
+          : []),
       ],
+
     };
   },
 
