@@ -5,6 +5,8 @@ import { PRODUCTS, PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
 import { priceBreakdown, CERTIFICATE_SERVICE_FEE, VAT_RATE } from "@/lib/pricing";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
+import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/product-jsonld";
+
 
 export const Route = createFileRoute("/report/$type")({
   loader: ({ params }) => {
