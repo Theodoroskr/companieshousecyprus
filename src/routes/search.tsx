@@ -62,7 +62,7 @@ export const Route = createFileRoute("/search")({
     status: search.status ?? "",
   }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(
+    const data = await context.queryClient.ensureQueryData(
       searchQueryOptions(
         deps.q,
         deps.page,
@@ -70,10 +70,19 @@ export const Route = createFileRoute("/search")({
         deps.status ? deps.status.split(",") : [],
       ),
     );
-    return { hasQuery: deps.q.trim().length > 0 };
+    return {
+      hasQuery: deps.q.trim().length > 0,
+      query: deps.q.trim(),
+      total: data.count,
+      results: data.rows.slice(0, 10).map((row) => ({
+        name: row.name,
+        slug: companyCanonicalSlug(row),
+      })),
+    };
   },
   head: ({ loaderData }) => {
     const hasQuery = loaderData?.hasQuery ?? false;
+
     const title = "Cyprus Corporate Registry Search — Cyprus Company Register";
     const description =
       "Search the Cyprus corporate registry free: 571,000+ company register records from the Registrar of Companies — HE number, status, officers and registered office.";
