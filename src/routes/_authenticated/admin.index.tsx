@@ -100,7 +100,7 @@ function AdminDashboardPage() {
   const missingDue = open.filter((o) => !o.due_date);
 
   const stats = useMemo(() => {
-    const items = orders.flatMap((o) => o.order_items ?? []);
+    const items = countedOrders.flatMap((o) => o.order_items ?? []);
     const requests = items.reduce((sum, i) => sum + (i.quantity ?? 1), 0);
     const byProduct = new Map<string, { count: number; value: number }>();
     for (const i of items) {
@@ -115,7 +115,7 @@ function AdminDashboardPage() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
 
-    const turnarounds = orders
+    const turnarounds = countedOrders
       .filter((o) => o.status === "delivered" && o.delivered_at && o.created_at)
       .map(
         (o) =>
@@ -126,24 +126,25 @@ function AdminDashboardPage() {
       ? turnarounds.reduce((a, b) => a + b, 0) / turnarounds.length
       : null;
 
-    const statusCounts = orders.reduce<Record<string, number>>((acc, o) => {
+    const statusCounts = countedOrders.reduce<Record<string, number>>((acc, o) => {
       acc[o.status] = (acc[o.status] ?? 0) + 1;
       return acc;
     }, {});
 
-    const paidOrders = orders.filter((o) => o.status !== "awaiting_payment" && o.status !== "cancelled");
-    const avgOrderValue = paidOrders.length
-      ? paidOrders.reduce((s, o) => s + (o.total_cents ?? 0), 0) / paidOrders.length
+    const avgOrderValue = countedOrders.length
+      ? countedOrders.reduce((s, o) => s + (o.total_cents ?? 0), 0) / countedOrders.length
       : 0;
 
     const deliveredCount = delivered.length;
-    const completionRate = orders.length ? Math.round((deliveredCount / orders.length) * 100) : 0;
+    const completionRate = countedOrders.length
+      ? Math.round((deliveredCount / countedOrders.length) * 100)
+      : 0;
 
     return { requests, topProducts, avgTurnaround, statusCounts, avgOrderValue, completionRate, items: items.length };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orders]);
+  }, [countedOrders, delivered.length]);
 
-  const attention = [...overdue, ...dueToday, ...newOrders.filter((o) => o.status === "paid")]
+  const attention = [...overdue, ...dueToday, ...newOrders]
     .filter((o, i, arr) => arr.findIndex((x) => x.id === o.id) === i)
     .slice(0, 12);
 
