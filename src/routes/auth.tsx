@@ -109,11 +109,30 @@ function AuthPage() {
     };
   }, [navigate, redirect]);
 
+  /** Transient network blips on the verification call showed up to clients as a bare
+   *  "Failed to fetch". Retry once, then explain what to do in plain language. */
+  const runChallenge = async () => {
+    try {
+      await verifyChallenge({ data: { mode, token: captchaToken } });
+    } catch (error) {
+      const networkIssue = error instanceof TypeError || /failed to fetch|network/i.test(String((error as Error)?.message ?? ""));
+      if (!networkIssue) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      try {
+        await verifyChallenge({ data: { mode, token: captchaToken } });
+      } catch {
+        throw new Error(
+          "We could not reach our verification service. Please check your connection (or try another browser or network) and submit again.",
+        );
+      }
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      await verifyChallenge({ data: { mode, token: captchaToken } });
+      await runChallenge();
       if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
 
