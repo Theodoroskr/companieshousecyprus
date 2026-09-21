@@ -297,6 +297,28 @@ export async function setOrderStatus(reference: string, status: string) {
   return { ok: true as const };
 }
 
+/**
+ * Support tool: re-send the delivered-order email (with fresh 7-day download
+ * links) for an order the client cannot reach in the portal.
+ */
+export async function resendOrderDocuments(reference: string) {
+  const supabase = ordersClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, reference, access_token, full_name, email")
+    .eq("reference", reference.trim())
+    .maybeSingle();
+  if (!order) throw new Error("Order not found");
+  if (!order.email) throw new Error("This order has no email address");
+  await notifyOrderDelivered(order.id, {
+    reference: order.reference,
+    access_token: order.access_token,
+    full_name: order.full_name,
+    email: order.email,
+  });
+  return { emailed: true as const, to: order.email };
+}
+
 /** Collect every uploaded document for an order, sign it, and email the client. */
 async function notifyOrderDelivered(
   orderId: string,
