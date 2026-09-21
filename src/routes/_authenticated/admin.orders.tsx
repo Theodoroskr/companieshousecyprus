@@ -14,6 +14,7 @@ import {
   adminUploadItemDocument,
   adminCreateApostilleOrder,
   adminResendPaymentRequest,
+  adminResendDocuments,
 } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
@@ -94,6 +95,7 @@ function AdminOrdersPage() {
   const deleteDocument = useServerFn(adminDeleteItemDocument);
   const createApostille = useServerFn(adminCreateApostilleOrder);
   const resendPaymentRequest = useServerFn(adminResendPaymentRequest);
+  const resendDocuments = useServerFn(adminResendDocuments);
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
   const [notify, setNotify] = useState(true);
@@ -192,6 +194,12 @@ function AdminOrdersPage() {
     onSuccess: (result) =>
       setMessage(result.emailed ? "Payment request resent." : "The payment request email could not be sent."),
     onError: (error) => setMessage(error instanceof Error ? error.message : "Could not resend the payment request"),
+  });
+
+  const resendDocsMutation = useMutation({
+    mutationFn: (reference: string) => resendDocuments({ data: { reference } }),
+    onSuccess: (result) => setMessage(`Documents emailed to ${result.to} with 7-day download links.`),
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Could not resend the documents"),
   });
 
   const today = todayISO();
