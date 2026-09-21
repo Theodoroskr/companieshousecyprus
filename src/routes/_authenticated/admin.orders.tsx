@@ -362,6 +362,21 @@ function AdminOrdersPage() {
                       Resend payment link
                     </Button>
                   )}
+                {(order.order_items ?? []).some((item) => item.document_path) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={resendDocsMutation.isPending}
+                    onClick={() => resendDocsMutation.mutate(order.reference)}
+                  >
+                    {resendDocsMutation.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Send className="size-4" />
+                    )}
+                    Email documents
+                  </Button>
+                )}
               </div>
             </div>
 
