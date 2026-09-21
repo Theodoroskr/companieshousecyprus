@@ -35,7 +35,7 @@ export function productJsonLd(product: Product) {
     description: product.tagline,
     url,
     category: product.category,
-    brand: PUBLISHER_JSONLD,
+    brand: { "@type": "Brand", name: "Companies House Cyprus" },
     offers: {
       "@type": "Offer",
       url,
