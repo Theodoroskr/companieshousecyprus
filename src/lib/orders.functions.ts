@@ -410,3 +410,17 @@ export const adminResendPaymentRequest = createServerFn({ method: "POST" })
     const { sendApostillePaymentRequest } = await import("@/lib/orders.server");
     return { emailed: await sendApostillePaymentRequest(data.reference.trim(), { resend: true }) };
   });
+
+/** Admin/support: re-send the delivered documents email with fresh download links. */
+export const adminResendDocuments = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string }) => {
+    if (!data.reference?.trim()) throw new Error("Missing order reference");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { resendOrderDocuments } = await import("@/lib/orders.server");
+    return resendOrderDocuments(data.reference.trim());
+  });
