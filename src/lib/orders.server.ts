@@ -310,20 +310,27 @@ export async function resendOrderDocuments(reference: string) {
     .maybeSingle();
   if (!order) throw new Error("Order not found");
   if (!order.email) throw new Error("This order has no email address");
-  await notifyOrderDelivered(order.id, {
+  const result = await notifyOrderDelivered(order.id, {
     reference: order.reference,
     access_token: order.access_token,
     full_name: order.full_name,
     email: order.email,
   });
-  return { emailed: true as const, to: order.email };
+  if (!result.ok) throw new Error(result.error ?? "The email could not be sent");
+  if (result.documents === 0) throw new Error("This order has no uploaded documents to send");
+  return {
+    emailed: true as const,
+    to: order.email,
+    documents: result.documents,
+    unavailable: result.unavailable,
+  };
 }
 
 /** Collect every uploaded document for an order, sign it, and email the client. */
 async function notifyOrderDelivered(
   orderId: string,
   order: { reference: string; access_token?: string | null; full_name?: string | null; email?: string | null },
-) {
+): Promise<{ ok: boolean; error?: string; documents: number; unavailable: number }> {
   try {
     const supabase = ordersClient();
     const { data: items } = await supabase
@@ -345,8 +352,19 @@ async function notifyOrderDelivered(
 
     const { sendOrderDeliveredEmail } = await import("@/lib/order-emails.server");
     await sendOrderDeliveredEmail(order, documents, items ?? []);
+    return {
+      ok: true,
+      documents: documents.length,
+      unavailable: documents.filter((d) => !d.url).length,
+    };
   } catch (error) {
     console.error("Delivered notification failed", order.reference, error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      documents: 0,
+      unavailable: 0,
+    };
   }
 }
 

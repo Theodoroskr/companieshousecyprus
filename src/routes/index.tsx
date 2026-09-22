@@ -180,7 +180,8 @@ function HomePage() {
             Companies House Cyprus — also searched as Cyprus Companies House — lets you search 571,000+ Cyprus
             companies in plain English: no account, no fees, instant results. Check status, registry number and
             registered office for any entity, then order official documents: certificates, Company Profile Reports,
-            Credit Reports and Sanctions Snapshots, delivered digitally the same day. Independent service, not the Registrar.
+            Credit Reports and Sanctions Snapshots, delivered digitally in 1–2 business days (Sanctions Snapshots same
+            day). Independent service, not the Registrar.
           </p>
 
           <Link

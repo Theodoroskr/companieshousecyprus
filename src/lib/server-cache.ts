@@ -47,7 +47,15 @@ export async function cached<T>(
     return entry.value;
   }
 
-  const value = await loader();
+  let value: T;
+  try {
+    value = await loader();
+  } catch (error) {
+    // Backend blips (statement timeouts, 522s) should not blank a page that
+    // we already rendered successfully: serve the last known value instead.
+    if (entry) return entry.value;
+    throw error;
+  }
   if (store.size >= MAX_ENTRIES) store.clear();
   store.set(key, { value, expires: now + ttlMs, staleUntil: now + ttlMs + staleMs });
   return value;

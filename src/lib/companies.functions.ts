@@ -373,7 +373,9 @@ export const listCompaniesByDistrict = createServerFn({ method: "GET" })
           "slug, canonical_slug, type_code, name, official_no, reg_number, status_en, status_group, district_en, locality",
           { count: "exact" },
         )
-        .eq("district_en", district)
+        // District arrives from URLs in lowercase ("limassol"); stored values
+        // are capitalised ("Limassol"), so match case-insensitively.
+        .ilike("district_en", district)
         .order("name", { ascending: true })
         .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
       return { rows: (res.data ?? []) as CompanyListItem[], count: res.count ?? 0 };

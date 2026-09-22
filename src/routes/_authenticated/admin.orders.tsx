@@ -198,7 +198,12 @@ function AdminOrdersPage() {
 
   const resendDocsMutation = useMutation({
     mutationFn: (reference: string) => resendDocuments({ data: { reference } }),
-    onSuccess: (result) => setMessage(`Documents emailed to ${result.to} with 7-day download links.`),
+    onSuccess: (result) =>
+      setMessage(
+        result.unavailable > 0
+          ? `Emailed ${result.to}, but ${result.unavailable} of ${result.documents} download link(s) could not be generated — check the files and resend.`
+          : `Documents emailed to ${result.to} with 7-day download links.`,
+      ),
     onError: (error) => setMessage(error instanceof Error ? error.message : "Could not resend the documents"),
   });
 
