@@ -387,6 +387,31 @@ function AdminOrdersPage() {
 
             {order.notes && <p className="mt-3 rounded-md bg-muted/40 p-3 text-sm">{order.notes}</p>}
 
+            <dl className="mt-4 grid gap-x-6 gap-y-2 border-y py-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Documents</dt>
+                <dd className="font-medium">{euros(order.subtotal_cents)}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Service fee</dt>
+                <dd className="font-medium">{euros(order.service_fee_cents)}</dd>
+              </div>
+              {(order.apostille_fee_cents ?? 0) > 0 && (
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-muted-foreground">Apostille service</dt>
+                  <dd className="font-medium">{euros(order.apostille_fee_cents)}</dd>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">VAT (19%)</dt>
+                <dd className="font-medium">{euros(order.vat_cents)}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="font-semibold">Total</dt>
+                <dd className="font-semibold">{euros(order.total_cents)}</dd>
+              </div>
+            </dl>
+
             <div className="mt-4 grid gap-3 rounded-lg border bg-muted/20 p-3 sm:grid-cols-3">
               <label className="block text-xs">
                 <span className="block uppercase tracking-wide text-muted-foreground">Order date</span>
