@@ -6,7 +6,7 @@ export const HOME_TITLE =
   "Companies House Cyprus — Free Cyprus Company Search, No Account";
 
 export const HOME_DESCRIPTION =
-  "Companies House Cyprus: search 571,000+ companies free — instant results in English, no account. Official documents delivered digitally in 1–2 business days.";
+  "Companies House Cyprus: free Cyprus company search, 571,000+ companies, no account. Official documents delivered digitally in 1–2 business days.";
 
 
 
