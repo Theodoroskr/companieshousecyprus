@@ -625,7 +625,7 @@ function HomePage() {
       {/* FAQ */}
       <section className="mx-auto max-w-3xl px-4 py-20">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">FAQ</p>
-        <h2 className="mt-3 text-3xl font-bold text-foreground">Common questions about the Cyprus register</h2>
+        <h2 className="mt-3 text-3xl font-bold text-foreground">Cyprus Companies House: common questions about the register</h2>
         <dl className="mt-8 divide-y divide-border border-y">
           {FAQS.map((item) => (
             <div key={item.q} className="py-5">
