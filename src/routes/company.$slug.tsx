@@ -9,7 +9,7 @@ import { PRODUCTS, formatPrice } from "@/lib/products";
 import { COMPANY_PAGE_COPY } from "@/lib/sanctions/screening-scope";
 import { priceBreakdown } from "@/lib/pricing";
 import { OFFICIALS_ON_RECORD_DESCRIPTION, OFFICIALS_ON_RECORD_LABEL } from "@/lib/labels";
-import { companyAge, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
+import { companyAge, companySummarySentence, englishPlaceNames, displayOfficialNo, formatDate, isBusinessName, maskName, resolveAddressDisplay } from "@/lib/format";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { canonicalRedirectTarget, companyCanonicalSlug, normalizeCompanySlug } from "@/lib/slug";
 import { classifyLegacyPath, extractRegistryToken } from "@/lib/legacy-url";
@@ -376,7 +376,7 @@ export const Route = createFileRoute("/company/$slug")({
   errorComponent: ({ error }) => (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
       <h1 className="text-4xl font-bold">Unable to load company</h1>
-      <p className="mt-4 text-muted-foreground">{error.message}</p>
+      <p className="mt-4 text-muted-foreground">{error instanceof Error ? error.message : "Please try again."}</p>
       <Link to="/" className="mt-6 text-copper hover:underline">Back to Cyprus company search</Link>
     </div>
   ),
@@ -506,13 +506,16 @@ function CompanyPage() {
                 )}
               </div>
               <h1 className="max-w-5xl break-words font-display text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl lg:text-5xl">{company.name}</h1>
+              <p className="mt-3 max-w-4xl text-sm leading-relaxed text-primary-foreground/85 sm:text-base">
+                {companySummarySentence({ ...company, officialNo: displayOfficialNo(company) })}
+              </p>
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-primary-foreground/70 sm:text-sm">
                 <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 shrink-0 text-copper" />{displayOfficialNo(company)}</span>
                 {registrationDate && (
                   <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0 text-copper" />Registered {registrationDate}</span>
                 )}
                 {company.district_en && (
-                  <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="size-4 shrink-0 text-copper" /><span className="truncate">{company.district_en}, Cyprus</span></span>
+                  <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="size-4 shrink-0 text-copper" /><span className="truncate">{englishPlaceNames(company.district_en)}, Cyprus</span></span>
                 )}
               </p>
             </div>
