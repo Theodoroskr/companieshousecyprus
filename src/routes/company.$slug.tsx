@@ -506,13 +506,16 @@ function CompanyPage() {
                 )}
               </div>
               <h1 className="max-w-5xl break-words font-display text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl lg:text-5xl">{company.name}</h1>
+              <p className="mt-3 max-w-4xl text-sm leading-relaxed text-primary-foreground/85 sm:text-base">
+                {companySummarySentence({ ...company, officialNo: displayOfficialNo(company) })}
+              </p>
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-primary-foreground/70 sm:text-sm">
                 <span className="inline-flex items-center gap-1.5"><FileCheck2 className="size-4 shrink-0 text-copper" />{displayOfficialNo(company)}</span>
                 {registrationDate && (
                   <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0 text-copper" />Registered {registrationDate}</span>
                 )}
                 {company.district_en && (
-                  <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="size-4 shrink-0 text-copper" /><span className="truncate">{company.district_en}, Cyprus</span></span>
+                  <span className="inline-flex min-w-0 items-center gap-1.5"><MapPin className="size-4 shrink-0 text-copper" /><span className="truncate">{englishPlaceNames(company.district_en)}, Cyprus</span></span>
                 )}
               </p>
             </div>

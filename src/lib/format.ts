@@ -167,6 +167,45 @@ export type AddressDisplay = {
  * only shown as a secondary line when it differs from the primary form, so a
  * non-Greek or already-Latin address never renders twice.
  */
+const PLACE_NAMES: Array<[RegExp, string]> = [
+  [/\b(?:Levkosia|Lefkosia|Lefkosa)\b/gi, "Nicosia"],
+  [/\b(?:Lemesos|Lemesós)\b/gi, "Limassol"],
+  [/\bLarnaka\b/gi, "Larnaca"],
+  [/\b(?:Pafos|Pafo)\b/gi, "Paphos"],
+  [/\b(?:Ammochostos|Ammochostou|Famagousta)\b/gi, "Famagusta"],
+  [/\b(?:Keryneia|Kerynia|Girne)\b/gi, "Kyrenia"],
+];
+
+/** Replace official transliterations of Cyprus cities with their common English names. */
+export function englishPlaceNames(value: string): string {
+  const upper = value === value.toUpperCase();
+  return PLACE_NAMES.reduce(
+    (acc, [re, en]) => acc.replace(re, upper ? en.toUpperCase() : en),
+    value,
+  );
+}
+
+const SUMMARY_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/** One-sentence factual summary of a company, e.g. for the top of its profile. */
+export function companySummarySentence(c: {
+  name: string;
+  status_en?: string | null;
+  type_en?: string | null;
+  officialNo: string;
+  registration_date?: string | null;
+  district_en?: string | null;
+}): string {
+  const status = c.status_en ? c.status_en.toLowerCase() : "";
+  const type = (c.type_en ?? "company").toLowerCase();
+  const article = /^[aeiou]/.test(status || type) ? "an" : "a";
+  let s = `${c.name} is ${article} ${status ? status + " " : ""}${type} in Cyprus, registration number ${c.officialNo}`;
+  const m = c.registration_date ? /^(\d{4})-(\d{2})-(\d{2})/.exec(String(c.registration_date)) : null;
+  if (m) s += `, registered on ${Number(m[3])} ${SUMMARY_MONTHS[Number(m[2]) - 1]} ${m[1]}`;
+  if (c.district_en) s += ` in ${englishPlaceNames(c.district_en)}`;
+  return s + ".";
+}
+
 export function resolveAddressDisplay(company: {
   address_full?: string | null;
   building?: string | null;
@@ -192,7 +231,7 @@ export function resolveAddressDisplay(company: {
   const original = full ?? composed;
   if (!original) return null;
 
-  const latin = latinAddress(original) ?? original;
+  const latin = englishPlaceNames(latinAddress(original) ?? original);
   const differs = latin.toLocaleUpperCase() !== original.toLocaleUpperCase();
 
   return {
