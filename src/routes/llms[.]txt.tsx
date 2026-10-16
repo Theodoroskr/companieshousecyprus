@@ -33,7 +33,7 @@ Companies House Cyprus (https://companieshousecyprus.com) is an unofficial but a
 - Language: English (company names and registry data), Greek addresses transliterated to Latin where available
 - Coverage: ${coverage} from the Cyprus Registrar of Companies
 - Data source: Official Registrar of Companies records, refreshed through administrative imports and API4ALL integrations
-- Contact: info@companieshousecyprus.com | +357 22 398241
+- Contact: info@companieshousecyprus.com
 - Physical office: 1 Agiou Andreou Street, Limassol 3036, Cyprus
 
 ## Public pages

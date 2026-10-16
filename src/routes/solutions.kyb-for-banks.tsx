@@ -8,7 +8,6 @@ import {
   Building2,
   Scale,
   Clock,
-  Phone,
   Mail,
 } from "lucide-react";
 
@@ -275,13 +274,6 @@ function KybForBanksPage() {
             >
               <Mail className="size-4" />
               info@companieshousecyprus.com
-            </a>
-            <a
-              href="tel:+35722398241"
-              className="inline-flex items-center gap-2 text-primary-foreground/85 hover:text-primary-foreground"
-            >
-              <Phone className="size-4" />
-              +357 22 398241
             </a>
           </div>
         </section>

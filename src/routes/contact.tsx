@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { CheckCircle2, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { CheckCircle2, Clock, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitContactInquiry } from "@/lib/contact.functions";
 
@@ -145,15 +145,6 @@ function ContactPage() {
                 <span>
                   <span className="block font-medium">info@companieshousecyprus.com</span>
                   <span className="text-muted-foreground">Certificates and report orders</span>
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <Phone className="mt-0.5 size-4 text-copper" />
-                <span>
-                  <a href="tel:+35722398241" className="block font-medium hover:text-copper hover:underline">
-                    +357 22 398241
-                  </a>
-                  <span className="text-muted-foreground">Mon–Fri, 09:00–17:30 EET</span>
                 </span>
               </li>
               <li className="flex gap-3">
