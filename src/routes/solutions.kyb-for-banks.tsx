@@ -8,7 +8,6 @@ import {
   Building2,
   Scale,
   Clock,
-  Phone,
   Mail,
 } from "lucide-react";
 
