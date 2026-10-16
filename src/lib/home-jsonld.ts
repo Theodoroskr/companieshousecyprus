@@ -69,7 +69,6 @@ export function homeOrganizationJsonLd() {
     ],
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+35722398241",
       contactType: "customer service",
       email: "info@companieshousecyprus.com",
       availableLanguage: ["English", "Greek"],

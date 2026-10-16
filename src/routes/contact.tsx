@@ -148,15 +148,6 @@ function ContactPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <Phone className="mt-0.5 size-4 text-copper" />
-                <span>
-                  <a href="tel:+35722398241" className="block font-medium hover:text-copper hover:underline">
-                    +357 22 398241
-                  </a>
-                  <span className="text-muted-foreground">Mon–Fri, 09:00–17:30 EET</span>
-                </span>
-              </li>
-              <li className="flex gap-3">
                 <MapPin className="mt-0.5 size-4 text-copper" />
                 <span>
                   <span className="block font-medium">Nicosia, Cyprus</span>

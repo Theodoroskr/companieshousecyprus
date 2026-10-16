@@ -55,7 +55,6 @@ export const Route = createFileRoute("/about")({
               name: "Infocredit Group Ltd",
               url: "https://www.infocreditgroup.com/",
               foundingDate: "1972",
-              telephone: "+357 22 398241",
               email: "info@companieshousecyprus.com",
               address: {
                 "@type": "PostalAddress",
