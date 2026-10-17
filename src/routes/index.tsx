@@ -229,6 +229,15 @@ function HomePage() {
             </Link>
           </form>
 
+          <p className="mx-auto mt-6 max-w-2xl text-sm text-primary-foreground/70">
+            Operated by Infocredit Group Limited (HE4404), an independent service. Certificates are issued by the
+            Cyprus Registrar of Companies. See our{" "}
+            <Link to="/certifications" className="underline underline-offset-4 hover:text-primary-foreground">
+              management-system certifications
+            </Link>
+            .
+          </p>
+
           <dl className="mx-auto mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4 border-t border-primary-foreground/15 pt-8">
             {[
               [data.count === null ? "Register-wide" : data.count.toLocaleString(), "Companies indexed"],
