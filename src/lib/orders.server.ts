@@ -1340,3 +1340,83 @@ export async function sendApostillePaymentRequest(
     return false;
   }
 }
+
+/** Slug for admin-raised custom charges (courier, extra fees). Priced inline, no catalog price. */
+export const CUSTOM_CHARGE_SLUG = "custom-charge";
+
+/** VAT on a custom charge: 19% of net when enabled, rounded to the cent. */
+export function customChargeTotals(netCents: number, applyVat: boolean) {
+  const net = Math.max(0, Math.round(netCents));
+  const vat = applyVat ? Math.round(net * 0.19) : 0;
+  return { net, vat, total: net + vat };
+}
+
+/** Raises a payable order with a free-text description and amount for an existing customer order. */
+export async function createCustomChargeOrder(input: {
+  sourceReference: string;
+  description: string;
+  netCents: number;
+  applyVat: boolean;
+  notify?: boolean;
+}) {
+  const supabase = ordersClient();
+  const description = input.description.trim().slice(0, 200);
+  if (!description) throw new Error("Add a description");
+  const { net, vat, total } = customChargeTotals(input.netCents, input.applyVat);
+  if (total < 50) throw new Error("Amount must be at least €0.50");
+
+  const { data: source, error } = await supabase
+    .from("orders")
+    .select("reference, full_name, email, firm, vat_number, phone, user_id, order_items(company_slug, company_name, company_number)")
+    .eq("reference", input.sourceReference.trim().toUpperCase())
+    .maybeSingle();
+  if (error || !source) throw new Error(error?.message ?? "Original order not found");
+  const item = (source.order_items ?? [])[0];
+
+  const reference = makeReference();
+  const accessToken = randomToken();
+  const { data: order, error: insertError } = await supabase
+    .from("orders")
+    .insert({
+      reference,
+      access_token: accessToken,
+      user_id: source.user_id,
+      full_name: source.full_name,
+      email: source.email,
+      firm: source.firm,
+      vat_number: source.vat_number,
+      phone: source.phone,
+      notes: `${description} — follow-up charge for order ${source.reference}.`,
+      subtotal_cents: net,
+      service_fee_cents: 0,
+      apostille_fee_cents: 0,
+      vat_cents: vat,
+      total_cents: total,
+      status: "awaiting_payment",
+    })
+    .select("id, reference, access_token")
+    .single();
+  if (insertError || !order) throw new Error(insertError?.message ?? "Could not create the order");
+
+  const { error: itemError } = await supabase.from("order_items").insert({
+    order_id: order.id,
+    product_slug: CUSTOM_CHARGE_SLUG,
+    product_name: description,
+    company_slug: item?.company_slug ?? null,
+    company_name: item?.company_name ?? null,
+    company_number: item?.company_number ?? null,
+    quantity: 1,
+    document_price_cents: net,
+    service_fee_cents: 0,
+    apostille: false,
+    apostille_fee_cents: 0,
+    vat_cents: vat,
+    total_cents: total,
+    a4a_kind: null,
+    fulfilment_status: "pending",
+  });
+  if (itemError) throw new Error(itemError.message);
+
+  const emailed = input.notify === false ? false : await sendApostillePaymentRequest(order.reference);
+  return { reference: order.reference, token: order.access_token, emailed, total };
+}

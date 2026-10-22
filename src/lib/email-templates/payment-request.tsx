@@ -71,7 +71,7 @@ const Email = ({
         ) : null}
 
         <Text style={paragraph}>
-          A VAT receipt is issued automatically once the payment clears, and we begin the apostille process
+          A VAT receipt is issued automatically once the payment clears, and we proceed with your request
           immediately afterwards.
         </Text>
         <Text style={footer}>

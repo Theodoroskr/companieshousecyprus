@@ -424,3 +424,19 @@ export const adminResendDocuments = createServerFn({ method: "POST" })
     const { resendOrderDocuments } = await import("@/lib/orders.server");
     return resendOrderDocuments(data.reference.trim());
   });
+
+/** Admin/support: raise a custom payable charge (description, amount, optional VAT) linked to an order. */
+export const adminCreateCustomCharge = createServerFn({ method: "POST" })
+  .inputValidator((data: { reference: string; description: string; netCents: number; applyVat: boolean; notify?: boolean }) => {
+    if (!data.reference?.trim()) throw new Error("Missing order reference");
+    if (!data.description?.trim()) throw new Error("Add a description");
+    if (!Number.isFinite(data.netCents) || data.netCents <= 0 || data.netCents > 10_000_000) throw new Error("Invalid amount");
+    return data;
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertSupport } = await import("@/lib/admin.server");
+    await assertSupport(context.userId);
+    const { createCustomChargeOrder } = await import("@/lib/orders.server");
+    return createCustomChargeOrder({ sourceReference: data.reference, description: data.description, netCents: Math.round(data.netCents), applyVat: !!data.applyVat, notify: data.notify !== false });
+  });

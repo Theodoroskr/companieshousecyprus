@@ -85,6 +85,18 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
         const product = PRODUCTS.find((candidate) => candidate.slug === item.product_slug);
         const certificates = product ? certificateUnits(product) : 0;
 
+        if (item.product_slug === 'custom-charge') {
+          lineItems.push({
+            quantity: 1,
+            price_data: {
+              currency: 'eur',
+              unit_amount: (item as { document_price_cents?: number | null }).document_price_cents ?? 0,
+              product_data: { name: item.product_name, tax_code: 'txcd_10103001' },
+            },
+          });
+          continue;
+        }
+
         const productPriceId = await resolvePriceId(stripe, lookupKeyForProductSlug(item.product_slug));
         lineItems.push({
           price: productPriceId,
@@ -119,7 +131,7 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
             currency: 'eur',
             unit_amount: vatCents,
             product_data: {
-              name: 'VAT (19%) — service fee and reports',
+              name: items.some((i: { product_slug: string }) => i.product_slug === 'custom-charge') ? 'VAT (19%)' : 'VAT (19%) — service fee and reports',
               tax_code: 'txcd_10103001',
             },
           },
