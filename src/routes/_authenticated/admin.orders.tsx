@@ -15,6 +15,7 @@ import {
   adminCreateApostilleOrder,
   adminResendPaymentRequest,
   adminResendDocuments,
+  adminCreateCustomCharge,
 } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,12 @@ function AdminOrdersPage() {
   const createApostille = useServerFn(adminCreateApostilleOrder);
   const resendPaymentRequest = useServerFn(adminResendPaymentRequest);
   const resendDocuments = useServerFn(adminResendDocuments);
+  const createCustomCharge = useServerFn(adminCreateCustomCharge);
+  const [chargeFor, setChargeFor] = useState<string | null>(null);
+  const [chargeDesc, setChargeDesc] = useState("Courier delivery of physical documents");
+  const [chargeAmount, setChargeAmount] = useState("");
+  const [chargeVat, setChargeVat] = useState(true);
+  const [chargeLink, setChargeLink] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
   const [notify, setNotify] = useState(true);
@@ -187,6 +194,21 @@ function AdminOrdersPage() {
       void invalidate();
     },
     onError: (error) => setMessage(error instanceof Error ? error.message : "Could not create the apostille order"),
+  });
+
+  const customChargeMutation = useMutation({
+    mutationFn: (input: { reference: string; description: string; netCents: number; applyVat: boolean }) =>
+      createCustomCharge({ data: input }),
+    onSuccess: (result) => {
+      setChargeLink(`${window.location.origin}/order/${result.reference}?token=${result.token}`);
+      setMessage(
+        result.emailed
+          ? `Payment link ${result.reference} (${formatPrice(result.total / 100)}) created and emailed to the client.`
+          : `Payment link ${result.reference} created, but the email could not be sent. Copy the link below or resend.`,
+      );
+      void invalidate();
+    },
+    onError: (error) => setMessage(error instanceof Error ? error.message : "Could not create the payment link"),
   });
 
   const paymentRequestMutation = useMutation({
@@ -351,8 +373,60 @@ function AdminOrdersPage() {
                     Bill apostille
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setChargeFor(chargeFor === order.reference ? null : order.reference);
+                    setChargeLink(null);
+                  }}
+                >
+                  <Send className="size-4" />
+                  Payment link
+                </Button>
+                {chargeFor === order.reference && (() => {
+                  const net = Math.round((Number(chargeAmount.replace(",", ".")) || 0) * 100);
+                  const vat = chargeVat ? Math.round(net * 0.19) : 0;
+                  return (
+                    <div className="w-full space-y-2 rounded-md border border-border bg-muted/40 p-3 text-sm">
+                      <label className="block">
+                        <span className="text-muted-foreground">Description</span>
+                        <input value={chargeDesc} onChange={(e) => setChargeDesc(e.target.value)} maxLength={200}
+                          className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2" />
+                      </label>
+                      <div className="flex flex-wrap items-end gap-3">
+                        <label className="block">
+                          <span className="text-muted-foreground">Amount excl. VAT (€)</span>
+                          <input value={chargeAmount} onChange={(e) => setChargeAmount(e.target.value)} inputMode="decimal" placeholder="0.00"
+                            className="mt-1 h-9 w-32 rounded-md border border-input bg-background px-2" />
+                        </label>
+                        <label className="flex h-9 items-center gap-2">
+                          <input type="checkbox" checked={chargeVat} onChange={(e) => setChargeVat(e.target.checked)} />
+                          Add VAT 19%
+                        </label>
+                        <span className="h-9 leading-9 text-muted-foreground">
+                          Net {formatPrice(net / 100)} · VAT {formatPrice(vat / 100)} · <strong className="text-foreground">Total {formatPrice((net + vat) / 100)}</strong>
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button size="sm" disabled={customChargeMutation.isPending || net < 50 || !chargeDesc.trim()}
+                          onClick={() => {
+                            if (!window.confirm(`Create and email a payment link for ${formatPrice((net + vat) / 100)} to ${order.email}?`)) return;
+                            customChargeMutation.mutate({ reference: order.reference, description: chargeDesc, netCents: net, applyVat: chargeVat });
+                          }}>
+                          {customChargeMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                          Create & email link
+                        </Button>
+                        {chargeLink && (
+                          <Button size="sm" variant="outline" onClick={() => void navigator.clipboard.writeText(chargeLink)}>Copy link</Button>
+                        )}
+                      </div>
+                      {chargeLink && <p className="break-all text-xs text-muted-foreground">{chargeLink}</p>}
+                    </div>
+                  );
+                })()}
                 {order.status === "awaiting_payment" &&
-                  (order.order_items ?? []).some((item) => item.product_slug === "apostille-certification") && (
+                  (order.order_items ?? []).some((item) => item.product_slug === "apostille-certification" || item.product_slug === "custom-charge") && (
                     <Button
                       size="sm"
                       variant="outline"
