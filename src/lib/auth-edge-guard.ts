@@ -83,9 +83,10 @@ export function decideAuthGuard(request: Request, now: Date = new Date()): Guard
   const url = new URL(request.url);
   const country = (request.headers.get("cf-ipcountry") ?? "").toUpperCase();
 
-  // Hard geo-block: every CN request to the login surfaces gets a 403,
-  // regardless of cookies, referrer, method or hit count.
-  if (BLOCKED_PATHS.has(url.pathname) && BLOCKED_COUNTRIES.has(country)) return "block";
+  // Hard geo-block: every request from a blocked country gets a 403 on every
+  // path, regardless of cookies, referrer, method or hit count.
+  if (BLOCKED_COUNTRIES.has(country)) return "block";
+  void BLOCKED_PATHS;
 
   if (!GUARDED_PATHS.has(url.pathname)) return "allow";
   if (!isDocumentRequest(request)) return "allow";

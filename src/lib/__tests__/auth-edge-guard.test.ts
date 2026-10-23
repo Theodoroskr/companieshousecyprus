@@ -41,9 +41,10 @@ describe("auth edge guard", () => {
     expect(decideAuthGuard(req({ "cf-ipcountry": "CN", accept: "text/html" }, "/login", "POST"))).toBe("block");
   });
 
-  it("does not block CN on other paths", () => {
-    expect(decideAuthGuard(req({ "cf-ipcountry": "CN", accept: "text/html" }, "/"))).toBe("allow");
-    expect(decideAuthGuard(req({ "cf-ipcountry": "CN", accept: "text/html" }, "/reset-password"))).toBe("allow");
+  it("blocks CN on every path site-wide", () => {
+    expect(decideAuthGuard(req({ "cf-ipcountry": "CN", accept: "text/html" }, "/"))).toBe("block");
+    expect(decideAuthGuard(req({ "cf-ipcountry": "CN", accept: "text/html" }, "/company/acme-ltd-he1"))).toBe("block");
+    expect(decideAuthGuard(req({ "cf-ipcountry": "cn", "sec-fetch-dest": "script" }, "/search"))).toBe("block");
   });
 
   it("lets the first cookieless direct HK hits through", () => {
