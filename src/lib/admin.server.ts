@@ -126,7 +126,18 @@ export async function upsertCompanies(runId: string, rows: CompanyImportRow[]) {
   // Deduplicate within the batch: Postgres rejects an upsert touching a row twice.
   const byslug = new Map<string, CompanyImportRow>();
   for (const row of rows) byslug.set(row.slug, row);
-  const payload = [...byslug.values()].map((row) => ({ ...row, updated_at: new Date().toISOString() }));
+  const ALLOWED = [
+    "slug", "type_code", "reg_number", "official_no", "name", "type_el", "type_en", "subtype_el",
+    "subtype_en", "status_el", "status_en", "status_group", "registration_date", "status_date",
+    "street", "building", "locality", "postcode", "district_el", "district_en", "is_foreign_address",
+    "address_full",
+  ] as const;
+  const payload = [...byslug.values()].map((row) => {
+    const picked: Record<string, unknown> = {};
+    for (const key of ALLOWED) if (key in row) picked[key] = (row as Record<string, unknown>)[key];
+    if (typeof picked.slug !== "string" || typeof picked.name !== "string") throw new Error("Invalid company row");
+    return { ...picked, updated_at: new Date().toISOString() };
+  }) as any[];
   const { error } = await supabase.from("companies").upsert(payload, { onConflict: "slug" });
   if (error) {
     await bumpRun(runId, 0, payload.length);
