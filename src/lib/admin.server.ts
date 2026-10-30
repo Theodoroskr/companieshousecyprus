@@ -55,15 +55,11 @@ export async function assertSupport(userId: string) {
   if (!isAdmin && !isSupport) throw new Error("Forbidden: support or admin access required");
 }
 
-/** One-time bootstrap: the first signed-in user may claim admin when none exists. */
+/** Admin bootstrap is disabled: admin roles may only be granted by an existing admin. */
 export async function claimFirstAdminForUser(userId: string) {
-  const supabase = adminClient();
-  const { adminCount, isAdmin } = await readAdminContext(userId);
+  const { isAdmin } = await readAdminContext(userId);
   if (isAdmin) return { granted: true as const, alreadyAdmin: true };
-  if (adminCount > 0) throw new Error("An administrator already exists. Ask them to grant you access.");
-  const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
-  if (error) throw new Error(error.message);
-  return { granted: true as const, alreadyAdmin: false };
+  throw new Error("Administrator access can only be granted by an existing administrator.");
 }
 
 export async function readStats() {
