@@ -23,6 +23,10 @@ export const Route = createFileRoute("/api/public/monitor-check")({
         }
         const testTo = url.searchParams.get("test");
         if (testTo) {
+          const allowed = ["info@companieshousecyprus.com"];
+          if (!allowed.includes(testTo.trim().toLowerCase())) {
+            return new Response("Test recipient not allowed", { status: 400 });
+          }
           const test = await sendTestMonitoringAlert(testTo);
           return new Response(JSON.stringify(test), {
             status: test.ok ? 200 : 500,

@@ -996,14 +996,22 @@ export async function markPaymentState(paymentOrderId: string, state: string) {
 /** Orders linked to a signed-in user account or email address — powers the client portal. */
 export async function listOrdersForUser(userId: string, email: string, limit = 100) {
   const supabase = ordersClient();
-  const { data, error } = await supabase
-    .from("orders")
-    .select(`${ORDER_COLUMNS}, access_token, paid_at, order_items(${ITEM_COLUMNS})`)
-    .or(`user_id.eq.${userId},email.ilike.${email.trim()}`)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  const cols = `${ORDER_COLUMNS}, access_token, paid_at, order_items(${ITEM_COLUMNS})`;
+  const normalized = email.trim().toLowerCase();
+  const byUser = supabase.from("orders").select(cols).eq("user_id", userId)
+    .order("created_at", { ascending: false }).limit(limit);
+  const byEmail = normalized && /^[^\s@%_*,()]+@[^\s@%_*,()]+$/.test(normalized)
+    ? supabase.from("orders").select(cols).eq("email", normalized)
+        .order("created_at", { ascending: false }).limit(limit)
+    : null;
+  const [a, b] = await Promise.all([byUser, byEmail ?? Promise.resolve({ data: [], error: null })]);
+  if (a.error) throw new Error(a.error.message);
+  if (b.error) throw new Error(b.error.message);
+  const seen = new Map<string, any>();
+  for (const row of [...(a.data ?? []), ...((b.data as any[]) ?? [])]) seen.set((row as any).id, row);
+  return [...seen.values()]
+    .sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)))
+    .slice(0, limit) as typeof a.data extends (infer R)[] | null ? R[] : never;
 }
 
 /* ------------------------------------------------------------------ */

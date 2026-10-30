@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { listChangeFeedRuns, listChangedCompanies, runDailyChangeFeed } from "@/lib/change-feed.server";
+import { listChangedCompanies, runDailyChangeFeed } from "@/lib/change-feed.server";
 import { CHANGE_FEED_MAX_ITEMS } from "@/lib/change-feed";
 
 /**
@@ -20,12 +20,11 @@ export const Route = createFileRoute("/api/public/change-feed")({
         const since = url.searchParams.get("since");
         const limitParam = Number(url.searchParams.get("limit"));
         try {
-          const [feed, runs] = await Promise.all([
+          const [feed] = await Promise.all([
             listChangedCompanies({
               since: since && !Number.isNaN(new Date(since).getTime()) ? new Date(since).toISOString() : null,
               limit: Number.isFinite(limitParam) && limitParam > 0 ? limitParam : CHANGE_FEED_MAX_ITEMS,
             }),
-            listChangeFeedRuns(5),
           ]);
           return Response.json(
             {
@@ -36,13 +35,12 @@ export const Route = createFileRoute("/api/public/change-feed")({
               truncated: feed.truncated,
               ids: feed.items.map((item) => item.id),
               companies: feed.items,
-              runs,
             },
             { headers: { "cache-control": "public, max-age=300" } },
           );
         } catch (error) {
-          const message = error instanceof Error ? error.message : "change feed unavailable";
-          return Response.json({ error: message }, { status: 500 });
+          console.error("[change-feed] GET failed", error);
+          return Response.json({ error: "change feed unavailable" }, { status: 500 });
         }
       },
       POST: async ({ request }) => {

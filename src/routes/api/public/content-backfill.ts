@@ -9,7 +9,10 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/content-backfill")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const { authorizeScheduler } = await import("@/lib/job-secret.server");
+        const unauthorized = await authorizeScheduler(request, "content_backfill");
+        if (unauthorized) return unauthorized;
         const { getContentBackfillState } = await import("@/lib/content-backfill.server");
         const state = await getContentBackfillState();
         return Response.json(state, { headers: { "cache-control": "no-store" } });

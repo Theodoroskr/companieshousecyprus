@@ -55,15 +55,11 @@ export async function assertSupport(userId: string) {
   if (!isAdmin && !isSupport) throw new Error("Forbidden: support or admin access required");
 }
 
-/** One-time bootstrap: the first signed-in user may claim admin when none exists. */
+/** Admin bootstrap is disabled: admin roles may only be granted by an existing admin. */
 export async function claimFirstAdminForUser(userId: string) {
-  const supabase = adminClient();
-  const { adminCount, isAdmin } = await readAdminContext(userId);
+  const { isAdmin } = await readAdminContext(userId);
   if (isAdmin) return { granted: true as const, alreadyAdmin: true };
-  if (adminCount > 0) throw new Error("An administrator already exists. Ask them to grant you access.");
-  const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
-  if (error) throw new Error(error.message);
-  return { granted: true as const, alreadyAdmin: false };
+  throw new Error("Administrator access can only be granted by an existing administrator.");
 }
 
 export async function readStats() {
@@ -130,7 +126,18 @@ export async function upsertCompanies(runId: string, rows: CompanyImportRow[]) {
   // Deduplicate within the batch: Postgres rejects an upsert touching a row twice.
   const byslug = new Map<string, CompanyImportRow>();
   for (const row of rows) byslug.set(row.slug, row);
-  const payload = [...byslug.values()].map((row) => ({ ...row, updated_at: new Date().toISOString() }));
+  const ALLOWED = [
+    "slug", "type_code", "reg_number", "official_no", "name", "type_el", "type_en", "subtype_el",
+    "subtype_en", "status_el", "status_en", "status_group", "registration_date", "status_date",
+    "street", "building", "locality", "postcode", "district_el", "district_en", "is_foreign_address",
+    "address_full",
+  ] as const;
+  const payload = [...byslug.values()].map((row) => {
+    const picked: Record<string, unknown> = {};
+    for (const key of ALLOWED) if (key in row) picked[key] = (row as Record<string, unknown>)[key];
+    if (typeof picked["slug"] !== "string" || typeof picked["name"] !== "string") throw new Error("Invalid company row");
+    return { ...picked, updated_at: new Date().toISOString() };
+  }) as any[];
   const { error } = await supabase.from("companies").upsert(payload, { onConflict: "slug" });
   if (error) {
     await bumpRun(runId, 0, payload.length);
