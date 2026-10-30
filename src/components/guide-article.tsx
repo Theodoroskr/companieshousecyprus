@@ -1,0 +1,4 @@
+import type { GuideContent } from '@/lib/weekly-guides';
+export function GuideArticle({ content }: { content:GuideContent }) {
+  return <div className="space-y-8"><p className="text-lg leading-relaxed">{content.introduction}</p>{content.sections.map((section,i)=><section key={i}><h2 className="mb-3 font-heading text-2xl">{section.heading}</h2>{section.paragraphs.map((p,j)=><p className="mb-3 whitespace-pre-line leading-relaxed text-muted-foreground" key={j}>{p}</p>)}</section>)}<section><h2 className="mb-4 font-heading text-2xl">Common questions</h2>{content.faqs.map((faq,i)=><div className="mb-5" key={i}><h3 className="font-semibold">{faq.question}</h3><p className="mt-2 leading-relaxed text-muted-foreground">{faq.answer}</p></div>)}</section></div>;
+}
