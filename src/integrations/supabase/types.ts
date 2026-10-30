@@ -2539,6 +2539,93 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_guide_job: {
+        Row: {
+          id: boolean
+          last_error: string | null
+          last_run_at: string | null
+          lease_token: string | null
+          lease_until: string | null
+          pause_kind: string | null
+          pause_reason: string | null
+          paused: boolean
+        }
+        Insert: {
+          id?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          lease_token?: string | null
+          lease_until?: string | null
+          pause_kind?: string | null
+          pause_reason?: string | null
+          paused?: boolean
+        }
+        Update: {
+          id?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          lease_token?: string | null
+          lease_until?: string | null
+          pause_kind?: string | null
+          pause_reason?: string | null
+          paused?: boolean
+        }
+        Relationships: []
+      }
+      weekly_guides: {
+        Row: {
+          content: Json
+          created_at: string
+          description: string
+          error: string | null
+          id: string
+          model: string
+          published_at: string | null
+          reviewed_by: string | null
+          run_id: string | null
+          slug: string
+          source_snapshot: Json
+          status: string
+          title: string
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          description?: string
+          error?: string | null
+          id?: string
+          model?: string
+          published_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string | null
+          slug: string
+          source_snapshot?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          description?: string
+          error?: string | null
+          id?: string
+          model?: string
+          published_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string | null
+          slug?: string
+          source_snapshot?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2559,6 +2646,7 @@ export type Database = {
           updated: number
         }[]
       }
+      claim_weekly_guide_job: { Args: never; Returns: string }
       clear_officials: { Args: never; Returns: undefined }
       companies_by_letter_page: {
         Args: { p_letter: string; p_limit?: number; p_offset?: number }
