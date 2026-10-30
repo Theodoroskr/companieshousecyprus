@@ -32,6 +32,8 @@ export function buildHomeHead(): {
       { property: "og:description", content: HOME_DESCRIPTION },
       { property: "og:type", content: "website" },
       { property: "og:url", content: HOME_CANONICAL_URL },
+      { property: "og:image", content: "https://companieshousecyprus.com/__l5e/assets-v1/7a5bd44f-0bc5-4a1c-a124-cfcd306f7b36/companies-house-cyprus-share.jpg" },
+      { name: "twitter:image", content: "https://companieshousecyprus.com/__l5e/assets-v1/7a5bd44f-0bc5-4a1c-a124-cfcd306f7b36/companies-house-cyprus-share.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: HOME_TITLE },
       { name: "twitter:description", content: HOME_DESCRIPTION },
