@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Weekly AI Gateway guide generation from registry statistics and formation packages
+- [ ] Admin draft review, editing and explicit publishing; public guides and sitemap integration
+- [ ] Verify generation, permissions and review flow; configure weekly schedule
+
 - [x] Profile remaining slow backend queries; add targeted indexes / rewrites to keep CPU low
 - [x] Mobile optimisation for /directory and /companies/a-z listings (narrower layout, faster scroll, instant-load caching like district pages)
 
