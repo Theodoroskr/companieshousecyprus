@@ -135,7 +135,7 @@ export async function upsertCompanies(runId: string, rows: CompanyImportRow[]) {
   const payload = [...byslug.values()].map((row) => {
     const picked: Record<string, unknown> = {};
     for (const key of ALLOWED) if (key in row) picked[key] = (row as Record<string, unknown>)[key];
-    if (typeof picked.slug !== "string" || typeof picked.name !== "string") throw new Error("Invalid company row");
+    if (typeof picked["slug"] !== "string" || typeof picked["name"] !== "string") throw new Error("Invalid company row");
     return { ...picked, updated_at: new Date().toISOString() };
   }) as any[];
   const { error } = await supabase.from("companies").upsert(payload, { onConflict: "slug" });
