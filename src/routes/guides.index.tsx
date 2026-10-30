@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen } from "lucide-react";
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';
+import { listPublishedGuides } from '@/lib/weekly-guides.functions';
+const publishedOptions=queryOptions({ queryKey:['published-guides'],queryFn:()=>listPublishedGuides() });
 
 const TITLE = "Guides — Cyprus Company Registration and Registry Research";
 const DESCRIPTION =
@@ -7,6 +10,7 @@ const DESCRIPTION =
 const CANONICAL = "https://companieshousecyprus.com/guides";
 
 export const Route = createFileRoute("/guides/")({
+  loader:({ context })=>context.queryClient.ensureQueryData(publishedOptions),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -71,6 +75,7 @@ const GUIDES = [
 ];
 
 function GuidesIndex() {
+  const { data:published }=useSuspenseQuery(publishedOptions);
   return (
     <main>
       <section className="surface-deep">
@@ -92,6 +97,7 @@ function GuidesIndex() {
 
       <div className="mx-auto max-w-5xl px-4 py-12">
         <ul className="grid gap-5">
+          {published.map(guide=><li key={guide.id}><Link to="/guides/$slug" params={{ slug:guide.slug }} className="block rounded-lg border bg-card p-6"><BookOpen className="size-5 text-copper"/><h2 className="mt-3 font-heading text-xl">{guide.title}</h2><p className="mt-2 text-sm text-muted-foreground">{guide.description}</p><span className="mt-4 inline-flex items-center text-sm text-copper">Read the guide<ArrowRight className="ml-2 size-4"/></span></Link></li>)}
           {GUIDES.map((guide) => (
             <li key={guide.to}>
               <Link

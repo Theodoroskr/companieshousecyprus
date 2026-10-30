@@ -10,6 +10,7 @@ const ADMIN_LINKS = [
 
   { to: "/admin/import", label: "Imports", support: false },
   { to: "/admin/products", label: "Products", support: false },
+  { to: "/admin/guides", label: "Guide drafts", support: false },
   { to: "/admin/sanctions-data", label: "Sanctions data", support: false },
   { to: "/admin/screening", label: "Screening test", support: false },
   { to: "/admin/api4all", label: "API4ALL", support: false },

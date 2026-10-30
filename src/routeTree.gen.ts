@@ -73,6 +73,7 @@ import { Route as DirectorySignalRouteImport } from './routes/directory.$signal'
 import { Route as FrRegistreCommerceChypreRouteImport } from './routes/fr/registre-commerce-chypre'
 import { Route as GrGemiKyprouRouteImport } from './routes/gr/gemi-kyprou'
 import { Route as GuidesIndexRouteImport } from './routes/guides.index'
+import { Route as GuidesSlugRouteImport } from './routes/guides.$slug'
 import { Route as GuidesCompaniesHouseCyprusRouteImport } from './routes/guides.companies-house-cyprus'
 import { Route as GuidesCyprusCompanyFormationRouteImport } from './routes/guides.cyprus-company-formation'
 import { Route as GuidesCyprusCompanyLandscape2026RouteImport } from './routes/guides.cyprus-company-landscape-2026'
@@ -97,6 +98,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminApi4allRouteImport } from './routes/_authenticated/admin.api4all'
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminGdprRouteImport } from './routes/_authenticated/admin.gdpr'
+import { Route as AuthenticatedAdminGuidesRouteImport } from './routes/_authenticated/admin.guides'
 import { Route as AuthenticatedAdminImportRouteImport } from './routes/_authenticated/admin.import'
 import { Route as AuthenticatedAdminMonitoringRouteImport } from './routes/_authenticated/admin.monitoring'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
@@ -121,6 +123,7 @@ import { Route as ApiPublicRevolutWebhookRouteImport } from './routes/api/public
 import { Route as ApiPublicSanctionsImportRouteImport } from './routes/api/public/sanctions-import'
 import { Route as ApiPublicSitemapHealthRouteImport } from './routes/api/public/sitemap-health'
 import { Route as ApiPublicSitemapMonitorRouteImport } from './routes/api/public/sitemap-monitor'
+import { Route as ApiPublicWeeklyGuidesRouteImport } from './routes/api/public/weekly-guides'
 import { Route as CompaniesAZLetterRouteImport } from './routes/companies.a-z.$letter'
 import { Route as CompaniesCityDistrictRouteImport } from './routes/companies.city.$district'
 import { Route as SitemapsCompaniesNDotxmlRouteImport } from './routes/sitemaps/companies.$n[.]xml'
@@ -466,6 +469,11 @@ const GuidesIndexRoute = GuidesIndexRouteImport.update({
   path: '/guides/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesSlugRoute = GuidesSlugRouteImport.update({
+  id: '/guides/$slug',
+  path: '/guides/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesCompaniesHouseCyprusRoute =
   GuidesCompaniesHouseCyprusRouteImport.update({
     id: '/guides/companies-house-cyprus',
@@ -598,6 +606,12 @@ const AuthenticatedAdminGdprRoute = AuthenticatedAdminGdprRouteImport.update({
   path: '/gdpr',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminGuidesRoute =
+  AuthenticatedAdminGuidesRouteImport.update({
+    id: '/guides',
+    path: '/guides',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminImportRoute =
   AuthenticatedAdminImportRouteImport.update({
     id: '/import',
@@ -728,6 +742,11 @@ const ApiPublicSitemapMonitorRoute = ApiPublicSitemapMonitorRouteImport.update({
   path: '/api/public/sitemap-monitor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWeeklyGuidesRoute = ApiPublicWeeklyGuidesRouteImport.update({
+  id: '/api/public/weekly-guides',
+  path: '/api/public/weekly-guides',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompaniesAZLetterRoute = CompaniesAZLetterRouteImport.update({
   id: '/companies/a-z/$letter',
   path: '/companies/a-z/$letter',
@@ -842,6 +861,7 @@ export interface FileRoutesByFullPath {
   '/directory/$signal': typeof DirectorySignalRoute
   '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
   '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
+  '/guides/$slug': typeof GuidesSlugRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/cyprus-company-formation': typeof GuidesCyprusCompanyFormationRoute
   '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
@@ -868,6 +888,7 @@ export interface FileRoutesByFullPath {
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/gdpr': typeof AuthenticatedAdminGdprRoute
+  '/admin/guides': typeof AuthenticatedAdminGuidesRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/monitoring': typeof AuthenticatedAdminMonitoringRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -892,6 +913,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
+  '/api/public/weekly-guides': typeof ApiPublicWeeklyGuidesRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -963,6 +985,7 @@ export interface FileRoutesByTo {
   '/directory/$signal': typeof DirectorySignalRoute
   '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
   '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
+  '/guides/$slug': typeof GuidesSlugRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/cyprus-company-formation': typeof GuidesCyprusCompanyFormationRoute
   '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
@@ -989,6 +1012,7 @@ export interface FileRoutesByTo {
   '/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/gdpr': typeof AuthenticatedAdminGdprRoute
+  '/admin/guides': typeof AuthenticatedAdminGuidesRoute
   '/admin/import': typeof AuthenticatedAdminImportRoute
   '/admin/monitoring': typeof AuthenticatedAdminMonitoringRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -1013,6 +1037,7 @@ export interface FileRoutesByTo {
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
+  '/api/public/weekly-guides': typeof ApiPublicWeeklyGuidesRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -1087,6 +1112,7 @@ export interface FileRoutesById {
   '/directory/$signal': typeof DirectorySignalRoute
   '/fr/registre-commerce-chypre': typeof FrRegistreCommerceChypreRoute
   '/gr/gemi-kyprou': typeof GrGemiKyprouRoute
+  '/guides/$slug': typeof GuidesSlugRoute
   '/guides/companies-house-cyprus': typeof GuidesCompaniesHouseCyprusRoute
   '/guides/cyprus-company-formation': typeof GuidesCyprusCompanyFormationRoute
   '/guides/cyprus-company-landscape-2026': typeof GuidesCyprusCompanyLandscape2026Route
@@ -1113,6 +1139,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/api4all': typeof AuthenticatedAdminApi4allRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/gdpr': typeof AuthenticatedAdminGdprRoute
+  '/_authenticated/admin/guides': typeof AuthenticatedAdminGuidesRoute
   '/_authenticated/admin/import': typeof AuthenticatedAdminImportRoute
   '/_authenticated/admin/monitoring': typeof AuthenticatedAdminMonitoringRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -1137,6 +1164,7 @@ export interface FileRoutesById {
   '/api/public/sanctions-import': typeof ApiPublicSanctionsImportRoute
   '/api/public/sitemap-health': typeof ApiPublicSitemapHealthRoute
   '/api/public/sitemap-monitor': typeof ApiPublicSitemapMonitorRoute
+  '/api/public/weekly-guides': typeof ApiPublicWeeklyGuidesRoute
   '/companies/a-z/$letter': typeof CompaniesAZLetterRoute
   '/companies/city/$district': typeof CompaniesCityDistrictRoute
   '/sitemaps/companies/$n.xml': typeof SitemapsCompaniesNDotxmlRoute
@@ -1211,6 +1239,7 @@ export interface FileRouteTypes {
     | '/directory/$signal'
     | '/fr/registre-commerce-chypre'
     | '/gr/gemi-kyprou'
+    | '/guides/$slug'
     | '/guides/companies-house-cyprus'
     | '/guides/cyprus-company-formation'
     | '/guides/cyprus-company-landscape-2026'
@@ -1237,6 +1266,7 @@ export interface FileRouteTypes {
     | '/admin/api4all'
     | '/admin/emails'
     | '/admin/gdpr'
+    | '/admin/guides'
     | '/admin/import'
     | '/admin/monitoring'
     | '/admin/orders'
@@ -1261,6 +1291,7 @@ export interface FileRouteTypes {
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
+    | '/api/public/weekly-guides'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1332,6 +1363,7 @@ export interface FileRouteTypes {
     | '/directory/$signal'
     | '/fr/registre-commerce-chypre'
     | '/gr/gemi-kyprou'
+    | '/guides/$slug'
     | '/guides/companies-house-cyprus'
     | '/guides/cyprus-company-formation'
     | '/guides/cyprus-company-landscape-2026'
@@ -1358,6 +1390,7 @@ export interface FileRouteTypes {
     | '/admin/api4all'
     | '/admin/emails'
     | '/admin/gdpr'
+    | '/admin/guides'
     | '/admin/import'
     | '/admin/monitoring'
     | '/admin/orders'
@@ -1382,6 +1415,7 @@ export interface FileRouteTypes {
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
+    | '/api/public/weekly-guides'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1455,6 +1489,7 @@ export interface FileRouteTypes {
     | '/directory/$signal'
     | '/fr/registre-commerce-chypre'
     | '/gr/gemi-kyprou'
+    | '/guides/$slug'
     | '/guides/companies-house-cyprus'
     | '/guides/cyprus-company-formation'
     | '/guides/cyprus-company-landscape-2026'
@@ -1481,6 +1516,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/api4all'
     | '/_authenticated/admin/emails'
     | '/_authenticated/admin/gdpr'
+    | '/_authenticated/admin/guides'
     | '/_authenticated/admin/import'
     | '/_authenticated/admin/monitoring'
     | '/_authenticated/admin/orders'
@@ -1505,6 +1541,7 @@ export interface FileRouteTypes {
     | '/api/public/sanctions-import'
     | '/api/public/sitemap-health'
     | '/api/public/sitemap-monitor'
+    | '/api/public/weekly-guides'
     | '/companies/a-z/$letter'
     | '/companies/city/$district'
     | '/sitemaps/companies/$n.xml'
@@ -1578,6 +1615,7 @@ export interface RootRouteChildren {
   DirectorySignalRoute: typeof DirectorySignalRoute
   FrRegistreCommerceChypreRoute: typeof FrRegistreCommerceChypreRoute
   GrGemiKyprouRoute: typeof GrGemiKyprouRoute
+  GuidesSlugRoute: typeof GuidesSlugRoute
   GuidesCompaniesHouseCyprusRoute: typeof GuidesCompaniesHouseCyprusRoute
   GuidesCyprusCompanyFormationRoute: typeof GuidesCyprusCompanyFormationRoute
   GuidesCyprusCompanyLandscape2026Route: typeof GuidesCyprusCompanyLandscape2026Route
@@ -1614,6 +1652,7 @@ export interface RootRouteChildren {
   ApiPublicSanctionsImportRoute: typeof ApiPublicSanctionsImportRoute
   ApiPublicSitemapHealthRoute: typeof ApiPublicSitemapHealthRoute
   ApiPublicSitemapMonitorRoute: typeof ApiPublicSitemapMonitorRoute
+  ApiPublicWeeklyGuidesRoute: typeof ApiPublicWeeklyGuidesRoute
   CompaniesAZLetterRoute: typeof CompaniesAZLetterRoute
   CompaniesCityDistrictRoute: typeof CompaniesCityDistrictRoute
   SitemapsCompaniesNDotxmlRoute: typeof SitemapsCompaniesNDotxmlRoute
@@ -2071,6 +2110,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/$slug': {
+      id: '/guides/$slug'
+      path: '/guides/$slug'
+      fullPath: '/guides/$slug'
+      preLoaderRoute: typeof GuidesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/companies-house-cyprus': {
       id: '/guides/companies-house-cyprus'
       path: '/guides/companies-house-cyprus'
@@ -2237,6 +2283,13 @@ declare module '@tanstack/react-router' {
       path: '/gdpr'
       fullPath: '/admin/gdpr'
       preLoaderRoute: typeof AuthenticatedAdminGdprRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/guides': {
+      id: '/_authenticated/admin/guides'
+      path: '/guides'
+      fullPath: '/admin/guides'
+      preLoaderRoute: typeof AuthenticatedAdminGuidesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/import': {
@@ -2407,6 +2460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSitemapMonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/weekly-guides': {
+      id: '/api/public/weekly-guides'
+      path: '/api/public/weekly-guides'
+      fullPath: '/api/public/weekly-guides'
+      preLoaderRoute: typeof ApiPublicWeeklyGuidesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/companies/a-z/$letter': {
       id: '/companies/a-z/$letter'
       path: '/companies/a-z/$letter'
@@ -2477,6 +2537,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminApi4allRoute: typeof AuthenticatedAdminApi4allRoute
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminGdprRoute: typeof AuthenticatedAdminGdprRoute
+  AuthenticatedAdminGuidesRoute: typeof AuthenticatedAdminGuidesRoute
   AuthenticatedAdminImportRoute: typeof AuthenticatedAdminImportRoute
   AuthenticatedAdminMonitoringRoute: typeof AuthenticatedAdminMonitoringRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
@@ -2495,6 +2556,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminApi4allRoute: AuthenticatedAdminApi4allRoute,
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminGdprRoute: AuthenticatedAdminGdprRoute,
+  AuthenticatedAdminGuidesRoute: AuthenticatedAdminGuidesRoute,
   AuthenticatedAdminImportRoute: AuthenticatedAdminImportRoute,
   AuthenticatedAdminMonitoringRoute: AuthenticatedAdminMonitoringRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
@@ -2596,6 +2658,7 @@ const rootRouteChildren: RootRouteChildren = {
   DirectorySignalRoute: DirectorySignalRoute,
   FrRegistreCommerceChypreRoute: FrRegistreCommerceChypreRoute,
   GrGemiKyprouRoute: GrGemiKyprouRoute,
+  GuidesSlugRoute: GuidesSlugRoute,
   GuidesCompaniesHouseCyprusRoute: GuidesCompaniesHouseCyprusRoute,
   GuidesCyprusCompanyFormationRoute: GuidesCyprusCompanyFormationRoute,
   GuidesCyprusCompanyLandscape2026Route: GuidesCyprusCompanyLandscape2026Route,
@@ -2633,6 +2696,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSanctionsImportRoute: ApiPublicSanctionsImportRoute,
   ApiPublicSitemapHealthRoute: ApiPublicSitemapHealthRoute,
   ApiPublicSitemapMonitorRoute: ApiPublicSitemapMonitorRoute,
+  ApiPublicWeeklyGuidesRoute: ApiPublicWeeklyGuidesRoute,
   CompaniesAZLetterRoute: CompaniesAZLetterRoute,
   CompaniesCityDistrictRoute: CompaniesCityDistrictRoute,
   SitemapsCompaniesNDotxmlRoute: SitemapsCompaniesNDotxmlRoute,
