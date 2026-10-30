@@ -139,9 +139,20 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
       }
 
 
-      const clientOrigin = /^https?:\/\//.test(data.origin ?? '')
-        ? (data.origin ?? '').replace(/\/+$/, '')
-        : '';
+      const rawOrigin = (data.origin ?? '').replace(/\/+$/, '');
+      let clientOrigin = '';
+      try {
+        const host = new URL(rawOrigin).hostname;
+        const allowedHost =
+          host === 'companieshousecyprus.com' ||
+          host === 'www.companieshousecyprus.com' ||
+          host === 'localhost' ||
+          host.endsWith('.lovable.app') ||
+          host.endsWith('.lovableproject.com');
+        if (allowedHost && /^https?:\/\/[^/]+$/.test(rawOrigin)) clientOrigin = rawOrigin;
+      } catch {
+        clientOrigin = '';
+      }
       const safeOrigin = clientOrigin || (/^https?:\/\//.test(process.env['BASE_URL'] ?? '')
         ? (process.env['BASE_URL'] ?? '').replace(/\/+$/, '')
         : '');
