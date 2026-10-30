@@ -1,6 +1,14 @@
 /** Shared, client-safe constants for the /company-set-up lead-generation page. */
 
 export const COMPANY_SETUP_FORM_SOURCE = "company-set-up";
+/** Shared factual source for the formation page and weekly editorial drafts. */
+export const FORMATION_GUIDE_SOURCE = {
+  starting_price_eur: 1500,
+  vat: 'additional',
+  inclusions: 'Confirmed in a written quotation; final pricing depends on ownership, activity and services required.',
+  provider: 'Independent Cyprus company-formation professionals introduced by Infocredit Group Ltd',
+  guarantees: 'No guarantee of name approval, incorporation, tax treatment or bank account approval.',
+} as const;
 export const COMPANY_SETUP_LEAD_LABEL = "Company Set-Up Page";
 export const COMPANY_SETUP_CONSENT_VERSION = "company-set-up-2026.1";
 
