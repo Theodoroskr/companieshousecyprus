@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { listChangeFeedRuns, listChangedCompanies, runDailyChangeFeed } from "@/lib/change-feed.server";
+import { listChangedCompanies, runDailyChangeFeed } from "@/lib/change-feed.server";
 import { CHANGE_FEED_MAX_ITEMS } from "@/lib/change-feed";
 
 /**
