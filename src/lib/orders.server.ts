@@ -875,7 +875,9 @@ export async function markOrderPaid(orderId: string) {
     .eq("order_id", orderId);
 
   for (const item of items ?? []) {
-    if (item.fulfilment_status === "delivered") continue;
+    // Already fetched, held for review, or placed and polling — a repeat
+    // payment confirmation must never place a second paid supplier order.
+    if (["delivered", "awaiting_review", "processing"].includes(item.fulfilment_status ?? "")) continue;
     if (item.product_slug === SANCTIONS_SNAPSHOT_SLUG) {
       try {
         await fulfilSanctionsSnapshotItem(item.id);

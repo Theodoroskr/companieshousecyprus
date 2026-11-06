@@ -127,7 +127,8 @@ describe("end-to-end fulfilment across sample companies", () => {
       expect(delivered?.values).toMatchObject({
         a4a_kind: kind,
         a4a_code: code,
-        fulfilment_status: "delivered",
+        fulfilment_status: "awaiting_review",
+        delivered_at: null,
       });
     },
   );

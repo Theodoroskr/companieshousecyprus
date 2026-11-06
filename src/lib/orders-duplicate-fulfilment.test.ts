@@ -106,7 +106,7 @@ describe("duplicate order submissions", () => {
 
     await markOrderPaid("order-1");
     expect(reportCalls).toHaveLength(1);
-    expect(db.items[0]!["fulfilment_status"]).toBe("delivered");
+    expect(db.items[0]!["fulfilment_status"]).toBe("awaiting_review");
     const paidAt = db.order["paid_at"];
 
     // Second webhook / return-from-checkout for the same order
