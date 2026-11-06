@@ -120,7 +120,8 @@ describe("order fulfilment through API4ALL", () => {
     expect(delivered?.values).toMatchObject({
       a4a_kind: "structure",
       a4a_code: A4A_CODE,
-      fulfilment_status: "delivered",
+      fulfilment_status: "awaiting_review",
+        delivered_at: null,
     });
   });
 

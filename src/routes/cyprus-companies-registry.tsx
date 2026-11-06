@@ -66,7 +66,7 @@ export const Route = createFileRoute("/cyprus-companies-registry")({
               name: "Is searching the Cyprus companies registry free?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Yes. Searching company names and registration numbers, and viewing company profiles with status, registered office and officials on record, is free and requires no account. Only official Registrar certificates and reports are paid.",
+                text: "Yes. Searching company names and registration numbers, and viewing company profiles with status, registered office and officials & owners on record, is free and requires no account. Only official Registrar certificates and reports are paid.",
               },
             },
             {
@@ -338,7 +338,7 @@ function RegistryLandingPage() {
             {[
               [
                 "Is searching the Cyprus companies registry free?",
-                "Yes. Name and number searches, plus company profiles with status, registered office and officials on record, are free and need no account. Only certificates and reports are paid.",
+                "Yes. Name and number searches, plus company profiles with status, registered office and officials & owners on record, are free and need no account. Only certificates and reports are paid.",
               ],
               [
                 "Where does the data come from?",
