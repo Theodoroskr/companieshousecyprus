@@ -1001,7 +1001,7 @@ export async function listOrdersForUser(userId: string, email: string, limit = 1
   const byUser = supabase.from("orders").select(cols).eq("user_id", userId)
     .order("created_at", { ascending: false }).limit(limit);
   // Keep the wildcard guard: ILIKE must match the whole email, ignoring case only.
-  const byEmail = normalized && /^[^\s@%_*,()]+@[^\s@%_*,()]+$/.test(normalized)
+  const byEmail = normalized && /^[^\s@%_*,()\\]+@[^\s@%_*,()\\]+$/.test(normalized)
     ? supabase.from("orders").select(cols).ilike("email", normalized)
         .order("created_at", { ascending: false }).limit(limit)
     : null;

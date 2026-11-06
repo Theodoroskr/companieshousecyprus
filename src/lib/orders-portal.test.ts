@@ -46,7 +46,7 @@ describe("client portal order ownership", () => {
     expect(orders.some((order) => order.id === "other")).toBe(false);
   });
 
-  it.each(["%@example.com", "_ohn@example.com", "*", ""]) ("does not broaden ownership with wildcard or empty email %s", async (email) => {
+  it.each(["%@example.com", "_ohn@example.com", "john\\@example.com", "*", ""]) ("does not broaden ownership with wildcard or empty email %s", async (email) => {
     const orders = await listOrdersForUser("john", email);
     expect(orders.map((order) => order.id)).toEqual(["linked"]);
   });
