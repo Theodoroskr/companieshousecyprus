@@ -49,6 +49,10 @@ function safeRedirect(path: string | undefined): string | null {
   return path;
 }
 
+function isEmailNotConfirmed(error: { code?: string | undefined; message?: string | undefined }): boolean {
+  return error.code === "email_not_confirmed" || /email not confirmed/i.test(error.message ?? "");
+}
+
 function isProductionHost(host: string): boolean {
   return ["companieshousecyprus.com", "www.companieshousecyprus.com"].includes(host.toLowerCase());
 }
@@ -61,6 +65,9 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  /** Set when the account exists but its email link hasn't been clicked yet. */
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [siteKey, setSiteKey] = useState("");
@@ -148,11 +155,19 @@ function AuthPage() {
           options: { emailRedirectTo: `${window.location.origin}/auth` },
         });
         if (error) throw error;
-        toast.success("Account created. Check your email if confirmation is required, then sign in.");
+        toast.success("Account created. Check your email for the confirmation link, then sign in.");
+        setUnconfirmedEmail(email.trim());
         setMode("signin");
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (isEmailNotConfirmed(error)) {
+            setUnconfirmedEmail(email.trim());
+            toast.error("Please confirm your email address first. You can resend the link below.");
+            return;
+          }
+          throw error;
+        }
         await navigateForUser(data.user.id, redirect);
       }
     } catch (error) {
@@ -163,6 +178,28 @@ function AuthPage() {
     }
   };
 
+  const resendConfirmation = async () => {
+    if (!unconfirmedEmail) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: unconfirmedEmail,
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
+      });
+      if (error) {
+        if (error.status === 429 || /rate limit|seconds/i.test(error.message)) {
+          throw new Error("A link was sent very recently. Please wait a minute, then try again.");
+        }
+        throw error;
+      }
+      toast.success(`Confirmation email sent to ${unconfirmedEmail}. Check your inbox and spam folder.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not resend the confirmation email.");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const heading = mode === "forgot" ? "Reset your password" : "Sign in";
   const intro =
@@ -188,7 +225,10 @@ function AuthPage() {
             autoComplete="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setUnconfirmedEmail(null);
+            }}
           />
         </div>
         {mode !== "forgot" && (
@@ -217,6 +257,18 @@ function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+          </div>
+        )}
+        {mode === "signin" && unconfirmedEmail && (
+          <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm text-muted-foreground">
+            <p>
+              Your account for <span className="font-medium text-foreground">{unconfirmedEmail}</span> isn't
+              confirmed yet. Click the link in the confirmation email we sent you, then sign in. Can't find it?
+              Check your spam or junk folder, or send a new link.
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={resendConfirmation} disabled={resending}>
+              {resending ? "Sending…" : "Resend confirmation email"}
+            </Button>
           </div>
         )}
         {mode === "forgot" && resetSent && (
