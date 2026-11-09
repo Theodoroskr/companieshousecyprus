@@ -1,4 +1,5 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import { resolveDistrict } from "@/lib/districts";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { listCompaniesByDistrict } from "@/lib/companies.functions";
@@ -16,12 +17,28 @@ const districtQueryOptions = (district: string, page: number) =>
 
 export const Route = createFileRoute("/companies/city/$district")({
   loader: async ({ params, context }) => {
+    const resolved = resolveDistrict(params.district);
+    if (resolved.kind === "redirect") {
+      throw redirect({
+        to: "/companies/city/$district",
+        params: { district: resolved.slug },
+        statusCode: 301,
+        replace: true,
+      });
+    }
+    // Unknown district: a real 404, never an indexable "0 entities" page (Soft 404).
+    if (resolved.kind === "unknown") throw notFound();
+    const data = await context.queryClient.ensureQueryData(districtQueryOptions(resolved.district.slug, 1));
+    if (data.count === 0) throw notFound();
     setDirectoryPageCacheHeaders();
-    await context.queryClient.ensureQueryData(districtQueryOptions(params.district, 1));
+    return { name: resolved.district.name };
   },
 
-  head: ({ params }) => {
-    const name = params.district.charAt(0).toUpperCase() + params.district.slice(1);
+  head: ({ params, loaderData }) => {
+    if (!loaderData) {
+      return { meta: [{ title: "District not found | Companies House Cyprus" }, { name: "robots", content: "noindex" }] };
+    }
+    const name = loaderData.name;
     const title = `Companies registered in ${name}, Cyprus | Companies House Cyprus`;
     const description = `Browse Cyprus companies with a registered office in the ${name} district — status, registration number and full profiles.`;
     return {
@@ -41,17 +58,29 @@ export const Route = createFileRoute("/companies/city/$district")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-4xl px-4 py-16 text-center">
       <h1 className="text-3xl font-bold">District not found</h1>
-      <p className="mt-2 text-muted-foreground">We could not find that district.</p>
+      <p className="mt-2 text-muted-foreground">
+        We could not find that district.{" "}
+        <Link to="/search" search={{ q: "", page: 1 }} className="underline">
+          Search the register
+        </Link>
+        .
+      </p>
+    </div>
+  ),
+  errorComponent: () => (
+    <div className="mx-auto max-w-4xl px-4 py-16 text-center">
+      <h1 className="text-3xl font-bold">This list is temporarily unavailable</h1>
+      <p className="mt-2 text-muted-foreground">Please try again in a moment.</p>
     </div>
   ),
 });
 
 function DistrictPage() {
   const { district } = Route.useParams();
+  const { name } = Route.useLoaderData();
   const [page, setPage] = useState(1);
   const { data } = useSuspenseQuery(districtQueryOptions(district, page));
   const totalPages = Math.ceil(data.count / 50);
-  const name = district.charAt(0).toUpperCase() + district.slice(1);
 
   return (
     <div>
