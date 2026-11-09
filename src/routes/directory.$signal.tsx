@@ -32,13 +32,17 @@ export const Route = createFileRoute("/directory/$signal")({
   loaderDeps: ({ search }) => ({ page: search.page }),
   loader: async ({ params, deps, context }) => {
     if (!getDirectorySignal(params.signal)) throw notFound();
-    await context.queryClient.ensureQueryData(signalQueryOptions(params.signal, deps.page));
+    const data = await context.queryClient.ensureQueryData(signalQueryOptions(params.signal, deps.page));
+    // A page past the end of the list is empty: return a real 404 rather than
+    // an indexable "no companies" page, which Google reports as Soft 404.
+    if (deps.page > 1 && data.rows.length === 0) throw notFound();
     setDirectoryPageCacheHeaders();
+    return { hasRows: data.rows.length > 0 };
   },
 
-  head: ({ params, match }) => {
+  head: ({ params, match, loaderData }) => {
     const signal = getDirectorySignal(params.signal);
-    if (!signal) {
+    if (!signal || !loaderData) {
       return { meta: [{ title: "Not found" }, { name: "robots", content: "noindex" }] };
     }
     const page = clampPage((match.search as { page?: number } | undefined)?.page ?? 1);
@@ -110,10 +114,12 @@ function DirectorySignalPage() {
   const signal = getDirectorySignal(slug)!;
   const { data } = useSuspenseQuery(signalQueryOptions(slug, page));
 
-  const totalPages = Math.min(
-    DIRECTORY_MAX_PAGE,
-    Math.max(1, Math.ceil(data.count / DIRECTORY_PAGE_SIZE)),
-  );
+  // The headline count can run ahead of the listable rows; a short page is the
+  // last page, so never link "Next" to an empty page.
+  const totalPages =
+    data.rows.length < DIRECTORY_PAGE_SIZE
+      ? page
+      : Math.min(DIRECTORY_MAX_PAGE, Math.max(1, Math.ceil(data.count / DIRECTORY_PAGE_SIZE)));
 
   return (
     <div>
