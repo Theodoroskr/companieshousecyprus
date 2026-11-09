@@ -49,7 +49,7 @@ function safeRedirect(path: string | undefined): string | null {
   return path;
 }
 
-function isEmailNotConfirmed(error: { code?: string; message?: string }): boolean {
+function isEmailNotConfirmed(error: { code?: string | undefined; message?: string | undefined }): boolean {
   return error.code === "email_not_confirmed" || /email not confirmed/i.test(error.message ?? "");
 }
 
