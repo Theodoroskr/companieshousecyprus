@@ -116,6 +116,18 @@ export const listUsers = createServerFn({ method: "GET" })
     return listUserAccounts();
   });
 
+export const resendVerification = createServerFn({ method: "POST" })
+  .inputValidator((data: { userId: string }) => {
+    if (typeof data?.userId !== "string" || !/^[0-9a-f-]{36}$/i.test(data.userId)) throw new Error("Invalid user");
+    return { userId: data.userId };
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, resendUserVerification } = await import("@/lib/admin.server");
+    await assertAdmin(context.userId);
+    return resendUserVerification(data.userId);
+  });
+
 export const updateUserRole = createServerFn({ method: "POST" })
   .inputValidator((data: { userId: string; role: "admin" | "client" | "support"; grant: boolean }) => data)
   .middleware([requireSupabaseAuth])

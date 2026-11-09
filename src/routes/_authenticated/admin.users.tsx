@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LifeBuoy, Loader2, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
-import { listUsers, updateUserRole } from "@/lib/admin.functions";
+import { BadgeCheck, CircleAlert, LifeBuoy, Loader2, Mail, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import { listUsers, resendVerification, updateUserRole } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
@@ -53,6 +53,20 @@ function AdminUsersPage() {
     onError: (err) => {
       setMessage(null);
       setError(err instanceof Error ? err.message : "Could not update the role");
+    },
+  });
+
+  const resend = useServerFn(resendVerification);
+  const resendMutation = useMutation({
+    mutationFn: (userId: string) => resend({ data: { userId } }),
+    onSuccess: (result) => {
+      setError(null);
+      setMessage(`Verification email sent to ${result.email}.`);
+      void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof Error ? err.message : "Could not resend the verification email");
     },
   });
 
@@ -152,10 +166,11 @@ function AdminUsersPage() {
       )}
 
       <div className="mt-6 overflow-x-auto rounded-xl border bg-card shadow-panel">
-        <table className="w-full min-w-[820px] text-sm">
+        <table className="w-full min-w-[980px] text-sm">
           <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Account</th>
+              <th className="px-4 py-3">Email verified</th>
               <th className="px-4 py-3">Roles</th>
               <th className="px-4 py-3">Orders</th>
               <th className="px-4 py-3">Last sign-in</th>
@@ -175,8 +190,41 @@ function AdminUsersPage() {
                     <p className="font-medium">{user.email || "—"}</p>
                     <p className="text-xs text-muted-foreground">
                       Joined {new Date(user.createdAt).toLocaleDateString("en-GB")}
-                      {user.confirmed ? "" : " · unconfirmed"}
                     </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    {user.confirmed ? (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
+                        title={user.confirmedAt ? `Verified ${new Date(user.confirmedAt).toLocaleString("en-GB")}` : undefined}
+                      >
+                        <BadgeCheck className="size-3" /> Verified
+                      </span>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
+                          <CircleAlert className="size-3" /> Not verified
+                        </span>
+                        {user.confirmationSentAt && (
+                          <p className="text-xs text-muted-foreground">
+                            Last link sent {new Date(user.confirmationSentAt).toLocaleString("en-GB")}
+                          </p>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={resendMutation.isPending && resendMutation.variables === user.id}
+                          onClick={() => resendMutation.mutate(user.id)}
+                        >
+                          {resendMutation.isPending && resendMutation.variables === user.id ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Mail className="size-3.5" />
+                          )}
+                          Resend verification
+                        </Button>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1.5">
@@ -237,7 +285,7 @@ function AdminUsersPage() {
             })}
             {!query.isLoading && users.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                   No accounts found.
                 </td>
               </tr>
