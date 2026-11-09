@@ -255,9 +255,33 @@ export async function listUserAccounts() {
     createdAt: user.created_at,
     lastSignInAt: user.last_sign_in_at ?? null,
     confirmed: Boolean(user.email_confirmed_at),
+    confirmedAt: user.email_confirmed_at ?? null,
+    confirmationSentAt: user.confirmation_sent_at ?? null,
     roles: (rolesByUser.get(user.id) ?? []).sort(),
     orders: orderCounts.get((user.email ?? "").toLowerCase()) ?? 0,
   }));
+}
+
+/** Re-sends the sign-up confirmation link to an account that hasn't verified its email yet. */
+export async function resendUserVerification(userId: string) {
+  const supabase = adminClient();
+  const { data, error } = await supabase.auth.admin.getUserById(userId);
+  if (error || !data.user) throw new Error("Account not found.");
+  const email = data.user.email;
+  if (!email) throw new Error("This account has no email address.");
+  if (data.user.email_confirmed_at) throw new Error("This account is already verified.");
+  const { error: resendError } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: "https://companieshousecyprus.com/auth" },
+  });
+  if (resendError) {
+    if (resendError.status === 429 || /rate limit|seconds/i.test(resendError.message)) {
+      throw new Error("A verification email was sent very recently. Please wait a minute and try again.");
+    }
+    throw new Error(resendError.message);
+  }
+  return { ok: true as const, email };
 }
 
 export async function setUserRole(input: {
