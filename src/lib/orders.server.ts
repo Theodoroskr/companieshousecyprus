@@ -759,11 +759,24 @@ function trustedReturnOrigin(origin: string): string {
 }
 
 /** Detect the real file type from its leading bytes; only document/image formats are accepted. */
-function detectDocumentType(bytes: Uint8Array): string | null {
+export const DOCUMENT_EXTENSIONS: Record<string, string> = {
+  "application/pdf": "pdf",
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "application/zip": "zip",
+};
+
+/**
+ * Identifies an uploaded order document from its bytes, never the client-declared type.
+ * ZIP bundles are accepted only when the file is named .zip, because Office files
+ * (.docx/.xlsx) share the ZIP signature and remain unsupported.
+ */
+export function detectDocumentType(bytes: Uint8Array, fileName = ""): string | null {
   const starts = (sig: number[]) => sig.every((b, i) => bytes[i] === b);
   if (starts([0x25, 0x50, 0x44, 0x46, 0x2d])) return "application/pdf";
   if (starts([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "image/png";
   if (starts([0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (starts([0x50, 0x4b, 0x03, 0x04]) && /\.zip$/i.test(fileName.trim())) return "application/zip";
   return null;
 }
 
@@ -1103,9 +1116,9 @@ export async function uploadOrderItemDocuments(input: {
     if (binary.byteLength === 0) throw new Error(`${file.fileName || "File"} is empty`);
     if (binary.byteLength > 25 * 1024 * 1024) throw new Error("Files must be 25 MB or smaller");
 
-    const detectedType = detectDocumentType(binary);
-    if (!detectedType) throw new Error(`${file.fileName || "File"} must be a PDF, PNG or JPEG document`);
-    const ext = detectedType === "application/pdf" ? "pdf" : detectedType === "image/png" ? "png" : "jpg";
+    const detectedType = detectDocumentType(binary, file.fileName);
+    if (!detectedType) throw new Error(`${file.fileName || "File"} must be a PDF, PNG, JPEG or ZIP file`);
+    const ext = DOCUMENT_EXTENSIONS[detectedType]!;
     const baseName = file.fileName.replace(/\.[^.]*$/, "").replace(/[^A-Za-z0-9._-]+/g, "-").slice(-110) || "document";
     const safeName = `${baseName}.${ext}`;
     const path = `${item.order_id}/${item.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
