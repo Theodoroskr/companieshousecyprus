@@ -9,7 +9,7 @@ export const HOME_TITLE =
   "Companies House Cyprus — Free Search & Official Documents";
 
 export const HOME_DESCRIPTION =
-  "Search Companies House Cyprus by name or HE number for free, no account needed. Order official Registrar certificates online, delivered in 1–2 business days.";
+  "Free Cyprus company search & check on Companies House Cyprus by name or HE number, no account. Independent service: official certificates in 1–2 business days.";
 
 
 
