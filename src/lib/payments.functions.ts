@@ -1,4 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
+import { getRequest } from '@tanstack/react-start/server';
+import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { checkoutEnvForHost } from '@/lib/stripe-env-policy';
 import Stripe from 'stripe';
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from '@/lib/stripe.server';
 import { PRODUCTS } from '@/lib/products';
@@ -34,19 +37,28 @@ async function resolvePriceId(stripe: ReturnType<typeof createStripeClient>, loo
 }
 
 export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
-  .inputValidator((data: { reference: string; token: string; environment: StripeEnv; origin?: string }) => {
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { reference: string; token: string; origin?: string }) => {
     if (!data.reference?.trim() || !data.token?.trim()) throw new Error('Missing order reference');
-    return data;
+    return { reference: data.reference, token: data.token, origin: data.origin };
   })
-  .handler(async ({ data }): Promise<StripeCheckoutResult> => {
+  .handler(async ({ data, context }): Promise<StripeCheckoutResult> => {
     try {
+      // Only signed-in customers with a confirmed email may pay.
+      const { data: userData } = await context.supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user || !user.email_confirmed_at) {
+        return { error: 'Please sign in with a verified account to pay for this order.' };
+      }
+      // The server alone picks Stripe's mode: live on the published site.
+      const environment: StripeEnv = checkoutEnvForHost(new URL(getRequest().url).host);
       const supabaseModule = await import('@/integrations/supabase/client.server');
       const supabase = supabaseModule.supabaseAdmin;
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .select(
-          'id, reference, status, email, full_name, subtotal_cents, service_fee_cents, apostille_fee_cents, vat_cents, total_cents',
+          'id, user_id, reference, status, email, full_name, subtotal_cents, service_fee_cents, apostille_fee_cents, vat_cents, total_cents',
         )
         .eq('reference', data.reference.trim().toUpperCase())
         .eq('access_token', data.token.trim())
@@ -54,6 +66,12 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
 
       if (orderError || !order) {
         return { error: 'Order not found' };
+      }
+      const ownsOrder =
+        order.user_id === context.userId ||
+        (order.email ?? '').trim().toLowerCase() === (user.email ?? '').trim().toLowerCase();
+      if (!ownsOrder) {
+        return { error: 'This order belongs to a different account. Sign in with the email the order was placed with.' };
       }
       if (order.status === 'paid' || order.status === 'delivered') {
         return { error: 'Order is already paid' };
@@ -78,7 +96,7 @@ export const createOrderCheckoutSession = createServerFn({ method: 'POST' })
         return { error: 'This order needs to be re-checked before payment. Please contact us.' };
       }
 
-      const stripe = createStripeClient(data.environment);
+      const stripe = createStripeClient(environment);
       const lineItems: any[] = [];
 
       for (const item of items as OrderItemRow[]) {

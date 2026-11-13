@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { Loader2 } from 'lucide-react';
-import { getStripe, getStripeEnvironment } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createOrderCheckoutSession } from '@/lib/payments.functions';
 import { Button } from '@/components/ui/button';
 
@@ -24,7 +24,6 @@ export function StripeEmbeddedCheckout({ reference, token }: StripeEmbeddedCheck
         data: {
           reference,
           token,
-          environment: getStripeEnvironment(),
           origin: typeof window !== 'undefined' ? window.location.origin : '',
         },
       });

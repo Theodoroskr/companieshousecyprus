@@ -21,7 +21,7 @@ export const Route = createFileRoute('/checkout/session-status')({
           // Belt-and-braces with the webhook: record the charged amounts as soon
           // as the customer lands back on the return page.
           const reference = session.metadata?.['order_reference'];
-          if (reference && session.payment_status !== 'unpaid') {
+          if (env === 'live' && reference && session.payment_status !== 'unpaid') {
             const { recordChargedTotalsByReference } = await import('@/lib/orders.server');
             await recordChargedTotalsByReference(reference, {
               subtotalCents: session.amount_subtotal ?? null,

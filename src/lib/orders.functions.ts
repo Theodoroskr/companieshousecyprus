@@ -60,19 +60,6 @@ export type PlaceOrderPayload = {
   }[];
 };
 
-export const submitOrder = createServerFn({ method: "POST" })
-  .inputValidator((data: PlaceOrderPayload) => {
-    if (!data.fullName?.trim()) throw new Error("Full name is required");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email?.trim() ?? "")) throw new Error("A valid email is required");
-    if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Your basket is empty");
-    if (data.items.length > 30) throw new Error("Too many items in one order");
-    return data;
-  })
-  .handler(async ({ data }) => {
-    const { placeOrder } = await import("@/lib/orders.server");
-    return placeOrder(data);
-  });
-
 export const fetchOrder = createServerFn({ method: "POST" })
   .inputValidator((data: { reference: string; token: string }) => data)
   .handler(async ({ data }) => {
@@ -166,8 +153,15 @@ export const submitOrderAsUser = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data, context }) => {
+    // Guest checkout is disabled: the account must have a confirmed email, and
+    // the order is always delivered to that account's own address.
+    const { data: userData } = await context.supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user?.email || !user.email_confirmed_at) {
+      throw new Error("Please confirm your email address before placing an order.");
+    }
     const { placeOrder } = await import("@/lib/orders.server");
-    return placeOrder({ ...data, userId: context.userId });
+    return placeOrder({ ...data, email: user.email, userId: context.userId });
   });
 
 /** Admin: order-level due date / delivery date for monitoring. */

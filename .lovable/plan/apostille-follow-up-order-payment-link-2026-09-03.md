@@ -1,6 +1,6 @@
 # Apostille follow-up order + payment link
 
-Eduard Vojtek (vojtek@themisas.cz) confirmed he wants the Apostille for order **CHC-9Y00LG-F749** (Certificate of Shareholders, ADRANUS INVESTMENTS LIMITED · HE327816). That order is already paid and delivered with `apostille = false`, so the add-on must be billed as a new, separate order.
+Eduard Vojtek ([customer email]) confirmed he wants the Apostille for order **CHC-9Y00LG-F749** (Certificate of Shareholders, ADRANUS INVESTMENTS LIMITED · HE327816). That order is already paid and delivered with `apostille = false`, so the add-on must be billed as a new, separate order.
 
 ## What gets built
 

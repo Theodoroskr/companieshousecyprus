@@ -5,7 +5,7 @@ import { CheckCircle2, Loader2, Lock, Receipt, UserPlus, Mail, AlertCircle } fro
 import { useCart } from '@/lib/cart';
 import { PRODUCTS_BY_SLUG, formatPrice } from '@/lib/products';
 import { priceBreakdown, VAT_RATE, CERTIFICATE_SERVICE_FEE, APOSTILLE_FEE, APOSTILLE_DESCRIPTION, supportsApostille } from '@/lib/pricing';
-import { submitOrder, submitOrderAsUser, startStripeOrderPayment, listMyOrders } from '@/lib/orders.functions';
+import { submitOrderAsUser, startStripeOrderPayment, listMyOrders } from '@/lib/orders.functions';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import { useAccount } from '@/hooks/useAccount';
 import { supabase } from '@/integrations/supabase/client';
@@ -138,7 +138,6 @@ function CheckoutPage() {
     };
   }, [account.ready, account.signedIn, account.email, loadMyOrders]);
 
-  const placeOrder = useServerFn(submitOrder);
 
   const placeOrderAsUser = useServerFn(submitOrderAsUser);
   const startStripe = useServerFn(startStripeOrderPayment);
@@ -200,6 +199,31 @@ function CheckoutPage() {
           Order <span className='font-mono font-semibold text-foreground'>{placed.reference}</span>. Enter your card details below.
         </p>
         <div className='mt-8'>{checkoutElement}</div>
+      </div>
+    );
+  }
+
+  // Orders and payments require a signed-in, verified account (no guest checkout).
+  if (items.length > 0 && !account.ready) {
+    return (
+      <div className='mx-auto max-w-2xl px-4 py-24 text-center'>
+        <Loader2 className='mx-auto size-8 animate-spin text-muted-foreground' />
+      </div>
+    );
+  }
+  if (items.length > 0 && !account.signedIn) {
+    return (
+      <div className='mx-auto max-w-xl px-4 py-24 text-center'>
+        <Lock className='mx-auto size-10 text-copper' />
+        <h1 className='mt-6 text-3xl font-bold'>Sign in to check out</h1>
+        <p className='mt-3 text-muted-foreground'>
+          To protect your orders and documents, only signed-in customers with a verified email can place an order and pay. Your basket is saved.
+        </p>
+        <div className='mt-8 flex flex-wrap justify-center gap-3'>
+          <Button asChild size='lg'>
+            <Link to='/auth' search={{ redirect: '/checkout' }}>Sign in or create an account</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -328,9 +352,8 @@ function CheckoutPage() {
                     };
                   }),
                 };
-                const result = useAuthenticated
-                  ? await placeOrderAsUser({ data: orderPayload })
-                  : await placeOrder({ data: orderPayload });
+                if (!useAuthenticated) throw new Error('Please sign in with a verified account to place an order.');
+                const result = await placeOrderAsUser({ data: orderPayload });
                 // The cart is deliberately kept until Stripe confirms payment,
                 // so an abandoned or failed payment does not lose the selection.
                 setPlaced(result);

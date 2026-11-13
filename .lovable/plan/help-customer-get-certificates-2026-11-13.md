@@ -1,4 +1,4 @@
-# Help Oliver Shen (o.shen@easygo.io) get his certificates
+# Help Oliver Shen ([customer email]) get his certificates
 
 ## What I found
 - He created his account on 12 Nov. He has never confirmed his email. The last confirmation link went out on 13 Nov at 02:26 Nicosia time.

@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { type StripeEnv, verifyWebhook } from '@/lib/stripe.server';
+import { paymentEnvMayFulfil } from '@/lib/stripe-env-policy';
 
 let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 function getSupabase() {
@@ -83,6 +84,11 @@ async function handleAsyncPaymentFailed(session: any) {
 
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
+  // Test-mode payments are never real money: they must not touch orders.
+  if (!paymentEnvMayFulfil(env)) {
+    console.warn('Ignoring Stripe test-mode event', event.type);
+    return;
+  }
 
   switch (event.type) {
     case 'checkout.session.completed':
