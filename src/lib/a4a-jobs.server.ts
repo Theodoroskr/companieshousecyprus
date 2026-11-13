@@ -170,7 +170,11 @@ export async function pollPendingReports() {
             fulfilment_message: `${giveUp ? "Gave up after" : "Attempt"} ${attempts}: ${message}`.slice(0, 900),
           } as never)
           .eq("id", item.id);
-        if (giveUp) failed += 1;
+        if (giveUp) {
+          failed += 1;
+          const { sendOrderItemFailedAlert } = await import("@/lib/order-emails.server");
+          await sendOrderItemFailedAlert(item.id, `Gave up after ${attempts} attempts: ${message}`);
+        }
         else pending += 1;
         if (credentialsProblem) {
           pausedReason = `API4ALL access problem: ${message}`;

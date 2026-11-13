@@ -211,3 +211,36 @@ export async function sendPaymentRequestEmail(input: {
   });
   return result;
 }
+
+/** Office alert when an order line is marked failed. One email per item; never throws. */
+export async function sendOrderItemFailedAlert(itemId: string, reason: string) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: item } = await supabaseAdmin
+      .from("order_items")
+      .select("product_name, company_name, company_number, order_id")
+      .eq("id", itemId)
+      .maybeSingle();
+    if (!item) return;
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("reference, full_name, email, firm")
+      .eq("id", item.order_id)
+      .maybeSingle();
+    await sendTemplateEmail("order-item-failed-alert", "info@companieshousecyprus.com", {
+      idempotencyKey: `order-item-failed-${itemId}`,
+      templateData: {
+        reference: order?.reference,
+        customerName: order?.full_name,
+        customerEmail: order?.email,
+        firm: order?.firm,
+        productName: item.product_name,
+        company: [item.company_name, item.company_number].filter(Boolean).join(" · ") || null,
+        reason: reason.slice(0, 600),
+        adminUrl: `${SITE_URL}/admin/orders`,
+      },
+    });
+  } catch (error) {
+    console.error("Order item failed alert email failed", itemId, error);
+  }
+}

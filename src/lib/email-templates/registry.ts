@@ -10,6 +10,7 @@ import { template as sitemapAlertTemplate } from './sitemap-alert'
 import { template as paymentRequestTemplate } from './payment-request'
 import { template as companyWatchAlertTemplate } from './company-watch-alert'
 import { template as registrySyncReportTemplate } from './registry-sync-report'
+import { template as orderItemFailedAlertTemplate } from './order-item-failed-alert'
 
 
 
@@ -38,4 +39,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-request': paymentRequestTemplate,
   'company-watch-alert': companyWatchAlertTemplate,
   'registry-sync-report': registrySyncReportTemplate,
+  'order-item-failed-alert': orderItemFailedAlertTemplate,
 }

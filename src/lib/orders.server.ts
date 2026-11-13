@@ -527,6 +527,8 @@ export async function fulfilSanctionsSnapshotItem(itemId: string) {
       .from("order_items")
       .update({ fulfilment_status: "failed", fulfilment_message: message.slice(0, 900) })
       .eq("id", item.id);
+    const { sendOrderItemFailedAlert } = await import("@/lib/order-emails.server");
+    await sendOrderItemFailedAlert(item.id, message);
     return { ok: false as const, message };
   };
 
@@ -653,6 +655,8 @@ export async function fulfilOrderItem(itemId: string) {
       .from("order_items")
       .update({ fulfilment_status: "failed", fulfilment_message: message.slice(0, 900) })
       .eq("id", item.id);
+    const { sendOrderItemFailedAlert } = await import("@/lib/order-emails.server");
+    await sendOrderItemFailedAlert(item.id, message);
     return { ok: false as const, message };
   };
 
