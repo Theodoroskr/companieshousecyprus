@@ -301,7 +301,7 @@ export async function setOrderStatus(reference: string, status: string) {
  * Support tool: re-send the delivered-order email (with fresh 7-day download
  * links) for an order the client cannot reach in the portal.
  */
-export async function resendOrderDocuments(reference: string) {
+export async function resendOrderDocuments(reference: string, note?: string | null) {
   const supabase = ordersClient();
   const { data: order } = await supabase
     .from("orders")
@@ -315,7 +315,7 @@ export async function resendOrderDocuments(reference: string) {
     access_token: order.access_token,
     full_name: order.full_name,
     email: order.email,
-  });
+  }, { note: note?.trim().slice(0, 2000) || null, resendKey: Date.now().toString(36) });
   if (!result.ok) throw new Error(result.error ?? "The email could not be sent");
   if (result.documents === 0) throw new Error("This order has no uploaded documents to send");
   return {
@@ -330,6 +330,7 @@ export async function resendOrderDocuments(reference: string) {
 async function notifyOrderDelivered(
   orderId: string,
   order: { reference: string; access_token?: string | null; full_name?: string | null; email?: string | null },
+  options: { note?: string | null; resendKey?: string | null } = {},
 ): Promise<{ ok: boolean; error?: string; documents: number; unavailable: number }> {
   try {
     const supabase = ordersClient();
@@ -351,7 +352,7 @@ async function notifyOrderDelivered(
     );
 
     const { sendOrderDeliveredEmail } = await import("@/lib/order-emails.server");
-    await sendOrderDeliveredEmail(order, documents, items ?? []);
+    await sendOrderDeliveredEmail(order, documents, items ?? [], options);
     return {
       ok: true,
       documents: documents.length,

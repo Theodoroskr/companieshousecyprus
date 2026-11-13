@@ -219,7 +219,7 @@ function AdminOrdersPage() {
   });
 
   const resendDocsMutation = useMutation({
-    mutationFn: (reference: string) => resendDocuments({ data: { reference } }),
+    mutationFn: (input: { reference: string; note: string | null }) => resendDocuments({ data: input }),
     onSuccess: (result) =>
       setMessage(
         result.unavailable > 0
@@ -446,7 +446,11 @@ function AdminOrdersPage() {
                     size="sm"
                     variant="outline"
                     disabled={resendDocsMutation.isPending}
-                    onClick={() => resendDocsMutation.mutate(order.reference)}
+                    onClick={() => {
+                      const note = window.prompt("Optional message to include in the email (leave empty for none):", "");
+                      if (note === null) return;
+                      resendDocsMutation.mutate({ reference: order.reference, note: note.trim() || null });
+                    }}
                   >
                     {resendDocsMutation.isPending ? (
                       <Loader2 className="size-4 animate-spin" />

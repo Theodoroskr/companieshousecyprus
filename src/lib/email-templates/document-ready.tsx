@@ -26,6 +26,8 @@ export interface DocumentReadyProps {
   sentAt?: string
   portalUrl?: string
   documents?: { name: string; url?: string | null }[]
+  /** Optional personal message from the office, shown above the order details. */
+  note?: string | null
 }
 
 const Email = ({
@@ -39,6 +41,7 @@ const Email = ({
   sentAt,
   portalUrl,
   documents,
+  note,
 }: DocumentReadyProps) => (
 
   <Html lang="en" dir="ltr">
@@ -58,6 +61,14 @@ const Email = ({
           {fullName ? `Dear ${fullName},` : 'Hello,'} we have completed part of your order{' '}
           <strong>{reference}</strong>. The document below is now available in your client portal.
         </Text>
+
+        {note ? (
+          <Section style={card}>
+            {note.split(/\n+/).map((line, i) => (
+              <Text key={i} style={text}>{line}</Text>
+            ))}
+          </Section>
+        ) : null}
 
         <Section style={card}>
           {productName ? <Text style={meta}>Document: {productName}</Text> : null}

@@ -150,12 +150,13 @@ export async function sendOrderDeliveredEmail(
   order: OrderEmailOrder,
   documents: { name: string; url?: string | null }[],
   items: OrderEmailItem[],
+  options: { note?: string | null; resendKey?: string | null } = {},
 ) {
   if (!order.email) return;
   try {
     const first = items[0];
     await sendTemplateEmail("document-ready", order.email, {
-      idempotencyKey: `order-delivered-${order.reference}-${documents.length}`,
+      idempotencyKey: `order-delivered-${order.reference}-${documents.length}${options.resendKey ? `-resend-${options.resendKey}` : ""}`,
       sendOfficeCopy: true,
       templateData: {
         fullName: order.full_name ?? undefined,
@@ -165,6 +166,7 @@ export async function sendOrderDeliveredEmail(
         companyNumber: first?.company_number ?? null,
         documentName: documents.map((doc) => doc.name).join(", ") || null,
         documents,
+        note: options.note?.trim() || null,
         deliveredAt: new Date().toLocaleDateString("en-GB", { timeZone: "Asia/Nicosia" }),
         sentAt: exactSendStamp(),
         portalUrl: order.access_token
