@@ -6,10 +6,10 @@ import ogPreview from "@/assets/og-preview.mp4.asset.json";
 const HOME_VIDEO_URL = `https://companieshousecyprus.com${ogPreview.url}`;
 
 export const HOME_TITLE =
-  "Companies House Cyprus — Free Search & Official Documents";
+  "Companies House Cyprus: Free Company Search & Certificates";
 
 export const HOME_DESCRIPTION =
-  "Free Cyprus company search & check on Companies House Cyprus by name or HE number, no account. Independent service: official certificates in 1–2 business days.";
+  "Companies House Cyprus: free company search by name or HE number, no account. Independent service for official certificates, delivered in 1–2 business days.";
 
 
 
