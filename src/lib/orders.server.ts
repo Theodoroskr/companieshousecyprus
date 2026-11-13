@@ -253,7 +253,7 @@ export async function readOrder(reference: string, token: string) {
   };
 }
 
-export async function listOrders(limit = 50) {
+export async function listOrders(limit = 2000) {
   const supabase = ordersClient();
   const { data, error } = await supabase
     .from("orders")

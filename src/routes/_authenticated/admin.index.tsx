@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Clock, Inbox, Loader2, RefreshCw, Timer } from "lucide-react";
 import { adminListOrders } from "@/lib/orders.functions";
 import { formatPrice } from "@/lib/products";
+import { countsAsRevenue, sumCollectedCents } from "@/lib/order-revenue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +86,7 @@ function AdminDashboardPage() {
   );
 
   const countedOrders = useMemo(
-    () => orders.filter((o) => o.status !== "cancelled" && o.status !== "awaiting_payment"),
+    () => orders.filter((o) => countsAsRevenue(o)),
     [orders],
   );
 
@@ -95,8 +96,8 @@ function AdminDashboardPage() {
   const overdue = open.filter((o) => o.due_date && o.due_date < today);
   const dueToday = open.filter((o) => o.due_date === today);
   const delivered = countedOrders.filter((o) => o.status === "delivered");
-  const openValue = open.reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
-  const paidValue = countedOrders.reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
+  const openValue = sumCollectedCents(open);
+  const paidValue = sumCollectedCents(countedOrders);
   const missingDue = open.filter((o) => !o.due_date);
 
   const stats = useMemo(() => {
@@ -132,7 +133,7 @@ function AdminDashboardPage() {
     }, {});
 
     const avgOrderValue = countedOrders.length
-      ? countedOrders.reduce((s, o) => s + (o.total_cents ?? 0), 0) / countedOrders.length
+      ? sumCollectedCents(countedOrders) / countedOrders.length
       : 0;
 
     const deliveredCount = delivered.length;

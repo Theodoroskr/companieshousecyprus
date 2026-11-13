@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import type { Database } from "@/integrations/supabase/types";
 import type { CompanyImportRow, OfficialImportRow } from "@/lib/registrar-mapping";
 import { mapOfficialRow } from "@/lib/registrar-mapping";
+import { collectedCents, countsAsRevenue } from "@/lib/order-revenue";
 
 function adminClient() {
   const url = process.env["SUPABASE_URL"];
@@ -389,9 +390,9 @@ export async function readUserUsage(filters: UsageFilters) {
 
     row.userId = row.userId ?? order.user_id ?? null;
     row.orders += 1;
-    if (order.status === "paid" || order.status === "completed") {
+    if (countsAsRevenue(order)) {
       row.paid += 1;
-      row.revenueCents += order.charged_total_cents ?? order.total_cents ?? 0;
+      row.revenueCents += collectedCents(order);
     }
     if (order.status === "awaiting_payment") row.awaitingPayment += 1;
 
