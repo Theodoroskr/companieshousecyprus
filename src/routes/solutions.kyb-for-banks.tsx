@@ -84,14 +84,14 @@ const DELIVERABLES = [
     price: "€65",
     text: "Registry structure: legal name, registration number, type, status, incorporation date, registered office, directors, secretary and shareholders.",
     to: "/report/$type" as const,
-    params: { type: "structure" },
+    params: { type: "cyprus-company-profile" },
   },
   {
     name: "Cyprus Credit Report",
     price: "€130",
     text: "Structure plus credit intelligence for risk-based onboarding decisions and exposure assessment.",
     to: "/report/$type" as const,
-    params: { type: "credit" },
+    params: { type: "cyprus-credit-report" },
   },
   {
     name: "KYB & Due Diligence Pack",

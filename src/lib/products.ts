@@ -494,4 +494,13 @@ export const CATEGORY_LABEL: Record<ProductCategory, string> = {
 /** Products shown in the public catalogue (pricing page, navigation, footer). */
 export const PUBLIC_PRODUCTS: Product[] = PRODUCTS.filter((product) => !product.internalOnly);
 
+/**
+ * Short report addresses that were published (sitemap, banks page) before the
+ * products got descriptive slugs. They forward permanently to the real page.
+ */
+export const REPORT_SLUG_ALIASES: Record<string, string> = {
+  structure: "cyprus-company-profile",
+  credit: "cyprus-credit-report",
+};
+
 export const APOSTILLE_PRODUCT_SLUG = "apostille-certification";

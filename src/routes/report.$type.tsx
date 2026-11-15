@@ -1,7 +1,7 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, Check, Clock, FileText, Receipt, Search, ShieldCheck } from "lucide-react";
-import { PRODUCTS, PRODUCTS_BY_SLUG, formatPrice } from "@/lib/products";
+import { PRODUCTS, PRODUCTS_BY_SLUG, REPORT_SLUG_ALIASES, formatPrice } from "@/lib/products";
 import { priceBreakdown, CERTIFICATE_SERVICE_FEE, VAT_RATE } from "@/lib/pricing";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo/product-jsonld";
 
 export const Route = createFileRoute("/report/$type")({
   loader: ({ params }) => {
+    const alias = REPORT_SLUG_ALIASES[params.type];
+    if (alias) throw redirect({ to: "/report/$type", params: { type: alias }, statusCode: 301 });
     const product = PRODUCTS_BY_SLUG[params.type];
     if (!product || product.internalOnly) throw notFound();
     return { product };

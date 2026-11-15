@@ -43,7 +43,9 @@ export const Route = createFileRoute("/companies/a-z/$letter")({
 });
 
 function LetterPage() {
-  const { letter } = Route.useParams();
+  // Same uppercase key the loader prefetched, so the list is in the first HTML
+  // response instead of being streamed in after an empty page.
+  const letter = Route.useParams().letter.toUpperCase();
   const [page, setPage] = useState(1);
   const { data } = useSuspenseQuery(letterQueryOptions(letter, page));
   const totalPages = Math.ceil(data.count / 50);
