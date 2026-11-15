@@ -98,7 +98,8 @@ function AuthPage() {
     const target = safeRedirect(requestedRedirect);
 
     if (target) {
-      await navigate({ to: target, replace: true });
+      // href keeps the query string (e.g. an order's access token) intact.
+      await navigate({ href: target, replace: true });
       return;
     }
     const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);

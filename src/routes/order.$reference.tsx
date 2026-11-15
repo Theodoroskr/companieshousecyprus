@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, CreditCard, Download, FileText, Loader2, ShieldCheck } from "lucide-react";
 import { fetchOrder, orderDocumentUrl, startStripeOrderPayment, syncOrderPayment } from "@/lib/orders.functions";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { useAccount } from "@/hooks/useAccount";
 import { formatPrice } from "@/lib/products";
 import { ScreeningStatusBadge } from "@/components/screening/ScreeningStatus";
 import { statusForSnapshotBadge } from "@/lib/sanctions/status-system";
@@ -92,6 +93,10 @@ function OrderPage() {
   const syncPayment = useServerFn(syncOrderPayment);
   const getDocumentUrl = useServerFn(orderDocumentUrl);
   const { openCheckout, checkoutElement, isOpen } = useStripeCheckout();
+  const account = useAccount();
+  // Paying needs a signed-in, verified account under the order's email; bring
+  // customers back to this exact order (token included) after they sign in.
+  const returnPath = `/order/${encodeURIComponent(reference)}?token=${encodeURIComponent(token)}`;
 
   useEffect(() => setTokenInput(token), [token]);
 
@@ -203,7 +208,24 @@ function OrderPage() {
         </div>
 
         {order.status === "awaiting_payment" ? (
-          isOpen ? (
+          !account.ready ? (
+            <div className="mt-6 flex items-center gap-3 rounded-lg border p-5 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> Checking your account…
+            </div>
+          ) : !account.signedIn ? (
+            <div className="mt-6 rounded-lg border border-copper/40 bg-copper/5 p-5">
+              <p className="flex items-center gap-2 font-semibold">
+                <CreditCard className="size-4 text-copper" /> Sign in to pay {euros(order.total_cents)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                For your security, payment is only available when you're signed in with {order.email}. No account
+                yet? Create one with that email address, confirm it, and you'll come straight back to this order.
+              </p>
+              <Button asChild className="mt-4">
+                <Link to="/auth" search={{ redirect: returnPath }}>Sign in to pay</Link>
+              </Button>
+            </div>
+          ) : isOpen ? (
             <div className="mt-6">{checkoutElement}</div>
           ) : (
             <div className="mt-6 rounded-lg border border-copper/40 bg-copper/5 p-5">
