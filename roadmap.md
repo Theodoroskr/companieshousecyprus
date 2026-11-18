@@ -11,3 +11,5 @@
 - [x] Replace request-bound OFAC import with bounded, database-checkpointed slices
 - [x] Apostille follow-up billing: add-on product, admin "Bill apostille" action, payment-request email
 - [x] Company Monitoring (5 companies, €99/yr) + Complete Certificate Pack (€260) + public add-on services (apostille €100, translation €90; courier = note only, price depends on region/weight)
+
+- [x] Branded sign-up/auth emails from notify.companieshousecyprus.com (delivery visible in logs)

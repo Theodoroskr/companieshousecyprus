@@ -15,3 +15,4 @@
 - Purpose-made social preview images and optional MP4 previews belong on leaf-route metadata only, using absolute HTTPS asset URLs; keep the still image alongside video for non-video clients and never add previews to the root because they would override page-specific previews.
 - The Stripe mode (live/test) is chosen only on the server from the request host (`src/lib/stripe-env-policy.ts`), and test-mode payments never mark orders paid — why: a browser-chosen test mode let fake payments complete live orders.
 - Placing and paying for orders requires a signed-in account with a confirmed email; orders are always tied to that account's email — why: guest checkout let anyone place orders under other people's addresses.
+- Every request middleware in `src/start.ts` must return `next()` first for `/lovable/*` paths — why: platform callbacks such as the auth email webhook authenticate themselves and break if WAF, geo or bot guards intercept them.

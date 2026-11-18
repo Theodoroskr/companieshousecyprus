@@ -8,6 +8,8 @@ import { inspectRequest, wafDenyResponse } from "./lib/waf";
 // Application WAF: 403s known login-probe paths (/wp-admin, .env, ...),
 // scanner user agents, and per-IP bursts on real auth surfaces.
 const wafMiddleware = createMiddleware().server(async ({ next, request }) => {
+  // Platform callbacks (auth email webhook etc.) authenticate themselves.
+  if (new URL(request.url).pathname.startsWith("/lovable/")) return next();
   const verdict = inspectRequest(request);
   if (verdict.action === "deny") {
     return wafDenyResponse(verdict.reason);
@@ -19,6 +21,7 @@ const wafMiddleware = createMiddleware().server(async ({ next, request }) => {
 // data-centre botnet elsewhere: those clients never run JS, so they loop on
 // the interstitial instead of hitting the app.
 const authBotGuard = createMiddleware().server(async ({ next, request }) => {
+  if (new URL(request.url).pathname.startsWith("/lovable/")) return next();
   const decision = decideAuthGuard(request);
   if (decision === "block") {
     return authBlockResponse();
