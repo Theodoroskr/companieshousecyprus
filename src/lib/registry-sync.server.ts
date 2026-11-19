@@ -60,6 +60,46 @@ const FILES: { key: FileKey; url: string }[] = [
 
 type Db = SupabaseClient<Database>;
 
+// The portal publishes each monthly export under a NEW numbered filename
+// (e.g. organisations_97.csv -> organisations_103.csv), so the current links
+// are discovered from the dataset page on every check.
+const DATASET_PAGE =
+  "https://data.gov.cy/el/dataset/mitroo-eggegrammenon-etaireion-emporikon-eponymion-kai-synetairismon-stin-kypro";
+const FILE_PATTERNS: Record<FileKey, RegExp> = {
+  addresses: /\/sites\/default\/files\/registered_office_\d+\.csv/g,
+  organisations: /\/sites\/default\/files\/organisations_\d+\.csv/g,
+  officials: /\/sites\/default\/files\/organisation_officials_\d+\.csv/g,
+};
+
+export function pickLatestFileUrls(html: string): Partial<Record<FileKey, string>> {
+  const out: Partial<Record<FileKey, string>> = {};
+  for (const key of Object.keys(FILE_PATTERNS) as FileKey[]) {
+    const matches = html.match(FILE_PATTERNS[key]) ?? [];
+    let best: { n: number; path: string } | null = null;
+    for (const path of matches) {
+      const n = Number(path.match(/_(\d+)\.csv$/)?.[1] ?? -1);
+      if (!best || n > best.n) best = { n, path };
+    }
+    if (best) out[key] = `https://data.gov.cy${best.path}`;
+  }
+  return out;
+}
+
+async function discoverFileUrls(): Promise<Partial<Record<FileKey, string>>> {
+  try {
+    const res = await fetch(DATASET_PAGE, { headers: { "User-Agent": "Mozilla/5.0 CompaniesHouseCyprus" } });
+    if (!res.ok) return {};
+    return pickLatestFileUrls(await res.text());
+  } catch {
+    return {};
+  }
+}
+
+async function fileUrl(supabase: Db, key: FileKey): Promise<string> {
+  const { data } = await supabase.from("registry_sync_state").select("url").eq("file_key", key).maybeSingle();
+  return (data as { url?: string | null } | null)?.url || FILES.find((f) => f.key === key)!.url;
+}
+
 type JobRow = Database["public"]["Tables"]["registry_sync_job"]["Row"];
 
 function client(): Db {
@@ -301,7 +341,7 @@ async function readChunk(url: string, start: number, fileSize: number) {
 async function ensureRun(supabase: Db, job: JobRow, key: FileKey): Promise<string> {
   const runIds = (job.run_ids ?? {}) as Record<string, string>;
   if (runIds[key]) return runIds[key];
-  const file = FILES.find((f) => f.key === key)!;
+  const file = { key, url: await fileUrl(supabase, key) };
   const { data: state } = await supabase
     .from("registry_sync_state")
     .select("size")
@@ -541,7 +581,7 @@ async function finalizeJob(supabase: Db, job: JobRow) {
 
   for (const [key, runId] of Object.entries(runIds)) {
     await closeRun(runId, "completed", "automated monthly registry refresh");
-    const file = FILES.find((f) => f.key === key)!;
+    const file = { key, url: await fileUrl(supabase, key as FileKey) };
     const head = await fetch(file.url, { method: "HEAD" });
     await supabase
       .from("registry_sync_state")
@@ -619,7 +659,9 @@ async function detectAndMaybeStart(supabase: Db) {
   const checkedAt = new Date().toISOString();
   const changed: FileKey[] = [];
 
-  for (const file of FILES) {
+  const discovered = await discoverFileUrls();
+  for (const base of FILES) {
+    const file = { key: base.key, url: discovered[base.key] ?? (await fileUrl(supabase, base.key)) };
     const response = await fetch(file.url, { method: "HEAD" });
     if (!response.ok) throw new Error(`Portal header check failed (${response.status}) for ${file.key}`);
     const lastModified = response.headers.get("last-modified");
@@ -636,7 +678,7 @@ async function detectAndMaybeStart(supabase: Db) {
 
     await supabase
       .from("registry_sync_state")
-      .update({ last_checked_at: checkedAt, updated_at: checkedAt })
+      .update({ last_checked_at: checkedAt, updated_at: checkedAt, url: file.url })
       .eq("file_key", file.key);
   }
 
