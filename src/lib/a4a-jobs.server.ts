@@ -13,7 +13,9 @@ import type { Database } from "@/integrations/supabase/types";
 
 const JOB_KEY = "a4a_poll";
 const BATCH_SIZE = 8;
-const MAX_ATTEMPTS = 48; // ~4h at 5 min spacing
+// Normal-speed fresh investigations can take several business days; backoff caps
+// at 30 min, so 240 attempts keep polling for roughly 5 days before alerting.
+export const MAX_ATTEMPTS = 240;
 const LOCK_SECONDS = 240;
 
 function client() {
